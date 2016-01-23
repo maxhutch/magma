@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zungtr.cpp normal z -> s, Wed Jan  6 17:59:33 2016
+       @generated from src/zungtr.cpp normal z -> s, Fri Jan 22 21:41:43 2016
 
 */
 #include "magma_internal.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    SORGTR generates a real unitary matrix Q which is defined as the
+    SORGTR generates a real orthogonal matrix Q which is defined as the
     product of n-1 elementary reflectors of order N, as returned by
     SSYTRD:
 
@@ -38,7 +38,7 @@
     A       REAL array, dimension (LDA,N)
             On entry, the vectors which define the elementary reflectors,
             as returned by SSYTRD.
-            On exit, the N-by-N unitary matrix Q.
+            On exit, the N-by-N orthogonal matrix Q.
 
     @param[in]
     lda     INTEGER
@@ -116,7 +116,7 @@ magma_sorgtr(
 
     lwkopt = max(1, n) * nb;
     if (*info == 0) {
-        work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+        work[0] = magma_smake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -173,7 +173,7 @@ magma_sorgtr(
         }
     }
     
-    work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
 
     return *info;
 } /* magma_sorgtr */

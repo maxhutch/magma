@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd.cpp normal z -> d, Wed Jan  6 17:59:33 2016
+       @generated from src/zhetrd.cpp normal z -> d, Fri Jan 22 21:41:43 2016
 
 */
 #include "magma_internal.h"
@@ -35,7 +35,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -59,22 +59,22 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    d       DOUBLE_PRECISION array, dimension (N)
+    d       DOUBLE PRECISION array, dimension (N)
             The diagonal elements of the tridiagonal matrix T:
             D(i) = A(i,i).
 
     @param[out]
-    e       DOUBLE_PRECISION array, dimension (N-1)
+    e       DOUBLE PRECISION array, dimension (N-1)
             The off-diagonal elements of the tridiagonal matrix T:
             E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (N-1)
+    tau     DOUBLE PRECISION array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -166,7 +166,7 @@ magma_dsytrd(
     magma_int_t lquery;
 
     *info = 0;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
@@ -183,7 +183,7 @@ magma_dsytrd(
     lddw = ldda;
     lwkopt = n * nb;
     if (*info == 0) {
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -338,7 +338,7 @@ magma_dsytrd(
     magma_free( dA );
     magma_queue_destroy( queue );
     
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
 
     return *info;
 } /* magma_dsytrd */

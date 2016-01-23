@@ -1879,13 +1879,13 @@ void magmaf_cgesv_nopiv_gpu(
 void magmaf_cgetf2_gpu(
     magma_int_t *m, magma_int_t *n,
     devptr_t *dA, magma_int_t *ldda,
-    magma_int_t *ipiv,
+    magma_int_t *ipiv, magma_queue_t *queue,
     magma_int_t *info )
 {
     magma_cgetf2_gpu(
         *m, *n,
         magma_cdevptr(dA), *ldda,
-        ipiv,
+        ipiv, *queue,
         info );
 }
 
@@ -2156,13 +2156,13 @@ void magmaf_clarf_gpu(
     magma_int_t *m, magma_int_t *n,
     devptr_t *dv,
     devptr_t *dtau,
-    devptr_t *dC, magma_int_t *lddc )
+    devptr_t *dC, magma_int_t *lddc, magma_queue_t *queue )
 {
     magma_clarf_gpu(
         *m, *n,
         magma_cdevptr(dv),
         magma_cdevptr(dtau),
-        magma_cdevptr(dC), *lddc );
+        magma_cdevptr(dC), *lddc, *queue );
 }
 
 #define magmaf_clarfb2_gpu FORTRAN_NAME( magmaf_clarfb2_gpu, MAGMAF_CLARFB2_GPU )
@@ -2210,12 +2210,12 @@ void magmaf_cposv_gpu(
 #define magmaf_cpotf2_gpu FORTRAN_NAME( magmaf_cpotf2_gpu, MAGMAF_CPOTF2_GPU )
 void magmaf_cpotf2_gpu(
     const char* uplo, magma_int_t *n,
-    devptr_t *dA, magma_int_t *ldda,
+    devptr_t *dA, magma_int_t *ldda, magma_queue_t *queue,
     magma_int_t *info )
 {
     magma_cpotf2_gpu(
         magma_uplo_const(*uplo), *n,
-        magma_cdevptr(dA), *ldda,
+        magma_cdevptr(dA), *ldda, *queue,
         info );
 }
 
@@ -2357,6 +2357,30 @@ void magmaf_cunmtr_gpu(
         magma_cdevptr(dC), *lddc,
         wA, *ldwa,
         info );
+}
+
+#define magmaf_c_isnan FORTRAN_NAME( magmaf_c_isnan, MAGMAF_C_ISNAN )
+void magmaf_c_isnan(
+    magmaFloatComplex *x )
+{
+    magma_c_isnan(
+        *x );
+}
+
+#define magmaf_c_isinf FORTRAN_NAME( magmaf_c_isinf, MAGMAF_C_ISINF )
+void magmaf_c_isinf(
+    magmaFloatComplex *x )
+{
+    magma_c_isinf(
+        *x );
+}
+
+#define magmaf_c_isnan_inf FORTRAN_NAME( magmaf_c_isnan_inf, MAGMAF_C_ISNAN_INF )
+void magmaf_c_isnan_inf(
+    magmaFloatComplex *x )
+{
+    magma_c_isnan_inf(
+        *x );
 }
 
 #define magmaf_cnan_inf FORTRAN_NAME( magmaf_cnan_inf, MAGMAF_CNAN_INF )

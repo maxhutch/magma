@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Raffaele Solca
        
-       @generated from src/dlaex1_m.cpp normal d -> s, Wed Jan  6 17:59:33 2016
+       @generated from src/dlaex1_m.cpp normal d -> s, Fri Jan 22 21:41:44 2016
 */
 #include "magma_internal.h"
 

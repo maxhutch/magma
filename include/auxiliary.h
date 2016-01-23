@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -43,7 +43,7 @@ real_Double_t magma_sync_wtime( magma_queue_t queue );
 // magma GPU-complex PCIe connection
 magma_int_t magma_buildconnection_mgpu(
     magma_int_t gnode[MagmaMaxGPUs+2][MagmaMaxGPUs+2],
-    magma_int_t *nbcmplx,
+    magma_int_t *ncmplx,
     magma_int_t ngpu );
 
 void magma_indices_1D_bcyclic(

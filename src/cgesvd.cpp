@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from src/zgesvd.cpp normal z -> c, Wed Jan  6 17:59:40 2016
+       @generated from src/zgesvd.cpp normal z -> c, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -238,10 +238,7 @@ magma_cgesvd(
         nb = magma_get_cgesvd_nb( m, n );
         minwrk = (m + n)*nb + 2*minmn;
         
-        // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-        // if it cannot be exactly represented in floating point.
-        real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-        work[0] = MAGMA_C_MAKE( minwrk * one_eps, 0 );
+        work[0] = magma_cmake_lwork( minwrk );
         if ( !lquery && (lwork < minwrk) ) {
             *info = -13;
         }

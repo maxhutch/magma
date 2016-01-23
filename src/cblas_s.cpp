@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
  
        @author Mark Gates
-       @generated from src/cblas_z.cpp normal z -> s, Wed Jan  6 17:59:29 2016
+       @generated from src/cblas_z.cpp normal z -> s, Fri Jan 22 21:41:27 2016
 
     Wrappers around a few CBLAS functions.
     
@@ -60,13 +60,13 @@ float magma_cblas_sasum(
     }
     float result = 0;
     if ( incx == 1 ) {
-        for( int i=0; i < n; ++i ) {
+        for( magma_int_t i=0; i < n; ++i ) {
             result += MAGMA_S_ABS1( x[i] );
         }
     }
     else {
-        int nincx = n*incx;
-        for( int i=0; i < nincx; i += incx ) {
+        magma_int_t nincx = n*incx;
+        for( magma_int_t i=0; i < nincx; i += incx ) {
             result += MAGMA_S_ABS1( x[i] );
         }
     }
@@ -108,7 +108,7 @@ float magma_cblas_snrm2(
         // the following loop is equivalent to this call to the lapack
         // auxiliary routine:
         // call zlassq( n, x, incx, scale, ssq )
-        for( int ix=0; ix < 1 + (n-1)*incx; ix += incx ) {
+        for( magma_int_t ix=0; ix < 1 + (n-1)*incx; ix += incx ) {
             if ( real( x[ix] ) != 0 ) {
                 float temp = fabs( real( x[ix] ));
                 if (scale < temp) {

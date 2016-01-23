@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zgetrf.cpp normal z -> s, Wed Jan  6 17:59:30 2016
+       @generated from src/zgetrf.cpp normal z -> s, Fri Jan 22 21:41:32 2016
 */
 #include "magma_internal.h"
 
@@ -152,15 +152,15 @@ magma_sgetrf(
         size_t mem_size = magma_queue_mem_size( queues[0] );
         mem_size /= sizeof(float);
 
-        int h = 1+(2+ngpu);
-        int ngpu2 = ngpu;
-        int NB = (magma_int_t)(0.8*mem_size/maxm - h*nb);
+        magma_int_t h = 1+(2+ngpu);
+        magma_int_t ngpu2 = ngpu;
+        magma_int_t NB = (magma_int_t)(0.8*mem_size/maxm - h*nb);
         const char* ngr_nb_char = getenv("MAGMA_NGR_NB");
         if ( ngr_nb_char != NULL )
             NB = max( nb, min( NB, atoi(ngr_nb_char) ) );
 
         if ( ngpu > ceil((float)NB/nb) ) {
-            ngpu2 = (int)ceil((float)NB/nb);
+            ngpu2 = (magma_int_t)ceil((float)NB/nb);
             h = 1+(2+ngpu2);
             NB = (magma_int_t)(0.8*mem_size/maxm - h*nb);
         }

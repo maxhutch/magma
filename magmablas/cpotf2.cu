@@ -1,25 +1,27 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       @generated from magmablas/zpotf2.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zpotf2.cu normal z -> c, Fri Jan 22 21:42:08 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_c
+#define COMPLEX
 
 #define cdotc_max_bs 512  // 512 is max threads for 1.x cards
 
-void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
-void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
+void cpotf2_csscal( magma_int_t n, magmaFloatComplex *x, magma_int_t incx, magma_queue_t queue );
+void cpotf2_cdotc(  magma_int_t n, magmaFloatComplex *x, magma_int_t incx, magma_queue_t queue );
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
-void magmablas_clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
+#ifdef COMPLEX
+void magmablas_clacgv( magma_int_t n, magmaFloatComplex *x, magma_int_t incx, magma_queue_t queue );
 #endif
 
+
+// TODO: this function could be in .cpp file -- it has no CUDA code in it.
 /**
     Purpose
     -------
@@ -79,6 +81,7 @@ extern "C" magma_int_t
 magma_cpotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
     magma_int_t *info )
 {
 #define dA(i_, j_)  (dA + (i_) + (j_)*ldda)
@@ -109,39 +112,39 @@ magma_cpotf2_gpu(
 
     if (uplo == MagmaUpper) {
         for (j = 0; j < n; j++) {
-            cpotf2_cdotc(j, dA(0,j), 1); // including cdotc product and update a(j,j)
+            cpotf2_cdotc( j, dA(0,j), 1, queue ); // including cdotc product and update a(j,j)
             if (j < n) {
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_clacgv(j, dA(0, j), 1);
+                #ifdef COMPLEX
+                magmablas_clacgv( j, dA(0, j), 1, queue );
                 #endif
                 magma_cgemv( MagmaTrans, j, n-j-1,
                              alpha, dA(0, j+1), ldda,
                                     dA(0, j),   1,
-                             beta,  dA(j, j+1), ldda);
+                             beta,  dA(j, j+1), ldda, queue );
 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_clacgv(j, dA(0, j), 1);
+                #ifdef COMPLEX
+                magmablas_clacgv( j, dA(0, j), 1, queue );
                 #endif
-                cpotf2_csscal(n-j, dA(j,j), ldda);
+                cpotf2_csscal( n-j, dA(j,j), ldda, queue );
             }
         }
     }
     else {
         for (j = 0; j < n; j++) {
-            cpotf2_cdotc(j, dA(j,0), ldda); // including cdotc product and update a(j,j)
+            cpotf2_cdotc( j, dA(j,0), ldda, queue ); // including cdotc product and update a(j,j)
             if (j < n) {
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_clacgv(j, dA(j, 0), ldda);
+                #ifdef COMPLEX
+                magmablas_clacgv( j, dA(j, 0), ldda, queue );
                 #endif
                 magma_cgemv( MagmaNoTrans, n-j-1, j,
                              alpha, dA(j+1, 0), ldda,
                                     dA(j,0),    ldda,
-                             beta,  dA(j+1, j), 1 );
+                             beta,  dA(j+1, j), 1, queue );
 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_clacgv(j, dA(j, 0), ldda);
+                #ifdef COMPLEX
+                magmablas_clacgv( j, dA(j, 0), ldda, queue );
                 #endif
-                cpotf2_csscal(n-j, dA(j,j), 1);
+                cpotf2_csscal( n-j, dA(j,j), 1, queue );
             }
         }
     }
@@ -169,7 +172,7 @@ __global__ void kernel_cdotc(int n, magmaFloatComplex *x, int incx, int threadSi
         res = x[tx*incx];
     }
 
-    sdata[tx] = MAGMA_C_REAL(res * MAGMA_C_CNJG(res));
+    sdata[tx] = MAGMA_C_REAL(res * MAGMA_C_CONJ(res));
 
     __syncthreads();
 
@@ -196,7 +199,9 @@ __global__ void kernel_cdotc(int n, magmaFloatComplex *x, int incx, int threadSi
     }
 }
 
-void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
+void cpotf2_cdotc(
+    magma_int_t n, magmaFloatComplex *x, magma_int_t incx,
+    magma_queue_t queue )
 {
     /*
     Specialized Cdotc
@@ -228,7 +233,7 @@ void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 
     size_t shmem = threadSize * sizeof(float);
     kernel_cdotc
-        <<< 1, threadSize, shmem, magmablasGetQueue()->cuda_stream() >>>
+        <<< 1, threadSize, shmem, queue->cuda_stream() >>>
         (n, x, incx, threadSize);
 }
 
@@ -250,28 +255,28 @@ __global__ void kernel_csscal(int n, magmaFloatComplex *x, int incx)
 }
 
 
-void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
+void cpotf2_csscal(
+    magma_int_t n, magmaFloatComplex *x, magma_int_t incx,
+    magma_queue_t queue )
 {
-    /*
-    Specialized Csscal perform x[1:n-1]/x[0]
-    */
+    /* Specialized csscal perform x[1:n-1] / x[0] */
     dim3 threads(csscal_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, csscal_bs );
     dim3 grid(num_blocks,1);
     kernel_csscal
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         (n, x, incx);
 }
 
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+#ifdef COMPLEX
 
 __global__ void kernel_clacgv(int n, magmaFloatComplex *x, int incx)
 {
     int id = blockIdx.x * clacgv_bs + threadIdx.x;
 
     if ( id < n ) {
-        x[id*incx] = MAGMA_C_CNJG(x[id*incx]);
+        x[id*incx] = MAGMA_C_CONJ(x[id*incx]);
     }
 }
 
@@ -300,14 +305,16 @@ __global__ void kernel_clacgv(int n, magmaFloatComplex *x, int incx)
 
     @ingroup magma_caux1
     ********************************************************************/
-void magmablas_clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
+void magmablas_clacgv(
+    magma_int_t n, magmaFloatComplex *x, magma_int_t incx,
+    magma_queue_t queue )
 {
     dim3 threads(clacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, clacgv_bs );
     dim3 grid(num_blocks,1);
     kernel_clacgv
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         (n, x, incx);
 }
 
-#endif // defined(PRECISION_z) || defined(PRECISION_c)
+#endif // COMPLEX

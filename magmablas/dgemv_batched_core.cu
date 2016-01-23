@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
        @author Azzam Haidar
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 #define PRECISION_d
@@ -54,13 +54,13 @@
             On entry, n specifies the number of columns of the matrix A
  
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             On entry, ALPHA specifies the scalar alpha.
 
 
     @param[in]
     dA_array 	Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, n ) on the GPU
+             Each is a DOUBLE PRECISION array A of DIMENSION ( ldda, n ) on the GPU
    
     @param[in]
     ldda    INTEGER
@@ -68,7 +68,7 @@
 
     @param[in]
     dx_array 	Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array of dimension
+            Each is a DOUBLE PRECISION array of dimension
             n if trans == MagmaNoTrans
             m if trans == MagmaTrans or MagmaConjTrans
      
@@ -77,13 +77,13 @@
             INCX must not be zero.
   
     @param[in]
-    beta    DOUBLE_PRECISION
+    beta    DOUBLE PRECISION
             On entry, ALPHA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
     @param[out]
     dy_array 	Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array of dimension
+            Each is a DOUBLE PRECISION array of dimension
             m if trans == MagmaNoTrans
             n if trans == MagmaTrans or MagmaConjTrans
 

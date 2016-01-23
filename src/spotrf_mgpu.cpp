@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zpotrf_mgpu.cpp normal z -> s, Wed Jan  6 17:59:29 2016
+       @generated from src/zpotrf_mgpu.cpp normal z -> s, Fri Jan 22 21:41:28 2016
 
 */
 #include "magma_internal.h"
@@ -80,7 +80,7 @@ magma_spotrf_mgpu(
     magma_int_t     j, nb, d, lddp, h;
     const char* uplo_ = lapack_uplo_const( uplo );
     float *work;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     float *dwork[MagmaMaxGPUs];
     magma_queue_t    queues[MagmaMaxGPUs][3];
     magma_event_t     event[MagmaMaxGPUs][5];

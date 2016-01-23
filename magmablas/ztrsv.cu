@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 
@@ -328,7 +328,7 @@ magmablas_ztrsv_recursive_outofplace(
         return;
 
     //Init x with zero
-    //magmablas_zlaset(MagmaFull, n, incb, MAGMA_Z_ZERO, MAGMA_Z_ZERO, x, n);
+    //magmablas_zlaset( MagmaFull, n, incb, MAGMA_Z_ZERO, MAGMA_Z_ZERO, x, n, queue );
 
     magma_int_t col = n;
 
@@ -342,17 +342,17 @@ magmablas_ztrsv_recursive_outofplace(
             {
                 col -= jb;
                 //assume x_array contains zero elements, magmablas_zgemv will cause slow down
-                magma_zgemv(MagmaNoTrans, jb, i, MAGMA_Z_ONE, A(col, col+jb), lda,
-                                x+col+jb, 1, MAGMA_Z_ONE, x+col, 1);
+                magma_zgemv( MagmaNoTrans, jb, i, MAGMA_Z_ONE, A(col, col+jb), lda,
+                             x+col+jb, 1, MAGMA_Z_ONE, x+col, 1, queue );
             }
             else
             {
                 col = i;
-                magma_zgemv(MagmaNoTrans, jb, i, MAGMA_Z_ONE, A(col, 0), lda,
-                                x, 1, MAGMA_Z_ONE, x+col, 1);
+                magma_zgemv( MagmaNoTrans, jb, i, MAGMA_Z_ONE, A(col, 0), lda,
+                             x, 1, MAGMA_Z_ONE, x+col, 1, queue );
             }
 
-            magmablas_ztrsv_outofplace(uplo, trans, diag, jb, A(col, col), lda, b+col, incb, x+col, queue, i);
+            magmablas_ztrsv_outofplace( uplo, trans, diag, jb, A(col, col), lda, b+col, incb, x+col, queue, i );
         }
     }
     else
@@ -365,16 +365,16 @@ magmablas_ztrsv_recursive_outofplace(
             {
                 col -= jb;
 
-                magma_zgemv(MagmaConjTrans, i, jb, MAGMA_Z_ONE, A(col+jb, col), lda, x+col+jb, 1, MAGMA_Z_ONE, x+col, 1);
+                magma_zgemv( MagmaConjTrans, i, jb, MAGMA_Z_ONE, A(col+jb, col), lda, x+col+jb, 1, MAGMA_Z_ONE, x+col, 1, queue );
             }
             else
             {
                 col = i;
                 
-                magma_zgemv(MagmaConjTrans, i, jb, MAGMA_Z_ONE, A(0, col), lda, x, 1, MAGMA_Z_ONE, x+col, 1);
+                magma_zgemv( MagmaConjTrans, i, jb, MAGMA_Z_ONE, A(0, col), lda, x, 1, MAGMA_Z_ONE, x+col, 1, queue );
             }
      
-            magmablas_ztrsv_outofplace(uplo, trans, diag, jb, A(col, col), lda, b+col, incb, x+col, queue, i);
+            magmablas_ztrsv_outofplace( uplo, trans, diag, jb, A(col, col), lda, b+col, incb, x+col, queue, i );
         }
     }
 }
@@ -476,11 +476,11 @@ magmablas_ztrsv(
 
     magma_zmalloc( &dx, size_x );
 
-    magmablas_zlaset( MagmaFull, n, 1, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dx, n );
+    magmablas_zlaset( MagmaFull, n, 1, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dx, n, queue );
 
     magmablas_ztrsv_recursive_outofplace( uplo, trans, diag, n, dA, ldda, db, incb, dx, queue );
 
-    magmablas_zlacpy( MagmaFull, n, 1, dx, n, db, n );
+    magmablas_zlacpy( MagmaFull, n, 1, dx, n, db, n, queue );
 
     magma_free( dx );
 }

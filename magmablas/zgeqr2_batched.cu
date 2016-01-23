@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 #include "batched_kernel_param.h"
 
@@ -46,7 +46,7 @@ void zlarfx_device( int m, int n,  magmaDoubleComplex *v, magmaDoubleComplex *ta
             else
                 lsum = MAGMA_Z_ZERO;
             for (int j = tx+1; j < m; j += BLOCK_SIZE) {
-                lsum += MAGMA_Z_MUL( MAGMA_Z_CNJG( v[j] ), dc[j+ldc*k] );
+                lsum += MAGMA_Z_MUL( MAGMA_Z_CONJ( v[j] ), dc[j+ldc*k] );
             }
 
             sum[tx] = lsum;
@@ -55,7 +55,7 @@ void zlarfx_device( int m, int n,  magmaDoubleComplex *v, magmaDoubleComplex *ta
         magma_sum_reduce< BLOCK_SIZE >( tx, sum );
         __syncthreads();
 
-        magmaDoubleComplex z__1 = - MAGMA_Z_CNJG(*tau) * sum[0];
+        magmaDoubleComplex z__1 = - MAGMA_Z_CONJ(*tau) * sum[0];
         /*  C := C - v * w  */
         if (tx < BLOCK_SIZE)
         {

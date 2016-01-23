@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // warn( condition ) is like assert, but doesn't abort. Also counts number of failures.
-int gFailures = 0;
+magma_int_t gFailures = 0;
 
 void warn_helper( int cond, const char* str, const char* file, int line )
 {
@@ -36,10 +36,10 @@ void test_num_gpus()
 {
     printf( "%%=====================================================================\n%s\n", __func__ );
     
-    int ngpu;
-    int ndevices;
+    magma_int_t ngpu;
+    int ndevices;  // not magma_int_t
     cudaGetDeviceCount( &ndevices );
-    int maxgpu = min( ndevices, MagmaMaxGPUs );
+    magma_int_t maxgpu = min( ndevices, MagmaMaxGPUs );
     
     printf( "$MAGMA_NUM_GPUS     ngpu     expect\n" );
     printf( "%%==================================\n" );
@@ -111,14 +111,14 @@ void test_num_threads()
     printf( "%%=====================================================================\n%s\n", __func__ );
     
     // test that getting & setting numthreads works
-    int p_nthread_orig = magma_get_parallel_numthreads();
-    int l_nthread_orig = magma_get_lapack_numthreads();
+    magma_int_t p_nthread_orig = magma_get_parallel_numthreads();
+    magma_int_t l_nthread_orig = magma_get_lapack_numthreads();
     printf( "get;      parallel_numthread=%2d, lapack_numthread=%2d\n",
             p_nthread_orig, l_nthread_orig );
     
     magma_set_lapack_numthreads( 4 );
-    int p_nthread = magma_get_parallel_numthreads();
-    int l_nthread = magma_get_lapack_numthreads();
+    magma_int_t p_nthread = magma_get_parallel_numthreads();
+    magma_int_t l_nthread = magma_get_lapack_numthreads();
     printf( "set( 4);  parallel_numthread=%2d, lapack_numthread=%2d (expect  4)\n",
             p_nthread, l_nthread );
     warn( p_nthread == p_nthread_orig );
@@ -154,9 +154,9 @@ void test_num_threads()
     // TODO need some way to get ncores. This is circular: assume with huge
     // NUM_THREADS that the routine gives the ncores. The user can verify.
     setenv("MAGMA_NUM_THREADS", "10000", 1 );
-    int ncores = magma_get_parallel_numthreads();
+    magma_int_t ncores = magma_get_parallel_numthreads();
     
-    int omp_threads = ncores;
+    magma_int_t omp_threads = ncores;
     const char* omp_str = getenv("OMP_NUM_THREADS");
     if ( omp_str != NULL ) {
         omp_threads = atoi( omp_str );

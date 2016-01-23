@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zgetrf_nopiv_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
+   @generated from testing/testing_zgetrf_nopiv_batched.cpp normal z -> s, Fri Jan 22 21:42:50 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -97,7 +97,7 @@ int main( int argc, char** argv)
     
     float tol = opts.tolerance * lapackf77_slamch("E");
 
-    printf("%% BatchCount   M     N    CPU GFlop/s (ms)   MAGMA GFlop/s (ms)   CUBLAS GFlop/s (ms)   ||PA-LU||/(||A||*N)\n");
+    printf("%% BatchCount   M     N    CPU Gflop/s (ms)   MAGMA Gflop/s (ms)   CUBLAS Gflop/s (ms)   ||PA-LU||/(||A||*N)\n");
     printf("%%==========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -118,8 +118,8 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( dipiv_magma,  magma_int_t, min_mn * batchCount );
             TESTING_MALLOC_DEV( dinfo_magma,  magma_int_t, batchCount );
 
-            TESTING_MALLOC_DEV( dA_array,    void*, batchCount );
-            TESTING_MALLOC_DEV( dipiv_array, void*, batchCount );
+            TESTING_MALLOC_DEV( dA_array,    float*, batchCount );
+            TESTING_MALLOC_DEV( dipiv_array, magma_int_t*,        batchCount );
 
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );

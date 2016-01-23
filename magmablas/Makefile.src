@@ -1,5 +1,5 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.0-beta2) --
+#   -- MAGMA (version 2.0.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
@@ -100,6 +100,8 @@ libmagma_zsrc += \
 	$(cdir)/ztrtri_upper.cu		\
 	$(cdir)/zlarft_kernels.cu		\
 	$(cdir)/ztrsv.cu		\
+	$(cdir)/magmablas_z_v1.cpp	\
+	$(cdir)/magmablas_zc_v1.cpp	\
 
 # Fermi-specific (CUDA arch 2.x) codes
 libmagma_zsrc += \

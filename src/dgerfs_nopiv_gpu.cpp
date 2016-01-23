@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgerfs_nopiv_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgerfs_nopiv_gpu.cpp normal z -> d, Fri Jan 22 21:41:30 2016
 
 */
 #include "magma_internal.h"
@@ -51,7 +51,7 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (ldda,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (ldda,N)
             the N-by-N coefficient matrix A.
             
     @param[in]
@@ -59,7 +59,7 @@
             The leading dimension of the array dA.  ldda >= max(1,N).
 
     @param[in]
-    dB      DOUBLE_PRECISION array on the GPU, dimension (lddb,NRHS)
+    dB      DOUBLE PRECISION array on the GPU, dimension (lddb,NRHS)
             The N-by-NRHS right hand side matrix B.
 
     @param[in]
@@ -67,7 +67,7 @@
             The leading dimension of the array dB.  lddb >= max(1,N).
 
     @param[in, out]
-    dX      DOUBLE_PRECISION array on the GPU, dimension (lddx,NRHS)
+    dX      DOUBLE PRECISION array on the GPU, dimension (lddx,NRHS)
             On entry, the solution matrix X, as computed by
             DGETRS_NOPIV.  On exit, the improved solution matrix X.
 
@@ -76,7 +76,7 @@
             The leading dimension of the array dX.  lddx >= max(1,N).
 
     @param
-    dworkd  (workspace) DOUBLE_PRECISION array on the GPU, dimension (N*NRHS)
+    dworkd  (workspace) DOUBLE PRECISION array on the GPU, dimension (N*NRHS)
             This array is used to hold the residual vectors.
 
     @param

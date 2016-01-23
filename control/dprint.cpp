@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from control/zprint.cpp normal z -> d, Wed Jan  6 17:59:27 2016
+       @generated from control/zprint.cpp normal z -> d, Fri Jan 22 21:41:27 2016
 
 */
 #include "common_magma.h"
@@ -32,7 +32,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in]
-    A       DOUBLE_PRECISION array, dimension (LDA,N), on the CPU host.
+    A       DOUBLE PRECISION array, dimension (LDA,N), on the CPU host.
             The M-by-N matrix to be printed.
 
     @param[in]
@@ -115,7 +115,7 @@ void magma_dprint(
             The number of columns of the matrix A.  N >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N), on the GPU device.
+    dA      DOUBLE PRECISION array, dimension (LDDA,N), on the GPU device.
             The M-by-N matrix to be printed.
 
     @param[in]

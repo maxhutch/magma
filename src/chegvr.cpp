@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
     
        @author Raffaele Solca
     
-       @generated from src/zhegvr.cpp normal z -> c, Wed Jan  6 17:59:35 2016
+       @generated from src/zhegvr.cpp normal z -> c, Fri Jan 22 21:41:49 2016
 
 */
 #include "magma_internal.h"
@@ -337,8 +337,8 @@ magma_chegvr(
     lrwmin = 24 * n;
     liwmin = 10 * n;
     
-    work[0] = MAGMA_C_MAKE( lwmin, 0 );
-    rwork[0] = lrwmin;
+    work[0] = magma_cmake_lwork( lwmin );
+    rwork[0] = magma_smake_lwork( lrwmin );
     iwork[0] = liwmin;
     
     if (lwork < lwmin && ! lquery) {

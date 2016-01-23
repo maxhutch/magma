@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zgesv_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
+   @generated from testing/testing_zgesv_batched.cpp normal z -> s, Fri Jan 22 21:42:50 2016
  */
 // includes, system
 #include <stdio.h>
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     nrhs = opts.nrhs;
     batchCount = opts.batchcount;
 
-    printf("%% BatchCount   N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%% BatchCount   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("%%============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -86,9 +86,9 @@ int main(int argc, char **argv)
             TESTING_MALLOC_DEV( dipiv, magma_int_t, N * batchCount );
             TESTING_MALLOC_DEV( dinfo_array, magma_int_t, batchCount );
 
-            magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
-            magma_malloc((void**)&dB_array, batchCount * sizeof(*dB_array));
-            magma_malloc((void**)&dipiv_array, batchCount * sizeof(*dipiv_array));
+            TESTING_MALLOC_DEV( dA_array, float*, batchCount );
+            TESTING_MALLOC_DEV( dB_array, float*, batchCount );
+            TESTING_MALLOC_DEV( dipiv_array, magma_int_t*,     batchCount );
 
             /* Initialize the matrices */
             lapackf77_slarnv( &ione, ISEED, &sizeA, h_A );
@@ -199,9 +199,9 @@ int main(int argc, char **argv)
             TESTING_FREE_DEV( dipiv );
             TESTING_FREE_DEV( dinfo_array );
 
-            magma_free(dA_array);
-            magma_free(dB_array);
-            magma_free(dipiv_array);
+            TESTING_FREE_DEV( dA_array );
+            TESTING_FREE_DEV( dB_array );
+            TESTING_FREE_DEV( dipiv_array );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {

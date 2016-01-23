@@ -1,6 +1,6 @@
 
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        
        @author Azzam Haidar
 
-       @generated from src/zpotrs_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zpotrs_batched.cpp normal z -> d, Fri Jan 22 21:41:56 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -38,7 +38,7 @@
 
     @param[in]
     dA_array    Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+             Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
              The triangular factor U or L from the Cholesky factorization
              A = U**H*U or A = L*L**H, as computed by DPOTRF.
 
@@ -48,7 +48,7 @@
 
     @param[in,out]
     dB_array      Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+             Each is a DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
              On entry, each pointer is a right hand side matrix B.
              On exit, the corresponding solution matrix X.
 

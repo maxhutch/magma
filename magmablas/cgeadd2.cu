@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgeadd2.cu normal z -> c, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zgeadd2.cu normal z -> c, Fri Jan 22 21:41:58 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -133,20 +133,4 @@ magmablas_cgeadd2_q(
     
     cgeadd2_full<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, alpha, dA, ldda, beta, dB, lddb );
-}
-
-
-/**
-    @see magmablas_cgeadd2_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_cgeadd2(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex alpha,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex beta,
-    magmaFloatComplex_ptr       dB, magma_int_t lddb )
-{
-    magmablas_cgeadd2_q( m, n, alpha, dA, ldda, beta, dB, lddb, magmablasGetQueue() );
 }

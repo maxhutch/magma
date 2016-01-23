@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd.cpp normal z -> c, Wed Jan  6 17:59:33 2016
+       @generated from src/zhetrd.cpp normal z -> c, Fri Jan 22 21:41:43 2016
 
 */
 #include "magma_internal.h"
@@ -166,7 +166,7 @@ magma_chetrd(
     magma_int_t lquery;
 
     *info = 0;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
@@ -183,7 +183,7 @@ magma_chetrd(
     lddw = ldda;
     lwkopt = n * nb;
     if (*info == 0) {
-        work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+        work[0] = magma_cmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -338,7 +338,7 @@ magma_chetrd(
     magma_free( dA );
     magma_queue_destroy( queue );
     
-    work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+    work[0] = magma_cmake_lwork( lwkopt );
 
     return *info;
 } /* magma_chetrd */

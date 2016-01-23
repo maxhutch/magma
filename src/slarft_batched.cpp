@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Azzam Haidar
        @author Ahmad Abdelfattah
        
-       @generated from src/zlarft_batched.cpp normal z -> s, Wed Jan  6 17:59:37 2016
+       @generated from src/zlarft_batched.cpp normal z -> s, Fri Jan 22 21:41:56 2016
 */
 #include "magma_internal.h"
 #define  max_shared_bsiz 32
@@ -46,7 +46,7 @@ magma_slarft_sm32x32_batched(magma_int_t n, magma_int_t k,
             T_array, ldt, batchCount, queue );
     #else
     #if 1
-    for (int i=0; i < k; i++)
+    for (magma_int_t i=0; i < k; i++)
     {
         //W(1:i-1) := - tau(i) * V(i:n,1:i-1)' * V(i:n,i)
         //T( i, i ) = tau( i ) 

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -153,7 +153,7 @@ magma_zpotrf3_mgpu(
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     double          d_one     =  1.0;
     double          d_neg_one = -1.0;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     magmaDoubleComplex *dlpanel;
     magma_int_t n_local[MagmaMaxGPUs], ldpanel;
     const magma_int_t stream1 = 0, stream2 = 1, stream3 = 2;
@@ -179,8 +179,8 @@ magma_zpotrf3_mgpu(
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
     /* used by ztrsm_work */
     magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
-    int trsm_nb = 128;
-    int trsm_n = magma_roundup( nb, trsm_nb );
+    magma_int_t trsm_nb = 128;
+    magma_int_t trsm_n = magma_roundup( nb, trsm_nb );
     magmaDoubleComplex *d_dinvA[MagmaMaxGPUs];
     magmaDoubleComplex *dx[MagmaMaxGPUs];
     #define dinvA(d,j) &(d_dinvA[(d)][(j)*trsm_nb*trsm_n])
@@ -414,7 +414,7 @@ magma_zpotrf3_mgpu(
                     /* even on 1 gpu, off-diagonals are copied to cpu (synchronize at the end).      *
                      * so we have the Cholesky factor, but only diagonal submatrix of the big panel, *
                      * on cpu at the end.                                                            */
-                    int d2, buf2;
+                    magma_int_t d2, buf2;
                     magma_setdevice(d);
                     /* lookahead done */
                     magma_queue_wait_event( queues[d][stream3], events[d][4] );
@@ -459,7 +459,7 @@ magma_zpotrf3_mgpu(
                         magma_setdevice(d);
                         trace_gpu_start( d, stream2, "trsm", "trsm" );
                         #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                            int flag = 0;
+                            bool flag = 0;
                             if (flag == 0) {
                                 magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
                             } else {
@@ -657,7 +657,7 @@ magma_zpotrf3_mgpu(
                 
                     /* even on 1 gpu, we copy off-diagonal to cpu (but don't synchronize).  */
                     /* so we have the Cholesky factor on cpu at the end.                    */
-                    int d2, buf2;
+                    magma_int_t d2, buf2;
 //#define ZPOTRF_DEVICE_TO_DEVICE
 #ifdef ZPOTRF_DEVICE_TO_DEVICE
                     // lookahead done
@@ -720,7 +720,7 @@ magma_zpotrf3_mgpu(
                         magma_setdevice(d);
                         /* update the remaining blocks in the column */
                         #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                            int flag = 0;
+                            bool flag = 0;
                             if (flag == 0) {
                                 magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
                             } else {

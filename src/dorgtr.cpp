@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zungtr.cpp normal z -> d, Wed Jan  6 17:59:33 2016
+       @generated from src/zungtr.cpp normal z -> d, Fri Jan 22 21:41:43 2016
 
 */
 #include "magma_internal.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    DORGTR generates a real unitary matrix Q which is defined as the
+    DORGTR generates a real orthogonal matrix Q which is defined as the
     product of n-1 elementary reflectors of order N, as returned by
     DSYTRD:
 
@@ -35,22 +35,22 @@
             The order of the matrix Q. N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the vectors which define the elementary reflectors,
             as returned by DSYTRD.
-            On exit, the N-by-N unitary matrix Q.
+            On exit, the N-by-N orthogonal matrix Q.
 
     @param[in]
     lda     INTEGER
             The leading dimension of the array A. LDA >= N.
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (N-1)
+    tau     DOUBLE PRECISION array, dimension (N-1)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DSYTRD.
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (LWORK)
+    work    (workspace) DOUBLE PRECISION array, dimension (LWORK)
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -65,7 +65,7 @@
             message related to LWORK is issued by XERBLA.
 
     @param[in]
-    dT      DOUBLE_PRECISION array on the GPU device.
+    dT      DOUBLE PRECISION array on the GPU device.
             DT contains the T matrices used in blocking the elementary
             reflectors H(i) as returned by magma_dsytrd.
 
@@ -116,7 +116,7 @@ magma_dorgtr(
 
     lwkopt = max(1, n) * nb;
     if (*info == 0) {
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -173,7 +173,7 @@ magma_dorgtr(
         }
     }
     
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
 
     return *info;
 } /* magma_dorgtr */

@@ -26,6 +26,7 @@ var group__magma__sblas1 =
     [ "magma_sscal_q", "group__magma__sblas1.html#ga71cdcde7d0c87c79a2d5d71de8e64948", null ],
     [ "magma_sswap", "group__magma__sblas1.html#ga536e673440efb64b3ebf46937a4c6a77", null ],
     [ "magma_sswap_q", "group__magma__sblas1.html#ga669b7309c1818c939f6cfb15c9eec5e5", null ],
-    [ "magmablas_sswap", "group__magma__sblas1.html#ga20df0a26b6c771e1e3810a551fef774c", null ],
-    [ "magmablas_sswap_q", "group__magma__sblas1.html#ga74ea678097bede1d4df507af5acad25a", null ]
+    [ "magmablas_saxpycp", "group__magma__sblas1.html#ga340bf8cf7778e063bd40f3dce7eecae4", null ],
+    [ "magmablas_ssetmatrix_transpose", "group__magma__sblas1.html#gac9bb2ad5403375268ad88f3761718534", null ],
+    [ "magmablas_sswap", "group__magma__sblas1.html#ga20df0a26b6c771e1e3810a551fef774c", null ]
 ];

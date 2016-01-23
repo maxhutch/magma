@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from include/magmablas_z_q.h normal z -> c, Wed Jan  6 17:59:51 2016
+       @generated from include/magmablas_z_q.h normal z -> c, Fri Jan 22 21:42:53 2016
 */
 
 #ifndef MAGMABLAS_C_Q_H
@@ -177,9 +177,6 @@ magma_cdtohpo(
   /*
    * Multi-GPU BLAS functions (alphabetical order)
    */
-  /*
-   * Multi-GPU BLAS functions (alphabetical order)
-   */
 void
 magmablas_chemm_mgpu(
     magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -189,43 +186,12 @@ magmablas_chemm_mgpu(
     magmaFloatComplex beta,
     magmaFloatComplex_ptr dC[],    magma_int_t lddc,
     magmaFloatComplex_ptr dwork[], magma_int_t dworksiz,
-    magmaFloatComplex    *C,       magma_int_t ldc,
-    magmaFloatComplex    *work[],  magma_int_t worksiz,
+    //magmaFloatComplex    *C,       magma_int_t ldc,
+    //magmaFloatComplex    *work[],  magma_int_t worksiz,
     magma_int_t ngpu, magma_int_t nb,
     magma_queue_t queues[][20], magma_int_t nqueue,
-    magma_event_t redevents[][20], magma_int_t nbevents );
-
-void
-magmablas_chemm_mgpu_com(
-    magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaFloatComplex alpha,
-    magmaFloatComplex_ptr dA[],    magma_int_t ldda,  magma_int_t offset,
-    magmaFloatComplex_ptr dB[],    magma_int_t lddb,
-    magmaFloatComplex beta,
-    magmaFloatComplex_ptr dC[],    magma_int_t lddc,
-    magmaFloatComplex_ptr dwork[], magma_int_t dworksiz,
-    magmaFloatComplex    *C,       magma_int_t ldc,
-    magmaFloatComplex    *work[],  magma_int_t worksiz,
-    magma_int_t ngpu, magma_int_t nb,
-    magma_queue_t queues[][20], magma_int_t nqueue,
-    magma_event_t redevents[][MagmaMaxGPUs*MagmaMaxGPUs+10], magma_int_t nbevents,
-    magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2], magma_int_t nbcmplx );
-
-void
-magmablas_chemm_mgpu_spec(
-    magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaFloatComplex alpha,
-    magmaFloatComplex_ptr dA[],    magma_int_t ldda,  magma_int_t offset,
-    magmaFloatComplex_ptr dB[],    magma_int_t lddb,
-    magmaFloatComplex beta,
-    magmaFloatComplex_ptr dC[],    magma_int_t lddc,
-    magmaFloatComplex_ptr dwork[], magma_int_t dworksiz,
-    magmaFloatComplex    *C,       magma_int_t ldc,
-    magmaFloatComplex    *work[],  magma_int_t worksiz,
-    magma_int_t ngpu, magma_int_t nb,
-    magma_queue_t queues[][20], magma_int_t nqueue,
-    magma_event_t redevents[][MagmaMaxGPUs*MagmaMaxGPUs+10], magma_int_t nbevents,
-    magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2], magma_int_t nbcmplx );
+    magma_event_t events[][MagmaMaxGPUs*MagmaMaxGPUs+10], magma_int_t nevents,
+    magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2], magma_int_t ncmplx );
 
 magma_int_t
 magmablas_chemv_mgpu(
@@ -267,16 +233,6 @@ magma_cher2k_mgpu(
     float beta,
     magmaFloatComplex_ptr dC[], magma_int_t lddc, magma_int_t c_offset,
     magma_int_t nqueue, magma_queue_t queues[][10] );
-
-void
-magmablas_cher2k_mgpu_spec(
-    magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
-    magmaFloatComplex alpha,
-    magmaFloatComplex_ptr dA[], magma_int_t ldda, magma_int_t a_offset,
-    magmaFloatComplex_ptr dB[], magma_int_t lddb, magma_int_t b_offset,
-    float beta,
-    magmaFloatComplex_ptr dC[], magma_int_t lddc, magma_int_t c_offset,
-    magma_int_t ngpu, magma_int_t nb, magma_queue_t queues[][20], magma_int_t nqueue );
 
 void
 magmablas_cher2k_mgpu2(

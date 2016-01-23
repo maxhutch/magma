@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zungqr.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zungqr.cpp normal z -> d, Fri Jan 22 21:41:38 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    DORGQR generates an M-by-N DOUBLE_PRECISION matrix Q with orthonormal columns,
+    DORGQR generates an M-by-N DOUBLE PRECISION matrix Q with orthonormal columns,
     which is defined as the first N columns of a product of K elementary
     reflectors of order M
 
@@ -39,7 +39,7 @@
             matrix Q. N >= K >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array A, dimension (LDDA,N).
+    A       DOUBLE PRECISION array A, dimension (LDDA,N).
             On entry, the i-th column must contain the vector
             which defines the elementary reflector H(i), for
             i = 1,2,...,k, as returned by DGEQRF_GPU in the
@@ -51,12 +51,12 @@
             The first dimension of the array A. LDA >= max(1,M).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (K)
+    tau     DOUBLE PRECISION array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGEQRF_GPU.
 
     @param[in]
-    dT      DOUBLE_PRECISION array on the GPU device.
+    dT      DOUBLE PRECISION array on the GPU device.
             DT contains the T matrices used in blocking the elementary
             reflectors H(i), e.g., this can be the 6th argument of
             magma_dgeqrf_gpu.
@@ -95,6 +95,7 @@ magma_dorgqr(
     magma_int_t lddwork;
     double *dA=NULL, *dV=NULL, *dW=NULL;
     double *work=NULL;
+    magma_queue_t queue=NULL;
 
     *info = 0;
     if (m < 0) {
@@ -152,7 +153,6 @@ magma_dorgqr(
     work_T = work + n*nb;
     work_V = work + n*nb + nb*nb;
 
-    magma_queue_t queue;
     magma_device_t cdev;
     magma_getdevice( &cdev );
     magma_queue_create( cdev, &queue );
@@ -165,7 +165,7 @@ magma_dorgqr(
         
         // dorgqr requires less workspace (n*nb), but is slow if k < dorgqr's block size.
         // replacing it with the 4 routines below is much faster (e.g., 60x).
-        //int iinfo;
+        //magma_int_t iinfo;
         //lapackf77_dorgqr( &m_kk, &n_kk, &k_kk,
         //                  A(kk, kk), &lda,
         //                  &tau[kk], work, &lwork, &iinfo );

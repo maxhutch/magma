@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions mixed zc -> ds
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -130,19 +130,4 @@ magmablas_clag2z_q(
     dim3 threads( BLK_X, 1 );
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     clag2z_kernel<<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, SA, ldsa, A, lda );
-}
-
-
-/**
-    @see magmablas_clag2z_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_clag2z(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
-    magmaDoubleComplex_ptr       A, magma_int_t lda,
-    magma_int_t *info)
-{
-    magmablas_clag2z_q( m, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

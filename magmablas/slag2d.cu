@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/clag2z.cu mixed zc -> ds, Wed Jan  6 17:59:35 2016
+       @generated from magmablas/clag2z.cu mixed zc -> ds, Fri Jan 22 21:42:00 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -130,19 +130,4 @@ magmablas_slag2d_q(
     dim3 threads( BLK_X, 1 );
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     slag2d_kernel<<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, SA, ldsa, A, lda );
-}
-
-
-/**
-    @see magmablas_slag2d_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_slag2d(
-    magma_int_t m, magma_int_t n,
-    magmaFloat_const_ptr SA, magma_int_t ldsa,
-    magmaDouble_ptr       A, magma_int_t lda,
-    magma_int_t *info)
-{
-    magmablas_slag2d_q( m, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

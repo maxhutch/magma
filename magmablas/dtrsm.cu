@@ -1,21 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrsm.cu normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/ztrsm.cu normal z -> d, Fri Jan 22 21:42:05 2016
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 #include "dtrtri.cuh"  // get NB from dtrtri
 
@@ -79,13 +74,13 @@
             On entry, n specifies the number of columns of B. n >= 0.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, alpha specifies the scalar alpha. When alpha is
             zero then A is not referenced and B need not be set before
             entry.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension ( ldda, k ), where k is m
+    dA      DOUBLE PRECISION array of dimension ( ldda, k ), where k is m
             when side = MagmaLeft and is n when side = MagmaRight.
             Before entry with uplo = MagmaUpper, the leading k by k
             upper triangular part of the array A must contain the upper
@@ -105,7 +100,7 @@
             when side = MagmaRight, ldda >= max( 1, n ).
 
     @param[in]
-    dB      DOUBLE_PRECISION array of dimension ( lddb, n ).
+    dB      DOUBLE PRECISION array of dimension ( lddb, n ).
             Before entry, the leading m by n part of the array B must
             contain the right-hand side matrix B.
             On exit, contents in the leading m by n part are destroyed.
@@ -116,7 +111,7 @@
             lddb >= max( 1, m ).
 
     @param[out]
-    dX      DOUBLE_PRECISION array of dimension ( lddx, n ).
+    dX      DOUBLE PRECISION array of dimension ( lddx, n ).
             On exit, it contains the m by n solution matrix X.
 
     @param[in]
@@ -482,69 +477,4 @@ void magmablas_dtrsm_q(
 
     magma_free( d_dinvA );
     magma_free( dX );
-}
-
-
-// ------------------------------------------------------------
-// define v1 interface
-#undef magmablas_dtrsm_outofplace
-#undef magmablas_dtrsm_work
-#undef magmablas_dtrsm
-
-/**
-    @see magmablas_dtrsm_outofplace_q
-    @ingroup magma_dblas3
-    ********************************************************************/
-extern "C"
-void magmablas_dtrsm_outofplace(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t m, magma_int_t n,
-    double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr       dB, magma_int_t lddb,
-    magmaDouble_ptr       dX, magma_int_t lddx,
-    magma_int_t flag,
-    magmaDouble_ptr d_dinvA, magma_int_t dinvA_length )
-{
-    magmablas_dtrsm_outofplace_q( side, uplo, transA, diag, m, n, alpha,
-                                  dA, ldda, dB, lddb, dX, lddx, flag,
-                                  d_dinvA, dinvA_length, magmablasGetQueue() );
-}
-
-
-/**
-    @see magmablas_dtrsm_work_q
-    @ingroup magma_dblas3
-    ********************************************************************/
-extern "C"
-void magmablas_dtrsm_work(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t m, magma_int_t n,
-    double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr       dB, magma_int_t lddb,
-    magmaDouble_ptr       dX, magma_int_t lddx,
-    magma_int_t flag,
-    magmaDouble_ptr d_dinvA, magma_int_t dinvA_length )
-{
-    magmablas_dtrsm_work_q( side, uplo, transA, diag, m, n, alpha,
-                            dA, ldda, dB, lddb, dX, lddx, flag,
-                            d_dinvA, dinvA_length, magmablasGetQueue() );
-}
-
-
-/**
-    @see magmablas_dtrsm_q
-    @ingroup magma_dblas3
-    ********************************************************************/
-extern "C"
-void magmablas_dtrsm(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t m, magma_int_t n,
-    double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr       dB, magma_int_t lddb )
-{
-    magmablas_dtrsm_q( side, uplo, transA, diag, m, n, alpha, dA, ldda, dB, lddb,
-                       magmablasGetQueue() );
 }

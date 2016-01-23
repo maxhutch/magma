@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -21,7 +21,7 @@
        
        The batched version uses gemm_kernel_batched.cuh instead of gemm_kernel.cuh.
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 
 #define PRECISION_z
@@ -203,7 +203,7 @@ magmablas_zgemm_q(
     {
         magma_zgemm( transA, transB, m, n, k, alpha,
                      dA, ldda, dB, lddb,
-                     beta, dC, lddc );
+                     beta, dC, lddc, queue );
         return;
     }
 
@@ -306,24 +306,4 @@ magmablas_zgemm_q(
         cudaUnbindTexture( tex_ref_A );
         cudaUnbindTexture( tex_ref_B );
     #endif
-}
-
-
-/**
-    @see magmablas_zgemm_q
-    @ingroup magma_zblas3
-    ********************************************************************/
-extern "C" void
-magmablas_zgemm(
-    magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
-{
-    magmablas_zgemm_q( transA, transB, m, n, k,
-                       alpha, dA, ldda,
-                              dB, lddb,
-                       beta,  dC, lddc, magmablasGetQueue() );
 }

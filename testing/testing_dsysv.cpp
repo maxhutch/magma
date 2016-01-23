@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zhesv.cpp normal z -> d, Wed Jan  6 17:59:48 2016
+       @generated from testing/testing_zhesv.cpp normal z -> d, Fri Jan 22 21:42:39 2016
        @author Ichitaro Yamazaki
 */
 // includes, system
@@ -89,7 +89,7 @@ int main( int argc, char** argv)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
-    printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
+    printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
     printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -117,16 +117,17 @@ int main( int argc, char** argv)
 
                 init_matrix( N, N, h_A, lda );
                 lapackf77_dlarnv( &ione, ISEED, &sizeB, h_B );
-                lapackf77_dlacpy( MagmaUpperLowerStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
+                lapackf77_dlacpy( MagmaFullStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
 
                 cpu_time = magma_wtime();
                 lapackf77_dsysv(lapack_uplo_const(opts.uplo), &N, &opts.nrhs,
                                 h_A, &lda, ipiv, h_X, &ldb, work, &lwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dsysv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 error_lapack = get_residual( opts.uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, h_B, ldb );
 
                 TESTING_FREE_CPU( work );
@@ -137,16 +138,17 @@ int main( int argc, char** argv)
                =================================================================== */
             init_matrix( N, N, h_A, lda );
             lapackf77_dlarnv( &ione, ISEED, &sizeB, h_B );
-            lapackf77_dlacpy( MagmaUpperLowerStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
+            lapackf77_dlacpy( MagmaFullStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
 
             magma_setdevice(0);
             gpu_time = magma_wtime();
             magma_dsysv( opts.uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, &info);
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dsysv returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Check the factorization

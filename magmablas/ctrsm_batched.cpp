@@ -1,19 +1,20 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrsm_batched.cpp normal z -> c, Wed Jan  6 17:59:41 2016
+       @generated from magmablas/ztrsm_batched.cpp normal z -> c, Fri Jan 22 21:42:10 2016
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
        @author Azzam Haidar
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
+
 /**
     Purpose
     -------

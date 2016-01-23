@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 /**
@@ -48,7 +48,7 @@
             Details).
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array, dimension (N)
+    dwork   (workspace) DOUBLE PRECISION array, dimension (N)
 
     @param[out]
     info    INTEGER
@@ -77,6 +77,7 @@ magma_zgeqr2_gpu(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr dtau,
     magmaDouble_ptr        dwork,
+    magma_queue_t queue,
     magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*(ldda))
@@ -109,15 +110,15 @@ magma_zgeqr2_gpu(
     else {
         for (i = 0; i < k; ++i) {
             /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
-            magma_zlarfg_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dwork, &Aks[i]);
+            magma_zlarfg_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dwork, &Aks[i], queue );
 
             if (n-i-1 > 0) {
                 /* Apply H(i)' to A(i:m,i+1:n) from the left */
-                magma_zlarf_gpu(m-i, n-i-1, dA(i, i), dtau+i, dA(i, i+1), ldda);
+                magma_zlarf_gpu( m-i, n-i-1, dA(i, i), dtau+i, dA(i, i+1), ldda, queue );
             }
         }
 
-        magma_zcopymatrix( 1, k, Aks, 1, dA(0, 0), ldda+1 );
+        magma_zcopymatrix( 1, k, Aks, 1, dA(0, 0), ldda+1, queue );
     }
     
     magma_free(Aks);

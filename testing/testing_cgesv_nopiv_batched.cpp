@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> c, Wed Jan  6 17:59:51 2016
+       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> c, Fri Jan 22 21:42:50 2016
        @author Mark Gates
 */
 // includes, system
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     magma_int_t columns;
     nrhs = opts.nrhs;
     
-    printf("%% Batchcount   N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%% Batchcount   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("%%==========================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -70,13 +70,13 @@ int main(int argc, char **argv)
             TESTING_MALLOC_CPU( ipiv, magma_int_t, N );
             TESTING_MALLOC_CPU( cpu_info, magma_int_t, batchCount);
             
-            TESTING_MALLOC_DEV(  dinfo_magma,  magma_int_t, batchCount);
+            TESTING_MALLOC_DEV( dinfo_magma, magma_int_t, batchCount );
             
             TESTING_MALLOC_DEV( d_A, magmaFloatComplex, ldda*N*batchCount    );
             TESTING_MALLOC_DEV( d_B, magmaFloatComplex, lddb*nrhs*batchCount );
             
-            magma_malloc((void**)&d_A_array, batchCount * sizeof(*d_A_array));
-            magma_malloc((void**)&d_B_array, batchCount * sizeof(*d_B_array));
+            TESTING_MALLOC_DEV( d_A_array, magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( d_B_array, magmaFloatComplex*, batchCount );
 
             /* Initialize the matrices */
             sizeA = n2;
@@ -113,8 +113,10 @@ int main(int argc, char **argv)
                     printf("magma_cgesv_nopiv_batched matrix %d returned internal error %d\n",i, (int)cpu_info[i] );
                 }
             }
-            if (info != 0)
-                printf("magma_cgesv_nopiv_batched returned argument error %d: %s.\n", (int) info, magma_strerror( info ));
+            if (info != 0) {
+                printf("magma_cgesv_nopiv_batched returned argument error %d: %s.\n",
+                       (int) info, magma_strerror( info ));
+            }
             
             //=====================================================================
             // Residual
@@ -150,9 +152,10 @@ int main(int argc, char **argv)
                 lapackf77_cgesv( &N, &nrhs, h_A, &lda, ipiv, h_B, &ldb, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_cgesv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 printf( "%10d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int)batchCount, (int) N, (int) nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,
@@ -171,8 +174,13 @@ int main(int argc, char **argv)
             TESTING_FREE_CPU( ipiv );
             TESTING_FREE_CPU( cpu_info );
             
+            TESTING_FREE_DEV( dinfo_magma );
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_B );
+            
+            TESTING_FREE_DEV( d_A_array );
+            TESTING_FREE_DEV( d_B_array );
+            
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {

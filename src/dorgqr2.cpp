@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zungqr2.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zungqr2.cpp normal z -> d, Fri Jan 22 21:41:38 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    DORGQR generates an M-by-N DOUBLE_PRECISION matrix Q with orthonormal columns,
+    DORGQR generates an M-by-N DOUBLE PRECISION matrix Q with orthonormal columns,
     which is defined as the first N columns of a product of K elementary
     reflectors of order M
 
@@ -41,7 +41,7 @@
             matrix Q. N >= K >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array A, dimension (LDDA,N).
+    A       DOUBLE PRECISION array A, dimension (LDDA,N).
             On entry, the i-th column must contain the vector
             which defines the elementary reflector H(i), for
             i = 1,2,...,k, as returned by DGEQRF_GPU in the
@@ -53,7 +53,7 @@
             The first dimension of the array A. LDA >= max(1,M).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (K)
+    tau     DOUBLE PRECISION array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGEQRF_GPU.
 

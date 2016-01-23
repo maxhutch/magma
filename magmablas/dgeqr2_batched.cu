@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgeqr2_batched.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zgeqr2_batched.cu normal z -> d, Fri Jan 22 21:42:10 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 #include "batched_kernel_param.h"
 
@@ -46,7 +46,7 @@ void dlarfx_device( int m, int n,  double *v, double *tau,
             else
                 lsum = MAGMA_D_ZERO;
             for (int j = tx+1; j < m; j += BLOCK_SIZE) {
-                lsum += MAGMA_D_MUL( MAGMA_D_CNJG( v[j] ), dc[j+ldc*k] );
+                lsum += MAGMA_D_MUL( MAGMA_D_CONJ( v[j] ), dc[j+ldc*k] );
             }
 
             sum[tx] = lsum;
@@ -55,7 +55,7 @@ void dlarfx_device( int m, int n,  double *v, double *tau,
         magma_sum_reduce< BLOCK_SIZE >( tx, sum );
         __syncthreads();
 
-        double z__1 = - MAGMA_D_CNJG(*tau) * sum[0];
+        double z__1 = - MAGMA_D_CONJ(*tau) * sum[0];
         /*  C := C - v * w  */
         if (tx < BLOCK_SIZE)
         {
@@ -255,7 +255,7 @@ void dgeqr2_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
 
     @param[in,out]
     dA_array Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+             Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
              On entry, the M-by-N matrix A.
              On exit, the elements on and above the diagonal of the array
              contain the min(M,N)-by-N upper trapezoidal matrix R (R is
@@ -272,7 +272,7 @@ void dgeqr2_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
 
     @param[out]
     dtau_array Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array, dimension (min(M,N))
+             Each is a DOUBLE PRECISION array, dimension (min(M,N))
              The scalar factors of the elementary reflectors (see Further
              Details).
 

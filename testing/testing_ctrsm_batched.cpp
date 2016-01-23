@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_ztrsm_batched.cpp normal z -> c, Wed Jan  6 17:59:51 2016
+       @generated from testing/testing_ztrsm_batched.cpp normal z -> c, Fri Jan 22 21:42:49 2016
        @author Chongxiao Cao
        @author Tingxing Dong
        @author Azzam Haidar
@@ -117,23 +117,23 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A,       magmaFloatComplex, ldda*Ak*batchCount );
             TESTING_MALLOC_DEV( d_B,       magmaFloatComplex, lddb*N*batchCount  );
             
-            magma_malloc((void**)&d_A_array, batchCount * sizeof(*d_A_array));
-            magma_malloc((void**)&d_B_array, batchCount * sizeof(*d_B_array));
+            TESTING_MALLOC_DEV( d_A_array, magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( d_B_array, magmaFloatComplex*, batchCount );
 
-            magma_malloc((void**)&dW1_displ,  batchCount * sizeof(*dW1_displ));
-            magma_malloc((void**)&dW2_displ,  batchCount * sizeof(*dW2_displ));
-            magma_malloc((void**)&dW3_displ,  batchCount * sizeof(*dW3_displ));
-            magma_malloc((void**)&dW4_displ,  batchCount * sizeof(*dW4_displ));
-            magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
-            magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
+            TESTING_MALLOC_DEV( dW1_displ,   magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( dW2_displ,   magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( dW3_displ,   magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( dW4_displ,   magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( dinvA_array, magmaFloatComplex*, batchCount );
+            TESTING_MALLOC_DEV( dwork_array, magmaFloatComplex*, batchCount );
 
             magmaFloatComplex* dinvA=NULL;
             magmaFloatComplex* dwork=NULL; // invA and work are workspace in ctrsm
  
             magma_int_t dinvA_batchSize = magma_roundup( Ak, TRI_NB )*TRI_NB;
             magma_int_t dwork_batchSize = lddb*N;
-            magma_cmalloc( &dinvA, dinvA_batchSize * batchCount);
-            magma_cmalloc( &dwork, dwork_batchSize * batchCount );
+            TESTING_MALLOC_DEV( dinvA, magmaFloatComplex, dinvA_batchSize * batchCount );
+            TESTING_MALLOC_DEV( dwork, magmaFloatComplex, dwork_batchSize * batchCount );
     
             magma_cset_pointer( dwork_array, dwork, lddb, 0, 0, dwork_batchSize, batchCount, opts.queue );
             magma_cset_pointer( dinvA_array, dinvA, magma_roundup( Ak, TRI_NB ), 0, 0, dinvA_batchSize, batchCount, opts.queue );
@@ -357,18 +357,18 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_B );
-            magma_free(d_A_array);
-            magma_free(d_B_array);
+            TESTING_FREE_DEV( d_A_array );
+            TESTING_FREE_DEV( d_B_array );
 
-            magma_free(dW1_displ);
-            magma_free(dW2_displ);
-            magma_free(dW3_displ);
-            magma_free(dW4_displ);
+            TESTING_FREE_DEV( dW1_displ );
+            TESTING_FREE_DEV( dW2_displ );
+            TESTING_FREE_DEV( dW3_displ );
+            TESTING_FREE_DEV( dW4_displ );
 
             TESTING_FREE_DEV( dinvA );
             TESTING_FREE_DEV( dwork );
-            magma_free(dwork_array);
-            magma_free(dinvA_array);
+            TESTING_FREE_DEV( dwork_array );
+            TESTING_FREE_DEV( dinvA_array );
             
             fflush( stdout );
         }

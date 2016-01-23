@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from sparse-iter/blas/zgemvmdot.cu normal z -> d, Wed Jan  6 17:59:41 2016
+       @generated from sparse-iter/blas/zgemvmdot.cu normal z -> d, Fri Jan 22 21:42:13 2016
        @author Hartwig Anzt
 
 */
@@ -498,8 +498,8 @@ magma_dmdotc(
     // not necessary to zero GPU mem
     magma_dgpumemzero<<<Gs, Bs, 0, queue->cuda_stream >>>( d1, n*k,1 );
     magma_dgpumemzero<<<Gs, Bs, 0, queue->cuda_stream >>>( d2, n*k,1 );
-    //magmablas_dlaset( MagmaUpperLower, n, k, d1, n );
-    //magmablas_dlaset( MagmaUpperLower, n, k, d2, n );
+    //magmablas_dlaset( MagmaFull, n, k, d1, n );
+    //magmablas_dlaset( MagmaFull, n, k, d2, n );
     while( Gs.x > 1 ) {
         Gs_next.x = magma_ceildiv( Gs.x, Bs.x );
         magma_dblockreduce_kernel<<< Gs_next.x, Bs.x, Ms, queue->cuda_stream >>> 

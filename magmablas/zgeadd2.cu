@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions normal z -> s d c
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -133,20 +133,4 @@ magmablas_zgeadd2_q(
     
     zgeadd2_full<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, alpha, dA, ldda, beta, dB, lddb );
-}
-
-
-/**
-    @see magmablas_zgeadd2_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zgeadd2(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr       dB, magma_int_t lddb )
-{
-    magmablas_zgeadd2_q( m, n, alpha, dA, ldda, beta, dB, lddb, magmablasGetQueue() );
 }

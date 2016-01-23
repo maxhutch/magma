@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zlahr2.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zlahr2.cpp normal z -> d, Fri Jan 22 21:41:50 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -42,7 +42,7 @@
             The number of columns to be reduced.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N-K+1)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements in rows K:N of the first NB columns are
             overwritten with the matrix Y.
@@ -52,7 +52,7 @@
             The leading dimension of the array dA.  LDDA >= max(1,N).
 
     @param[out]
-    dV      DOUBLE_PRECISION array on the GPU, dimension (LDDV, NB)
+    dV      DOUBLE PRECISION array on the GPU, dimension (LDDV, NB)
             On exit this n-by-nb array contains the Householder vectors of the transformation.
 
     @param[in]
@@ -60,7 +60,7 @@
             The leading dimension of the array dV.  LDDV >= max(1,N).
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N-K+1)
+    A       DOUBLE PRECISION array, dimension (LDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements on and above the k-th subdiagonal in
             the first NB columns are overwritten with the corresponding
@@ -74,12 +74,12 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (NB)
+    tau     DOUBLE PRECISION array, dimension (NB)
             The scalar factors of the elementary reflectors. See Further
             Details.
 
     @param[out]
-    T       DOUBLE_PRECISION array, dimension (LDT,NB)
+    T       DOUBLE PRECISION array, dimension (LDT,NB)
             The upper triangular matrix T.
 
     @param[in]
@@ -87,7 +87,7 @@
             The leading dimension of the array T.  LDT >= NB.
 
     @param[out]
-    Y       DOUBLE_PRECISION array, dimension (LDY,NB)
+    Y       DOUBLE PRECISION array, dimension (LDY,NB)
             The n-by-nb matrix Y.
 
     @param[in]

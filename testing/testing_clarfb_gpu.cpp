@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlarfb_gpu.cpp normal z -> c, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zlarfb_gpu.cpp normal z -> c, Fri Jan 22 21:42:43 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -38,7 +38,7 @@ int main( int argc, char** argv )
     // local variables
     magma_int_t M, N, K, size, ldc, ldv, ldt, ldw, ldw2, nv;
     magma_int_t ISEED[4] = {0,0,0,1};
-    float error, work[1];
+    float Cnorm, error, work[1];
     magma_int_t status = 0;
     
     // test all combinations of input parameters
@@ -160,10 +160,11 @@ int main( int argc, char** argv )
             //printf( "dHC=" );  magma_cprint( M, N, R, ldc );
             
             // compute relative error |HC_magma - HC_lapack| / |HC_lapack|
-            error = lapackf77_clange( "Fro", &M, &N, C, &ldc, work );
             size = ldc*N;
             blasf77_caxpy( &size, &c_neg_one, C, &ione, R, &ione );
-            error = lapackf77_clange( "Fro", &M, &N, R, &ldc, work ) / error;
+            Cnorm = lapackf77_clange( "Fro", &M, &N, C, &ldc, work );
+            error = lapackf77_clange( "Fro", &M, &N, R, &ldc, work ) / Cnorm;
+            
             printf( "%5d %5d %5d      %c       %c       %c       %c      %8.2e   %s\n",
                     (int) M, (int) N, (int) K,
                     lapacke_storev_const(storev[istor]), lapacke_side_const(side[iside]),

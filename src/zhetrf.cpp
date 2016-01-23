@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -123,9 +123,8 @@ magma_zhetrf(
 
     /* .. Local Scalars .. */
     magma_int_t nb = magma_get_zhetrf_nb(n);
-    magma_int_t iinfo = 0, nk, kb;
+    magma_int_t iinfo = 0, nk, kb, j, k;
 
-    /* .. Executable Statements .. */
     /* Test the input parameters. */
     *info = 0;
     bool upper = (uplo == MagmaUpper);
@@ -164,12 +163,12 @@ magma_zhetrf(
     trace_gpu_start( 0, 0, "set", "setA" );
     //magma_zsetmatrix_async( n, n, A(0,0), lda, dA(0,0), ldda, queues[0] );
     if ( upper ) {
-        for (int k = 0; k < n; k += nb ) {
+        for (k = 0; k < n; k += nb ) {
             kb = min(nb, n-k);
             magma_zsetmatrix_async( k+kb, kb, A(0,k), lda, dA(0,k), ldda, queues[0] );
         }
     } else {
-        for (int k = 0; k < n; k += nb ) {
+        for (k = 0; k < n; k += nb ) {
             kb = min(nb, n-k);
             magma_zsetmatrix_async( n-k, kb, A(k,k), lda, dA(k,k), ldda, queues[0] );
         }
@@ -184,7 +183,7 @@ magma_zhetrf(
            KB is either NB or NB-1, or K for the last block */
 
         kb = min(n,nb);
-        for (int k = n-1; k >= 0; k -= kb ) {
+        for (k = n-1; k >= 0; k -= kb ) {
             nk = k+1;
             kb = min(nb, nk);
 
@@ -214,7 +213,7 @@ magma_zhetrf(
            KB, where KB is the number of columns factorized by ZLAHEF;
            KB is either NB or NB-1, or N-K+1 for the last block */
 
-        for (int k = 0; k < n; k += kb ) {
+        for (k = 0; k < n; k += kb ) {
             nk = n-k;
             kb = min(nb, n - k);
             if ( k < n-nb ) {
@@ -232,7 +231,7 @@ magma_zhetrf(
             /* Set INFO on the first occurrence of a zero pivot */
             if ( *info == 0 && iinfo > 0 ) *info = iinfo + k;
             /* Adjust IPIV */
-            for (int j = k; j < k + kb; j ++) {
+            for (j = k; j < k + kb; j ++) {
                 if ( ipiv[j] > 0 ) {
                     ipiv[j] = ipiv[j] + k;
                 } else {

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgerbt_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zgerbt_batched.cpp normal z -> d, Fri Jan 22 21:41:55 2016
        @author Adrien REMY
 */
 #include "magma_internal.h"
@@ -64,7 +64,7 @@ init_butterfly(
 
     @param[in,out]
     dA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N).
             On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -76,7 +76,7 @@ init_butterfly(
 
     @param[in,out]
     dB_array   Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDB,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDB,N).
             On entry, each pointer is an right hand side matrix B.
             On exit, each pointer is the solution matrix X.
 
@@ -86,13 +86,13 @@ init_butterfly(
             The leading dimension of the array B.  LDB >= max(1,N).
 
     @param[in,out]
-    U       DOUBLE_PRECISION array, dimension (2,n)
+    U       DOUBLE PRECISION array, dimension (2,n)
             Random butterfly matrix, if gen = MagmaTrue U is generated and returned as output;
             else we use U given as input.
             CPU memory
 
     @param[in,out]
-    V       DOUBLE_PRECISION array, dimension (2,n)
+    V       DOUBLE PRECISION array, dimension (2,n)
             Random butterfly matrix, if gen = MagmaTrue V is generated and returned as output;
             else we use U given as input.
             CPU memory
@@ -121,6 +121,9 @@ magma_dgerbt_batched(
     double *U, double *V,
     magma_int_t *info, magma_int_t batchCount, magma_queue_t queue)
 {
+    double *du, *dv;
+    magma_int_t i;
+    
     /* Function Body */
     *info = 0;
     if ( ! (gen == MagmaTrue) &&
@@ -146,8 +149,6 @@ magma_dgerbt_batched(
     if (nrhs == 0 || n == 0)
         return *info;
 
-    double *du, *dv;
-
     /* Allocate memory for the buterfly matrices */
     if (MAGMA_SUCCESS != magma_dmalloc( &du, 2*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -172,7 +173,7 @@ magma_dgerbt_batched(
     /* Compute U^T.b on the GPU*/
 
     // TODO fix for multiple RHS
-    for (int i= 0; i < nrhs; i++)
+    for (i= 0; i < nrhs; i++)
         magmablas_dprbt_mtv_batched(n, du, dB_array, batchCount, queue);
 
     magma_free( du );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqlf.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqlf.cpp normal z -> d, Fri Jan 22 21:41:37 2016
 
 */
 #include "magma_internal.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    DGEQLF computes a QL factorization of a DOUBLE_PRECISION M-by-N matrix A:
+    DGEQLF computes a QL factorization of a DOUBLE PRECISION M-by-N matrix A:
     A = Q * L.
 
     Arguments
@@ -27,7 +27,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, if m >= n, the lower triangle of the subarray
             A(m-n+1:m,1:n) contains the N-by-N lower triangular matrix L;
@@ -45,12 +45,12 @@
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (min(M,N))
+    tau     DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
@@ -131,7 +131,7 @@ magma_dgeqlf(
             work[0] = c_one;
         }
         else {
-            work[0] = MAGMA_D_MAKE( max(n*nb, 2*nb*nb), 0 );
+            work[0] = magma_dmake_lwork( max(n*nb, 2*nb*nb) );
         }
 
         if (lwork < max(max(1,n), 2*nb*nb) && ! lquery)

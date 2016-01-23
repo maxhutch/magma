@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/ztrsv_batched.cu normal z -> c, Wed Jan  6 17:59:41 2016
+       @generated from magmablas/ztrsv_batched.cu normal z -> c, Fri Jan 22 21:42:11 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 #include "batched_kernel_param.h"
 

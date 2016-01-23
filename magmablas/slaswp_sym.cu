@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlaswp_sym.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlaswp_sym.cu normal z -> s, Fri Jan 22 21:42:02 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
        @author Ichitaro Yamazaki
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 // MAX_PIVOTS is maximum number of pivots to apply in each kernel launch
 // NTHREADS is number of threads in a block
@@ -167,17 +167,4 @@ magmablas_slaswp_sym_q(
         }
         slaswp_sym( params, queue );
     }
-}
-
-
-/**
-    @see magmablas_slaswpx_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_slaswp_sym( magma_int_t n, float *dA, magma_int_t lda,
-                      magma_int_t k1, magma_int_t k2,
-                      const magma_int_t *ipiv, magma_int_t inci )
-{
-    return magmablas_slaswp_sym_q( n, dA, lda, k1, k2, ipiv, inci, magmablasGetQueue() );
 }

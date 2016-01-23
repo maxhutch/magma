@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -114,9 +114,9 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*Bn*batchCount );
             TESTING_MALLOC_DEV( d_C, magmaDoubleComplex, lddc*N*batchCount  );
 
-            magma_malloc((void**)&A_array, batchCount * sizeof(*A_array));
-            magma_malloc((void**)&B_array, batchCount * sizeof(*B_array));
-            magma_malloc((void**)&C_array, batchCount * sizeof(*C_array));
+            TESTING_MALLOC_DEV( A_array, magmaDoubleComplex*, batchCount );
+            TESTING_MALLOC_DEV( B_array, magmaDoubleComplex*, batchCount );
+            TESTING_MALLOC_DEV( C_array, magmaDoubleComplex*, batchCount );
 
             /* Initialize the matrices */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, h_A );

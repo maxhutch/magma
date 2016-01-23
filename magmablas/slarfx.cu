@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlarfx.cu normal z -> s, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlarfx.cu normal z -> s, Fri Jan 22 21:42:01 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_s.h"
 #include "magma_templates.h"
 
@@ -44,14 +44,14 @@ void magma_slarfx_kernel( int m, float *v, float *tau,
                 v[j] = MAGMA_S_ONE;
             }
             else
-                lsum += MAGMA_S_MUL( MAGMA_S_CNJG( v[j] ), dc[j] );
+                lsum += MAGMA_S_MUL( MAGMA_S_CONJ( v[j] ), dc[j] );
         }
         sum[tx] = lsum;
         magma_sum_reduce< BLOCK_SIZE >( tx, sum );
 
         /*  C := C - v * w  */
         __syncthreads();
-        float z__1 = - MAGMA_S_CNJG(*tau) * sum[0];
+        float z__1 = - MAGMA_S_CONJ(*tau) * sum[0];
         if (blockIdx.x > it) {
             for (int j = m-tx-1; j >= 0; j -= BLOCK_SIZE)
                  dc[j] += z__1 * v[j];
@@ -71,7 +71,7 @@ void magma_slarfx_kernel( int m, float *v, float *tau,
             if (blockIdx.x == it)
                 *(T+it) = *tau;
             else
-                *(T+blockIdx.x) = MAGMA_S_CNJG(z__1);
+                *(T+blockIdx.x) = MAGMA_S_CONJ(z__1);
         }
     }
     else if (blockIdx.x <= it)// in case tau is zero put the corresponding column of T to zero
@@ -133,7 +133,7 @@ void magma_strmv_tkernel(float *T, int ldt, float *t, float *y)
     
     __shared__ float sum[ 128 ];
     
-    sum[tx] = MAGMA_S_CNJG(T[tx])*t[tx];
+    sum[tx] = MAGMA_S_CONJ(T[tx])*t[tx];
     magma_sum_reduce_n(blockDim.x, tx, sum);
     
     __syncthreads();
@@ -191,19 +191,4 @@ magma_slarfx_gpu_q(
             ( dT, N, work, dT+iter*N, tau );
     }
 }
-
-void
-magma_slarfx_gpu(
-    magma_int_t m, magma_int_t n,
-    magmaFloat_ptr v,
-    magmaFloat_ptr tau,
-    magmaFloat_ptr C, magma_int_t ldc,
-    magmaFloat_ptr        xnorm,
-    magmaFloat_ptr dT, magma_int_t iter,
-    magmaFloat_ptr work )
-{
-    magma_slarfx_gpu_q(m, n, v, tau, C, ldc, xnorm, dT, iter, work,
-                       magmablasGetQueue());
-}
-
 //==============================================================================

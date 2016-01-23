@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zpotrf_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
+   @generated from testing/testing_zpotrf_batched.cpp normal z -> s, Fri Jan 22 21:42:51 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -57,9 +57,9 @@ int main( int argc, char** argv)
     batchCount = opts.batchcount;
     float tol = opts.tolerance * lapackf77_slamch("E");
 
-    magma_queue_t queue = opts.queue; //NULL; // The batched routine prefer stream NULL
+    magma_queue_t queue = opts.queue;
 
-    printf("%% BatchCount   N    CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
+    printf("%% BatchCount   N    CPU Gflop/s (ms)    GPU Gflop/s (ms)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
     printf("%%===================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -76,7 +76,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV(  d_A, float, ldda * N * batchCount);
             TESTING_MALLOC_DEV(  dinfo_magma,  magma_int_t, batchCount);
             
-            magma_malloc((void**)&d_A_array, batchCount * sizeof(*d_A_array));
+            TESTING_MALLOC_DEV( d_A_array, float*, batchCount );
 
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -86,7 +86,7 @@ int main( int argc, char** argv)
             }
             
             magma_int_t columns = N * batchCount;
-            lapackf77_slacpy( MagmaUpperLowerStr, &N, &(columns), h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &N, &(columns), h_A, &lda, h_R, &lda );
 
             magma_ssetmatrix( N, columns, h_A, lda, d_A, ldda );
 
@@ -132,9 +132,10 @@ int main( int argc, char** argv)
                 {
                     magma_int_t locinfo;
                     lapackf77_spotrf( lapack_uplo_const(opts.uplo), &N, h_A + s * lda * N, &lda, &locinfo );
-                    if (locinfo != 0)
+                    if (locinfo != 0) {
                         printf("lapackf77_spotrf matrix %d returned error %d: %s.\n",
                                (int) s, (int) locinfo, magma_strerror( locinfo ));
+                    }
                 }
 
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
@@ -149,7 +150,7 @@ int main( int argc, char** argv)
                    =================================================================== */
                 #ifdef MAGMA_WITH_MKL
                 // work around MKL bug in multi-threaded slansy
-                int la_threads = magma_get_lapack_numthreads();
+                magma_int_t la_threads = magma_get_lapack_numthreads();
                 magma_set_lapack_numthreads( 1 );
                 #endif
                 

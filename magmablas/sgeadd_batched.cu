@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgeadd_batched.cu normal z -> s, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgeadd_batched.cu normal z -> s, Fri Jan 22 21:42:08 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -101,7 +101,7 @@ sgeadd_batched_kernel(
     @ingroup magma_saux2
     ********************************************************************/
 extern "C" void
-magmablas_sgeadd_batched_q(
+magmablas_sgeadd_batched(
     magma_int_t m, magma_int_t n,
     float alpha,
     magmaFloat_const_ptr  const dAarray[], magma_int_t ldda,
@@ -134,21 +134,4 @@ magmablas_sgeadd_batched_q(
     
     sgeadd_batched_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
-}
-
-
-/**
-    @see magmablas_sgeadd_batched_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_sgeadd_batched(
-    magma_int_t m, magma_int_t n,
-    float alpha,
-    magmaFloat_const_ptr  const dAarray[], magma_int_t ldda,
-    magmaFloat_ptr              dBarray[], magma_int_t lddb,
-    magma_int_t batchCount )
-{
-    magmablas_sgeadd_batched_q(
-        m, n, alpha, dAarray, ldda, dBarray, lddb, batchCount, magmablasGetQueue() );
 }

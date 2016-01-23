@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,10 +9,10 @@
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zhetrd_hb2st.cpp normal z -> d, Wed Jan  6 17:59:34 2016
+       @generated from src/zhetrd_hb2st.cpp normal z -> d, Fri Jan 22 21:41:46 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_dbulge.h"
 
@@ -128,7 +128,7 @@ void magma_dbulge_id_data_init(magma_dbulge_id_data *id_data, magma_int_t id, ma
             The size of the block of householder vectors applied at once.
 
     @param[in]
-    A       (workspace) DOUBLE_PRECISION array, dimension (lda, n)
+    A       (workspace) DOUBLE PRECISION array, dimension (lda, n)
             On entry the band matrix stored in the following way:
 
     @param[in]
@@ -146,7 +146,7 @@ void magma_dbulge_id_data_init(magma_dbulge_id_data *id_data, magma_int_t id, ma
             E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
 
     @param[out]
-    V       DOUBLE_PRECISION array, dimension (BLKCNT, LDV, VBLKSIZ)
+    V       DOUBLE PRECISION array, dimension (BLKCNT, LDV, VBLKSIZ)
             On exit it contains the blocks of householder reflectors
             BLKCNT is the number of block and it is returned by the funtion MAGMA_BULGE_GET_BLKCNT.
 
@@ -156,7 +156,7 @@ void magma_dbulge_id_data_init(magma_dbulge_id_data *id_data, magma_int_t id, ma
             LDV > nb + VBLKSIZ + 1
 
     @param[out]
-    TAU     DOUBLE_PRECISION dimension(BLKCNT, VBLKSIZ)
+    TAU     DOUBLE PRECISION dimension(BLKCNT, VBLKSIZ)
             ???
 
     @param[in]
@@ -165,7 +165,7 @@ void magma_dbulge_id_data_init(magma_dbulge_id_data *id_data, magma_int_t id, ma
             if COMPT = 1 T is computed
 
     @param[out]
-    T       DOUBLE_PRECISION dimension(LDT *)
+    T       DOUBLE PRECISION dimension(LDT *)
             if COMPT = 1 on exit contains the matrices T needed for Q2
             if COMPT = 0 T is not referenced
 

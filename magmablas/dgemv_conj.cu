@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,12 +7,10 @@
        
        @author Stan Tomov
 
-       @generated from magmablas/zgemv_conj.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zgemv_conj.cu normal z -> d, Fri Jan 22 21:41:58 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_d.h"
-
-#define PRECISION_d
 
 #define num_threads 256
 
@@ -33,7 +31,7 @@ dgemv_conj_kernel(
         
         #pragma unroll
         for( int i=0; i < n; i ++ ) {
-            res += A[0] * MAGMA_D_CNJG(x[0]);
+            res += A[0] * MAGMA_D_CONJ(x[0]);
             A += lda;
             x += incx;
         }
@@ -64,18 +62,18 @@ dgemv_conj_kernel(
             On entry, n specifies the number of columns of the matrix A
 
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension ( LDDA, n ) on the GPU.
+    dA      DOUBLE PRECISION array of dimension ( LDDA, n ) on the GPU.
 
     @param[in]
     ldda    INTEGER
             LDDA specifies the leading dimension of A.
 
     @param[in]
-    dx      DOUBLE_PRECISION array of dimension n
+    dx      DOUBLE PRECISION array of dimension n
 
     @param[in]
     incx    Specifies the increment for the elements of X.
@@ -127,21 +125,4 @@ magmablas_dgemv_conj_q(
 
     dgemv_conj_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
             (m, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
-}
-
-
-/**
-    @see magmablas_dgemv_conj_q
-    @ingroup magma_dblas2
-    ********************************************************************/
-extern "C" void
-magmablas_dgemv_conj(
-    magma_int_t m, magma_int_t n, double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_const_ptr dx, magma_int_t incx,
-    double beta,
-    magmaDouble_ptr dy, magma_int_t incy)
-{
-    magmablas_dgemv_conj_q(
-        m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magmablasGetQueue() );
 }

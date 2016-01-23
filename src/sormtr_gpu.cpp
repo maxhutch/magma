@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from src/zunmtr_gpu.cpp normal z -> s, Wed Jan  6 17:59:32 2016
+       @generated from src/zunmtr_gpu.cpp normal z -> s, Fri Jan 22 21:41:42 2016
 
 */
 #include "magma_internal.h"
@@ -22,7 +22,7 @@
     TRANS = MagmaNoTrans:       Q * C               C * Q
     TRANS = MagmaTrans:    Q**H * C            C * Q**H
 
-    where Q is a real unitary matrix of order nq,
+    where Q is a real orthogonal matrix of order nq,
     with nq = m if SIDE = MagmaLeft
     and  nq = n if SIDE = MagmaRight. Q is defined as the product of
     nq-1 elementary reflectors, as returned by SSYTRD:
@@ -125,12 +125,11 @@ magma_sormtr_gpu(
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     magma_int_t i1, i2, mi, ni, nq;
-    int left, upper;
     magma_int_t iinfo;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    upper  = (uplo == MagmaUpper);
+    bool left   = (side == MagmaLeft);
+    bool upper  = (uplo == MagmaUpper);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {

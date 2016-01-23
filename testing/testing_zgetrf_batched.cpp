@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -85,7 +85,7 @@ int main( int argc, char** argv)
     magma_int_t     **dipiv_array = NULL;
     magma_int_t     *ipiv, *cpu_info;
     magma_int_t     *dipiv_magma, *dinfo_magma;
-    int             *dipiv_cublas, *dinfo_cublas;
+    int             *dipiv_cublas, *dinfo_cublas;  // not magma_int_t
     
     magma_int_t M, N, n2, lda, ldda, min_mn, info;
     magma_int_t ione     = 1;
@@ -101,7 +101,7 @@ int main( int argc, char** argv)
     batchCount = opts.batchcount;
     magma_int_t columns;
     
-    printf("%% BatchCount   M     N    CPU GFlop/s (ms)   MAGMA GFlop/s (ms)   CUBLAS GFlop/s (ms)   ||PA-LU||/(||A||*N)\n");
+    printf("%% BatchCount   M     N    CPU Gflop/s (ms)   MAGMA Gflop/s (ms)   CUBLAS Gflop/s (ms)   ||PA-LU||/(||A||*N)\n");
     printf("%%==========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -122,16 +122,16 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV(  dA,  magmaDoubleComplex, ldda*N * batchCount);
             TESTING_MALLOC_DEV(  dipiv_magma,  magma_int_t, min_mn * batchCount);
             TESTING_MALLOC_DEV(  dinfo_magma,  magma_int_t, batchCount);
-            TESTING_MALLOC_DEV(  dipiv_cublas,  magma_int_t, min_mn * batchCount);
-            TESTING_MALLOC_DEV(  dinfo_cublas,  magma_int_t, batchCount);
+            TESTING_MALLOC_DEV(  dipiv_cublas, magma_int_t, min_mn * batchCount);
+            TESTING_MALLOC_DEV(  dinfo_cublas, magma_int_t, batchCount);
 
-            magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
-            magma_malloc((void**)&dipiv_array, batchCount * sizeof(*dipiv_array));
+            TESTING_MALLOC_DEV( dA_array,    magmaDoubleComplex*, batchCount );
+            TESTING_MALLOC_DEV( dipiv_array, magma_int_t*,        batchCount );
 
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             columns = N * batchCount;
-            lapackf77_zlacpy( MagmaUpperLowerStr, &M, &columns, h_A, &lda, h_R, &lda );
+            lapackf77_zlacpy( MagmaFullStr, &M, &columns, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -195,8 +195,10 @@ int main( int argc, char** argv)
                 {
                     magma_int_t locinfo;
                     lapackf77_zgetrf(&M, &N, h_A + s * lda * N, &lda, ipiv + s * min_mn, &locinfo);
-                    if (locinfo != 0)
-                        printf("lapackf77_zgetrf matrix %d returned error %d: %s.\n", (int) s, (int) locinfo, magma_strerror( locinfo ));
+                    if (locinfo != 0) {
+                        printf("lapackf77_zgetrf matrix %d returned error %d: %s.\n",
+                               (int) s, (int) info, magma_strerror( info ));
+                    }
                 }
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
                     magma_set_lapack_numthreads(nthreads);

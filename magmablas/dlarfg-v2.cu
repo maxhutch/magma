@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlarfg-v2.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlarfg-v2.cu normal z -> d, Fri Jan 22 21:42:01 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE 512
 
-#define PRECISION_d
+#define REAL
 
 
 __global__
@@ -27,11 +27,12 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
 
     double dxi;
 
-#if (defined(PRECISION_s) || defined(PRECISION_d))
-    if ( n <= 1 ) {
+#ifdef REAL
+    if ( n <= 1 )
 #else
-    if ( n <= 0 ) {
+    if ( n <= 0 )
 #endif
+    {
         *dtau = MAGMA_D_ZERO;
         *dAkk = *dx0;
         return;
@@ -43,7 +44,7 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
     xnorm = *dxnorm;
     double alpha = *dx0;
 
-#if (defined(PRECISION_s) || defined(PRECISION_d))
+#ifdef REAL
     if ( xnorm != 0 ) {
         if (i == 0) {  
             double beta  = sqrt( alpha*alpha + xnorm*xnorm );
@@ -116,16 +117,4 @@ magma_dlarfg_gpu_q(
     magma_dlarfg_gpu_kernel
         <<< blocks, threads, 0, queue->cuda_stream() >>>
         (n, dx0, dx, dtau, dxnorm, dAkk);
-}
-
-extern "C" void
-magma_dlarfg_gpu(
-    magma_int_t n,
-    magmaDouble_ptr dx0,
-    magmaDouble_ptr dx,
-    magmaDouble_ptr dtau,
-    magmaDouble_ptr        dxnorm,
-    magmaDouble_ptr dAkk )
-{
-    magma_dlarfg_gpu_q( n, dx0, dx, dtau, dxnorm, dAkk, magmablasGetQueue() );
 }

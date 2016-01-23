@@ -1511,12 +1511,13 @@ subroutine magmaf_cgesv_nopiv_gpu( n, nrhs, dA, ldda, dB, lddb, info )
     integer          :: info
 end subroutine magmaf_cgesv_nopiv_gpu
 
-subroutine magmaf_cgetf2_gpu( m, n, dA, ldda, ipiv, info )
+subroutine magmaf_cgetf2_gpu( m, n, dA, ldda, ipiv, queue, info )
     integer          :: m
     integer          :: n
     magma_devptr_t   :: dA
     integer          :: ldda
     integer          :: ipiv(*)
+    integer          :: queue
     integer          :: info
 end subroutine magmaf_cgetf2_gpu
 
@@ -1735,13 +1736,14 @@ subroutine magmaf_chetrf_nopiv_gpu( uplo, n, dA, ldda, info )
     integer          :: info
 end subroutine magmaf_chetrf_nopiv_gpu
 
-subroutine magmaf_clarf_gpu( m, n, dv, dtau, dC, lddc )
+subroutine magmaf_clarf_gpu( m, n, dv, dtau, dC, lddc, queue )
     integer          :: m
     integer          :: n
     magma_devptr_t   :: dv
     magma_devptr_t   :: dtau
     magma_devptr_t   :: dC
     integer          :: lddc
+    integer          :: queue
 end subroutine magmaf_clarf_gpu
 
 subroutine magmaf_clarfb2_gpu( m, n, k, dV, lddv, dT, lddt, dC, lddc, dwork, ldwork,  &
@@ -1779,11 +1781,12 @@ subroutine magmaf_cposv_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info )
     integer          :: info
 end subroutine magmaf_cposv_gpu
 
-subroutine magmaf_cpotf2_gpu( uplo, n, dA, ldda, info )
+subroutine magmaf_cpotf2_gpu( uplo, n, dA, ldda, queue, info )
     character        :: uplo
     integer          :: n
     magma_devptr_t   :: dA
     integer          :: ldda
+    integer          :: queue
     integer          :: info
 end subroutine magmaf_cpotf2_gpu
 
@@ -1904,6 +1907,18 @@ subroutine magmaf_cunmtr_gpu( side, uplo, trans, m, n, dA, ldda, tau, dC, lddc, 
     integer          :: ldwa
     integer          :: info
 end subroutine magmaf_cunmtr_gpu
+
+subroutine magmaf_c_isnan( x )
+    complex          :: x
+end subroutine magmaf_c_isnan
+
+subroutine magmaf_c_isinf( x )
+    complex          :: x
+end subroutine magmaf_c_isinf
+
+subroutine magmaf_c_isnan_inf( x )
+    complex          :: x
+end subroutine magmaf_c_isnan_inf
 
 subroutine magmaf_cnan_inf( uplo, m, n, A, lda, cnt_nan, cnt_inf )
     character        :: uplo

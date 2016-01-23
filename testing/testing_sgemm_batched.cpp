@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgemm_batched.cpp normal z -> s, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zgemm_batched.cpp normal z -> s, Fri Jan 22 21:42:49 2016
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
@@ -114,9 +114,9 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_B, float, lddb*Bn*batchCount );
             TESTING_MALLOC_DEV( d_C, float, lddc*N*batchCount  );
 
-            magma_malloc((void**)&A_array, batchCount * sizeof(*A_array));
-            magma_malloc((void**)&B_array, batchCount * sizeof(*B_array));
-            magma_malloc((void**)&C_array, batchCount * sizeof(*C_array));
+            TESTING_MALLOC_DEV( A_array, float*, batchCount );
+            TESTING_MALLOC_DEV( B_array, float*, batchCount );
+            TESTING_MALLOC_DEV( C_array, float*, batchCount );
 
             /* Initialize the matrices */
             lapackf77_slarnv( &ione, ISEED, &sizeA, h_A );

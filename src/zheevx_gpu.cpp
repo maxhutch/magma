@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -268,7 +268,7 @@ magma_zheevx_gpu(
     
     lopt = n * (nb + 1);
     
-    work[0] = MAGMA_Z_MAKE( lopt, 0 );
+    work[0] = magma_zmake_lwork( lopt );
     
     if (lwork < lopt && ! lquery) {
         *info = -21;
@@ -467,7 +467,7 @@ magma_zheevx_gpu(
     }
     
     /* Set WORK[0] to optimal complex workspace size. */
-    work[1] = MAGMA_Z_MAKE( lopt, 0 );
+    work[1] = magma_zmake_lwork( lopt );
     
     magma_queue_destroy( queue );
     

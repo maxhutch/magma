@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @author Azzam Haidar
        @author Tingxing Dong
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 #define BLK_SIZE 256
@@ -133,12 +133,13 @@ magma_zlaswp_rowparallel_batched( magma_int_t n,
 
 //=================================================================================================
 extern "C" void
-magma_zlaswp_rowparallel_q( magma_int_t n, 
-                       magmaDoubleComplex* input, magma_int_t ldi,
-                       magmaDoubleComplex* output, magma_int_t ldo,
-                       magma_int_t k1, magma_int_t k2,
-                       magma_int_t *pivinfo, 
-                       magma_queue_t queue)
+magma_zlaswp_rowparallel(
+    magma_int_t n, 
+    magmaDoubleComplex* input, magma_int_t ldi,
+    magmaDoubleComplex* output, magma_int_t ldo,
+    magma_int_t k1, magma_int_t k2,
+    magma_int_t *pivinfo, 
+    magma_queue_t queue)
 {
     if (n == 0 ) return;
     int height = k2-k1;
@@ -164,18 +165,6 @@ magma_zlaswp_rowparallel_q( magma_int_t n,
             <<< grid, height, shmem, queue->cuda_stream() >>>
             ( n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
     }
-}
-
-
-//=================================================================================================
-
-extern "C" void
-magma_zlaswp_rowparallel( magma_int_t n, magmaDoubleComplex* input, magma_int_t ldi,
-                   magmaDoubleComplex* output, magma_int_t ldo,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t *pivinfo)
-{
-    magma_zlaswp_rowparallel_q( n, input, ldi, output, ldo, k1, k2, pivinfo, magmablasGetQueue() );
 }
 
 //=================================================================================================

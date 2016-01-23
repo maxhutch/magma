@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from control/zpanel_to_q.cpp normal z -> d, Wed Jan  6 17:59:28 2016
+       @generated from control/zpanel_to_q.cpp normal z -> d, Fri Jan 22 21:41:26 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 // -------------------------
 // Put 0s in the upper triangular part of a panel and 1s on the diagonal.

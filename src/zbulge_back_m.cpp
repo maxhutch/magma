@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -12,7 +12,7 @@
        @precisions normal z -> s d c
 
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_zbulge.h"
 
@@ -207,7 +207,7 @@ n_gpu = ne;
          *==========================*/
     } else {
         magma_zbulge_applyQ_v2_m(ngpu, MagmaLeft, ne, n, nb, Vblksiz, Z, ldz, V, ldv, T, ldt, info);
-        magma_device_sync();
+        //magma_device_sync();
     }
 
     timeaplQ2 = magma_wtime()-timeaplQ2;
@@ -258,8 +258,8 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
 #endif
     affinity_set original_set;
     affinity_set new_set(my_core_id);
-    int check  = 0;
-    int check2 = 0;
+    magma_int_t check  = 0;
+    magma_int_t check2 = 0;
     // bind threads
     check = original_set.get_affinity();
     if (check == 0) {
@@ -285,7 +285,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
         #endif
 
         magma_zbulge_applyQ_v2_m(ngpu, MagmaLeft, n_gpu, n, nb, Vblksiz, E, lde, V, ldv, T, ldt, &info);
-        magma_device_sync();
+        //magma_device_sync();
 
         #ifdef ENABLE_TIMER
         timeQgpu = magma_wtime()-timeQgpu;

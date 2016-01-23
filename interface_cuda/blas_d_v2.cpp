@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
  
        @author Mark Gates
-       @generated from interface_cuda/blas_z_v2.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from interface_cuda/blas_z_v2.cpp normal z -> d, Fri Jan 22 21:41:27 2016
 */
 #include "magma_internal.h"
 #include "error.h"
@@ -26,7 +26,7 @@
     n       Number of elements in vector x. n >= 0.
             
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
             
     @param[in]
@@ -52,7 +52,7 @@ magma_idamax_q(
     n       Number of elements in vector x. n >= 0.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
@@ -78,7 +78,7 @@ magma_idamin_q(
     n       Number of elements in vector x. n >= 0.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
@@ -107,14 +107,14 @@ magma_dasum_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -140,14 +140,14 @@ magma_daxpy_q(
     n       Number of elements in vectors x and y. n >= 0.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -172,14 +172,14 @@ magma_dcopy_q(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -207,14 +207,14 @@ double magma_ddot(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -242,7 +242,7 @@ double magma_ddot(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
@@ -268,7 +268,7 @@ magma_dnrm2_q(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
             On output, overwritten with c*x + s*y.
 
@@ -276,7 +276,7 @@ magma_dnrm2_q(
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
             On output, overwritten with -conj(s)*x + c*y.
 
@@ -287,7 +287,7 @@ magma_dnrm2_q(
     c       double. cosine.
 
     @param[in]
-    s       DOUBLE_PRECISION. sine. c and s define a rotation
+    s       DOUBLE PRECISION. sine. c and s define a rotation
             [ c         s ]  where c*c + s*conj(s) = 1.
             [ -conj(s)  c ]
 
@@ -312,7 +312,7 @@ magma_drot_q(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
             On output, overwritten with c*x + s*y.
 
@@ -320,7 +320,7 @@ magma_drot_q(
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
             On output, overwritten with -conj(s)*x + c*y.
 
@@ -392,7 +392,7 @@ magma_drotmg_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
@@ -421,7 +421,7 @@ magma_dscal_q(
     alpha   Scalar \f$ \alpha \f$ (real)
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
@@ -447,14 +447,14 @@ magma_dscal_q(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -495,14 +495,14 @@ magma_dswap_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,m).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,m).
             The m-by-n matrix A, on GPU device.
 
     @param[in]
     ldda    Leading dimension of dA.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             If transA == MagmaNoTrans, the n element vector x of dimension (1 + (n-1)*incx); \n
             otherwise,                 the m element vector x of dimension (1 + (m-1)*incx).
 
@@ -513,7 +513,7 @@ magma_dswap_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             If transA == MagmaNoTrans, the m element vector y of dimension (1 + (m-1)*incy); \n
             otherwise,                 the n element vector y of dimension (1 + (n-1)*incy).
 
@@ -555,21 +555,21 @@ magma_dgemv_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The m element vector x of dimension (1 + (m-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix A of dimension (ldda,n), ldda >= max(1,m).
 
     @param[in]
@@ -608,21 +608,21 @@ magma_dger_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The m element vector x of dimension (1 + (m-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,m).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,m).
             The m-by-n matrix A, on GPU device.
 
     @param[in]
@@ -661,14 +661,14 @@ magma_dger_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,n).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,n).
             The n-by-n matrix A, on GPU device.
 
     @param[in]
     ldda    Leading dimension of dA.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The m element vector x of dimension (1 + (m-1)*incx).
 
     @param[in]
@@ -678,7 +678,7 @@ magma_dger_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -719,14 +719,14 @@ magma_dsymv_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,n).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,n).
             The n-by-n matrix A, on GPU device.
 
     @param[in]
@@ -764,21 +764,21 @@ magma_dsyr_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,n).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,n).
             The n-by-n matrix A, on GPU device.
 
     @param[in]
@@ -824,14 +824,14 @@ magma_dsyr2_q(
     n       Number of rows and columns of A. n >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,n).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,n).
             The n-by-n matrix A, on GPU device.
 
     @param[in]
     ldda    Leading dimension of dA.
 
     @param[in]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
@@ -876,14 +876,14 @@ magma_dtrmv_q(
     n       Number of rows and columns of A. n >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension (ldda,n), ldda >= max(1,n).
+    dA      DOUBLE PRECISION array of dimension (ldda,n), ldda >= max(1,n).
             The n-by-n matrix A, on GPU device.
 
     @param[in]
     ldda    Leading dimension of dA.
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             On entry, the n element RHS vector b of dimension (1 + (n-1)*incx).
             On exit, overwritten with the solution vector x.
 
@@ -935,7 +935,7 @@ magma_dtrsv_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If transA == MagmaNoTrans, the m-by-k matrix A of dimension (ldda,k), ldda >= max(1,m); \n
             otherwise,                 the k-by-m matrix A of dimension (ldda,m), ldda >= max(1,k).
 
@@ -943,7 +943,7 @@ magma_dtrsv_q(
     ldda    Leading dimension of dA.
 
     @param[in]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             If transB == MagmaNoTrans, the k-by-n matrix B of dimension (lddb,n), lddb >= max(1,k); \n
             otherwise,                 the n-by-k matrix B of dimension (lddb,k), lddb >= max(1,n).
 
@@ -954,7 +954,7 @@ magma_dtrsv_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix C of dimension (lddc,n), lddc >= max(1,m).
 
     @param[in]
@@ -1005,7 +1005,7 @@ magma_dgemm_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If side == MagmaLeft, the m-by-m symmetric matrix A of dimension (ldda,m), ldda >= max(1,m); \n
             otherwise,            the n-by-n symmetric matrix A of dimension (ldda,n), ldda >= max(1,n).
 
@@ -1013,7 +1013,7 @@ magma_dgemm_q(
     ldda    Leading dimension of dA.
 
     @param[in]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix B of dimension (lddb,n), lddb >= max(1,m).
 
     @param[in]
@@ -1023,7 +1023,7 @@ magma_dgemm_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix C of dimension (lddc,n), lddc >= max(1,m).
 
     @param[in]
@@ -1074,7 +1074,7 @@ magma_dsymm_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If trans == MagmaNoTrans, the n-by-k matrix A of dimension (ldda,k), ldda >= max(1,n); \n
             otherwise,                the k-by-n matrix A of dimension (ldda,n), ldda >= max(1,k).
 
@@ -1085,7 +1085,7 @@ magma_dsymm_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The n-by-n symmetric matrix C of dimension (lddc,n), lddc >= max(1,n).
 
     @param[in]
@@ -1134,7 +1134,7 @@ magma_dsyrk_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If trans == MagmaNoTrans, the n-by-k matrix A of dimension (ldda,k), ldda >= max(1,n); \n
             otherwise,                the k-by-n matrix A of dimension (ldda,n), ldda >= max(1,k).
 
@@ -1142,7 +1142,7 @@ magma_dsyrk_q(
     ldda    Leading dimension of dA.
 
     @param[in]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             If trans == MagmaNoTrans, the n-by-k matrix B of dimension (lddb,k), lddb >= max(1,n); \n
             otherwise,                the k-by-n matrix B of dimension (lddb,n), lddb >= max(1,k).
 
@@ -1153,7 +1153,7 @@ magma_dsyrk_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The n-by-n symmetric matrix C of dimension (lddc,n), lddc >= max(1,n).
 
     @param[in]
@@ -1205,7 +1205,7 @@ magma_dsyr2k_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If side == MagmaLeft, the m-by-m symmetric matrix A of dimension (ldda,m), ldda >= max(1,m); \n
             otherwise,            the n-by-n symmetric matrix A of dimension (ldda,n), ldda >= max(1,n).
 
@@ -1213,7 +1213,7 @@ magma_dsyr2k_q(
     ldda    Leading dimension of dA.
 
     @param[in]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix B of dimension (lddb,n), lddb >= max(1,m).
 
     @param[in]
@@ -1223,7 +1223,7 @@ magma_dsyr2k_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix C of dimension (lddc,n), lddc >= max(1,m).
 
     @param[in]
@@ -1274,7 +1274,7 @@ magma_dsymm_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If trans == MagmaNoTrans, the n-by-k matrix A of dimension (ldda,k), ldda >= max(1,n); \n
             otherwise,                the k-by-n matrix A of dimension (ldda,n), ldda >= max(1,k).
 
@@ -1285,7 +1285,7 @@ magma_dsymm_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The n-by-n symmetric matrix C of dimension (lddc,n), lddc >= max(1,n).
 
     @param[in]
@@ -1334,7 +1334,7 @@ magma_dsyrk_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If trans == MagmaNoTrans, the n-by-k matrix A of dimension (ldda,k), ldda >= max(1,n); \n
             otherwise,                the k-by-n matrix A of dimension (ldda,n), ldda >= max(1,k).
 
@@ -1342,7 +1342,7 @@ magma_dsyrk_q(
     ldda    Leading dimension of dA.
 
     @param[in]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             If trans == MagmaNoTrans, the n-by-k matrix B of dimension (lddb,k), lddb >= max(1,n); \n
             otherwise,                the k-by-n matrix B of dimension (lddb,n), lddb >= max(1,k).
 
@@ -1353,7 +1353,7 @@ magma_dsyrk_q(
     beta    Scalar \f$ \beta \f$
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on GPU device.
+    dC      DOUBLE PRECISION array on GPU device.
             The n-by-n symmetric matrix C of dimension (lddc,n), lddc >= max(1,n).
 
     @param[in]
@@ -1411,7 +1411,7 @@ magma_dsyr2k_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If side == MagmaLeft, the n-by-n triangular matrix A of dimension (ldda,n), ldda >= max(1,n); \n
             otherwise,            the m-by-m triangular matrix A of dimension (ldda,m), ldda >= max(1,m).
 
@@ -1419,7 +1419,7 @@ magma_dsyr2k_q(
     ldda    Leading dimension of dA.
 
     @param[in]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             The m-by-n matrix B of dimension (lddb,n), lddb >= max(1,m).
 
     @param[in]
@@ -1476,7 +1476,7 @@ magma_dtrmm_q(
     alpha   Scalar \f$ \alpha \f$
 
     @param[in]
-    dA      DOUBLE_PRECISION array on GPU device.
+    dA      DOUBLE PRECISION array on GPU device.
             If side == MagmaLeft, the m-by-m triangular matrix A of dimension (ldda,m), ldda >= max(1,m); \n
             otherwise,            the n-by-n triangular matrix A of dimension (ldda,n), ldda >= max(1,n).
 
@@ -1484,7 +1484,7 @@ magma_dtrmm_q(
     ldda    Leading dimension of dA.
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array on GPU device.
+    dB      DOUBLE PRECISION array on GPU device.
             On entry, m-by-n matrix B of dimension (lddb,n), lddb >= max(1,m).
             On exit, overwritten with the solution matrix X.
 

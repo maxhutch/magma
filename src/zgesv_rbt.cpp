@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -83,7 +83,7 @@ magma_zgesv_rbt(
     magma_int_t nn = magma_roundup( n, 4 );  // n + ((4-(n % 4))%4);
     magmaDoubleComplex *hu=NULL, *hv=NULL;
     magmaDoubleComplex_ptr dA=NULL, dB=NULL, dAo=NULL, dBo=NULL, dwork=NULL, dv=NULL;
-    magma_int_t iter;
+    magma_int_t i, iter;
     magma_queue_t queue=NULL;
     
     /* Function Body */
@@ -172,7 +172,7 @@ magma_zgesv_rbt(
 
     magma_zsetvector( 2*nn, hv, 1, dv, 1, queue );
     
-    for (int i = 0; i < nrhs; i++) {
+    for (i = 0; i < nrhs; i++) {
         magmablas_zprbt_mv( nn, dv, dB+(i*nn), queue );
     }
 

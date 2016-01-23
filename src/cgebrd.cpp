@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgebrd.cpp normal z -> c, Wed Jan  6 17:59:35 2016
+       @generated from src/zgebrd.cpp normal z -> c, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -171,7 +171,7 @@ magma_cgebrd(
     ldda = m;
 
     lwkopt = (m + n) * nb;
-    work[0] = MAGMA_C_MAKE( lwkopt, 0. );
+    work[0] = magma_cmake_lwork( lwkopt );
     lquery = (lwork == -1);
     
     /* Check arguments */
@@ -306,7 +306,7 @@ magma_cgebrd(
     lapackf77_cgebrd( &nrow, &ncol,
                       A(i, i), &lda, d+i, e+i,
                       tauq+i, taup+i, work, &lwork, &iinfo);
-    work[0] = MAGMA_C_MAKE( lwkopt, 0. );
+    work[0] = magma_cmake_lwork( lwkopt );
 
     magma_free_cpu( work2 );
     magma_free( dA );

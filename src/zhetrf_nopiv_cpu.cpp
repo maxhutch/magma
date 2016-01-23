@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -19,11 +19,13 @@
 
 // TODO: change alpha and beta to be double, per BLAS, instead of double-complex
 // trailing submatrix update with inner-blocking
-int zherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-            magmaDoubleComplex alpha, magmaDoubleComplex *A, magma_int_t lda,
-            magmaDoubleComplex beta,  magmaDoubleComplex *C, magma_int_t ldc,
-            magmaDoubleComplex *D, magma_int_t incD)
+magma_int_t zherk_d(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magmaDoubleComplex alpha, magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex beta,  magmaDoubleComplex *C, magma_int_t ldc,
+    magmaDoubleComplex *D, magma_int_t incD)
 {
+    magma_int_t i, j, k;
     magmaDoubleComplex *Aik;
     magmaDoubleComplex *Dkk;
     magmaDoubleComplex *Akj;
@@ -55,13 +57,13 @@ int zherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     }
 
     if ( uplo == MagmaLower ) {
-        for (int j=0; j < m; j++) {
-            for (int i=j; i < m; i++) {
+        for (j=0; j < m; j++) {
+            for (i=j; i < m; i++) {
                 magmaDoubleComplex tmp = MAGMA_Z_ZERO;
                 Aik = A+i;
                 Dkk = D;
                 Akj = A+j;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += (*Aik) * (*Dkk) * conj( *Akj );
                     Aik += lda;
                     Dkk += incD;
@@ -72,10 +74,10 @@ int zherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
         }
     }
     else {
-        for (int j=0; j < m; j++) {
-            for (int i=0; i <= j; i++) {
+        for (j=0; j < m; j++) {
+            for (i=0; i <= j; i++) {
                 magmaDoubleComplex tmp = MAGMA_Z_ZERO;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += A(i, k) * D( k ) * conj( A(k, j) );
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;
@@ -89,10 +91,11 @@ int zherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 // TODO: change alpha and beta to be double, per BLAS, instead of double-complex
 // trailing submatrix update with inner-blocking, using workshpace that
 // stores D*L'
-int zherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
-                      magmaDoubleComplex alpha, magmaDoubleComplex *A, magma_int_t lda,
-                      magmaDoubleComplex beta,  magmaDoubleComplex *C, magma_int_t ldc,
-                      magmaDoubleComplex *work, magma_int_t ldw)
+magma_int_t zherk_d_workspace(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex alpha, magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex beta,  magmaDoubleComplex *C, magma_int_t ldc,
+    magmaDoubleComplex *work, magma_int_t ldw)
 {
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
@@ -139,8 +142,9 @@ int zherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
 
 
 // diagonal factorization with inner-block
-int zhetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
-                      magmaDoubleComplex *A, magma_int_t lda)
+magma_int_t zhetrf_diag_nopiv(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda)
 {
     /* Quick return */
     if (n == 1)

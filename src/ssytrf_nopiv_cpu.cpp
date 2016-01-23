@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zhetrf_nopiv_cpu.cpp normal z -> s, Wed Jan  6 17:59:32 2016
+       @generated from src/zhetrf_nopiv_cpu.cpp normal z -> s, Fri Jan 22 21:41:40 2016
  
 */
 #include "magma_internal.h"
@@ -19,11 +19,13 @@
 
 // TODO: change alpha and beta to be float, per BLAS, instead of float-real
 // trailing submatrix update with inner-blocking
-int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-            float alpha, float *A, magma_int_t lda,
-            float beta,  float *C, magma_int_t ldc,
-            float *D, magma_int_t incD)
+magma_int_t ssyrk_d(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    float alpha, float *A, magma_int_t lda,
+    float beta,  float *C, magma_int_t ldc,
+    float *D, magma_int_t incD)
 {
+    magma_int_t i, j, k;
     float *Aik;
     float *Dkk;
     float *Akj;
@@ -55,13 +57,13 @@ int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     }
 
     if ( uplo == MagmaLower ) {
-        for (int j=0; j < m; j++) {
-            for (int i=j; i < m; i++) {
+        for (j=0; j < m; j++) {
+            for (i=j; i < m; i++) {
                 float tmp = MAGMA_S_ZERO;
                 Aik = A+i;
                 Dkk = D;
                 Akj = A+j;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += (*Aik) * (*Dkk) * conj( *Akj );
                     Aik += lda;
                     Dkk += incD;
@@ -72,10 +74,10 @@ int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
         }
     }
     else {
-        for (int j=0; j < m; j++) {
-            for (int i=0; i <= j; i++) {
+        for (j=0; j < m; j++) {
+            for (i=0; i <= j; i++) {
                 float tmp = MAGMA_S_ZERO;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += A(i, k) * D( k ) * conj( A(k, j) );
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;
@@ -89,10 +91,11 @@ int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 // TODO: change alpha and beta to be float, per BLAS, instead of float-real
 // trailing submatrix update with inner-blocking, using workshpace that
 // stores D*L'
-int ssyrk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
-                      float alpha, float *A, magma_int_t lda,
-                      float beta,  float *C, magma_int_t ldc,
-                      float *work, magma_int_t ldw)
+magma_int_t ssyrk_d_workspace(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t k,
+    float alpha, float *A, magma_int_t lda,
+    float beta,  float *C, magma_int_t ldc,
+    float *work, magma_int_t ldw)
 {
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
@@ -139,8 +142,9 @@ int ssyrk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
 
 
 // diagonal factorization with inner-block
-int ssytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
-                      float *A, magma_int_t lda)
+magma_int_t ssytrf_diag_nopiv(
+    magma_uplo_t uplo, magma_int_t n,
+    float *A, magma_int_t lda)
 {
     /* Quick return */
     if (n == 1)

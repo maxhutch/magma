@@ -217,7 +217,7 @@ public:
     magma_int_t align;
     magma_int_t nb;
     magma_int_t nrhs;
-    magma_int_t nstream;
+    magma_int_t nqueue;
     magma_int_t ngpu;
     magma_int_t nsub;
     magma_int_t niter;
@@ -226,15 +226,15 @@ public:
     magma_int_t itype;     // hegvd: problem type
     magma_int_t svd_work;  // gesvd
     magma_int_t version;   // hemm_mgpu, hetrd
+    magma_int_t check;
     double      fraction;  // hegvdx
     double      tolerance;
     
     // boolean arguments
-    int check;
-    int lapack;
-    int warmup;
-    int all;
-    int verbose;
+    bool lapack;
+    bool warmup;
+    bool all;
+    bool verbose;
     
     // lapack flags
     magma_uplo_t    uplo;

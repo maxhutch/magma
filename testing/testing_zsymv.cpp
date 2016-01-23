@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -21,7 +21,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_z
 
 int main(int argc, char **argv)
 {

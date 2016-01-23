@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgetf2_gpu.cpp normal z -> s, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgetf2_gpu.cpp normal z -> s, Fri Jan 22 21:42:40 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -84,7 +84,7 @@ int main( int argc, char** argv)
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("%%   M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)  Copy time (ms)  ||PA-LU||/(||A||*N)\n");
+    printf("%%   M     N   CPU Gflop/s (ms)    GPU Gflop/s (ms)  Copy time (ms)  ||PA-LU||/(||A||*N)\n");
     printf("%%======================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -108,7 +108,7 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_slacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
 
             real_Double_t set_time = magma_wtime();
             magma_ssetmatrix( M, N, h_R, lda, d_A, ldda );
@@ -119,24 +119,26 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_sgetrf(&M, &N, h_A, &lda, ipiv, &info);
+                lapackf77_sgetrf( &M, &N, h_A, &lda, ipiv, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_sgetrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
             }
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            gpu_time = magma_wtime();
-            magma_sgetf2_gpu( M, N, d_A, ldda, ipiv, &info);
-            gpu_time = magma_wtime() - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue );
+            magma_sgetf2_gpu( M, N, d_A, ldda, ipiv, opts.queue, &info );
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_sgetf2_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             real_Double_t get_time = magma_wtime();
             magma_sgetmatrix( M, N, d_A, ldda, h_A, lda );

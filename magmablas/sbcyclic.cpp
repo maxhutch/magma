@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from magmablas/zbcyclic.cpp normal z -> s, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zbcyclic.cpp normal z -> s, Fri Jan 22 21:42:06 2016
 */
 
 // include v1 header first; the v2 header will redefine non-q names,
@@ -16,8 +16,6 @@
 #include "magmablas_v1.h"
 
 #include "magma_internal.h"
-
-#define PRECISION_s
 
 #ifdef HAVE_clBLAS
     #define dA( dev, i_, j_ )  dA[dev], ((i_) + (j_)*ldda)

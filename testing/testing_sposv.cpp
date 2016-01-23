@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zposv.cpp normal z -> s, Wed Jan  6 17:59:48 2016
+       @generated from testing/testing_zposv.cpp normal z -> s, Fri Jan 22 21:42:39 2016
 */
 // includes, system
 #include <stdio.h>
@@ -42,7 +42,7 @@ int main( int argc, char** argv)
     float tol = opts.tolerance * lapackf77_slamch("E");
     
     printf("%% ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
-    printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -66,8 +66,8 @@ int main( int argc, char** argv)
             magma_smake_hpd( N, h_A, lda );
             
             // copy A to R and B to X; save A and B for residual
-            lapackf77_slacpy( MagmaUpperLowerStr, &N, &N,         h_A, &lda, h_R, &lda );
-            lapackf77_slacpy( MagmaUpperLowerStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
+            lapackf77_slacpy( MagmaFullStr, &N, &N,         h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -76,9 +76,10 @@ int main( int argc, char** argv)
             magma_sposv( opts.uplo, N, opts.nrhs, h_R, lda, h_X, ldb, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_spotrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Residual
@@ -103,9 +104,10 @@ int main( int argc, char** argv)
                 lapackf77_sposv( lapack_uplo_const(opts.uplo), &N, &opts.nrhs, h_A, &lda, h_B, &ldb, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_sposv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int) N, (int) opts.nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,

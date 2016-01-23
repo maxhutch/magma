@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zswap.cpp normal z -> d, Wed Jan  6 17:59:48 2016
+       @generated from testing/testing_zswap.cpp normal z -> d, Fri Jan 22 21:42:37 2016
        @author Mark Gates
 */
 // includes, system
@@ -20,10 +20,12 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_d
 
 // if ( A == B ) return 0, else return 1
-static int diff_matrix( magma_int_t m, magma_int_t n, double *A, magma_int_t lda, double *B, magma_int_t ldb )
+static magma_int_t diff_matrix(
+    magma_int_t m, magma_int_t n,
+    double *A, magma_int_t lda,
+    double *B, magma_int_t ldb )
 {
     for( magma_int_t j = 0; j < n; j++ ) {
         for( magma_int_t i = 0; i < m; i++ ) {
@@ -36,7 +38,9 @@ static int diff_matrix( magma_int_t m, magma_int_t n, double *A, magma_int_t lda
 
 // fill matrix with entries Aij = offset + (i+1) + (j+1)/10000,
 // which makes it easy to identify which rows & cols have been swapped.
-static void init_matrix( magma_int_t m, magma_int_t n, double *A, magma_int_t lda, magma_int_t offset )
+static void init_matrix(
+    magma_int_t m, magma_int_t n,
+    double *A, magma_int_t lda, magma_int_t offset )
 {
     assert( lda >= m );
     for( magma_int_t j = 0; j < n; ++j ) {
@@ -101,8 +105,8 @@ int main( int argc, char** argv)
             // For an N x N matrix, swap nb rows or nb columns using various methods.
             // Each test is assigned one bit in the 'check' bitmask; bit=1 indicates failure.
             // The variable 'shift' keeps track of which bit is for current test
-            int shift = 1;
-            int check = 0;
+            magma_int_t shift = 1;
+            magma_int_t check = 0;
             N = opts.nsize[itest];
             lda    = N;
             ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default

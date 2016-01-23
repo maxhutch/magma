@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -121,6 +121,9 @@ magma_zgerbt_batched(
     magmaDoubleComplex *U, magmaDoubleComplex *V,
     magma_int_t *info, magma_int_t batchCount, magma_queue_t queue)
 {
+    magmaDoubleComplex *du, *dv;
+    magma_int_t i;
+    
     /* Function Body */
     *info = 0;
     if ( ! (gen == MagmaTrue) &&
@@ -146,8 +149,6 @@ magma_zgerbt_batched(
     if (nrhs == 0 || n == 0)
         return *info;
 
-    magmaDoubleComplex *du, *dv;
-
     /* Allocate memory for the buterfly matrices */
     if (MAGMA_SUCCESS != magma_zmalloc( &du, 2*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -172,7 +173,7 @@ magma_zgerbt_batched(
     /* Compute U^T.b on the GPU*/
 
     // TODO fix for multiple RHS
-    for (int i= 0; i < nrhs; i++)
+    for (i= 0; i < nrhs; i++)
         magmablas_zprbt_mtv_batched(n, du, dB_array, batchCount, queue);
 
     magma_free( du );

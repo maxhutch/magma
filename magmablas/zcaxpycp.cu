@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions mixed zc -> ds
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -47,16 +47,4 @@ magmablas_zcaxpycp_q(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
     zcaxpycp_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, r, x, b, w );
-}
-
-
-extern "C" void
-magmablas_zcaxpycp(
-    magma_int_t m,
-    magmaFloatComplex_ptr r,
-    magmaDoubleComplex_ptr x,
-    magmaDoubleComplex_const_ptr b,
-    magmaDoubleComplex_ptr w)
-{
-    magmablas_zcaxpycp_q( m, r, x, b, w, magmablasGetQueue() );
 }

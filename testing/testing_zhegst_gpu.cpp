@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -77,9 +77,10 @@ int main( int argc, char** argv)
             magma_zmake_hermitian( N, h_A, lda );
             magma_zmake_hpd(       N, h_B, lda );
             magma_zpotrf( opts.uplo, N, h_B, lda, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zpotrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             magma_zsetmatrix( N, N, h_B, lda, d_B, ldda );
@@ -90,9 +91,10 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime();
             magma_zhegst_gpu( opts.itype, opts.uplo, N, d_A, ldda, d_B, ldda, &info );
             gpu_time = magma_wtime() - gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zhegst_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -102,9 +104,10 @@ int main( int argc, char** argv)
                 lapackf77_zhegst( &opts.itype, lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, h_B, &lda, &info );
                 cpu_time = magma_wtime() - cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_zhegst returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 magma_zgetmatrix( N, N, d_A, ldda, h_R, lda );
                 

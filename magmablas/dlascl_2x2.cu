@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlascl_2x2.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlascl_2x2.cu normal z -> d, Fri Jan 22 21:42:02 2016
 
        @author Ichitaro Yamazaki
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 #define A(i,j) (A[(i) + (j)*lda])
@@ -28,12 +28,12 @@ dlascl_2x2_lower(
 
     double D21 = W( 1, 0 );
     double D11 = MAGMA_D_DIV( W( 1, 1 ), D21 );
-    double D22 = MAGMA_D_DIV( W( 0, 0 ), MAGMA_D_CNJG( D21 ) );
+    double D22 = MAGMA_D_DIV( W( 0, 0 ), MAGMA_D_CONJ( D21 ) );
     double T = 1.0 / ( MAGMA_D_REAL( D11*D22 ) - 1.0 );
     D21 = MAGMA_D_DIV( MAGMA_D_MAKE(T,0.0), D21 );
 
     if (ind < m) {
-        A( ind, 0 ) = MAGMA_D_CNJG( D21 )*( D11*W( 2+ind, 0 )-W( 2+ind, 1 ) );
+        A( ind, 0 ) = MAGMA_D_CONJ( D21 )*( D11*W( 2+ind, 0 )-W( 2+ind, 1 ) );
         A( ind, 1 ) = D21*( D22*W( 2+ind, 1 )-W( 2+ind, 0 ) );
     }
 }
@@ -50,14 +50,14 @@ dlascl_2x2_upper(
     int ind = blockIdx.x * NB + threadIdx.x;
 
     double D21 = W( m, 1 );
-    double D11 = MAGMA_D_DIV( W( m+1, 1 ), MAGMA_D_CNJG( D21 ) );
+    double D11 = MAGMA_D_DIV( W( m+1, 1 ), MAGMA_D_CONJ( D21 ) );
     double D22 = MAGMA_D_DIV( W( m, 0 ), D21 );
     double T = 1.0 / ( MAGMA_D_REAL( D11*D22 ) - 1.0 );
     D21 = MAGMA_D_DIV( MAGMA_D_MAKE(T,0.0), D21 );
 
     if (ind < m) {
         A( ind, 0 ) = D21*( D11*W( ind, 0 )-W( ind, 1 ) );
-        A( ind, 1 ) = MAGMA_D_CNJG( D21 )*( D22*W( ind, 1 )-W( ind, 0 ) );
+        A( ind, 1 ) = MAGMA_D_CONJ( D21 )*( D22*W( ind, 1 )-W( ind, 0 ) );
     }
 }
 
@@ -139,19 +139,4 @@ magmablas_dlascl_2x2_q(
     else {
         dlascl_2x2_upper <<< grid, threads, 0, queue->cuda_stream() >>> (m, dW, lddw, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_dlascl2_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dlascl_2x2(
-    magma_type_t type, magma_int_t m,
-    magmaDouble_const_ptr dW, magma_int_t lddw,
-    magmaDouble_ptr       dA, magma_int_t ldda,
-    magma_int_t *info )
-{
-    magmablas_dlascl_2x2_q( type, m, dW, lddw, dA, ldda, magmablasGetQueue(), info );
 }

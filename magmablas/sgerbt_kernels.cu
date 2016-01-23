@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgerbt_kernels.cu normal z -> s, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zgerbt_kernels.cu normal z -> s, Fri Jan 22 21:41:58 2016
 
 
        @author Adrien REMY
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 #define block_height  32

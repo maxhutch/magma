@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,12 +8,12 @@
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from src/zhetrd_he2hb_mgpu.cpp normal z -> c, Wed Jan  6 17:59:35 2016
+       @generated from src/zhetrd_he2hb_mgpu.cpp normal z -> c, Fri Jan 22 21:41:48 2016
 
 */
 #include <cuda_runtime.h>
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 #include "trace.h"
 
@@ -186,28 +186,33 @@ magma_chetrd_he2hb_mgpu(
     magma_queue_t queues[][20], magma_int_t nqueue,
     magma_int_t *info)
 {
-    #define A(a_1,a_2)        ( A  + ((a_2)-1)*( lda) + (a_1)-1)
-    #define tau_ref(a_1)      (tau + (a_1)-1)
+    #ifdef HAVE_clBLAS
+    #define dT(a_0, a_1, a_2) (dTmgpu[a_0], (dTmgpu_offset + ((a_2)-1)*(lddt) + (a_1)-1)
+    #define dA(a_0, a_1, a_2) (dAmgpu[a_0], (dAmgpu_offset + ((a_2)-1)*(ldda) + (a_1)-1)
+    #else
     #define dT(a_0, a_1, a_2) (dTmgpu[a_0] + ((a_2)-1)*(lddt) + (a_1)-1)
     #define dA(a_0, a_1, a_2) (dAmgpu[a_0] + ((a_2)-1)*(ldda) + (a_1)-1)
+    #endif
+    #define A(a_1,a_2)        ( A  + ((a_2)-1)*( lda) + (a_1)-1)
+    #define tau_ref(a_1)      (tau + (a_1)-1)
 
-    magmaFloatComplex c_neg_one  = MAGMA_C_NEG_ONE;
-    magmaFloatComplex c_neg_half = MAGMA_C_NEG_HALF;
-    magmaFloatComplex c_one  = MAGMA_C_ONE;
-    magmaFloatComplex c_zero = MAGMA_C_ZERO;
-    float  d_one = MAGMA_D_ONE;
+    /* Constants */
+    const magmaFloatComplex c_neg_one  = MAGMA_C_NEG_ONE;
+    const magmaFloatComplex c_neg_half = MAGMA_C_NEG_HALF;
+    const magmaFloatComplex c_one  = MAGMA_C_ONE;
+    const magmaFloatComplex c_zero = MAGMA_C_ZERO;
+    const float  d_one = MAGMA_D_ONE;
 
+    /* Local variables */
     magma_int_t pm, pn, indi, indj, pk;
     magma_int_t pm_old=0, pn_old=0, indi_old=0, flipV=-1;
     magma_int_t iblock, idev, di;
-    int i;
-    int lwkopt;
-    int lquery;
+    magma_int_t i;
+    magma_int_t lwkopt;
 
-    
     *info = 0;
-    int upper = (uplo == MagmaUpper);
-    lquery = (lwork == -1);
+    bool upper  = (uplo == MagmaUpper);
+    bool lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
@@ -223,7 +228,7 @@ magma_chetrd_he2hb_mgpu(
     /* Determine the block size. */
     lwkopt = n * nb;
     if (*info == 0) {
-        work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+        work[0] = magma_cmake_lwork( lwkopt );
     }
 
 
@@ -240,31 +245,27 @@ magma_chetrd_he2hb_mgpu(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
 
     // limit to 16 threads
     magma_int_t orig_threads = magma_get_lapack_numthreads();
     magma_set_lapack_numthreads( min(orig_threads,16) );
 
     magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2];
-    magma_int_t nbcmplx=0;
-    magma_buildconnection_mgpu(gnode, &nbcmplx,  ngpu);
+    magma_int_t ncmplx=0;
+    magma_buildconnection_mgpu(gnode, &ncmplx,  ngpu);
     #ifdef ENABLE_DEBUG
-    printf(" Initializing communication pattern.... GPU-ncmplx %d\n\n", nbcmplx);
+    printf(" Initializing communication pattern.... GPU-ncmplx %d\n\n", ncmplx);
     #endif
 
     magmaFloatComplex *dspace[MagmaMaxGPUs];
     magmaFloatComplex *dwork[MagmaMaxGPUs], *dworkbis[MagmaMaxGPUs];
     magmaFloatComplex *dvall[MagmaMaxGPUs], *dv[MagmaMaxGPUs], *dw[MagmaMaxGPUs];
-    magmaFloatComplex *workngpu[MagmaMaxGPUs+1];
-    magma_event_t     redevents[MagmaMaxGPUs][MagmaMaxGPUs*MagmaMaxGPUs+10];
-    magma_int_t nbevents = MagmaMaxGPUs*MagmaMaxGPUs;
+    magma_event_t     events[MagmaMaxGPUs][MagmaMaxGPUs*MagmaMaxGPUs+10];
+    magma_int_t nevents = MagmaMaxGPUs*MagmaMaxGPUs;
 
     magma_int_t lddv        = ldda;
     magma_int_t lddw        = lddv;
     magma_int_t dwrk2siz    = ldda*nb*(ngpu+1);
-    magma_int_t worksiz     = n*nb;
     magma_int_t devworksiz  = 2*nb*lddv + nb*lddw + nb*ldda + dwrk2siz; // 2*dv(dv0+dv1) + dw + dwork +dworkbis
 
     // local allocation and stream creation
@@ -272,21 +273,15 @@ magma_chetrd_he2hb_mgpu(
     for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magma_cmalloc( &dspace[dev], devworksiz );
-        magma_cmalloc_pinned ( &workngpu[dev], worksiz);
         dvall[dev]    = dspace[dev];
         dw[dev]       = dvall[dev]   + 2*nb*lddv;
         dwork[dev]    = dw[dev]      + nb*lddw;
         dworkbis[dev] = dwork[dev]   + nb*ldda;
-        magmablasSetKernelStream( queues[ dev ][ 0 ] );
-        for( i = 0; i < nbevents; ++i ) {
-            cudaEventCreateWithFlags( &redevents[dev][i], cudaEventDisableTiming );
+        for( i = 0; i < nevents; ++i ) {
+            cudaEventCreateWithFlags( &events[dev][i], cudaEventDisableTiming );
+            //magma_create_event( &events[dev][i] );
         }
     }
-    magma_cmalloc_pinned ( &workngpu[ngpu], worksiz);
-    magmaFloatComplex *worktest = NULL;
-    //magma_cmalloc_cpu( &worktest, n*nb ); // not used
-    // ======================
-  
 
     magmaFloatComplex *hT = work + lwork - nb*nb;
     lwork -= nb*nb;
@@ -332,7 +327,7 @@ magma_chetrd_he2hb_mgpu(
                 //magma_setdevice( 0 );
                 //printf("updating cher2k on A(%d,%d) of size %d %d \n",indi_old+pn_old-1,indi_old+pn_old-1,pm_old-pn_old,pn_old);
                 // compute CHER2K_MGPU
-                magmablas_cher2k_mgpu2(
+                magmablas_cher2k_mgpu2( 
                     MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old,
                     c_neg_one, dv, pm_old, pn_old,
                                dw, pm_old, pn_old,
@@ -354,7 +349,7 @@ magma_chetrd_he2hb_mgpu(
                        tau_ref(i), work, &lwork, info);
             
             /* Form the matrix T */
-            pk=min(pm,pn);
+            pk = min(pm,pn);
             lapackf77_clarft( MagmaForwardStr, MagmaColumnwiseStr,
                           &pm, &pk, A(indi, indj), &lda,
                           tau_ref(i), hT, &nb);
@@ -398,12 +393,11 @@ magma_chetrd_he2hb_mgpu(
             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
                 // dwork = V T
                 magma_setdevice( dev );
-                magmablasSetKernelStream( queues[ dev ][ nqueue-1 ] );
                 magma_queue_sync( queues[dev][nqueue-1] );
-                magma_cgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
+                magma_cgemm( MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
                         c_one, dv[dev], pm,
                         dT(dev, 1, i), lddt,
-                        c_zero, dwork[dev], pm);
+                        c_zero, dwork[dev], pm, queues[ dev ][ nqueue-1 ] );
             }
 
             // ===============================================
@@ -418,23 +412,22 @@ magma_chetrd_he2hb_mgpu(
 
             // compute CHEMM_MGPU
             // The broadcast of the result done inside this function
-            // should be done in stream [0] because i am assuming this
+            // should be done in queues[0] because i am assuming this
             // for the GEMMs below otherwise I have to SYNC over the
             // Broadcasting stream.
             if (ngpu == 1) {
-                magmablasSetKernelStream( queues[ 0 ][ 0 ] );
-                magma_chemm(
+                magma_chemm( 
                     MagmaLeft, uplo, pm, pk,
                     c_one, dAmgpu[0]+(indi-1)*ldda+(indi-1), ldda,
                     dwork[0], pm,
-                    c_zero, dw[0], pm);
+                    c_zero, dw[0], pm, queues[ 0 ][ 0 ] );
             } else {
-                magmablas_chemm_mgpu_com(
+                magmablas_chemm_mgpu( 
                     MagmaLeft, uplo, pm, pk,
                     c_one, dAmgpu, ldda, indi-1,
                     dwork, pm,
-                    c_zero, dw, pm, dworkbis, dwrk2siz, worktest, pm, workngpu, worksiz,
-                    ngpu, distblk, queues, nqueue-1, redevents, nbevents, gnode, nbcmplx);
+                    c_zero, dw, pm, dworkbis, dwrk2siz,
+                    ngpu, distblk, queues, nqueue-1, events, nevents, gnode, ncmplx );
             }
 
             
@@ -443,22 +436,21 @@ magma_chetrd_he2hb_mgpu(
              * dwork + pm*nb = ((T' * V') * X) = dwork' * X = dwork' * W */
             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
                 // Here we have to wait until the broadcast of CHEMM has been done.
-                // Note that the broadcast should be done on stream[0] so in a way
+                // Note that the broadcast should be done on queues[0] so in a way
                 // we can continue here on the same stream and avoid a sync
                 magma_setdevice( dev );
-                magmablasSetKernelStream( queues[ dev ][ 0 ] );
                 // magma_queue_sync( queues[dev][0] );
-                magma_cgemm(MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
+                magma_cgemm( MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
                             c_one, dwork[dev], pm,
                             dw[dev], pm,
-                            c_zero, dworkbis[dev], nb);
+                            c_zero, dworkbis[dev], nb, queues[ dev ][ 0 ] );
                 
                 /* W = X - 0.5 * V * T'*V'*X
                  *   = X - 0.5 * V * (dwork + pm*nb) = W - 0.5 * V * (dwork + pm*nb) */
-                magma_cgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
+                magma_cgemm( MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
                             c_neg_half, dv[dev], pm,
                             dworkbis[dev], nb,
-                            c_one,     dw[dev], pm);
+                            c_one,     dw[dev], pm, queues[ dev ][ 0 ] );
             }
             /* restore the panel it is put here to overlap with the previous GEMM*/
             magma_cq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
@@ -488,17 +480,16 @@ magma_chetrd_he2hb_mgpu(
                 di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
                 idev   = ((indi-1) / distblk) % ngpu;          // device with this block
                 magma_setdevice( idev );
-                magmablasSetKernelStream( queues[ idev ][ nqueue-1 ] );
                 //magma_queue_sync( queues[idev][0] ); removed because the sync has been done in the loop above
-                magma_cgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+                magma_cgemm( MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
                             dv[idev], pm,
                             dw[idev], pm, c_one,
-                            dA(idev, indi, di+1), ldda);
+                            dA(idev, indi, di+1), ldda, queues[ idev ][ nqueue-1 ] );
             
-                magma_cgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+                magma_cgemm( MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
                             dw[idev], pm,
                             dv[idev], pm, c_one,
-                            dA(idev, indi, di+1), ldda);
+                            dA(idev, indi, di+1), ldda, queues[ idev ][ nqueue-1 ] );
                 //printf("updating next panel distblk %d  idev %d  on A(%d,%d) of size %d %d %d \n",distblk,idev,indi-1,di,pm,pn,pn);
             }
             else {
@@ -508,19 +499,18 @@ magma_chetrd_he2hb_mgpu(
                 di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
                 idev   = ((indi-1) / distblk) % ngpu;          // device with this block
                 magma_setdevice( idev );
-                magmablasSetKernelStream( queues[ idev ][ 0 ] );
                 //printf("LAST CHER2K idev %d on A(%d,%d) of size %d \n",idev, indi-1,di,pk);
-                magma_cher2k(MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
+                magma_cher2k( MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
                              dv[idev], pm,
                              dw[idev], pm, d_one,
-                             dA(idev, indi, di+1), ldda);
+                             dA(idev, indi, di+1), ldda, queues[ idev ][ 0 ] );
 
 
                 /* Send the last block to the CPU */
                 magma_cpanel_to_q(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
                 magma_cgetmatrix( pk, pk,
                                   dA(idev, indi, di+1), ldda,
-                                  A(n-pk+1, n-pk+1),  lda );
+                                  A(n-pk+1, n-pk+1),  lda, queues[ idev ][ 0 ] );
                 magma_cq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
             }
             
@@ -534,19 +524,16 @@ magma_chetrd_he2hb_mgpu(
 
     for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
-        magma_free( dspace[dev]);
-        magma_free_pinned(workngpu[dev]);
-        for( magma_int_t e = 0; e < nbevents; ++e ) {
-            magma_event_destroy( redevents[dev][e] );
+        magma_free( dspace[dev] );
+        // might need a sync oover the queue to make the routine 100% sync
+        for( magma_int_t e = 0; e < nevents; ++e ) {
+            magma_event_destroy( events[dev][e] );
         }
     }
-    magma_free_pinned(workngpu[ngpu]);
-    magma_free_cpu(worktest);
 
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
     magma_set_lapack_numthreads( orig_threads );
 
-    work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+    work[0] = magma_cmake_lwork( lwkopt );
     return *info;
 } /* magma_chetrd_he2hb_mgpu */

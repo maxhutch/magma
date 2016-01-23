@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CNJG.
+       zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CONJ.
        
        zsymv_kernel_U (upper) in zsymv_upper.cu is very similar to
        zsymv_kernel_L (lower) in zsymv.cu; diff the two files to compare.
@@ -15,7 +15,7 @@
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 
 #define PRECISION_z
@@ -604,7 +604,7 @@ magmablas_zsymv_work(
 
     // --------------------
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     magma_int_t blocks = magma_ceildiv( n, NB_X );
     magma_int_t lwmin  = ldda*blocks;
@@ -744,13 +744,14 @@ magmablas_zsymv_work(
     ********************************************************************/
 extern "C"
 magma_int_t
-magmablas_zsymv(
+magmablas_zsymv_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex alpha,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr dy, magma_int_t incy)
+    magmaDoubleComplex_ptr dy, magma_int_t incy,
+    magma_queue_t queue )
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; no CUBLAS version of zsymv.
@@ -765,7 +766,7 @@ magmablas_zsymv(
 
     // --------------------
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
@@ -806,7 +807,7 @@ magmablas_zsymv(
     }
     
     magmablas_zsymv_work( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy,
-                          dwork, lwork, magmablasGetQueue() );
+                          dwork, lwork, queue );
     
     magma_free( dwork );
     

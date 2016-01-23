@@ -1,18 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zhemv_mgpu.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zhemv_mgpu.cu normal z -> d, Fri Jan 22 21:42:07 2016
 
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_d.h"
-
-#define PRECISION_d
 
 #define NB_X         64
 #define NB_Y          4
@@ -160,7 +158,7 @@ dsymv_kernel_L_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
-                sA32(j, tx2) = MAGMA_D_CNJG( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_D_CONJ( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -221,7 +219,7 @@ dsymv_kernel_L_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
-                sA32(j, tx2) = MAGMA_D_CNJG( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_D_CONJ( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -291,7 +289,7 @@ dsymv_kernel_L_mgpu(
         psum_t = MAGMA_D_ZERO;
         #pragma unroll
         for (int j=0; j < 4; j++) {
-            psum_t += MAGMA_D_CNJG( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
+            psum_t += MAGMA_D_CONJ( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
 
@@ -377,7 +375,7 @@ dsymv_kernel_L_mgpu(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = MAGMA_D_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_D_CONJ( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
 
@@ -553,13 +551,13 @@ dsymv_kernel_L_mgpu_sum(
             N must be at least zero.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
     d_lA    Array of pointers, dimension (ngpu), to block-column distributed
             matrix A, with block size nb.
-            d_lA[dev] is a DOUBLE_PRECISION array on GPU dev, of
+            d_lA[dev] is a DOUBLE PRECISION array on GPU dev, of
             dimension (LDDA, nlocal), where
     \n
                      { floor(n/nb/ngpu)*nb + nb    if dev <  floor(n/nb) % ngpu,
@@ -594,7 +592,7 @@ dsymv_kernel_L_mgpu_sum(
             would not be fully coalescent.
 
     @param[in]
-    x       DOUBLE_PRECISION array **on the CPU** (not the GPU), of dimension at least
+    x       DOUBLE PRECISION array **on the CPU** (not the GPU), of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -605,12 +603,12 @@ dsymv_kernel_L_mgpu_sum(
             X. INCX must not be zero.
 
     @param[in]
-    beta    DOUBLE_PRECISION.
+    beta    DOUBLE PRECISION.
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
     @param[in,out]
-    y       DOUBLE_PRECISION array **on the CPU** (not the GPU), of dimension at least
+    y       DOUBLE PRECISION array **on the CPU** (not the GPU), of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -622,7 +620,7 @@ dsymv_kernel_L_mgpu_sum(
             Y. INCY must not be zero.
 
     @param
-    hwork   (workspace) DOUBLE_PRECISION array on the CPU, of dimension (lhwork).
+    hwork   (workspace) DOUBLE PRECISION array on the CPU, of dimension (lhwork).
     
     @param[in]
     lhwork  INTEGER.
@@ -630,7 +628,7 @@ dsymv_kernel_L_mgpu_sum(
     
     @param
     dwork   (workspaces) Array of pointers, dimension (ngpu), to workspace on each GPU.
-            dwork[dev] is a DOUBLE_PRECISION array on GPU dev, of dimension (ldwork).
+            dwork[dev] is a DOUBLE PRECISION array on GPU dev, of dimension (ldwork).
     
     @param[in]
     ldwork  INTEGER.
@@ -678,7 +676,7 @@ magmablas_dsymv_mgpu(
     
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     
     magma_int_t offset_block_id = offset / NB_X;
     magma_int_t offset_gpu_id   = offset_block_id % ngpu;

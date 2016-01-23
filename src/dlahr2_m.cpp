@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zlahr2_m.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zlahr2_m.cpp normal z -> d, Fri Jan 22 21:41:52 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -41,7 +41,7 @@
             The number of columns to be reduced.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N-K+1)
+    A       DOUBLE PRECISION array, dimension (LDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements on and above the k-th subdiagonal in
             the first NB columns are overwritten with the corresponding
@@ -55,12 +55,12 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (NB)
+    tau     DOUBLE PRECISION array, dimension (NB)
             The scalar factors of the elementary reflectors. See Further
             Details.
 
     @param[out]
-    T       DOUBLE_PRECISION array, dimension (LDT,NB)
+    T       DOUBLE PRECISION array, dimension (LDT,NB)
             The upper triangular matrix T.
 
     @param[in]
@@ -68,7 +68,7 @@
             The leading dimension of the array T.  LDT >= NB.
 
     @param[out]
-    Y       DOUBLE_PRECISION array, dimension (LDY,NB)
+    Y       DOUBLE PRECISION array, dimension (LDY,NB)
             The n-by-nb matrix Y.
 
     @param[in]

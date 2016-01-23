@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zlahru.cpp normal z -> d, Wed Jan  6 17:59:34 2016
+       @generated from src/zlahru.cpp normal z -> d, Fri Jan 22 21:41:51 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -38,7 +38,7 @@
             Block size
 
     @param[out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N-K)
+    A       DOUBLE PRECISION array, dimension (LDA,N-K)
             On entry, the N-by-(N-K) general matrix to be updated. The
             computation is done on the GPU. After Am is updated on the GPU
             only Am(1:NB) is transferred to the CPU - to update the
@@ -49,7 +49,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N-K).
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N-K).
             On entry, the N-by-(N-K) general matrix to be updated.
             On exit, the 1st K rows (matrix Am) of A are updated by
             applying an orthogonal transformation from the right
@@ -66,7 +66,7 @@
             The leading dimension of the array dA.  LDDA >= max(1,N).
 
     @param[in,out]
-    dY      (workspace) DOUBLE_PRECISION array on the GPU, dimension (LDDY, NB).
+    dY      (workspace) DOUBLE PRECISION array on the GPU, dimension (LDDY, NB).
             On entry the (N-K)-by-NB Y = A V. It is used internally
             as workspace, so its value is changed on exit.
     
@@ -75,7 +75,7 @@
             The leading dimension of the array dY.  LDDY >= max(1,N).
 
     @param[in,out]
-    dV      (workspace) DOUBLE_PRECISION array on the GPU, dimension (LDDV, NB).
+    dV      (workspace) DOUBLE PRECISION array on the GPU, dimension (LDDV, NB).
             On entry the (N-K)-by-NB matrix V of elementary reflectors
             used to reduce the current panel of A to upper Hessenberg form.
             The rest K-by-NB part is used as workspace. V is unchanged on
@@ -86,13 +86,13 @@
             The leading dimension of the array dV.  LDDV >= max(1,N).
 
     @param[in]
-    dT      DOUBLE_PRECISION array on the GPU, dimension (NB, NB).
+    dT      DOUBLE PRECISION array on the GPU, dimension (NB, NB).
             On entry the NB-by-NB upper trinagular matrix defining the
             orthogonal Hessenberg reduction transformation matrix for
             the current panel. The lower triangular part are 0s.
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array on the GPU, dimension N*NB.
+    dwork   (workspace) DOUBLE PRECISION array on the GPU, dimension N*NB.
 
     Further Details
     ---------------

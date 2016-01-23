@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -12,7 +12,7 @@
        @precisions normal z -> c d s
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #define COMPLEX
@@ -284,11 +284,8 @@ magma_zheevdx_2stage(
         liwmin = 1;
     }
 
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0.);  // round up
-    rwork[0] = lrwmin * one_eps;
+    work[0]  = magma_zmake_lwork( lwmin );
+    rwork[0] = magma_dmake_lwork( lrwmin );
     iwork[0] = liwmin;
 
     if ((lwork < lwmin) && !lquery) {
@@ -307,10 +304,7 @@ magma_zheevdx_2stage(
         liwmin = 1;
     }
 
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = lwmin * one_eps;
+    work[0]  = magma_dmake_lwork( lwmin );
     iwork[0] = liwmin;
 
     if ((lwork < lwmin) && !lquery) {
@@ -536,12 +530,20 @@ magma_zheevdx_2stage(
 
         timer_start( time );
 
-        magma_zsetmatrix( n, n, A, lda, dA, ldda );
+        magma_queue_t queues[2];
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queues[0] );
+
+        magma_zsetmatrix( n, n, A, lda, dA, ldda, queues[0] );
 
         magma_zunmqr_gpu_2stages(MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, dA+nb, ldda,
                                  dZ+nb, n, dT1, nb, info);
 
-        magma_zgetmatrix( n, *m, dZ, lddz, A, lda );
+        magma_zgetmatrix( n, *m, dZ, lddz, A, lda, queues[0] );
+
+        magma_queue_sync( queues[0] );
+        magma_queue_destroy( queues[0] );
 
         timer_stop( time );
         timer_printf( "  N= %10d  nb= %5d time zunmqr + copy = %6.2f\n", (int)n, (int)nb, time );
@@ -564,9 +566,9 @@ magma_zheevdx_2stage(
         blasf77_dscal(&imax, &d__1, W, &ione);
     }
 
-    work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = magma_zmake_lwork( lwmin );
     #ifdef COMPLEX
-    rwork[0] = lrwmin * one_eps;
+    rwork[0] = magma_dmake_lwork( lrwmin );
     #endif
     iwork[0] = liwmin;
 

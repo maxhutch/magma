@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zungqr_gpu.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zungqr_gpu.cpp normal z -> d, Fri Jan 22 21:41:35 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    DORGQR generates an M-by-N DOUBLE_PRECISION matrix Q with orthonormal columns,
+    DORGQR generates an M-by-N DOUBLE PRECISION matrix Q with orthonormal columns,
     which is defined as the first N columns of a product of K elementary
     reflectors of order M
 
@@ -39,7 +39,7 @@
             matrix Q. N >= K >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array A on the GPU, dimension (LDDA,N).
+    dA      DOUBLE PRECISION array A on the GPU, dimension (LDDA,N).
             On entry, the i-th column must contain the vector
             which defines the elementary reflector H(i), for
             i = 1,2,...,k, as returned by DGEQRF_GPU in the
@@ -51,12 +51,12 @@
             The first dimension of the array A. LDDA >= max(1,M).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (K)
+    tau     DOUBLE PRECISION array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGEQRF_GPU.
 
     @param[in]
-    dT      (workspace) DOUBLE_PRECISION work space array on the GPU,
+    dT      (workspace) DOUBLE PRECISION work space array on the GPU,
             dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB.
             This must be the 6th argument of magma_dgeqrf_gpu
             [ note that if N here is bigger than N in magma_dgeqrf_gpu,

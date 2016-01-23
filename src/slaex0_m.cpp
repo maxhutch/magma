@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Raffaele Solca
        
-       @generated from src/dlaex0_m.cpp normal d -> s, Wed Jan  6 17:59:33 2016
+       @generated from src/dlaex0_m.cpp normal d -> s, Fri Jan 22 21:41:44 2016
 */
 #include "magma_internal.h"
 #include "magma_timer.h"
@@ -118,7 +118,7 @@ magma_slaex0_m(
     magma_int_t dev, j, k, matsiz, msd2, smlsiz;
     magma_int_t submat, subpbs, tlvls;
     magmaFloat_ptr dw[MagmaMaxGPUs] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs][2] = { NULL };
+    magma_queue_t queues[MagmaMaxGPUs][2] = {{ NULL }};
 
     // Test the input parameters.
     *info = 0;

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
 
        @author Theo Mary
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -147,18 +147,4 @@ magmablas_zlascl2_q(
     else if (type == MagmaFull) {
         zlascl2_full  <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_zlascl2_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zlascl2(
-    magma_type_t type, magma_int_t m, magma_int_t n,
-    magmaDouble_const_ptr dD,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info )
-{
-    magmablas_zlascl2_q( type, m, n, dD, dA, ldda, magmablasGetQueue(), info );
 }

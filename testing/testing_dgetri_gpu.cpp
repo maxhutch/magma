@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgetri_gpu.cpp normal z -> d, Wed Jan  6 17:59:48 2016
+       @generated from testing/testing_zgetri_gpu.cpp normal z -> d, Fri Jan 22 21:42:40 2016
        @author Mark Gates
 */
 // includes, system
@@ -48,7 +48,7 @@ int main( int argc, char** argv )
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("%%   N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||I - A*A^{-1}||_1 / (N*cond(A))\n");
+    printf("%%   N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||I - A*A^{-1}||_1 / (N*cond(A))\n");
     printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -62,9 +62,10 @@ int main( int argc, char** argv )
             // query for workspace size
             lwork = -1;
             lapackf77_dgetri( &N, NULL, &lda, NULL, &tmp, &lwork, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_dgetri returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             lwork = magma_int_t( MAGMA_D_REAL( tmp ));
             
             TESTING_MALLOC_CPU( ipiv,   magma_int_t,        N      );
@@ -83,9 +84,10 @@ int main( int argc, char** argv )
             magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
             magma_dgetrf_gpu( N, N, d_A, ldda, ipiv, &info );
             magma_dgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
-            if ( info != 0 )
+            if (info != 0) {
                 printf("magma_dgetrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             // check for exact singularity
             //h_Ainv[ 10 + 10*lda ] = MAGMA_D_MAKE( 0.0, 0.0 );
@@ -98,9 +100,10 @@ int main( int argc, char** argv )
             magma_dgetri_gpu( N, d_A, ldda, ipiv, dwork, ldwork, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dgetri_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -110,9 +113,10 @@ int main( int argc, char** argv )
                 lapackf77_dgetri( &N, h_Ainv, &lda, ipiv, work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dgetri returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 printf( "%5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
                         (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
             }

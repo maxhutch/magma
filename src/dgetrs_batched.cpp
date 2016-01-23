@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Azzam Haidar
 
-       @generated from src/zgetrs_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zgetrs_batched.cpp normal z -> d, Fri Jan 22 21:41:54 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -44,7 +44,7 @@
 
     @param[in,out]
     dA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N).
             On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -63,7 +63,7 @@
 
     @param[in,out]
     dB_array   Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDB,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDB,N).
             On entry, each pointer is an right hand side matrix B.
             On exit, each pointer is the solution matrix X.
 

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -19,7 +19,6 @@
 #include "magma.h"
 #include "magma_lapack.h"
 
-#define PRECISION_z
 
 int main(int argc, char **argv)
 {
@@ -149,22 +148,24 @@ int main(int argc, char **argv)
                 blasf77_zaxpy( &Ym, &c_neg_one, Y, &incy, Ymagma, &incy );
                 magma_error = lapackf77_zlange( "F", &Ym, &ione, Ymagma, &Ym, work ) / (Anorm * Xnorm);
                 
+                bool okay = (magma_error < tol) && (dev_error < tol);
+                status += ! okay;
                 printf("%5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e     %8.2e   %s\n",
                        (int) M, (int) N,
                        magma_perf,  1000.*magma_time,
                        dev_perf,    1000.*dev_time,
                        cpu_perf,    1000.*cpu_time,
                        magma_error, dev_error,
-                       (magma_error < tol && dev_error < tol ? "ok" : "failed"));
-                status += ! (magma_error < tol && dev_error < tol);
+                       (okay ? "ok" : "failed"));
             #else
+                bool okay = (dev_error < tol);
+                status += ! okay;
                 printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e   %s\n",
                        (int) M, (int) N,
                        dev_perf,    1000.*dev_time,
                        cpu_perf,    1000.*cpu_time,
                        dev_error,
-                       (dev_error < tol ? "ok" : "failed"));
-                status += ! (dev_error < tol);
+                       (okay ? "ok" : "failed"));
             #endif
             
             TESTING_FREE_CPU( A );

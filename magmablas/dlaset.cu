@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlaset.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlaset.cu normal z -> d, Fri Jan 22 21:42:02 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 // To deal with really large matrices, this launchs multiple super blocks,
@@ -236,15 +236,15 @@ void dlaset_upper_kernel_batched(
             The number of columns of the matrix dA.  N >= 0.
     
     @param[in]
-    offdiag DOUBLE_PRECISION
+    offdiag DOUBLE PRECISION
             The scalar OFFDIAG. (In LAPACK this is called ALPHA.)
     
     @param[in]
-    diag    DOUBLE_PRECISION
+    diag    DOUBLE PRECISION
             The scalar DIAG. (In LAPACK this is called BETA.)
     
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
@@ -363,20 +363,6 @@ void magmablas_dlaset_q(
             }
         }
     }
-}
-
-
-/**
-    @see magmablas_dlaset_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C"
-void magmablas_dlaset(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    double offdiag, double diag,
-    magmaDouble_ptr dA, magma_int_t ldda )
-{
-    magmablas_dlaset_q( uplo, m, n, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }
 
 

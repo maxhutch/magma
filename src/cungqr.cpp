@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zungqr.cpp normal z -> c, Wed Jan  6 17:59:31 2016
+       @generated from src/zungqr.cpp normal z -> c, Fri Jan 22 21:41:38 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -95,6 +95,7 @@ magma_cungqr(
     magma_int_t lddwork;
     magmaFloatComplex *dA=NULL, *dV=NULL, *dW=NULL;
     magmaFloatComplex *work=NULL;
+    magma_queue_t queue=NULL;
 
     *info = 0;
     if (m < 0) {
@@ -152,7 +153,6 @@ magma_cungqr(
     work_T = work + n*nb;
     work_V = work + n*nb + nb*nb;
 
-    magma_queue_t queue;
     magma_device_t cdev;
     magma_getdevice( &cdev );
     magma_queue_create( cdev, &queue );
@@ -165,7 +165,7 @@ magma_cungqr(
         
         // cungqr requires less workspace (n*nb), but is slow if k < cungqr's block size.
         // replacing it with the 4 routines below is much faster (e.g., 60x).
-        //int iinfo;
+        //magma_int_t iinfo;
         //lapackf77_cungqr( &m_kk, &n_kk, &k_kk,
         //                  A(kk, kk), &lda,
         //                  &tau[kk], work, &lwork, &iinfo );

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,19 +7,21 @@
        
        @precisions normal z -> s d c
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 #define zdotc_max_bs 512  // 512 is max threads for 1.x cards
 
-void zpotf2_zdscal(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
-void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
+void zpotf2_zdscal( magma_int_t n, magmaDoubleComplex *x, magma_int_t incx, magma_queue_t queue );
+void zpotf2_zdotc(  magma_int_t n, magmaDoubleComplex *x, magma_int_t incx, magma_queue_t queue );
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
-void magmablas_zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
+#ifdef COMPLEX
+void magmablas_zlacgv( magma_int_t n, magmaDoubleComplex *x, magma_int_t incx, magma_queue_t queue );
 #endif
 
+
+// TODO: this function could be in .cpp file -- it has no CUDA code in it.
 /**
     Purpose
     -------
@@ -79,6 +81,7 @@ extern "C" magma_int_t
 magma_zpotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
     magma_int_t *info )
 {
 #define dA(i_, j_)  (dA + (i_) + (j_)*ldda)
@@ -109,39 +112,39 @@ magma_zpotf2_gpu(
 
     if (uplo == MagmaUpper) {
         for (j = 0; j < n; j++) {
-            zpotf2_zdotc(j, dA(0,j), 1); // including zdotc product and update a(j,j)
+            zpotf2_zdotc( j, dA(0,j), 1, queue ); // including zdotc product and update a(j,j)
             if (j < n) {
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_zlacgv(j, dA(0, j), 1);
+                #ifdef COMPLEX
+                magmablas_zlacgv( j, dA(0, j), 1, queue );
                 #endif
                 magma_zgemv( MagmaTrans, j, n-j-1,
                              alpha, dA(0, j+1), ldda,
                                     dA(0, j),   1,
-                             beta,  dA(j, j+1), ldda);
+                             beta,  dA(j, j+1), ldda, queue );
 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_zlacgv(j, dA(0, j), 1);
+                #ifdef COMPLEX
+                magmablas_zlacgv( j, dA(0, j), 1, queue );
                 #endif
-                zpotf2_zdscal(n-j, dA(j,j), ldda);
+                zpotf2_zdscal( n-j, dA(j,j), ldda, queue );
             }
         }
     }
     else {
         for (j = 0; j < n; j++) {
-            zpotf2_zdotc(j, dA(j,0), ldda); // including zdotc product and update a(j,j)
+            zpotf2_zdotc( j, dA(j,0), ldda, queue ); // including zdotc product and update a(j,j)
             if (j < n) {
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_zlacgv(j, dA(j, 0), ldda);
+                #ifdef COMPLEX
+                magmablas_zlacgv( j, dA(j, 0), ldda, queue );
                 #endif
                 magma_zgemv( MagmaNoTrans, n-j-1, j,
                              alpha, dA(j+1, 0), ldda,
                                     dA(j,0),    ldda,
-                             beta,  dA(j+1, j), 1 );
+                             beta,  dA(j+1, j), 1, queue );
 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                magmablas_zlacgv(j, dA(j, 0), ldda);
+                #ifdef COMPLEX
+                magmablas_zlacgv( j, dA(j, 0), ldda, queue );
                 #endif
-                zpotf2_zdscal(n-j, dA(j,j), 1);
+                zpotf2_zdscal( n-j, dA(j,j), 1, queue );
             }
         }
     }
@@ -169,7 +172,7 @@ __global__ void kernel_zdotc(int n, magmaDoubleComplex *x, int incx, int threadS
         res = x[tx*incx];
     }
 
-    sdata[tx] = MAGMA_Z_REAL(res * MAGMA_Z_CNJG(res));
+    sdata[tx] = MAGMA_Z_REAL(res * MAGMA_Z_CONJ(res));
 
     __syncthreads();
 
@@ -196,7 +199,9 @@ __global__ void kernel_zdotc(int n, magmaDoubleComplex *x, int incx, int threadS
     }
 }
 
-void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
+void zpotf2_zdotc(
+    magma_int_t n, magmaDoubleComplex *x, magma_int_t incx,
+    magma_queue_t queue )
 {
     /*
     Specialized Zdotc
@@ -228,7 +233,7 @@ void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
 
     size_t shmem = threadSize * sizeof(double);
     kernel_zdotc
-        <<< 1, threadSize, shmem, magmablasGetQueue()->cuda_stream() >>>
+        <<< 1, threadSize, shmem, queue->cuda_stream() >>>
         (n, x, incx, threadSize);
 }
 
@@ -250,28 +255,28 @@ __global__ void kernel_zdscal(int n, magmaDoubleComplex *x, int incx)
 }
 
 
-void zpotf2_zdscal(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
+void zpotf2_zdscal(
+    magma_int_t n, magmaDoubleComplex *x, magma_int_t incx,
+    magma_queue_t queue )
 {
-    /*
-    Specialized Zdscal perform x[1:n-1]/x[0]
-    */
+    /* Specialized zdscal perform x[1:n-1] / x[0] */
     dim3 threads(zdscal_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, zdscal_bs );
     dim3 grid(num_blocks,1);
     kernel_zdscal
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         (n, x, incx);
 }
 
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+#ifdef COMPLEX
 
 __global__ void kernel_zlacgv(int n, magmaDoubleComplex *x, int incx)
 {
     int id = blockIdx.x * zlacgv_bs + threadIdx.x;
 
     if ( id < n ) {
-        x[id*incx] = MAGMA_Z_CNJG(x[id*incx]);
+        x[id*incx] = MAGMA_Z_CONJ(x[id*incx]);
     }
 }
 
@@ -300,14 +305,16 @@ __global__ void kernel_zlacgv(int n, magmaDoubleComplex *x, int incx)
 
     @ingroup magma_zaux1
     ********************************************************************/
-void magmablas_zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
+void magmablas_zlacgv(
+    magma_int_t n, magmaDoubleComplex *x, magma_int_t incx,
+    magma_queue_t queue )
 {
     dim3 threads(zlacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, zlacgv_bs );
     dim3 grid(num_blocks,1);
     kernel_zlacgv
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         (n, x, incx);
 }
 
-#endif // defined(PRECISION_z) || defined(PRECISION_c)
+#endif // COMPLEX

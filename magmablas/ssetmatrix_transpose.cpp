@@ -1,17 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zsetmatrix_transpose.cpp normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zsetmatrix_transpose.cpp normal z -> s, Fri Jan 22 21:42:04 2016
 
 */
-#include "common_magma.h"
-
-#define PRECISION_s
-
+#include "magma_internal.h"
 
 //
 //      m, n - dimensions in the source (input) matrix.
@@ -69,23 +66,4 @@ magmablas_ssetmatrix_transpose_q(
     /* Transpose the last part of the matrix.                            */
     j++;
     magmablas_stranspose_q( m, ib, dwork(0,(j%2)*nb), lddwork, dAT(i-nb,0), ldda, queues[j%2] );
-}
-
-
-// @see magmablas_ssetmatrix_transpose_q
-extern "C" void 
-magmablas_ssetmatrix_transpose(
-    magma_int_t m, magma_int_t n,
-    const float     *hA, magma_int_t lda, 
-    magmaFloat_ptr       dAT, magma_int_t ldda,
-    magmaFloat_ptr     dwork, magma_int_t lddwork, magma_int_t nb )
-{
-    magma_queue_t queues[2];
-    magma_queue_create( &queues[0] );
-    magma_queue_create( &queues[1] );
-
-    magmablas_ssetmatrix_transpose_q( m, n, hA, lda, dAT, ldda, dwork, lddwork, nb, queues );
-    
-    magma_queue_destroy( queues[0] );
-    magma_queue_destroy( queues[1] );
 }

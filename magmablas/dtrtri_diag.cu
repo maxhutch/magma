@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrtri_diag.cu normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/ztrtri_diag.cu normal z -> d, Fri Jan 22 21:42:05 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -16,7 +16,7 @@
        in the library. The actual kernels are in dtrtri_lower.cu and dtrtri_upper.cu
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "dtrtri.cuh"
 
 
@@ -54,7 +54,7 @@
             On entry, n specifies the order of the matrix A. N >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension ( ldda, n )
+    dA      DOUBLE PRECISION array of dimension ( ldda, n )
             The triangular matrix A.
     \n
             If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A
@@ -73,7 +73,7 @@
             The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
-    d_dinvA DOUBLE_PRECISION array of dimension (NB, ceil(n/NB)*NB),
+    d_dinvA DOUBLE PRECISION array of dimension (NB, ceil(n/NB)*NB),
             where NB = 128.
             On exit, contains inverses of the NB-by-NB diagonal blocks of A.
 
@@ -183,17 +183,4 @@ magmablas_dtrtri_diag_q(
             if ( kb >= n ) break;
         }
     }
-}
-
-/**
-    @see magmablas_dtrtri_diag_q
-    @ingroup magma_dblas3
-    ********************************************************************/
-extern "C" void
-magmablas_dtrtri_diag(
-    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr d_dinvA)
-{
-    magmablas_dtrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magmablasGetQueue() );
 }

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlacpy_sym_out.cu normal z -> s, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlacpy_sym_out.cu normal z -> s, Fri Jan 22 21:41:59 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -82,7 +82,7 @@ void slacpy_sym_out_lower_device(
             for( int jj=0; jj < BLK_Y; ++jj ) {
                 int j = rows[2*(iby+jj)+1];
                 if (ind <= j)
-                    dB[j + ind*ldda] = MAGMA_S_CNJG( dA[ind + (iby+jj)*lddb] );
+                    dB[j + ind*ldda] = MAGMA_S_CONJ( dA[ind + (iby+jj)*lddb] );
                 else
                     dB[ind + j*ldda] = dA[ind + (iby+jj)*lddb];
             }
@@ -92,7 +92,7 @@ void slacpy_sym_out_lower_device(
             for( int jj=0; jj < BLK_Y && iby+jj < n; ++jj ) {
                 int j = rows[2*(iby+jj)+1];
                 if (ind <= j)
-                    dB[j + ind*ldda] = MAGMA_S_CNJG( dA[ind + (iby+jj)*lddb] );
+                    dB[j + ind*ldda] = MAGMA_S_CONJ( dA[ind + (iby+jj)*lddb] );
                 else
                     dB[ind + j*ldda] = dA[ind + (iby+jj)*lddb];
             }
@@ -275,19 +275,4 @@ magmablas_slacpy_sym_out_q(
     else {
         slacpy_sym_out_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, dA, ldda, dB, lddb );
     }
-}
-
-
-/**
-    @see magmablas_slacpy_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_slacpy_sym_out(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magma_int_t *rows, magma_int_t *perm,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
-    magmaFloat_ptr       dB, magma_int_t lddb )
-{
-    magmablas_slacpy_sym_out_q( uplo, m, n, rows, perm, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

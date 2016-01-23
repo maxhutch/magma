@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -62,8 +62,8 @@ int main( int argc, char** argv)
         printf( "%% NOTE: some checks require that singular vectors are computed;\n"
                 "%%       set jobz (option -U[NASO]) to be S, O, or A.\n\n" );
     }
-    printf("%% jobz   M     N  CPU time (sec)  GPU time (sec)  |S1-S2|/.  |A-USV'|/. |I-UU'|/M  |I-VV'|/N  S sorted\n");
-    printf("%%=====================================================================================================\n");
+    printf("%% jobz   M     N  CPU time (sec)  GPU time (sec)   |S1-S2|   |A-USV^H|   |I-UU^H|/M   |I-VV^H|/N   S sorted\n");
+    printf("%%==========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int ijobz = 0; ijobz < 4; ++ijobz ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -214,7 +214,7 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            lapackf77_zlacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -227,9 +227,10 @@ int main( int argc, char** argv)
                           #endif
                           iwork, &info );
             gpu_time = magma_wtime() - gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zgesdd returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
 
             double eps = lapackf77_dlamch( "E" );
             double result[5] = { -1/eps, -1/eps, -1/eps, -1/eps, -1/eps };
@@ -238,8 +239,8 @@ int main( int argc, char** argv)
                    Check the results following the LAPACK's [zcds]drvbd routine.
                    A is factored as A = U diag(S) VT and the following 4 tests computed:
                    (1)    | A - U diag(S) VT | / ( |A| max(M,N) )
-                   (2)    | I - U'U | / ( M )
-                   (3)    | I - VT VT' | / ( N )
+                   (2)    | I - U^H U   | / ( M )
+                   (3)    | I - VT VT^H | / ( N )
                    (4)    S contains MNMIN nonnegative values in decreasing order.
                           (Return 0 if true, 1/ULP if false.)
                    =================================================================== */
@@ -337,9 +338,10 @@ int main( int argc, char** argv)
                                   #endif
                                   iwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_zgesdd returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 /* =====================================================================
                    Check the result compared to LAPACK
@@ -350,21 +352,21 @@ int main( int argc, char** argv)
                 result[4]  = lapackf77_dlange("f", &min_mn, &ione, S2, &min_mn, work);
                 result[4] /= lapackf77_dlange("f", &min_mn, &ione, S1, &min_mn, work);
                 
-                printf("   %c %5d %5d  %7.2f         %7.2f         %8.2e",
+                printf("   %c %5d %5d  %7.2f         %7.2f          %8.2e",
                        lapack_vec_const(jobz)[0],
                        (int) M, (int) N, cpu_time, gpu_time, result[4] );
             }
             else {
-                printf("   %c %5d %5d    ---           %7.2f           ---   ",
+                printf("   %c %5d %5d    ---           %7.2f            ---   ",
                        lapack_vec_const(jobz)[0],
                        (int) M, (int) N, gpu_time );
             }
             if ( opts.check ) {
-                if ( result[0] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[0]); }
-                if ( result[1] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[1]); }
-                if ( result[2] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[2]); }
+                if ( result[0] < 0. ) { printf("     ---   ");   } else { printf("  %#9.3g",   result[0]); }
+                if ( result[1] < 0. ) { printf("      ---   ");  } else { printf("   %#9.3g",  result[1]); }
+                if ( result[2] < 0. ) { printf("       ---   "); } else { printf("    %#9.3g", result[2]); }
                 bool okay = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
-                printf("   %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (okay ? "ok" : "failed"));
+                printf("    %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (okay ? "ok" : "failed"));
                 status += ! okay;
             }
             else {

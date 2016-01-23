@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -25,7 +25,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // check( flag ) keeps tally in gStatus of tests that fail
-int gStatus;
+magma_int_t gStatus;
 
 void check_( bool flag, const char* msg, int line )
 {
@@ -41,7 +41,7 @@ void check_( bool flag, const char* msg, int line )
 ////////////////////////////////////////////////////////////////////////////
 void test_sqrt( double dtol, double stol )
 {
-    int s = gStatus;
+    magma_int_t s = gStatus;
     
     float              sx, sr;
     double             dx, dr;
@@ -130,7 +130,7 @@ int main( int argc, char** argv)
     TESTING_INIT();
     
     gStatus = 0;
-    int s;
+    magma_int_t s;
 
     magmaDoubleComplex za, zb, zc,  za2, zb2, zc2;
     magmaFloatComplex  ca, cb, cc,  ca2, cb2, cc2;

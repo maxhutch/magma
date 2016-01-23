@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -241,10 +241,7 @@ magma_dgesvd(
         nb = magma_get_dgesvd_nb( m, n );
         minwrk = (m + n)*nb + 3*minmn;
         
-        // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-        // if it cannot be exactly represented in floating point.
-        real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-        work[0] = MAGMA_D_MAKE( minwrk * one_eps, 0 );
+        work[0] = magma_dmake_lwork( minwrk );
         if ( !lquery && (lwork < minwrk) ) {
             *info = -13;
         }

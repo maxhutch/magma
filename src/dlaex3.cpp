@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-int magma_get_dlaed3_k() { return 512; }
+magma_int_t magma_get_dlaed3_k() { return 512; }
 
 void magma_dvrange(
     magma_int_t k, double *d, magma_int_t *il, magma_int_t *iu, double vl, double vu)

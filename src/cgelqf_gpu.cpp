@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgelqf_gpu.cpp normal z -> c, Wed Jan  6 17:59:30 2016
+       @generated from src/zgelqf_gpu.cpp normal z -> c, Fri Jan 22 21:41:33 2016
 
 */
 #include "magma_internal.h"
@@ -96,7 +96,7 @@ magma_cgelqf_gpu(
 {
     /* Constants */
     const magmaFloatComplex c_one = MAGMA_C_ONE;
-    const magma_int_t        ione  = 1;
+    const magma_int_t ione = 1;
     MAGMA_UNUSED( ione );  // used only for complex
 
     /* Local variables */
@@ -108,7 +108,7 @@ magma_cgelqf_gpu(
     nb = magma_get_cgelqf_nb( m, n );
     min_mn = min( m, n );
 
-    work[0] = MAGMA_C_MAKE( (float)(m*nb), 0 );
+    work[0] = magma_cmake_lwork( m*nb );
     bool lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 // To deal with really large matrices, this launchs multiple super blocks,
@@ -363,20 +363,6 @@ void magmablas_zlaset_q(
             }
         }
     }
-}
-
-
-/**
-    @see magmablas_zlaset_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C"
-void magmablas_zlaset(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda )
-{
-    magmablas_zlaset_q( uplo, m, n, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }
 
 

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from testing/testing_zunmqr_gpu.cpp normal z -> d, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zunmqr_gpu.cpp normal z -> d, Fri Jan 22 21:42:43 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -19,6 +19,7 @@
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ int main( int argc, char** argv )
     TESTING_INIT();
     
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double error, work[1];
+    double Cnorm, error, work[1];
     double c_neg_one = MAGMA_D_NEG_ONE;
     magma_int_t ione = 1;
     magma_int_t mm, m, n, k, size, info;
@@ -50,7 +51,7 @@ int main( int argc, char** argv )
     magma_side_t  side [] = { MagmaLeft,       MagmaRight   };
     magma_trans_t trans[] = { MagmaTrans, MagmaNoTrans };
 
-    printf("%%   M     N     K   side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
+    printf("%%   M     N     K   side   trans   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R||_F / ||QC||_F\n");
     printf("%%==============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int iside = 0; iside < 2; ++iside ) {
@@ -91,6 +92,8 @@ int main( int argc, char** argv )
                 lwork_max = (n - k + nb)*(m + nb) + m*nb;
                 dt_size = ( 2*min(n,k) + magma_roundup( max(m,n), 32 ) )*nb;
             }
+            // this rounds it up slightly if needed to agree with lwork query below
+            lwork_max = int( real( magma_dmake_lwork( lwork_max )));
             
             TESTING_MALLOC_CPU( C,     double, ldc*n );
             TESTING_MALLOC_CPU( R,     double, ldc*n );
@@ -115,9 +118,10 @@ int main( int argc, char** argv )
             magma_dsetmatrix( mm, k, A,  lda, dA, lda );
             magma_dgeqrf_gpu( mm, k, dA, lda, tau, dT, &info );
             magma_dgetmatrix( mm, k, dA, lda, A,  lda );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dgeqrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -128,9 +132,10 @@ int main( int argc, char** argv )
                               A, &lda, tau, C, &ldc, hwork, &lwork_max, &info );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_dormqr returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -140,12 +145,15 @@ int main( int argc, char** argv )
             magma_dormqr_gpu( side[iside], trans[itran],
                               m, n, k,
                               dA, lda, tau, dC, ldc, hwork, lwork, dT, nb, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dormqr_gpu (lwork query) returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             lwork = (magma_int_t) MAGMA_D_REAL( hwork[0] );
-            if ( lwork < 0 || lwork > lwork_max )
-                printf("invalid lwork %d, lwork_max %d\n", (int) lwork, (int) lwork_max );
+            if ( lwork < 0 || lwork > lwork_max  ) {
+                printf("Warning: optimal lwork %d > allocated lwork_max %d\n", (int) lwork, (int) lwork_max );
+                lwork = lwork_max;
+            }
             
             // dormqr2 takes a copy of dA in CPU memory
             if ( opts.version == 2 ) {
@@ -166,19 +174,20 @@ int main( int argc, char** argv )
             }
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dormqr_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             magma_dgetmatrix( m, n, dC, ldc, R, ldc );
             
             /* =====================================================================
                compute relative error |QC_magma - QC_lapack| / |QC_lapack|
                =================================================================== */
-            error = lapackf77_dlange( "Fro", &m, &n, C, &ldc, work );
             size = ldc*n;
             blasf77_daxpy( &size, &c_neg_one, C, &ione, R, &ione );
-            error = lapackf77_dlange( "Fro", &m, &n, R, &ldc, work ) / error;
+            Cnorm = lapackf77_dlange( "Fro", &m, &n, C, &ldc, work );
+            error = lapackf77_dlange( "Fro", &m, &n, R, &ldc, work ) / (sqrt(m*n) * Cnorm);
             
             printf( "%5d %5d %5d   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                     (int) m, (int) n, (int) k,

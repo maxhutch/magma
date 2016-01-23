@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     
     nrhs = opts.nrhs;
     
-    printf("%%   N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -82,9 +82,10 @@ int main(int argc, char **argv)
             magma_zgesv_gpu( N, nrhs, d_A, ldda, ipiv, d_B, lddb, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zgesv_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             //=====================================================================
             // Residual
@@ -111,9 +112,10 @@ int main(int argc, char **argv)
                 lapackf77_zgesv( &N, &nrhs, h_A, &lda, ipiv, h_B, &ldb, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_zgesv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int) N, (int) nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,

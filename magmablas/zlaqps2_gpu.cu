@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,8 +11,6 @@
 
 #include "magma_internal.h"
 #include "commonblas_z.h"
-
-#define PRECISION_z
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE 512

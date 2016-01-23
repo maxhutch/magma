@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -14,7 +14,7 @@
        @author Ahmad Abdelfattah
        
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define PRECISION_d
 
@@ -78,12 +78,12 @@
             be at least  zero.
     
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             On entry, ALPHA specifies the scalar alpha.
     
     @param[in]
     dA_array      Array of pointers, dimension (batchCount). 
-             Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, ka ), 
+             Each is a DOUBLE PRECISION array A of DIMENSION ( ldda, ka ), 
              where ka is k  when  transA = MagmaNoTrans,  and is  m  otherwise.
              Before entry with  transA = MagmaNoTrans,  the leading  m by k
              part of the array A must contain the matrix A, otherwise
@@ -99,7 +99,7 @@
     
     @param[in]
     dB_array      Array of pointers, dimension (batchCount). 
-             Each is a DOUBLE_PRECISION array B of DIMENSION ( LDB, kb ), 
+             Each is a DOUBLE PRECISION array B of DIMENSION ( LDB, kb ), 
              where kb is n  when  transB = MagmaNoTrans,  and is  k  otherwise.
              Before entry with  transB = MagmaNoTrans,  the leading  k by n
              part of the array B must contain the matrix B, otherwise
@@ -114,13 +114,13 @@
             least  max( 1, n ).
     
     @param[in]
-    beta    DOUBLE_PRECISION.
+    beta    DOUBLE PRECISION.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
             supplied as zero then C need not be set on input.
     
     @param[in,out]
     dC_array      Array of pointers, dimension (batchCount). 
-             Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ).
+             Each is a DOUBLE PRECISION array C of DIMENSION ( lddc, n ).
              Before entry, the leading  m by n  part of the array  C must
              contain the matrix  C,  except when  beta  is zero, in which
              case C need not be set on entry.

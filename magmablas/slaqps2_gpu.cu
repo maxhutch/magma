@@ -1,18 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlaqps2_gpu.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlaqps2_gpu.cu normal z -> s, Fri Jan 22 21:42:00 2016
 
 */
 
 #include "magma_internal.h"
 #include "commonblas_s.h"
-
-#define PRECISION_s
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE 512

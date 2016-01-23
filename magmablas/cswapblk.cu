@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zswapblk.cu normal z -> c, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zswapblk.cu normal z -> c, Fri Jan 22 21:42:03 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLOCK_SIZE 64
 
@@ -121,21 +121,4 @@ magmablas_cswapblk_q(
             magmagpu_cswapblkrm<<< blocks, blocksize, 0, queue->cuda_stream() >>>( params );
         }
     }
-}
-
-
-/**
-    @see magmablas_cswapblk_q
-    @ingroup magma_cblas2
-    ********************************************************************/
-extern "C" void 
-magmablas_cswapblk(
-    magma_order_t order, magma_int_t n, 
-    magmaFloatComplex_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_ptr dB, magma_int_t lddb,
-    magma_int_t i1, magma_int_t i2,
-    const magma_int_t *ipiv, magma_int_t inci, magma_int_t offset )
-{
-    magmablas_cswapblk_q(
-        order, n, dA, ldda, dB, lddb, i1, i2, ipiv, inci, offset, magmablasGetQueue() );
 }

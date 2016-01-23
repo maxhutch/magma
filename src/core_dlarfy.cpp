@@ -6,10 +6,10 @@
  *
  *     @author Azzam Haidar
  *
- *     @generated from src/core_zlarfy.cpp normal z -> d, Wed Jan  6 17:59:34 2016
+ *     @generated from src/core_zlarfy.cpp normal z -> d, Fri Jan 22 21:41:48 2016
  *
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 
 /***************************************************************************//**

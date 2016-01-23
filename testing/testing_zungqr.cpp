@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -58,7 +58,7 @@ int main( int argc, char** argv )
     printf("%%   1 - uses precomputed zlarft matrices (default)\n");
     printf("%%   2 - recomputes the zlarft matrices on the fly\n\n");
 
-    printf("%%   m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
+    printf("%%   m     n     k   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R|| / ||A||\n");
     printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -100,9 +100,10 @@ int main( int argc, char** argv )
             // okay that magma_zgeqrf_gpu has special structure for R; R isn't used here.
             magma_zsetmatrix( m, n, hA, lda, dA, ldda );
             magma_zgeqrf_gpu( m, n, dA, ldda, tau, dT, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zgeqrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             magma_zgetmatrix( m, n, dA, ldda, hA, lda );
             lapackf77_zlacpy( MagmaFullStr, &m, &n, hA, &lda, hR, &lda );
             magma_zgetmatrix( nb, min_mn, dT, nb, hT, nb );  // for multi GPU
@@ -121,9 +122,10 @@ int main( int argc, char** argv )
             }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zungqr returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -133,9 +135,10 @@ int main( int argc, char** argv )
                 lapackf77_zungqr( &m, &n, &k, hA, &lda, tau, h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_zungqr returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // compute relative error |R|/|A| := |Q_magma - Q_lapack|/|A|
                 blasf77_zaxpy( &n2, &c_neg_one, hA, &ione, hR, &ione );

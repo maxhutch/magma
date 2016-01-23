@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -160,7 +160,7 @@ magma_zunmqr_gpu(
         nw = m;
     }
     lwkopt = (nq - k + nb)*(nw + nb) + nw*nb;
-    hwork[0] = MAGMA_Z_MAKE( lwkopt, 0 );
+    hwork[0] = magma_zmake_lwork( lwkopt );
     
     if ( ! left && side != MagmaRight ) {
         *info = -1;
@@ -332,7 +332,7 @@ magma_zunmqr_gpu(
     // TODO: zgeqrs_gpu ASSUMES that hwork contains the last block of A and C.
     // That needs to be fixed, but until then, don't modify hwork[0] here.
     // In LAPACK: On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.
-    //hwork[0] = MAGMA_Z_MAKE( lwkopt, 0 );
+    //hwork[0] = magma_zmake_lwork( lwkopt );
     
     magma_queue_destroy( queue );
     

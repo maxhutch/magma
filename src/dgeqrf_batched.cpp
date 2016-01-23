@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from src/zgeqrf_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zgeqrf_batched.cpp normal z -> d, Fri Jan 22 21:41:57 2016
 */
 #include <cuda_runtime.h>
 
@@ -34,7 +34,7 @@
 
     @param[in,out]
     dA_array Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+             Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
              On entry, the M-by-N matrix A.
              On exit, the elements on and above the diagonal of the array
              contain the min(M,N)-by-N upper trapezoidal matrix R (R is
@@ -51,7 +51,7 @@
 
     @param[out]
     dtau_array Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array, dimension (min(M,N))
+             Each is a DOUBLE PRECISION array, dimension (min(M,N))
              The scalar factors of the elementary reflectors (see Further
              Details).
 

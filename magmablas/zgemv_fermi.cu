@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
 
        @precisions normal z -> s d c
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 #include "magma_templates.h"
 
@@ -70,8 +70,8 @@ zgemvn_template_fermi(
     magmaDoubleComplex       * __restrict__ y, magma_int_t incy,
     magma_queue_t queue)
 {
-    dim3 grid( magma_ceildiv(m, TILE_SIZE) );
-    dim3 threads( DIM_X, DIM_Y, 1 );
+    dim3 grid( magma_ceildiv(m, TILE_SIZE), 1 );
+    dim3 threads( DIM_X, DIM_Y );
 
     zgemvn_template_kernel_fermi<DIM_X, DIM_Y, TILE_SIZE>
         <<< grid, threads, 0, queue->cuda_stream() >>>
@@ -90,9 +90,9 @@ zgemvc_template_fermi(
     magmaDoubleComplex       * __restrict__ y, magma_int_t incy,
     magma_queue_t queue)
 {
-    dim3 grid    ( 1,  magma_ceildiv(n, TILE_SIZE),  1 );
-    dim3 threads ( DIM_X, DIM_Y, 1 );
-
+    dim3 grid    ( magma_ceildiv(n, TILE_SIZE), 1 );
+    dim3 threads ( DIM_X, DIM_Y );
+    
     if (trans == MagmaConjTrans) {
         zgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaConjTrans >
             <<< grid, threads, 0, queue->cuda_stream() >>>
@@ -224,20 +224,4 @@ magmablas_zgemv_q(
         zgemvc_template_fermi<version(T, 189)>
             ( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, queue );
     }
-}
-
-
-/**
-    @see magmablas_zgemv_q
-    @ingroup magma_zblas2
-    ********************************************************************/
-extern "C" void
-magmablas_zgemv(
-    magma_trans_t trans, magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr dy, magma_int_t incy)
-{
-    magmablas_zgemv_q( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magmablasGetQueue() );
 }

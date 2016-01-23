@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlascl_diag.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlascl_diag.cu normal z -> s, Fri Jan 22 21:42:02 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -139,19 +139,4 @@ magmablas_slascl_diag_q(
             <<< grid, threads, 0, queue->cuda_stream() >>>
             (m, n, dD, lddd, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_slascl_diag_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_slascl_diag(
-    magma_type_t type, magma_int_t m, magma_int_t n,
-    magmaFloat_const_ptr dD, magma_int_t lddd,
-    magmaFloat_ptr       dA, magma_int_t ldda,
-    magma_int_t *info )
-{
-    magmablas_slascl_diag_q( type, m, n, dD, lddd, dA, ldda, magmablasGetQueue(), info );
 }

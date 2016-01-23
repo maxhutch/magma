@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,9 +9,9 @@
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/zgemv_fermi.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgemv_fermi.cu normal z -> c, Fri Jan 22 21:42:06 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_c.h"
 #include "magma_templates.h"
 
@@ -70,8 +70,8 @@ cgemvn_template_fermi(
     magmaFloatComplex       * __restrict__ y, magma_int_t incy,
     magma_queue_t queue)
 {
-    dim3 grid( magma_ceildiv(m, TILE_SIZE) );
-    dim3 threads( DIM_X, DIM_Y, 1 );
+    dim3 grid( magma_ceildiv(m, TILE_SIZE), 1 );
+    dim3 threads( DIM_X, DIM_Y );
 
     cgemvn_template_kernel_fermi<DIM_X, DIM_Y, TILE_SIZE>
         <<< grid, threads, 0, queue->cuda_stream() >>>
@@ -90,9 +90,9 @@ cgemvc_template_fermi(
     magmaFloatComplex       * __restrict__ y, magma_int_t incy,
     magma_queue_t queue)
 {
-    dim3 grid    ( 1,  magma_ceildiv(n, TILE_SIZE),  1 );
-    dim3 threads ( DIM_X, DIM_Y, 1 );
-
+    dim3 grid    ( magma_ceildiv(n, TILE_SIZE), 1 );
+    dim3 threads ( DIM_X, DIM_Y );
+    
     if (trans == MagmaConjTrans) {
         cgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaConjTrans >
             <<< grid, threads, 0, queue->cuda_stream() >>>
@@ -224,20 +224,4 @@ magmablas_cgemv_q(
         cgemvc_template_fermi<version(T, 189)>
             ( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, queue );
     }
-}
-
-
-/**
-    @see magmablas_cgemv_q
-    @ingroup magma_cblas2
-    ********************************************************************/
-extern "C" void
-magmablas_cgemv(
-    magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_const_ptr dx, magma_int_t incx,
-    magmaFloatComplex beta,
-    magmaFloatComplex_ptr dy, magma_int_t incy)
-{
-    magmablas_cgemv_q( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magmablasGetQueue() );
 }

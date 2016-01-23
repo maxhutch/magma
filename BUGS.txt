@@ -3,6 +3,25 @@ Known bugs & issues
 These show up when using testing run_tests.py --tol 100.
 
 
+Jan 2016
+[cz]heevr                               -- accuracy failures, xerbla errors
+Fails when computing only eigenvalues (jobz=N).
+Under investigation.
+
+
+Jan 2016
+[sdcz]geqlf, geqrf, lange, larfb, gesdd, gesvd  --  accuracy failures
+Several routines fail accuracy tests for very tall or very wide matrices
+(e.g., -N 2000000,10 -N 10,2000000). These may simply be not normalized correctly.  
+Under investigation.
+
+
+Jan 2016
+[sdcz]geqr2x_gpu --version 2 and 4      --  accuracy failures
+Fail orthogonality checks, |I - Q^H*Q|.
+Under investigation
+
+
 Aug 2015
 [sdcz]trsm_batched                      --  accuracy failures
 These result from badly conditioned triangular matrices.
@@ -18,6 +37,9 @@ Under investigation.
 Aug 2015
 [sdcz]sy/hemm_mgpu                      --  tester incompatability
 The tester needs to be updated to match the routine; currently disabled.
+Update Jan 2015:                        --  accuracy failures
+The tester has been updated. Results fail on some GPUs, for some offsets.
+It does not appear to affect the eigenvalue routines where it is used.
 
 
 Aug 2015

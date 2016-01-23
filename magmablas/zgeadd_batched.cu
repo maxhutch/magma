@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions normal z -> s d c
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -101,7 +101,7 @@ zgeadd_batched_kernel(
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_zgeadd_batched_q(
+magmablas_zgeadd_batched(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
     magmaDoubleComplex_const_ptr  const dAarray[], magma_int_t ldda,
@@ -134,21 +134,4 @@ magmablas_zgeadd_batched_q(
     
     zgeadd_batched_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
-}
-
-
-/**
-    @see magmablas_zgeadd_batched_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zgeadd_batched(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr  const dAarray[], magma_int_t ldda,
-    magmaDoubleComplex_ptr              dBarray[], magma_int_t lddb,
-    magma_int_t batchCount )
-{
-    magmablas_zgeadd_batched_q(
-        m, n, alpha, dAarray, ldda, dBarray, lddb, batchCount, magmablasGetQueue() );
 }

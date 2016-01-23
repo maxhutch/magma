@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgerbt.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zgerbt.cu normal z -> d, Fri Jan 22 21:41:58 2016
 
 
        @author Adrien REMY
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "dgerbt.h"
 
 #define block_height  32
@@ -31,11 +31,11 @@
             The number of values of db.  n >= 0.
 
     @param[in]
-    du     DOUBLE_PRECISION array, dimension (n,2)
+    du     DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix V
     
     @param[in,out]
-    db     DOUBLE_PRECISION array, dimension (n)
+    db     DOUBLE PRECISION array, dimension (n)
             The n vector db computed by DGESV_NOPIV_GPU
             On exit db = du*db
     
@@ -63,19 +63,8 @@ magmablas_dprbt_mtv_q(
     magmablas_dapply_transpose_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, du, 0, db, 0);
 }
 
-/**
-    @see magmablas_dprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_dprbt_mtv(
-    magma_int_t n, 
-    double *du, double *db)
-{
-    magmablas_dprbt_mtv_q(n, du, db, magmablasGetQueue() );
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
     Purpose
     -------
@@ -88,12 +77,12 @@ magmablas_dprbt_mtv(
             The number of values of db.  n >= 0.
     
     @param[in,out]
-    db      DOUBLE_PRECISION array, dimension (n)
+    db      DOUBLE PRECISION array, dimension (n)
             The n vector db computed by DGESV_NOPIV_GPU
             On exit db = dv*db
     
     @param[in]
-    dv      DOUBLE_PRECISION array, dimension (n,2)
+    dv      DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix V
     
     @param[in]
@@ -118,16 +107,7 @@ magmablas_dprbt_mv_q(
     magmablas_dapply_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dv, n+n/2, db, n/2);
 }
 
-/**
-    @see magmablas_dprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_dprbt_mv(
-    magma_int_t n, 
-    double *dv, double *db)
-{
-    magmablas_dprbt_mv_q(n, dv, db, magmablasGetQueue() );
-}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -141,7 +121,7 @@ magmablas_dprbt_mv(
             The number of columns and rows of the matrix dA.  n >= 0.
     
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (n,ldda)
+    dA      DOUBLE PRECISION array, dimension (n,ldda)
             The n-by-n matrix dA
             On exit dA = duT*dA*d_V
     
@@ -150,11 +130,11 @@ magmablas_dprbt_mv(
             The leading dimension of the array dA.  LDA >= max(1,n).
     
     @param[in]
-    du      DOUBLE_PRECISION array, dimension (n,2)
+    du      DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix U
     
     @param[in]
-    dv      DOUBLE_PRECISION array, dimension (n,2)
+    dv      DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix V
     
     @param[in]
@@ -185,17 +165,4 @@ magmablas_dprbt_q(
     dim3 grid2( magma_ceildiv( n, 2*block_height ), 
                 magma_ceildiv( n, 2*block_width  ));
     magmablas_delementary_multiplication_kernel<<< grid2, threads2, 0, queue->cuda_stream() >>>(n, dA, 0, ldda, du, -ldda, dv, -ldda);
-}
-
-
-/**
-    @see magmablas_dprbt_q
-    ********************************************************************/
-extern "C" void 
-magmablas_dprbt(
-    magma_int_t n, 
-    double *dA, magma_int_t ldda, 
-    double *du, double *dv)
-{
-    magmablas_dprbt_q(n, dA, ldda, du, dv, magmablasGetQueue() );
 }

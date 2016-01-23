@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgehrd2.cpp normal z -> c, Wed Jan  6 17:59:35 2016
+       @generated from src/zgehrd2.cpp normal z -> c, Fri Jan 22 21:41:50 2016
        
        @author Stan Tomov
        @author Mark Gates
@@ -152,7 +152,7 @@ magma_cgehrd2(
 
     *info = 0;
     iws = n*nb;
-    work[0] = MAGMA_C_MAKE( iws, 0 );
+    work[0] = magma_cmake_lwork( iws );
 
     lquery = (lwork == -1);
     if (n < 0) {
@@ -281,7 +281,7 @@ magma_cgehrd2(
     // add 1 to i for 1-based index
     i += 1;
     lapackf77_cgehd2(&n, &i, &ihi, A, &lda, tau, work, &iinfo);
-    work[0] = MAGMA_C_MAKE( iws, 0 );
+    work[0] = magma_cmake_lwork( iws );
 
     return *info;
 } /* magma_cgehrd2 */

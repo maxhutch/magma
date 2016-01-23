@@ -60,10 +60,11 @@ chdr := \
 	sparse-iter/include/magmasparse_c.h
 # ----------------------------------------
 libmagma_ssrc := \
+	control/magma_sauxiliary.cpp \
+	control/magma_sbulge.cpp \
 	control/magma_snan_inf.cpp \
 	control/spanel_to_q.cpp \
 	control/sprint.cpp \
-	control/magma_sbulge.cpp \
 	interface_cuda/blas_s_v1.cpp \
 	interface_cuda/blas_s_v2.cpp \
 	src/cblas_s.cpp \
@@ -290,6 +291,7 @@ libmagma_ssrc := \
 	magmablas/strtri_upper.cu \
 	magmablas/slarft_kernels.cu \
 	magmablas/strsv.cu \
+	magmablas/magmablas_s_v1.cpp \
 	magmablas/sgemm_fermi.cu \
 	magmablas/sgemv_fermi.cu \
 	magmablas/sbcyclic.cpp \
@@ -321,10 +323,11 @@ libmagma_ssrc := \
 	magmablas/strsv_batched.cu
 
 libmagma_dsrc := \
+	control/magma_dauxiliary.cpp \
+	control/magma_dbulge.cpp \
 	control/magma_dnan_inf.cpp \
 	control/dpanel_to_q.cpp \
 	control/dprint.cpp \
-	control/magma_dbulge.cpp \
 	interface_cuda/blas_d_v1.cpp \
 	interface_cuda/blas_d_v2.cpp \
 	src/cblas_d.cpp \
@@ -533,6 +536,8 @@ libmagma_dsrc := \
 	magmablas/dtrtri_upper.cu \
 	magmablas/dlarft_kernels.cu \
 	magmablas/dtrsv.cu \
+	magmablas/magmablas_d_v1.cpp \
+	magmablas/magmablas_ds_v1.cpp \
 	magmablas/dgemm_fermi.cu \
 	magmablas/dgemv_fermi.cu \
 	magmablas/dbcyclic.cpp \
@@ -564,10 +569,11 @@ libmagma_dsrc := \
 	magmablas/dtrsv_batched.cu
 
 libmagma_csrc := \
+	control/magma_cauxiliary.cpp \
+	control/magma_cbulge.cpp \
 	control/magma_cnan_inf.cpp \
 	control/cpanel_to_q.cpp \
 	control/cprint.cpp \
-	control/magma_cbulge.cpp \
 	interface_cuda/blas_c_v1.cpp \
 	interface_cuda/blas_c_v2.cpp \
 	src/cblas_c.cpp \
@@ -800,6 +806,7 @@ libmagma_csrc := \
 	magmablas/ctrtri_upper.cu \
 	magmablas/clarft_kernels.cu \
 	magmablas/ctrsv.cu \
+	magmablas/magmablas_c_v1.cpp \
 	magmablas/cgemm_fermi.cu \
 	magmablas/cgemv_fermi.cu \
 	magmablas/cbcyclic.cpp \

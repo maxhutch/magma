@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgerbt_func_batched.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zgerbt_func_batched.cu normal z -> d, Fri Jan 22 21:42:09 2016
 
        @author Adrien Remy
        @author Azzam Haidar
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "dgerbt.h"
 
 #define block_height  32
@@ -31,11 +31,11 @@
             The number of values of db.  n >= 0.
 
     @param[in]
-    du     DOUBLE_PRECISION array, dimension (n,2)
+    du     DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix V
     
     @param[in,out]
-    db     DOUBLE_PRECISION array, dimension (n)
+    db     DOUBLE PRECISION array, dimension (n)
             The n vector db computed by DGESV_NOPIV_GPU
             On exit db = du*db
     
@@ -74,12 +74,12 @@ magmablas_dprbt_mtv_batched(
             The number of values of db.  n >= 0.
     
     @param[in,out]
-    db      DOUBLE_PRECISION array, dimension (n)
+    db      DOUBLE PRECISION array, dimension (n)
             The n vector db computed by DGESV_NOPIV_GPU
             On exit db = dv*db
     
     @param[in]
-    dv      DOUBLE_PRECISION array, dimension (n,2)
+    dv      DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix V
     
     @param[in]
@@ -118,7 +118,7 @@ magmablas_dprbt_mv_batched(
             The number of columns and rows of the matrix dA.  n >= 0.
     
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (n,ldda)
+    dA      DOUBLE PRECISION array, dimension (n,ldda)
             The n-by-n matrix dA
             On exit dA = duT*dA*d_V
     
@@ -127,11 +127,11 @@ magmablas_dprbt_mv_batched(
             The leading dimension of the array dA.  LDA >= max(1,n).
     
     @param[in]
-    du      DOUBLE_PRECISION array, dimension (n,2)
+    du      DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix U
     
     @param[in]
-    dv      DOUBLE_PRECISION array, dimension (n,2)
+    dv      DOUBLE PRECISION array, dimension (n,2)
             The 2*n vector representing the random butterfly matrix V
     
     @param[in]

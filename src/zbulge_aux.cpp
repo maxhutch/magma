@@ -11,7 +11,7 @@
  *
  */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 

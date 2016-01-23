@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,11 +9,13 @@
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zlobpcg.cpp normal z -> d, Wed Jan  6 17:59:46 2016
+       @generated from sparse-iter/src/zlobpcg.cpp normal z -> d, Fri Jan 22 21:42:29 2016
 */
 #include "magmasparse_internal.h"
 
 #define PRECISION_d
+#define REAL
+
 #define RTOLERANCE     lapackf77_dlamch( "E" )
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
@@ -151,7 +153,7 @@ magma_dlobpcg(
     magma_int_t *activeMask={0};
     double *hresidualNorms={0};
     
-#if defined(PRECISION_z) || defined(PRECISION_c)
+#ifdef COMPLEX
     double *rwork={0};
     magma_int_t lrwork = 1 + 5*(3*n) + 2*(3*n)*(3*n);
 
@@ -215,9 +217,10 @@ magma_dlobpcg(
     }
     magma_setmatrix(n, 1, sizeof(magma_int_t), iwork, n , activeMask, n, queue);
 
-#if defined(PRECISION_s)
+    #if defined(PRECISION_s)
     ikind = 3;
-#endif
+    #endif
+    
     // === Make the initial vectors orthonormal ===
     magma_dgegqr_gpu(ikind, m, n, blockX, m, dwork, hwork, &info );
 
@@ -231,7 +234,7 @@ magma_dlobpcg(
 
     magma_dsyevd_gpu( MagmaVec, MagmaUpper,
                       n, gramM, n, evalues, hW, n, hwork, lwork,
-                      #if defined(PRECISION_z) || defined(PRECISION_c)
+                      #ifdef COMPLEX
                       rwork, lrwork,
                       #endif
                       iwork, liwork, &info );
@@ -301,11 +304,11 @@ magma_dlobpcg(
             // === make the active preconditioned residuals orthonormal
 
             magma_dgegqr_gpu(ikind, m, cBlockSize, blockR, m, dwork, hwork, &info );
-#if defined(PRECISION_s)
-// re-orthogonalization
+            #if defined(PRECISION_s)
+            // re-orthogonalization
             SWAP(blockX, dwork);
             magma_dgegqr_gpu(ikind, m, cBlockSize, blockR, m, dwork, hwork, &info );
-#endif
+            #endif
             //magma_dorthomgs( m, cBlockSize, blockR, queue );
 
             // === compute AR
@@ -332,28 +335,24 @@ magma_dlobpcg(
 
                 // === Make P orthonormal & properly change AP (without multiplication by A)
                 magma_dgegqr_gpu(ikind, m, cBlockSize, blockP, m, dwork, hwork, &info );
-#if defined(PRECISION_s)
-// re-orthogonalization
+                #if defined(PRECISION_s)
+                // re-orthogonalization
                 SWAP(blockX, dwork);
                 magma_dgegqr_gpu(ikind, m, cBlockSize, blockP, m, dwork, hwork, &info );
-#endif
+                #endif
                 //magma_dorthomgs( m, cBlockSize, blockP, queue );
 
                 //magma_d_bspmv_tuned(m, cBlockSize, c_one, A, blockP, c_zero, blockAP, queue );
                 magma_dsetmatrix( cBlockSize, cBlockSize, hwork, cBlockSize, dwork, cBlockSize, queue );
 
-
-//                magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-  //                           m, cBlockSize, c_one, dwork, cBlockSize, blockAP, m, queue );
-
-            // replacement according to Stan
-#if defined(PRECISION_s) || defined(PRECISION_d)
-            magmablas_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                        m, cBlockSize, c_one, dwork, cBlockSize, blockAP, m, queue );
-#else
-            magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m,
-                            cBlockSize, c_one, dwork, cBlockSize, blockAP, m, queue );
-#endif
+                // replacement according to Stan
+                #if defined(PRECISION_s) || defined(PRECISION_d)
+                magmablas_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+                                 m, cBlockSize, c_one, dwork, cBlockSize, blockAP, m, queue );
+                #else
+                magma_dtrsm(     MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+                                 m, cBlockSize, c_one, dwork, cBlockSize, blockAP, m, queue );
+                #endif
             }
 
             iter = max( 1, iterationNumber - 10 - int(log(1.*cBlockSize)) );
@@ -393,7 +392,7 @@ magma_dlobpcg(
             magma_dgetmatrix( gramDim, gramDim, gramB, ldgram, h_gramB, ldgram, queue );
             lapackf77_dsyev("N", "L", &gramDim, h_gramB, &ldgram, gevalues,
                             hwork, &lwork,
-                            #if defined(PRECISION_z) || defined(PRECISION_c)
+                            #ifdef COMPLEX
                             rwork,
                             #endif
                             &info);
@@ -451,7 +450,7 @@ magma_dlobpcg(
             lapackf77_dsygvd(&itype, "V", "L", &gramDim,
                              gevectors, &ldgram, h_gramB, &ldgram,
                              gevalues, hwork, &lwork,
-                             #if defined(PRECISION_z) || defined(PRECISION_c)
+                             #ifdef COMPLEX
                              rwork, &lrwork,
                              #endif
                              iwork, &liwork, &info);
@@ -563,7 +562,7 @@ magma_dlobpcg(
 
     magma_dsyevd_gpu( MagmaVec, MagmaUpper,
                       n, gramM, n, gevalues, dwork, n, hwork, lwork,
-                      #if defined(PRECISION_z) || defined(PRECISION_c)
+                      #ifdef COMPLEX
                       rwork, lrwork,
                       #endif
                       iwork, liwork, &info );
@@ -660,7 +659,7 @@ cleanup:
     magma_free_pinned( hwork    );
 
 
-    #if defined(PRECISION_z) || defined(PRECISION_c)
+    #ifdef COMPLEX
     magma_free_cpu( rwork           );
     rwork = NULL;
     #endif

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -14,7 +14,8 @@
        @author Ahmad Abdelfattah
        
 */
-#include "common_magma.h"
+#include "magma_internal.h"
+
 #define PRECISION_d
 
 #include "herk_template_kernel_batched.cuh"
@@ -22,7 +23,9 @@
 #include "gemm_config/dgemm_param_nt.h"
 #include "gemm_config/dgemm_param_tn.h"
 #include "gemm_config/dgemm_param_tt.h"
+
 #define version(s,v) s ## _V_ ## v
+
 /**
     Purpose
     -------
@@ -60,7 +63,7 @@
 
             trans = MagmaNoTrans C := alpha*A*A**H + beta*C.
 
-            trans = MagmaConjTrans C := alpha*A**H*A + beta*C.
+            trans = MagmaTrans   C := alpha*A**H*A + beta*C.
 
     @param[in]
     n       INTEGER.
@@ -71,7 +74,7 @@
     k       INTEGER.
             On entry with trans = MagmaNoTrans, k specifies the number
             of columns of the matrix A, and on entry with
-            trans = MagmaConjTrans, k specifies the number of rows of the
+            trans = MagmaTrans, k specifies the number of rows of the
             matrix A. K must be at least zero.
 
     @param[in]
@@ -80,7 +83,7 @@
     
     @param[in]
     dA_array      Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, ka ), where ka is
+             Each is a DOUBLE PRECISION array A of DIMENSION ( ldda, ka ), where ka is
              k  when  trans = MagmaNoTrans,  and is  n  otherwise.
              Before entry with  trans = MagmaNoTrans,  the leading  m by k
              part of the array A must contain the matrix A, otherwise
@@ -101,7 +104,7 @@
     
     @param[in,out]
     dC_array      Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ).
+             Each is a DOUBLE PRECISION array C of DIMENSION ( lddc, n ).
              Before entry with uplo = MagmaUpper, the leading n by n
              upper triangular part of the array C must contain the upper
              triangular part of the symmetric matrix and the strictly
@@ -150,11 +153,7 @@ magmablas_dsyrk_batched(
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    #if defined(PRECISION_c) || defined(PRECISION_z) 
-    else if ( trans != MagmaNoTrans && trans != MagmaConjTrans )
-    #else 
-    else if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
-    #endif
+    else if ( trans != MagmaNoTrans && trans != MagmaTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;

@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
    @author Azzam Haidar
    @author Mark Gates
 
-   @generated from testing/testing_zgetri_batched.cpp normal z -> d, Wed Jan  6 17:59:51 2016
+   @generated from testing/testing_zgetri_batched.cpp normal z -> d, Fri Jan 22 21:42:50 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -62,7 +62,7 @@ int main( int argc, char** argv)
     magma_int_t batchCount = opts.batchcount;
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
-    printf("%% batchCount   N    CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||I - A*A^{-1}||_1 / (N*cond(A))\n");
+    printf("%% batchCount   N    CPU Gflop/s (ms)    GPU Gflop/s (ms)   ||I - A*A^{-1}||_1 / (N*cond(A))\n");
     printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {    
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -78,9 +78,10 @@ int main( int argc, char** argv)
             // query for workspace size
             lwork = -1;
             lapackf77_dgetri( &N, NULL, &lda, NULL, &tmp, &lwork, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_dgetri returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             lwork = magma_int_t( MAGMA_D_REAL( tmp ));
             
             TESTING_MALLOC_CPU( cpu_info, magma_int_t,        batchCount );
@@ -146,13 +147,15 @@ int main( int argc, char** argv)
                 {
                     magma_int_t locinfo;
                     lapackf77_dgetrf(&N, &N, h_Ainv + i*lda*N, &lda, ipiv + i*N, &locinfo);
-                    if (locinfo != 0)
+                    if (locinfo != 0) {
                         printf("lapackf77_dgetrf returned error %d: %s.\n",
                                (int) locinfo, magma_strerror( locinfo ));
+                    }
                     lapackf77_dgetri(&N, h_Ainv + i*lda*N, &lda, ipiv + i*N, work + i*lwork, &lwork, &locinfo );
-                    if (locinfo != 0)
+                    if (locinfo != 0) {
                         printf("lapackf77_dgetri returned error %d: %s.\n",
                                (int) locinfo, magma_strerror( locinfo ));
+                    }
                 }
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
                     magma_set_lapack_numthreads(nthreads);

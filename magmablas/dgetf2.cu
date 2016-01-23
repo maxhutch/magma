@@ -1,21 +1,23 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgetf2.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zgetf2.cu normal z -> d, Fri Jan 22 21:42:08 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define dger_bs 512  // 512 is max threads for 1.x cards
 
 void magma_dgetf2_swap(
-    magma_int_t n, double *x, magma_int_t i, magma_int_t j, magma_int_t incx);
+    magma_int_t n, double *x, magma_int_t i, magma_int_t j, magma_int_t incx,
+    magma_queue_t queue );
 
 void magma_dscal_dger(
-    magma_int_t m, magma_int_t n, double *A, magma_int_t lda);
+    magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda,
+    magma_queue_t );
 
 
 // TODO: this function could be in .cpp file -- it has no CUDA code in it.
@@ -44,7 +46,7 @@ void magma_dscal_dger(
             On CUDA architecture 1.x cards, N <= 512.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             On entry, the m by n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -74,6 +76,7 @@ magma_dgetf2_gpu(
     magma_int_t m, magma_int_t n,
     magmaDouble_ptr dA, magma_int_t ldda,
     magma_int_t *ipiv,
+    magma_queue_t queue,
     magma_int_t *info )
 {
     #define dA(i, j)  (dA + (i) + (j)*ldda)
@@ -104,7 +107,7 @@ magma_dgetf2_gpu(
         cudaDeviceSetCacheConfig( cudaFuncCachePreferShared );
 
         // Find pivot and test for singularity.
-        jp = j - 1 + magma_idamax(m-j, dA(j,j), 1);
+        jp = j - 1 + magma_idamax( m-j, dA(j,j), 1, queue );
         ipiv[j] = jp + 1;  // ipiv uses Fortran one-based index
         // Can't check value of dA since it is on GPU
         //if ( dA(jp, j) != 0.0) {
@@ -112,12 +115,12 @@ magma_dgetf2_gpu(
             
             // Apply the interchange to columns 1:N.
             if (jp != j) {
-                magma_dgetf2_swap(n, dA, j, jp, ldda);
+                magma_dgetf2_swap( n, dA, j, jp, ldda, queue );
             }
             
             // Compute elements J+1:M of J-th column.
             if (j < m) {
-                magma_dscal_dger(m-j, n-j, dA(j, j), ldda);
+                magma_dscal_dger( m-j, n-j, dA(j, j), ldda, queue );
             }
         //}
         //else if (*info == 0) {
@@ -147,15 +150,14 @@ void kernel_dswap(int n, double *x, int i, int j, int incx)
 
 
 void magma_dgetf2_swap(
-    magma_int_t n, double *x, magma_int_t i, magma_int_t j, magma_int_t incx)
+    magma_int_t n, double *x, magma_int_t i, magma_int_t j, magma_int_t incx,
+    magma_queue_t queue )
 {
-    /*
-    dswap two row vectors: ith and jth
-    */
+    /* dswap two row vectors: ith and jth */
     dim3 threads( dswap_bs );
     dim3 grid( magma_ceildiv( n, dswap_bs ) );
     kernel_dswap
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         (n, x, i, j, incx);
 }
 
@@ -196,7 +198,9 @@ void kernel_dscal_dger(int m, int n, double *A, int lda)
 
 
 void magma_dscal_dger(
-    magma_int_t m, magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda)
+    magma_int_t m, magma_int_t n,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    magma_queue_t queue )
 {
     /*
     Specialized kernel that merges dscal and dger
@@ -208,6 +212,6 @@ void magma_dscal_dger(
     dim3 grid( magma_ceildiv( m, dger_bs ) );
     size_t shared_size = sizeof(double)*(n);
     kernel_dscal_dger
-        <<< grid, threads, shared_size, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, shared_size, queue->cuda_stream() >>>
         (m, n, dA, ldda);
 }

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -132,7 +132,7 @@
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -276,10 +276,7 @@ magma_dsygvdx(
         liwmin = 1;
     }
     
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = lwmin * one_eps;
+    work[0]  = magma_dmake_lwork( lwmin );
     iwork[0] = liwmin;
 
     if (lwork < lwmin && ! lquery) {
@@ -414,7 +411,7 @@ magma_dsygvdx(
     magma_queue_sync( queue );
     magma_queue_destroy( queue );
 
-    work[0]  = lwmin * one_eps;  // round up
+    work[0]  = magma_dmake_lwork( lwmin );
     iwork[0] = liwmin;
 
     magma_free( dA );  dA=NULL;

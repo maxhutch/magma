@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zgeqrf_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgeqrf_gpu.cpp normal z -> d, Fri Jan 22 21:41:34 2016
 */
 #include "magma_internal.h"
 
@@ -68,7 +68,7 @@ void dsplit_diag_block_invert(
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the M-by-N matrix A.
             On exit, the elements on and above the diagonal of the array
             contain the min(M,N)-by-N upper trapezoidal matrix R (R is
@@ -84,12 +84,12 @@ void dsplit_diag_block_invert(
             divisible by 16.
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (min(M,N))
+    tau     DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    dT      (workspace) DOUBLE_PRECISION array on the GPU,
+    dT      (workspace) DOUBLE PRECISION array on the GPU,
             dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB,
             where NB can be obtained through magma_get_dgeqrf_nb( M, N ).
             It starts with a MIN(M,N)*NB block that stores the triangular T

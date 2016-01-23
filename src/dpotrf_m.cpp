@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zpotrf_m.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zpotrf_m.cpp normal z -> d, Fri Jan 22 21:41:30 2016
 
 */
 #include <cuda_runtime.h>
@@ -46,7 +46,7 @@
              The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A        DOUBLE_PRECISION array, dimension (LDA,N)
+    A        DOUBLE PRECISION array, dimension (LDA,N)
              On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
              N-by-N upper triangular part of A contains the upper
              triangular part of the matrix A, and the strictly lower
@@ -95,7 +95,7 @@ magma_dpotrf_m(
     double     c_one     = MAGMA_D_ONE;
     double     c_neg_one = MAGMA_D_NEG_ONE;
     const char* uplo_  = lapack_uplo_const( uplo  );
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     double *dwork[MagmaMaxGPUs], *dt[MagmaMaxGPUs];
     magma_int_t     ldda, lddla, nb, iinfo, n_local[MagmaMaxGPUs], J2, d, ngpu0 = ngpu;

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zhetrd_gpu.cpp normal z -> c, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zhetrd_gpu.cpp normal z -> c, Fri Jan 22 21:42:46 2016
 
 */
 
@@ -60,13 +60,12 @@ int main( int argc, char** argv)
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("Running version %d; available are (specified through --version num):\n",
-           (int) opts.version);
-    printf("1 - uses CHEMV from CUBLAS (default)\n");
-    printf("2 - uses CHEMV from MAGMA BLAS that requires extra space\n\n");
+    printf("%% Available versions (specify with --version):\n");
+    printf("%% 1 - magma_chetrd_gpu:   uses CHEMV from CUBLAS (default)\n");
+    printf("%% 2 - magma_chetrd2_gpu:  uses CHEMV from MAGMA BLAS that requires extra space\n\n");
 
-    printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("%% N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
+    printf("%% uplo = %s, version %d\n", lapack_uplo_const(opts.uplo), int(opts.version) );
+    printf("%% N     CPU Gflop/s (sec)   GPU Gflop/s (sec)   |A-QHQ^H|/N|A|   |I-QQ^H|/N\n");
     printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -111,9 +110,10 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_chetrd_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Check the factorization
@@ -165,9 +165,10 @@ int main( int argc, char** argv)
                                   h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_chetrd returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
             }
             
             /* =====================================================================

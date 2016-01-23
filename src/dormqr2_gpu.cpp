@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zunmqr2_gpu.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zunmqr2_gpu.cpp normal z -> d, Fri Jan 22 21:41:36 2016
 
 */
 #include "magma_internal.h"
@@ -25,7 +25,7 @@
     TRANS = MagmaTrans:   Q**H * C            C * Q**H
     @endverbatim
 
-    where Q is a real unitary matrix defined as the product of k
+    where Q is a real orthogonal matrix defined as the product of k
     elementary reflectors
 
           Q = H(1) H(2) . . . H(k)
@@ -62,7 +62,7 @@
             if SIDE = MagmaRight, N >= K >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,K)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
             DGEQRF in the first k columns of its array argument dA.
@@ -76,12 +76,12 @@
             if SIDE = MagmaRight, LDDA >= max(1,N).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (K)
+    tau     DOUBLE PRECISION array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGEQRF.
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on the GPU, dimension (LDDC,N)
+    dC      DOUBLE PRECISION array on the GPU, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).
 
@@ -90,7 +90,7 @@
             The leading dimension of the array dC. LDDC >= max(1,M).
 
     @param[in]
-    wA      DOUBLE_PRECISION array, dimension
+    wA      DOUBLE PRECISION array, dimension
                                  (LDWA,M) if SIDE = MagmaLeft
                                  (LDWA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as

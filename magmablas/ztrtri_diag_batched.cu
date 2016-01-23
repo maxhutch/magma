@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -16,7 +16,7 @@
        in the library. The actual kernels are in ztrtri_lower.cu and ztrtri_upper.cu
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "ztrtri.cuh"
 
 

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlacpy_sym_out.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlacpy_sym_out.cu normal z -> d, Fri Jan 22 21:42:00 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -82,7 +82,7 @@ void dlacpy_sym_out_lower_device(
             for( int jj=0; jj < BLK_Y; ++jj ) {
                 int j = rows[2*(iby+jj)+1];
                 if (ind <= j)
-                    dB[j + ind*ldda] = MAGMA_D_CNJG( dA[ind + (iby+jj)*lddb] );
+                    dB[j + ind*ldda] = MAGMA_D_CONJ( dA[ind + (iby+jj)*lddb] );
                 else
                     dB[ind + j*ldda] = dA[ind + (iby+jj)*lddb];
             }
@@ -92,7 +92,7 @@ void dlacpy_sym_out_lower_device(
             for( int jj=0; jj < BLK_Y && iby+jj < n; ++jj ) {
                 int j = rows[2*(iby+jj)+1];
                 if (ind <= j)
-                    dB[j + ind*ldda] = MAGMA_D_CNJG( dA[ind + (iby+jj)*lddb] );
+                    dB[j + ind*ldda] = MAGMA_D_CONJ( dA[ind + (iby+jj)*lddb] );
                 else
                     dB[ind + j*ldda] = dA[ind + (iby+jj)*lddb];
             }
@@ -209,7 +209,7 @@ void dlacpy_sym_out_upper_kernel(
             On exit, it is restored to be identity permutation.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
@@ -220,7 +220,7 @@ void dlacpy_sym_out_upper_kernel(
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
     @param[in]
-    dB      DOUBLE_PRECISION array, dimension (LDDB,N)
+    dB      DOUBLE PRECISION array, dimension (LDDB,N)
             The M-by-N matrix dB.
             On entry, dB stores the columns after row pivoting is applied.
     
@@ -275,19 +275,4 @@ magmablas_dlacpy_sym_out_q(
     else {
         dlacpy_sym_out_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, dA, ldda, dB, lddb );
     }
-}
-
-
-/**
-    @see magmablas_dlacpy_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dlacpy_sym_out(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magma_int_t *rows, magma_int_t *perm,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr       dB, magma_int_t lddb )
-{
-    magmablas_dlacpy_sym_out_q( uplo, m, n, rows, perm, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

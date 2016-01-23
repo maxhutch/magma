@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -30,6 +30,7 @@ magma_int_t zsyrk_d(
     magmaDoubleComplex *Akj;
 
     /* Check input arguments */
+    magma_int_t i, j, k;
     magma_int_t info = 0;
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
         info = -1;
@@ -62,13 +63,13 @@ magma_int_t zsyrk_d(
     }
 
     if ( uplo == MagmaLower ) {
-        for (int j=0; j < m; j++) {
-            for (int i=j; i < m; i++) {
+        for (j=0; j < m; j++) {
+            for (i=j; i < m; i++) {
                 magmaDoubleComplex tmp = MAGMA_Z_ZERO;
                 Aik = A+i;
                 Dkk = D;
                 Akj = A+j;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += (*Aik) * (*Dkk) * ( *Akj );
                     Aik += lda; 
                     Dkk += incD; 
@@ -79,10 +80,10 @@ magma_int_t zsyrk_d(
         }
     }
     else {
-        for (int j=0; j < m; j++) {
-            for (int i=0; i <= j; i++) {
+        for (j=0; j < m; j++) {
+            for (i=0; i <= j; i++) {
                 magmaDoubleComplex tmp = MAGMA_Z_ZERO;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += A(i, k) * D( k ) * A(k, j);
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;

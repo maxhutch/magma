@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
   
-       @generated from src/zgeqp3.cpp normal z -> d, Wed Jan  6 17:59:32 2016
+       @generated from src/zgeqp3.cpp normal z -> d, Fri Jan 22 21:41:39 2016
 
        @author Stan Tomov
        @author Ichitaro Yamazaki
@@ -34,12 +34,12 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, the upper triangle of the array contains the
             min(M,N)-by-N upper trapezoidal matrix R; the elements below
             the diagonal, together with the array TAU, represent the
-            unitary matrix Q as a product of min(M,N) elementary
+            orthogonal matrix Q as a product of min(M,N) elementary
             reflectors.
 
     @param[in]
@@ -55,11 +55,11 @@
             the K-th column of A.
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (min(M,N))
+    tau     DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors.
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO=0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -141,7 +141,7 @@ magma_dgeqp3(
             lwkopt += 2*n;
             #endif
         }
-        work[0] = MAGMA_D_MAKE( lwkopt, 0. );
+        work[0] = magma_dmake_lwork( lwkopt );
 
         if (lwork < lwkopt && ! lquery) {
             *info = -8;
@@ -282,7 +282,7 @@ magma_dgeqp3(
         }
     }
 
-    work[0] = MAGMA_D_MAKE( lwkopt, 0. );
+    work[0] = magma_dmake_lwork( lwkopt );
     magma_free( dwork );
 
     magma_queue_destroy( queue );

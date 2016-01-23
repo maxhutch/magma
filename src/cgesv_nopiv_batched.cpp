@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Azzam Haidar
 
-       @generated from src/zgesv_nopiv_batched.cpp normal z -> c, Wed Jan  6 17:59:35 2016
+       @generated from src/zgesv_nopiv_batched.cpp normal z -> c, Fri Jan 22 21:41:55 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -91,7 +91,6 @@ magma_cgesv_nopiv_batched(
                   magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
-    
     magma_int_t info;
     info = 0;
     if (n < 0) {
@@ -123,7 +122,7 @@ magma_cgesv_nopiv_batched(
     magma_int_t *cpu_info = NULL;
     magma_imalloc_cpu( &cpu_info, batchCount );
     magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
-    for (int i=0; i < batchCount; i++)
+    for (magma_int_t i=0; i < batchCount; i++)
     {
         if (cpu_info[i] != 0 ) {
             printf("magma_cgetrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );

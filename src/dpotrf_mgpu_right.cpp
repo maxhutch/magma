@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from src/zpotrf_mgpu_right.cpp normal z -> d, Wed Jan  6 17:59:29 2016
+       @generated from src/zpotrf_mgpu_right.cpp normal z -> d, Fri Jan 22 21:41:29 2016
 
 */
 #include "common_magma.h"
@@ -44,7 +44,7 @@
             The order of the matrix dA.  N >= 0.
 
     @param[in,out]
-    d_lA    DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu)
+    d_lA    DOUBLE PRECISION array of pointers on the GPU, dimension (ngpu)
             On entry, the symmetric matrix dA distributed over GPUs
             (dl_A[d] points to the local matrix on the d-th GPU).
             It is distributed in 1D block column or row cyclic (with the

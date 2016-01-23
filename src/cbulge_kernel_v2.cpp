@@ -7,11 +7,11 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from src/zbulge_kernel_v2.cpp normal z -> c, Wed Jan  6 17:59:33 2016
+ *     @generated from src/zbulge_kernel_v2.cpp normal z -> c, Fri Jan 22 21:41:46 2016
  *
  */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 inline static void

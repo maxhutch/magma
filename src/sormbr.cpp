@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from src/zunmbr.cpp normal z -> s, Wed Jan  6 17:59:35 2016
+       @generated from src/zunmbr.cpp normal z -> s, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -33,13 +33,13 @@
     TRANS = MagmaNoTrans:        P*C                  C*P
     TRANS = MagmaTrans:     P**H*C               C*P**H
     
-    Here Q and P**H are the unitary matrices determined by SGEBRD when
+    Here Q and P**H are the orthogonal matrices determined by SGEBRD when
     reducing A real matrix A to bidiagonal form: A = Q*B * P**H. Q
     and P**H are defined as products of elementary reflectors H(i) and
     G(i) respectively.
     
     Let nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Thus nq is the
-    order of the unitary matrix Q or P**H that is applied.
+    order of the orthogonal matrix Q or P**H that is applied.
     
     If VECT = MagmaQ, A is assumed to have been an NQ-by-K matrix:
     if nq >= k, Q = H(1) H(2) . . . H(k);
@@ -218,7 +218,7 @@ magma_sormbr(
         else {
             lwkopt = 1;
         }
-        work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+        work[0] = magma_smake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -312,6 +312,6 @@ magma_sormbr(
             #endif
         }
     }
-    work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
     return *info;
 } /* magma_sormbr */

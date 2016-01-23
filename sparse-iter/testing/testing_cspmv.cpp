@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from sparse-iter/testing/testing_zspmv.cpp normal z -> c, Wed Jan  6 17:59:51 2016
+       @generated from sparse-iter/testing/testing_zspmv.cpp normal z -> c, Fri Jan 22 21:42:52 2016
        @author Hartwig Anzt
 */
 

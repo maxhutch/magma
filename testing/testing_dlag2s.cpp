@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlag2c.cpp mixed zc -> ds, Wed Jan  6 17:59:45 2016
+       @generated from testing/testing_zlag2c.cpp mixed zc -> ds, Fri Jan 22 21:42:35 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -77,9 +77,10 @@ int main( int argc, char** argv )
             lapackf77_dlag2s( &m, &n, A, &lda, SA, &lda, &info );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_dlag2s returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* ====================================================================
                Performs operation using MAGMA dlag2s
@@ -89,9 +90,10 @@ int main( int argc, char** argv )
             magmablas_dlag2s( m, n, dA, ldda, dSA, ldda, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magmablas_dlag2s returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             magma_sgetmatrix( m, n, dSA, ldda, SR, lda );
             
@@ -124,9 +126,10 @@ int main( int argc, char** argv )
             lapackf77_slag2d( &m, &n, SA, &lda, A, &lda, &info );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_slag2d returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* ====================================================================
                Performs operation using MAGMA slag2d
@@ -137,9 +140,10 @@ int main( int argc, char** argv )
             magmablas_slag2d( m, n, dSA, ldda, dA, ldda, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magmablas_slag2d returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             magma_dgetmatrix( m, n, dA, ldda, R, lda );
             

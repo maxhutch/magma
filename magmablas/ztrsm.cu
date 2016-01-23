@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,11 +11,6 @@
        @author Tingxing Dong
        @author Mark Gates
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 #include "ztrtri.cuh"  // get NB from ztrtri
 
@@ -482,69 +477,4 @@ void magmablas_ztrsm_q(
 
     magma_free( d_dinvA );
     magma_free( dX );
-}
-
-
-// ------------------------------------------------------------
-// define v1 interface
-#undef magmablas_ztrsm_outofplace
-#undef magmablas_ztrsm_work
-#undef magmablas_ztrsm
-
-/**
-    @see magmablas_ztrsm_outofplace_q
-    @ingroup magma_zblas3
-    ********************************************************************/
-extern "C"
-void magmablas_ztrsm_outofplace(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_ptr       dB, magma_int_t lddb,
-    magmaDoubleComplex_ptr       dX, magma_int_t lddx,
-    magma_int_t flag,
-    magmaDoubleComplex_ptr d_dinvA, magma_int_t dinvA_length )
-{
-    magmablas_ztrsm_outofplace_q( side, uplo, transA, diag, m, n, alpha,
-                                  dA, ldda, dB, lddb, dX, lddx, flag,
-                                  d_dinvA, dinvA_length, magmablasGetQueue() );
-}
-
-
-/**
-    @see magmablas_ztrsm_work_q
-    @ingroup magma_zblas3
-    ********************************************************************/
-extern "C"
-void magmablas_ztrsm_work(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_ptr       dB, magma_int_t lddb,
-    magmaDoubleComplex_ptr       dX, magma_int_t lddx,
-    magma_int_t flag,
-    magmaDoubleComplex_ptr d_dinvA, magma_int_t dinvA_length )
-{
-    magmablas_ztrsm_work_q( side, uplo, transA, diag, m, n, alpha,
-                            dA, ldda, dB, lddb, dX, lddx, flag,
-                            d_dinvA, dinvA_length, magmablasGetQueue() );
-}
-
-
-/**
-    @see magmablas_ztrsm_q
-    @ingroup magma_zblas3
-    ********************************************************************/
-extern "C"
-void magmablas_ztrsm(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_ptr       dB, magma_int_t lddb )
-{
-    magmablas_ztrsm_q( side, uplo, transA, diag, m, n, alpha, dA, ldda, dB, lddb,
-                       magmablasGetQueue() );
 }

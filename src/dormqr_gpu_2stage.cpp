@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,10 +9,10 @@
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zunmqr_gpu_2stage.cpp normal z -> d, Wed Jan  6 17:59:33 2016
+       @generated from src/zunmqr_gpu_2stage.cpp normal z -> d, Fri Jan 22 21:41:46 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -25,7 +25,7 @@
     TRANS = MagmaTrans:   Q**H * C            C * Q**H
     @endverbatim
 
-    where Q is a real unitary matrix defined as the product of k
+    where Q is a real orthogonal matrix defined as the product of k
     elementary reflectors
 
         Q = H(1) H(2) . . . H(k)
@@ -61,7 +61,7 @@
             if SIDE = MagmaRight, N >= K >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,K)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
             DGEQRF in the first k columns of its array argument DA.
@@ -74,7 +74,7 @@
             if SIDE = MagmaRight, LDDA >= max(1,N).
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on the GPU, dimension (LDDC,N)
+    dC      DOUBLE PRECISION array on the GPU, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
 
@@ -83,7 +83,7 @@
             The leading dimension of the array DC. LDDC >= max(1,M).
 
     @param[in]
-    dT      DOUBLE_PRECISION array on the GPU that is the output
+    dT      DOUBLE PRECISION array on the GPU that is the output
             (the 9th argument) of magma_dgeqrf_gpu.
 
     @param[in]
@@ -113,12 +113,11 @@ magma_dormqr_gpu_2stages(
     magmaDouble_ptr dwork;
 
     magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw;
-    int left, notran;
     //magma_int_t lwkopt;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    notran = (trans == MagmaNoTrans);
+    bool left   = (side == MagmaLeft);
+    bool notran = (trans == MagmaNoTrans);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -160,6 +159,11 @@ magma_dormqr_gpu_2stages(
         return *info;
     }
 
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+
     if ( (left && (! notran)) || ( (! left) && notran ) ) {
         i1 = 0;
         i2 = k;
@@ -194,9 +198,11 @@ magma_dormqr_gpu_2stages(
         }
         magma_dlarfb_gpu( MagmaLeft, trans, MagmaForward, MagmaColumnwise,
                           mi, ni, ib, dA(i,i), ldda, dT+i*nb, nb,
-                          dC(ic,jc), lddc, dwork, nw );
+                          dC(ic,jc), lddc, dwork, nw, queues[0] );
     }
     
+    magma_queue_sync( queues[0] );
+    magma_queue_destroy( queues[0] );
     magma_free( dwork );
     return *info;
 } /* magma_dormqr_gpu_2stages */

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -117,9 +117,10 @@ int main( int argc, char** argv)
             magmablas_zlascl( uplo[iuplo], 1, 1, cfrom, cto, M, N, d_A, ldda, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magmablas_zlascl returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -131,9 +132,10 @@ int main( int argc, char** argv)
             lapackf77_zlascl( lapack_uplo_const( uplo[iuplo] ), &ione, &ione, &cfrom, &cto, &M, &N, h_A, &lda, &info );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_zlascl returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Check the result

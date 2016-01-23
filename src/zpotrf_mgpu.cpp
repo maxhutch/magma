@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -80,7 +80,7 @@ magma_zpotrf_mgpu(
     magma_int_t     j, nb, d, lddp, h;
     const char* uplo_ = lapack_uplo_const( uplo );
     magmaDoubleComplex *work;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     magmaDoubleComplex *dwork[MagmaMaxGPUs];
     magma_queue_t    queues[MagmaMaxGPUs][3];
     magma_event_t     event[MagmaMaxGPUs][5];

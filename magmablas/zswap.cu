@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -73,18 +73,4 @@ magmablas_zswap_q(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( n, NB ) );
     zswap_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dx, incx, dy, incy );
-}
-
-
-/**
-    @see magmablas_zswap_q
-    @ingroup magma_zblas1
-    ********************************************************************/
-extern "C" void 
-magmablas_zswap(
-    magma_int_t n,
-    magmaDoubleComplex_ptr dx, magma_int_t incx, 
-    magmaDoubleComplex_ptr dy, magma_int_t incy)
-{
-    magmablas_zswap_q( n, dx, incx, dy, incy, magmablasGetQueue() );
 }

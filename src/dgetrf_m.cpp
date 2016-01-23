@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgetrf_m.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zgetrf_m.cpp normal z -> d, Fri Jan 22 21:41:33 2016
 
 */
 #include <cuda_runtime.h>
@@ -49,7 +49,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.

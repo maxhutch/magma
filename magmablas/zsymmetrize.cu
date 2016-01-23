@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions normal z -> s d c
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -30,7 +30,7 @@ zsymmetrize_lower( int m, magmaDoubleComplex *dA, int ldda )
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dAT = MAGMA_Z_CNJG(*dA);  // upper := lower
+            *dAT = MAGMA_Z_CONJ(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
@@ -50,7 +50,7 @@ zsymmetrize_upper( int m, magmaDoubleComplex *dA, int ldda )
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dA = MAGMA_Z_CNJG(*dAT);  // lower := upper
+            *dA = MAGMA_Z_CONJ(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
@@ -123,17 +123,4 @@ magmablas_zsymmetrize_q(
     else {
         zsymmetrize_lower<<< grid, threads, 0, queue->cuda_stream() >>>( m, dA, ldda );
     }
-}
-
-
-/**
-    @see magmablas_zsymmetrize_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zsymmetrize(
-    magma_uplo_t uplo, magma_int_t m,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda )
-{
-    magmablas_zsymmetrize_q( uplo, m, dA, ldda, magmablasGetQueue() );
 }

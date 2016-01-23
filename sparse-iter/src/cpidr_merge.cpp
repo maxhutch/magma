@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Eduardo Ponce
        @author Moritz Kreutzer
 
-       @generated from sparse-iter/src/zpidr_merge.cpp normal z -> c, Wed Jan  6 17:59:46 2016
+       @generated from sparse-iter/src/zpidr_merge.cpp normal z -> c, Fri Jan 22 21:42:28 2016
 */
 
 #include "magmasparse_internal.h"

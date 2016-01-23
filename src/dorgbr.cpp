@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from src/zungbr.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zungbr.cpp normal z -> d, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    DORGBR generates one of the real unitary matrices Q or P**H
+    DORGBR generates one of the real orthogonal matrices Q or P**H
     determined by DGEBRD when reducing a real matrix A to bidiagonal
     form: A = Q * B * P**H.  Q and P**H are defined as products of
     elementary reflectors H(i) or G(i) respectively.
@@ -173,7 +173,7 @@ magma_dorgbr(
         return *info;
     }
     else if (lquery) {
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
         return *info;
     }
 
@@ -242,6 +242,6 @@ magma_dorgbr(
         }
     }
     
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
     return *info;
 }

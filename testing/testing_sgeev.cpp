@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from testing/testing_dgeev.cpp normal d -> s, Wed Jan  6 17:59:51 2016
+       @generated from testing/testing_dgeev.cpp normal d -> s, Fri Jan 22 21:42:47 2016
 
 */
 
@@ -24,7 +24,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_s
 #define REAL
 
 
@@ -138,30 +137,29 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
             if (opts.ngpu == 1) {
-                printf( "magma_sgeev\n" );
                 magma_sgeev( opts.jobvl, opts.jobvr,
                              N, h_R, lda, w1, w1i,
                              VL, lda, VR, lda,
                              h_work, lwork, &info );
             }
             else {
-                printf( "magma_sgeev_m\n" );
                 magma_sgeev_m( opts.jobvl, opts.jobvr,
                                N, h_R, lda, w1, w1i,
                                VL, lda, VR, lda,
                                h_work, lwork, &info );
             }
             gpu_time = magma_wtime() - gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_sgeev returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
 
             /* =====================================================================
                Check the result
@@ -306,7 +304,7 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_PIN( LRE, float, n2 );
                 
                 lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-                lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 
                 // ----------
                 // Compute eigenvalues, left and right eigenvectors
@@ -322,14 +320,15 @@ int main( int argc, char** argv)
                                    VL, lda, VR, lda,
                                    h_work, lwork, &info );
                 }
-                if (info != 0)
+                if (info != 0) {
                     printf("magma_sgeev (case V, V) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // ----------
                 // Compute eigenvalues only
                 // These are not exactly equal, and not in the same order, so skip for now.
-                //lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                //lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 //if (opts.ngpu == 1) {
                 //    magma_sgeev( MagmaNoVec, MagmaNoVec,
                 //                 N, h_R, lda, w2, w2i,
@@ -342,9 +341,10 @@ int main( int argc, char** argv)
                 //                   &DUM, 1, &DUM, 1,
                 //                   h_work, lwork, &info );
                 //}
-                //if (info != 0)
+                //if (info != 0) {
                 //    printf("magma_sgeev (case N, N) returned error %d: %s.\n",
                 //           (int) info, magma_strerror( info ));
+                //}
                 //
                 //// Do test 5: W(full) = W(partial, W only)
                 //result[4] = 1;
@@ -354,7 +354,7 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues and right eigenvectors
-                lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 if (opts.ngpu == 1) {
                     magma_sgeev( MagmaNoVec, MagmaVec,
                                  N, h_R, lda, w2, w2i,
@@ -367,9 +367,10 @@ int main( int argc, char** argv)
                                    &DUM, 1, LRE, lda,
                                    h_work, lwork, &info );
                 }
-                if (info != 0)
+                if (info != 0) {
                     printf("magma_sgeev (case N, V) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // Do test 6: W(full) = W(partial, W and VR)
                 result[5] = 1;
@@ -386,7 +387,7 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues and left eigenvectors
-                lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 if (opts.ngpu == 1) {
                     magma_sgeev( MagmaVec, MagmaNoVec,
                                  N, h_R, lda, w2, w2i,
@@ -399,9 +400,10 @@ int main( int argc, char** argv)
                                    LRE, lda, &DUM, 1,
                                    h_work, lwork, &info );
                 }
-                if (info != 0)
+                if (info != 0) {
                     printf("magma_sgeev (case V, N) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // Do test 7: W(full) = W(partial, W and VL)
                 result[6] = 1;
@@ -430,9 +432,10 @@ int main( int argc, char** argv)
                                  VL, &lda, VR, &lda,
                                  h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_sgeev returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // check | W_magma - W_lapack | / | W |
                 // need to sort eigenvalues first
@@ -474,9 +477,9 @@ int main( int argc, char** argv)
             }
             if ( opts.check ) {
                 // -1 indicates test was not run
-                if ( result[0] != -1 ) { printf("        | A * VR - VR * W | / ( n |A| ) = %8.2e   %s\n", result[0], (result[0] < tol ? "ok" : "failed")); }
+                if ( result[0] != -1 ) { printf("        | A * VR - VR * W |   / (n |A|) = %8.2e   %s\n", result[0], (result[0] < tol ? "ok" : "failed")); }
                 if ( result[1] != -1 ) { printf("        |  |VR(i)| - 1    |             = %8.2e   %s\n", result[1], (result[1] < tol ? "ok" : "failed")); }
-                if ( result[2] != -1 ) { printf("        | A'* VL - VL * W'| / ( n |A| ) = %8.2e   %s\n", result[2], (result[2] < tol ? "ok" : "failed")); }
+                if ( result[2] != -1 ) { printf("        |A^H * VL - VL * W^H| / (n |A|) = %8.2e   %s\n", result[2], (result[2] < tol ? "ok" : "failed")); }
                 if ( result[3] != -1 ) { printf("        |  |VL(i)| - 1    |             = %8.2e   %s\n", result[3], (result[3] < tol ? "ok" : "failed")); }
                 if ( result[4] != -1 ) { printf("        W  (full) == W  (partial, W only)           %s\n",         (result[4] == 1. ? "ok" : "failed")); }
                 if ( result[5] != -1 ) { printf("        W  (full) == W  (partial, W and VR)         %s\n",         (result[5] == 1. ? "ok" : "failed")); }
@@ -484,16 +487,16 @@ int main( int argc, char** argv)
                 if ( result[7] != -1 ) { printf("        VR (full) == VR (partial, W and VR)         %s\n",         (result[7] == 1. ? "ok" : "failed")); }
                 if ( result[8] != -1 ) { printf("        VL (full) == VL (partial, W and VL)         %s\n",         (result[8] == 1. ? "ok" : "failed")); }
                 
-                int newline = 0;
-                if ( result[0] != -1 ) { status += ! (result[0] < tol);  newline = 1; }
-                if ( result[1] != -1 ) { status += ! (result[1] < tol);  newline = 1; }
-                if ( result[2] != -1 ) { status += ! (result[2] < tol);  newline = 1; }
-                if ( result[3] != -1 ) { status += ! (result[3] < tol);  newline = 1; }
-                if ( result[4] != -1 ) { status += ! (result[4] == 1.);  newline = 1; }
-                if ( result[5] != -1 ) { status += ! (result[5] == 1.);  newline = 1; }
-                if ( result[6] != -1 ) { status += ! (result[6] == 1.);  newline = 1; }
-                if ( result[7] != -1 ) { status += ! (result[7] == 1.);  newline = 1; }
-                if ( result[8] != -1 ) { status += ! (result[8] == 1.);  newline = 1; }
+                bool newline = false;
+                if ( result[0] != -1 ) { status += ! (result[0] < tol);  newline = true; }
+                if ( result[1] != -1 ) { status += ! (result[1] < tol);  newline = true; }
+                if ( result[2] != -1 ) { status += ! (result[2] < tol);  newline = true; }
+                if ( result[3] != -1 ) { status += ! (result[3] < tol);  newline = true; }
+                if ( result[4] != -1 ) { status += ! (result[4] == 1.);  newline = true; }
+                if ( result[5] != -1 ) { status += ! (result[5] == 1.);  newline = true; }
+                if ( result[6] != -1 ) { status += ! (result[6] == 1.);  newline = true; }
+                if ( result[7] != -1 ) { status += ! (result[7] == 1.);  newline = true; }
+                if ( result[8] != -1 ) { status += ! (result[8] == 1.);  newline = true; }
                 if ( newline ) {
                     printf( "\n" );
                 }

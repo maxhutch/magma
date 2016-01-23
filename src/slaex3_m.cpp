@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
        @author Raffaele Solca
-       @generated from src/dlaex3_m.cpp normal d -> s, Wed Jan  6 17:59:35 2016
+       @generated from src/dlaex3_m.cpp normal d -> s, Fri Jan 22 21:41:44 2016
 */
 
 #ifdef _OPENMP
@@ -651,7 +651,7 @@ magma_slaex3_m(
                     if (n23 != 0) {
                         magma_setdevice( dev+1 );
                         magma_sgetmatrix( ni_loc[dev+1], ib, dQ(dev+1, ind), n2_loc,
-                                          Q(n1+n2_loc*(dev/2),iil-1+i), ldq, queues[dev][ind] );
+                                          Q(n1+n2_loc*(dev/2),iil-1+i), ldq, queues[dev+1][ind] );
                         //magma_sgetmatrix_async( ni_loc[dev+1], ib, dQ(dev+1, ind), n2_loc,
                         //                        Q(n1+n2_loc*(dev/2),iil-1+i), ldq, queues[dev+1][ind] );
                     }

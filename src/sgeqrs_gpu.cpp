@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqrs_gpu.cpp normal z -> s, Wed Jan  6 17:59:30 2016
+       @generated from src/zgeqrs_gpu.cpp normal z -> s, Fri Jan 22 21:41:35 2016
 
 */
 #include "magma_internal.h"
@@ -113,7 +113,7 @@ magma_sgeqrs_gpu(
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
 
-    hwork[0] = MAGMA_S_MAKE( (float)lwkopt, 0. );
+    hwork[0] = magma_smake_lwork( lwkopt );
 
     *info = 0;
     if (m < 0)

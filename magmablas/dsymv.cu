@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       dsymv.cu is nearly identical to dsymv.cu, just change names and drop MAGMA_D_CNJG.
+       dsymv.cu is nearly identical to dsymv.cu, just change names and drop MAGMA_D_CONJ.
        
        dsymv_kernel_U (upper) in dsymv_upper.cu is very similar to
        dsymv_kernel_L (lower) in dsymv.cu; diff the two files to compare.
        
-       @generated from magmablas/zhemv.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zhemv.cu normal z -> d, Fri Jan 22 21:41:59 2016
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_d.h"
 
 #define PRECISION_d
@@ -154,7 +154,7 @@ dsymv_kernel_L(
     #pragma unroll
     for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j < tx2 ) {
-            sA32(j, tx2) = MAGMA_D_CNJG( sA32(tx2, j) );
+            sA32(j, tx2) = MAGMA_D_CONJ( sA32(tx2, j) );
         }
     }
     __syncthreads();
@@ -215,7 +215,7 @@ dsymv_kernel_L(
     #pragma unroll
     for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j < tx2 ) {
-            sA32(j, tx2) = MAGMA_D_CNJG( sA32(tx2, j) );
+            sA32(j, tx2) = MAGMA_D_CONJ( sA32(tx2, j) );
         }
     }
     __syncthreads();
@@ -285,7 +285,7 @@ dsymv_kernel_L(
     psum_t = MAGMA_D_ZERO;
     #pragma unroll
     for (int j=0; j < 4; j++) {
-        psum_t += MAGMA_D_CNJG( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
+        psum_t += MAGMA_D_CONJ( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
     }
     __syncthreads();
 
@@ -362,7 +362,7 @@ dsymv_kernel_L(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = MAGMA_D_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_D_CONJ( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
 
@@ -496,11 +496,11 @@ dsymv_kernel_L_sum(
             N must be at least zero.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of DIMENSION ( LDDA, n ).
+    dA      DOUBLE PRECISION array of DIMENSION ( LDDA, n ).
             Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the symmetric matrix and the strictly
@@ -522,7 +522,7 @@ dsymv_kernel_L_sum(
             would not be fully coalescent.
 
     @param[in]
-    dx      DOUBLE_PRECISION array of dimension at least
+    dx      DOUBLE PRECISION array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -533,12 +533,12 @@ dsymv_kernel_L_sum(
             X. INCX must not be zero.
 
     @param[in]
-    beta    DOUBLE_PRECISION.
+    beta    DOUBLE PRECISION.
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array of dimension at least
+    dy      DOUBLE PRECISION array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -550,7 +550,7 @@ dsymv_kernel_L_sum(
             Y. INCY must not be zero.
 
     @param[in]
-    dwork   (workspace) DOUBLE_PRECISION array on the GPU, dimension (MAX(1, LWORK)),
+    dwork   (workspace) DOUBLE PRECISION array on the GPU, dimension (MAX(1, LWORK)),
 
     @param[in]
     lwork   INTEGER.
@@ -594,14 +594,14 @@ magmablas_dsymv_work(
     // z precision requires CUDA ARCH 2.x; call CUBLAS version instead.
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        magma_dsymv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
+        magma_dsymv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy, queue );
         return MAGMA_SUCCESS;
     }
 #endif
 
     // --------------------
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     magma_int_t blocks = magma_ceildiv( n, NB_X );
     magma_int_t lwmin  = ldda*blocks;
@@ -684,11 +684,11 @@ magmablas_dsymv_work(
             N must be at least zero.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of DIMENSION ( LDDA, n ).
+    dA      DOUBLE PRECISION array of DIMENSION ( LDDA, n ).
             Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the symmetric matrix and the strictly
@@ -710,7 +710,7 @@ magmablas_dsymv_work(
             would not be fully coalescent.
 
     @param[in]
-    dx      DOUBLE_PRECISION array of dimension at least
+    dx      DOUBLE PRECISION array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -721,12 +721,12 @@ magmablas_dsymv_work(
             X. INCX must not be zero.
 
     @param[in]
-    beta    DOUBLE_PRECISION.
+    beta    DOUBLE PRECISION.
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array of dimension at least
+    dy      DOUBLE PRECISION array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -741,26 +741,27 @@ magmablas_dsymv_work(
     ********************************************************************/
 extern "C"
 magma_int_t
-magmablas_dsymv(
+magmablas_dsymv_q(
     magma_uplo_t uplo, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_const_ptr dx, magma_int_t incx,
     double beta,
-    magmaDouble_ptr dy, magma_int_t incy)
+    magmaDouble_ptr dy, magma_int_t incy,
+    magma_queue_t queue )
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; call CUBLAS version instead.
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        magma_dsymv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
+        magma_dsymv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy, queue );
         return MAGMA_SUCCESS;
     }
 #endif
 
     // --------------------
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
@@ -801,7 +802,7 @@ magmablas_dsymv(
     }
     
     magmablas_dsymv_work( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy,
-                          dwork, lwork, magmablasGetQueue() );
+                          dwork, lwork, queue );
     
     magma_free( dwork );
     

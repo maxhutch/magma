@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -147,10 +147,10 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &size, hA );
             
-            // up to half of matrix is NAN, and
-            // up to half of matrix is INF.
-            magma_int_t cnt_nan = (magma_int_t)( (rand() / ((double)RAND_MAX)) * 0.5 * M*N );
-            magma_int_t cnt_inf = (magma_int_t)( (rand() / ((double)RAND_MAX)) * 0.5 * M*N );
+            // up to 25% of matrix is NAN, and
+            // up to 25% of matrix is INF.
+            magma_int_t cnt_nan = (magma_int_t)( (rand() / ((double)RAND_MAX)) * 0.25 * M*N );
+            magma_int_t cnt_inf = (magma_int_t)( (rand() / ((double)RAND_MAX)) * 0.25 * M*N );
             magma_int_t total = cnt_nan + cnt_inf;
             assert( cnt_nan >= 0 );
             assert( cnt_inf >= 0 );
@@ -165,14 +165,14 @@ int main( int argc, char** argv)
             }
             // shuffle indices
             for( cnt=0; cnt < total; ++cnt ) {
-                i = int( rand() / ((double)RAND_MAX) * size );
+                i = magma_int_t( rand() / ((double)RAND_MAX) * size );
                 tmp=ii[cnt];  ii[cnt]=ii[i];  ii[i]=tmp;
                 tmp=jj[cnt];  jj[cnt]=jj[i];  jj[i]=tmp;
             }
             // fill in NAN and INF
             // for uplo, count NAN and INF in triangular portion of A
-            int c_nan=0;
-            int c_inf=0;
+            magma_int_t c_nan=0;
+            magma_int_t c_inf=0;
             for( cnt=0; cnt < cnt_nan; ++cnt ) {
                 i = ii[cnt];
                 j = jj[cnt];

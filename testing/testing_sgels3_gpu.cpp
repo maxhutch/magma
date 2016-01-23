@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgels3_gpu.cpp normal z -> s, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgels3_gpu.cpp normal z -> s, Fri Jan 22 21:42:42 2016
 
 */
 
@@ -21,7 +21,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_s
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing sgels
@@ -50,7 +49,7 @@ int main( int argc, char** argv)
     nrhs = opts.nrhs;
     
     printf("%%                                                           ||b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
-    printf("%%   M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU                         \n");
+    printf("%%   M     N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   CPU        GPU                         \n");
     printf("%%==================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -97,12 +96,12 @@ int main( int argc, char** argv)
             
             /* Initialize the matrices */
             lapackf77_slarnv( &ione, ISEED, &size, h_A );
-            lapackf77_slacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_A2, &lda );
+            lapackf77_slacpy( MagmaFullStr, &M, &N, h_A, &lda, h_A2, &lda );
             
             // make random RHS
             size = M*nrhs;
             lapackf77_slarnv( &ione, ISEED, &size, h_B );
-            lapackf77_slacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
+            lapackf77_slacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
             // make consistent RHS
             //size = N*nrhs;
@@ -111,7 +110,7 @@ int main( int argc, char** argv)
             //               &c_one,  h_A, &lda,
             //                        h_X, &ldb,
             //               &c_zero, h_B, &ldb );
-            //lapackf77_slacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
+            //lapackf77_slacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -124,9 +123,10 @@ int main( int argc, char** argv)
                               d_B, lddb, h_work, lworkgpu, &info);
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_sgels3_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             // Get the solution in h_X
             magma_sgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
@@ -141,16 +141,17 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
-            lapackf77_slacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_X, &ldb );
+            lapackf77_slacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_X, &ldb );
             
             cpu_time = magma_wtime();
             lapackf77_sgels( MagmaNoTransStr, &M, &N, &nrhs,
                              h_A, &lda, h_X, &ldb, h_work, &lhwork, &info);
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_sgels returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             blasf77_sgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
                            &c_neg_one, h_A2, &lda,

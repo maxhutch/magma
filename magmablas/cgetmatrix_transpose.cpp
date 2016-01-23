@@ -1,17 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgetmatrix_transpose.cpp normal z -> c, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zgetmatrix_transpose.cpp normal z -> c, Fri Jan 22 21:42:04 2016
 
 */
-#include "common_magma.h"
-
-#define PRECISION_c
-
+#include "magma_internal.h"
 
 //
 //      m, n - dimensions in the output (hA) matrix.
@@ -55,23 +52,4 @@ magmablas_cgetmatrix_transpose_q(
                                 hA(0,i), lda, queues[j%2] );
         j++;
     }
-}
-
-
-// @see magmablas_cgetmatrix_transpose_q
-extern "C" void 
-magmablas_cgetmatrix_transpose(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr dAT, magma_int_t ldda,
-    magmaFloatComplex          *hA,  magma_int_t lda,
-    magmaFloatComplex_ptr       dwork,  magma_int_t lddwork, magma_int_t nb )
-{
-    magma_queue_t queues[2];
-    magma_queue_create( &queues[0] );
-    magma_queue_create( &queues[1] );
-
-    magmablas_cgetmatrix_transpose_q( m, n, dAT, ldda, hA, lda, dwork, lddwork, nb, queues );
-
-    magma_queue_destroy( queues[0] );
-    magma_queue_destroy( queues[1] );
 }

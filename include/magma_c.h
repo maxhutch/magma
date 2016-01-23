@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from include/magma_z.h normal z -> c, Wed Jan  6 17:59:51 2016
+       @generated from include/magma_z.h normal z -> c, Fri Jan 22 21:42:53 2016
 */
 
 #ifndef MAGMA_C_H
@@ -1097,6 +1097,7 @@ magma_cgeqr2_gpu(
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magmaFloatComplex_ptr dtau,
     magmaFloat_ptr        dwork,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1233,6 +1234,7 @@ magma_int_t
 magma_cgetf2_gpu(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1389,18 +1391,6 @@ magma_chetrd_he2hb_mgpu(
     magma_int_t *info);
 
 magma_int_t
-magma_chetrd_he2hb_mgpu_spec(
-    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-    magmaFloatComplex *A, magma_int_t lda,
-    magmaFloatComplex *tau,
-    magmaFloatComplex *work, magma_int_t lwork,
-    magmaFloatComplex_ptr dAmgpu[], magma_int_t ldda,
-    magmaFloatComplex_ptr dTmgpu[], magma_int_t lddt,
-    magma_int_t ngpu, magma_int_t distblk,
-    magma_queue_t queues[][20], magma_int_t nqueue,
-    magma_int_t *info);
-
-magma_int_t
 magma_chetrd_mgpu(
     magma_int_t ngpu, magma_int_t nqueue,
     magma_uplo_t uplo, magma_int_t n,
@@ -1473,7 +1463,8 @@ magma_int_t
 magma_clarf_gpu(
     magma_int_t m,  magma_int_t n,
     magmaFloatComplex_const_ptr dv, magmaFloatComplex_const_ptr dtau,
-    magmaFloatComplex_ptr dC,  magma_int_t lddc);
+    magmaFloatComplex_ptr dC, magma_int_t lddc,
+    magma_queue_t queue );
 
 // in cgeqr2x_gpu-v3.cpp
 magma_int_t
@@ -1516,6 +1507,7 @@ magma_int_t
 magma_cpotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1662,6 +1654,9 @@ extern const magmaFloatComplex MAGMA_C_INF;
 int magma_c_isnan( magmaFloatComplex x );
 int magma_c_isinf( magmaFloatComplex x );
 int magma_c_isnan_inf( magmaFloatComplex x );
+
+magmaFloatComplex
+magma_cmake_lwork( magma_int_t lwork );
 
 magma_int_t
 magma_cnan_inf(

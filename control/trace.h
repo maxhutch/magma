@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -17,24 +17,24 @@
 #endif
 
 // ----------------------------------------
-const int MAX_CORES       = 1;                 // CPU cores
-const int MAX_GPU_QUEUES  = MagmaMaxGPUs * 4;  // #devices * #queues per device
-const int MAX_EVENTS      = 20000;
-const int MAX_LABEL_LEN   = 16;
+const magma_int_t MAX_CORES       = 1;                 // CPU cores
+const magma_int_t MAX_GPU_QUEUES  = MagmaMaxGPUs * 4;  // #devices * #queues per device
+const magma_int_t MAX_EVENTS      = 20000;
+const magma_int_t MAX_LABEL_LEN   = 16;
 
 
 // ----------------------------------------
 #ifdef TRACING
 
-void trace_init     ( int ncore, int ngpu, int nqueue, magma_queue_t *queues );
+void trace_init     ( magma_int_t ncore, magma_int_t ngpu, magma_int_t nqueue, magma_queue_t *queues );
 
-void trace_cpu_start( int core, const char* tag, const char* label );
-void trace_cpu_end  ( int core );
+void trace_cpu_start( magma_int_t core, const char* tag, const char* label );
+void trace_cpu_end  ( magma_int_t core );
 
 magma_event_t*
-     trace_gpu_event( int dev, int queue_num, const char* tag, const char* label );
-void trace_gpu_start( int dev, int queue_num, const char* tag, const char* label );
-void trace_gpu_end  ( int dev, int queue_num );
+     trace_gpu_event( magma_int_t dev, magma_int_t queue_num, const char* tag, const char* label );
+void trace_gpu_start( magma_int_t dev, magma_int_t queue_num, const char* tag, const char* label );
+void trace_gpu_end  ( magma_int_t dev, magma_int_t queue_num );
 
 void trace_finalize ( const char* filename, const char* cssfile );
 

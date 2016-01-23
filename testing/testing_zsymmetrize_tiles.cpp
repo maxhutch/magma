@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -33,7 +33,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex  c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *h_A, *h_R;
     magmaDoubleComplex_ptr d_A;
-    magma_int_t N, nb, size, lda, ldda, mstride, nstride, ntile;
+    magma_int_t i, j, N, nb, size, lda, ldda, mstride, nstride, ntile, tile, offset;
     magma_int_t ione     = 1;
     magma_int_t status = 0;
     
@@ -70,8 +70,8 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N );
             
             /* Initialize the matrix */
-            for( int j = 0; j < N; ++j ) {
-                for( int i = 0; i < N; ++i ) {
+            for( j = 0; j < N; ++j ) {
+                for( i = 0; i < N; ++i ) {
                     h_A[i + j*lda] = MAGMA_Z_MAKE( i + j/10000., j );
                 }
             }
@@ -92,10 +92,10 @@ int main( int argc, char** argv)
                (LAPACK doesn't implement symmetrize)
                =================================================================== */
             cpu_time = magma_wtime();
-            for( int tile = 0; tile < ntile; ++tile ) {
-                int offset = tile*mstride + tile*nstride*lda;
-                for( int j = 0; j < nb; ++j ) {
-                    for( int i = 0; i < j; ++i ) {
+            for( tile = 0; tile < ntile; ++tile ) {
+                offset = tile*mstride + tile*nstride*lda;
+                for( j = 0; j < nb; ++j ) {
+                    for( i = 0; i < j; ++i ) {
                         if ( opts.uplo == MagmaLower ) {
                             h_A[offset + i + j*lda] = MAGMA_Z_CONJ( h_A[offset + j + i*lda] );
                         }

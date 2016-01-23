@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,11 +11,11 @@
        @precisions normal z -> s d c
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 #include "magma_templates.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
@@ -46,7 +46,7 @@ __global__ void zdotc_kernel_batched(int n, magmaDoubleComplex **x_array, int in
         res = x[tx*incx];
     }
 
-    sdata[tx] = MAGMA_Z_REAL(res * MAGMA_Z_CNJG(res));
+    sdata[tx] = MAGMA_Z_REAL(res * MAGMA_Z_CONJ(res));
 
     __syncthreads();
 
@@ -159,7 +159,7 @@ __global__ void zlacgv_kernel_batched(int n, magmaDoubleComplex **x_array, int i
     magmaDoubleComplex *x = x_array[blockIdx.z]+offset;
 
     if ( id < n ) {
-        x[id*incx] = MAGMA_Z_CNJG(x[id*incx]);
+        x[id*incx] = MAGMA_Z_CONJ(x[id*incx]);
     }
 }
 
@@ -235,7 +235,7 @@ static __device__ void zpotf2_device(int m, int n,
         //2) updates A[iter,iter] = sqrt(A[iter,iter]-sum);
         if (tx < iter)
         {
-            res = MAGMA_Z_REAL (sdata_A[iter + tx * m] * MAGMA_Z_CNJG(sdata_A[iter + tx * m]));         
+            res = MAGMA_Z_REAL (sdata_A[iter + tx * m] * MAGMA_Z_CONJ(sdata_A[iter + tx * m]));         
             sum[tx] = res;
         }
         else
@@ -260,10 +260,10 @@ static __device__ void zpotf2_device(int m, int n,
         __syncthreads();
 
         //zlacgv conjugates a complex vector of length iter. //TODO
-        #if defined(PRECISION_z) || defined(PRECISION_c)
+        #ifdef COMPLEX
         if (tx < iter)
         {
-            sdata_A[iter + tx * m] = MAGMA_Z_CNJG(sdata_A[iter + tx * m]);
+            sdata_A[iter + tx * m] = MAGMA_Z_CONJ(sdata_A[iter + tx * m]);
         }
         __syncthreads();  
         #endif
@@ -281,10 +281,10 @@ static __device__ void zpotf2_device(int m, int n,
         __syncthreads();  
 
         //zlacgv conjugates a complex vector of length iter.
-        #if defined(PRECISION_z) || defined(PRECISION_c)
+        #ifdef COMPLEX
         if (tx < iter)
         {
-            sdata_A[iter + tx * m] = MAGMA_Z_CNJG(sdata_A[iter + tx * m]);
+            sdata_A[iter + tx * m] = MAGMA_Z_CONJ(sdata_A[iter + tx * m]);
         }
         __syncthreads();  
         #endif
@@ -458,52 +458,4 @@ magma_zpotf2_tile_batched(
         (m, n, dA_array, lda, alpha, beta, info_array, gbstep);
 
     return arginfo;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-extern "C" magma_int_t
-magma_zpotf2_tile(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaDoubleComplex *dA, magma_int_t lda,
-    magma_int_t *info)
-{
-    *info = 0;
-    if ( uplo != MagmaUpper && uplo != MagmaLower) {
-        *info = -1;
-    } else if (m < 0 || n < 0 || m > POTF2_TILE_SIZE) {
-        *info = -2;
-    } else if (lda < max(1,m)) {
-        *info = -4;
-    } else if (m < n) {
-        *info = -10;
-    }
-    if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
-        *info = -1;
-    }
-
-
-    if (*info != 0) {
-        magma_xerbla( __func__, -(*info) );
-        return *info;
-    }
-
-    // Quick return if possible
-    if (m == 0 || n == 0) {
-        return *info;
-    }
-
-    magmaDoubleComplex alpha = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex beta  = MAGMA_Z_ONE;
-
-    dim3 dimGrid(1);
-    dim3 threads(POTF2_TILE_SIZE, 1);
-    size_t shmem = sizeof(magmaDoubleComplex)*m*n; // + sizeof(double)*(POTF2_TILE_SIZE+1);
-
-    zpotf2_kernel
-        <<< dimGrid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
-        (m, n, dA, lda, alpha, beta, info);
-
-    return *info;
 }

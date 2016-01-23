@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -100,7 +100,7 @@ magma_zgelqf(
     
     /* Constants */
     const magmaDoubleComplex c_one = MAGMA_Z_ONE;
-    const magma_int_t ione  = 1;
+    const magma_int_t ione = 1;
     MAGMA_UNUSED( ione );  // used only for complex
     
     /* Local variables */
@@ -113,7 +113,7 @@ magma_zgelqf(
     nb = magma_get_zgelqf_nb( m, n );
     min_mn = min( m, n );
 
-    work[0] = MAGMA_Z_MAKE( (double)(m*nb), 0 );
+    work[0] = magma_zmake_lwork( m*nb );
     bool lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;

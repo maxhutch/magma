@@ -78,6 +78,7 @@ endif
 # Next, add compile options for specific smXX
 # sm_xx is binary, compute_xx is PTX for forward compatability
 # MIN_ARCH is lowest requested version
+#          Use it ONLY in magma_print_environment; elsewhere use __CUDA_ARCH__ or magma_getdevice_arch()
 # NV_SM    accumulates sm_xx for all requested versions
 # NV_COMP  is compute_xx for highest requested version
 #
@@ -121,7 +122,7 @@ endif
 ifeq ($(NV_COMP),)
     $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Fermi, Kepler, Maxwell, or sm{20,30,35,50}. Please edit your make.inc file)
 endif
-NVCCFLAGS += -DMIN_CUDA_ARCH=$(MIN_ARCH) $(NV_SM) $(NV_COMP)
+NVCCFLAGS += $(NV_SM) $(NV_COMP)
 CFLAGS    += -DMIN_CUDA_ARCH=$(MIN_ARCH)
 CXXFLAGS  += -DMIN_CUDA_ARCH=$(MIN_ARCH)
 

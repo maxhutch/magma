@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgeqr2_gpu.cpp normal z -> c, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgeqr2_gpu.cpp normal z -> c, Fri Jan 22 21:42:42 2016
        @author Stan Tomov
 
 */
@@ -28,10 +28,17 @@
 int main( int argc, char** argv)
 {
     TESTING_INIT();
+    
+    // Constants
+    const magmaFloatComplex c_zero    = MAGMA_C_ZERO;
+    const magmaFloatComplex c_one     = MAGMA_C_ONE;
+    const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
+    const float d_one     =  1;
+    const float d_neg_one = -1;
 
+    // Local variables
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    float           error, work[1];
-    magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
+    float           Anorm, error=0, error2=0;
     magmaFloatComplex *h_A, *h_R, *tau, *dtau, *h_work, tmp[1];
     magmaFloatComplex_ptr d_A;
     magmaFloat_ptr dwork;
@@ -44,10 +51,9 @@ int main( int argc, char** argv)
     opts.parse_opts( argc, argv );
 
     float tol = opts.tolerance * lapackf77_slamch("E");
-    opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("%% M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||R||_F / ||A||_F\n");
-    printf("%%======================================================================\n");
+    printf("%% M     N     CPU Gflop/s (ms)    GPU Gflop/s (ms)    |R - Q^H*A|   |I - Q^H*Q|\n");
+    printf("%%==============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -75,28 +81,74 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_clacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            lapackf77_clacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
             magma_csetmatrix( M, N, h_R, lda, d_A, ldda );
             
             // warmup
             if ( opts.warmup ) {
-                magma_cgeqr2_gpu( M, N, d_A, ldda, dtau, dwork, &info );
+                magma_cgeqr2_gpu( M, N, d_A, ldda, dtau, dwork, opts.queue, &info );
                 magma_csetmatrix( M, N, h_R, lda, d_A, ldda );
             }
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
 
-            magma_cgeqr2_gpu( M, N, d_A, ldda, dtau, dwork, &info );
+            magma_cgeqr2_gpu( M, N, d_A, ldda, dtau, dwork, opts.queue, &info );
 
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_cgeqr2_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
+            
+            /* =====================================================================
+               Check the result, following zqrt01 except using the reduced Q.
+               This works for any M,N (square, tall, wide).
+               =================================================================== */
+            if ( opts.check ) {
+                magma_cgetmatrix( M, N, d_A, ldda, h_R, lda );
+                magma_cgetvector( min_mn, dtau, 1, tau, 1 );
+                
+                magma_int_t ldq = M;
+                magma_int_t ldr = min_mn;
+                magmaFloatComplex *Q, *R;
+                float *cwork;
+                TESTING_MALLOC_CPU( Q,     magmaFloatComplex, ldq*min_mn );  // M by K
+                TESTING_MALLOC_CPU( R,     magmaFloatComplex, ldr*N );       // K by N
+                TESTING_MALLOC_CPU( cwork, float,             min_mn );
+                
+                // generate M by K matrix Q, where K = min(M,N)
+                lapackf77_clacpy( "Lower", &M, &min_mn, h_R, &lda, Q, &ldq );
+                lapackf77_cungqr( &M, &min_mn, &min_mn, Q, &ldq, tau, h_work, &lwork, &info );
+                assert( info == 0 );
+                
+                // copy K by N matrix R
+                lapackf77_claset( "Lower", &min_mn, &N, &c_zero, &c_zero, R, &ldr );
+                lapackf77_clacpy( "Upper", &min_mn, &N, h_R, &lda,        R, &ldr );
+                
+                // error = || R - Q^H*A || / (N * ||A||)
+                blasf77_cgemm( "Conj", "NoTrans", &min_mn, &N, &M,
+                               &c_neg_one, Q, &ldq, h_A, &lda, &c_one, R, &ldr );
+                Anorm = lapackf77_clange( "1", &M,      &N, h_A, &lda, cwork );
+                error = lapackf77_clange( "1", &min_mn, &N, R,   &ldr, cwork );
+                if ( N > 0 && Anorm > 0 )
+                    error /= (N*Anorm);
+                
+                // set R = I (K by K identity), then R = I - Q^H*Q
+                // error = || I - Q^H*Q || / N
+                lapackf77_claset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, R, &ldr );
+                blasf77_cherk( "Upper", "Conj", &min_mn, &M, &d_neg_one, Q, &ldq, &d_one, R, &ldr );
+                error2 = safe_lapackf77_clanhe( "1", "Upper", &min_mn, R, &ldr, cwork );
+                if ( N > 0 )
+                    error2 /= N;
+                
+                TESTING_FREE_CPU( Q     );  Q     = NULL;
+                TESTING_FREE_CPU( R     );  R     = NULL;
+                TESTING_FREE_CPU( cwork );  cwork = NULL;
+            }
             
             if ( opts.lapack ) {
                 /* =====================================================================
@@ -106,26 +158,27 @@ int main( int argc, char** argv)
                 lapackf77_cgeqrf(&M, &N, h_A, &lda, tau, h_work, &lwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_cgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
-                /* =====================================================================
-                   Check the result compared to LAPACK
-                   =================================================================== */
-                magma_cgetmatrix( M, N, d_A, ldda, h_R, M );
-                error = lapackf77_clange("f", &M, &N, h_A, &lda, work);
-                blasf77_caxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
-                error = lapackf77_clange("f", &M, &N, h_R, &lda, work) / error;
-                
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
-                       error, (error < tol ? "ok" : "failed"));
-                status += ! (error < tol);
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time );
             }
             else {
-                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
+                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)",
                        (int) M, (int) N, gpu_perf, 1000.*gpu_time );
+            }
+            
+            if ( opts.check ) {
+                bool okay = (error < tol) && (error2 < tol);
+                status += ! okay;
+                printf("   %8.2e      %8.2e   %s\n",
+                       error, error2, (okay ? "ok" : "failed"));
+            }
+            else {
+                printf("     ---  \n");
             }
             
             TESTING_FREE_CPU( tau    );

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -148,7 +148,7 @@ gemvc_template_device(
     T res;
     int mfull = (m / DIM_X) * DIM_X;
     
-    int start = blockIdx.y * TILE_SIZE + ty;
+    int start = blockIdx.x * TILE_SIZE + ty;
     int iters;
 
     //#define usefixedcondition
@@ -160,7 +160,7 @@ gemvc_template_device(
         //int iters = magma_ceildiv(min(n,TILE_SIZE), DIM_Y);
 
         /* flexible condition based on my local nloc=ed-st*/
-        int st = blockIdx.y * TILE_SIZE;
+        int st = blockIdx.x * TILE_SIZE;
         //int ed = magma_ceildiv( min(n, st + TILE_SIZE), DIM_Y ) * DIM_Y; 
         int ed = min(st+TILE_SIZE, magma_roundup(n,DIM_Y));
         iters = (ed-st)/DIM_Y;
@@ -170,7 +170,7 @@ gemvc_template_device(
     if (tx < m) A += tx;
     
     for (int i = 0; i < iters; i++)// at 2Gflops/ overhead
-    //for (int col=start; col < (blockIdx.y+1)*TILE_SIZE; col += DIM_Y)// at least 3Gflop/s overhead
+    //for (int col=start; col < (blockIdx.x+1)*TILE_SIZE; col += DIM_Y)// at least 3Gflop/s overhead
     {
         int col = start + i * DIM_Y;
 

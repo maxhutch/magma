@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zunghr.cpp normal z -> s, Wed Jan  6 17:59:35 2016
+       @generated from src/zunghr.cpp normal z -> s, Fri Jan 22 21:41:51 2016
 
 */
 #include "magma_internal.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    SORGHR generates a REAL unitary matrix Q which is defined as the
+    SORGHR generates a REAL orthogonal matrix Q which is defined as the
     product of IHI-ILO elementary reflectors of order N, as returned by
     SGEHRD:
 
@@ -38,7 +38,7 @@
     A       REAL array, dimension (LDA,N)
             On entry, the vectors which define the elementary reflectors,
             as returned by SGEHRD.
-            On exit, the N-by-N unitary matrix Q.
+            On exit, the N-by-N orthogonal matrix Q.
 
     @param[in]
     lda     INTEGER

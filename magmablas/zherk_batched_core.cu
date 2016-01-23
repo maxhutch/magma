@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -14,8 +14,8 @@
        @author Ahmad Abdelfattah
        
 */
+#include "magma_internal.h"
 
-#include "common_magma.h"
 #define PRECISION_z
 
 #include "herk_template_kernel_batched.cuh"
@@ -23,6 +23,7 @@
 #include "gemm_config/zgemm_param_nt.h"
 #include "gemm_config/zgemm_param_tn.h"
 #include "gemm_config/zgemm_param_tt.h"
+
 #define version(s,v) s ## _V_ ## v
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,11 +154,7 @@ magmablas_zherk_batched(
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    #if defined(PRECISION_c) || defined(PRECISION_z) 
-    else if ( trans != MagmaNoTrans && trans != MagmaConjTrans )
-    #else 
-    else if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
-    #endif
+    else if ( trans != MagmaNoTrans && trans != Magma_ConjTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;

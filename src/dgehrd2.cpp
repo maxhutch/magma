@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgehrd2.cpp normal z -> d, Wed Jan  6 17:59:34 2016
+       @generated from src/zgehrd2.cpp normal z -> d, Fri Jan 22 21:41:50 2016
        
        @author Stan Tomov
        @author Mark Gates
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    DGEHRD2 reduces a DOUBLE_PRECISION general matrix A to upper Hessenberg form H by
+    DGEHRD2 reduces a DOUBLE PRECISION general matrix A to upper Hessenberg form H by
     an orthogonal similarity transformation:  Q' * A * Q = H .
 
     Arguments
@@ -35,7 +35,7 @@
             1 <= ILO <= IHI <= N, if N > 0; ILO=1 and IHI=0, if N=0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the N-by-N general matrix to be reduced.
             On exit, the upper triangle and the first subdiagonal of A
             are overwritten with the upper Hessenberg matrix H, and the
@@ -48,13 +48,13 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (N-1)
+    tau     DOUBLE PRECISION array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details). Elements 1:ILO-1 and IHI:N-1 of TAU are set to
             zero.
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (LWORK)
+    work    (workspace) DOUBLE PRECISION array, dimension (LWORK)
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -152,7 +152,7 @@ magma_dgehrd2(
 
     *info = 0;
     iws = n*nb;
-    work[0] = MAGMA_D_MAKE( iws, 0 );
+    work[0] = magma_dmake_lwork( iws );
 
     lquery = (lwork == -1);
     if (n < 0) {
@@ -281,7 +281,7 @@ magma_dgehrd2(
     // add 1 to i for 1-based index
     i += 1;
     lapackf77_dgehd2(&n, &i, &ihi, A, &lda, tau, work, &iinfo);
-    work[0] = MAGMA_D_MAKE( iws, 0 );
+    work[0] = magma_dmake_lwork( iws );
 
     return *info;
 } /* magma_dgehrd2 */

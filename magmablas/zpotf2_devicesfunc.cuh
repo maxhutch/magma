@@ -1,6 +1,6 @@
 
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -57,7 +57,7 @@ static inline __device__ void zpotf2_sminout_anywidth_device(const int m, const 
             #pragma unroll 
             for (int j=iter+1; j < n; j++)
             {
-                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_Z_CNJG(A[iter * lda + j]);
+                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_Z_CONJ(A[iter * lda + j]);
             }   
         #ifdef ENABLE_COND1
         }
@@ -94,8 +94,8 @@ static inline __device__ void zpotf2_sminout_fixsize_device(const int m, magmaDo
             A[ tx + iter * lda ] *= factor;
 
             //A[ tx + iter * lda ]  = tx == iter ? MAGMA_Z_MAKE(xreal, 0.0) : A[ tx + iter * lda ] * factor;
-            //if (tx < POTF2_NB) row[ tx ] = MAGMA_Z_CNJG( A[ tx + iter * lda ] );
-            //if (tx < POTF2_NB) A[ iter + tx * lda ] = MAGMA_Z_CNJG( A[ tx + iter * lda ] );
+            //if (tx < POTF2_NB) row[ tx ] = MAGMA_Z_CONJ( A[ tx + iter * lda ] );
+            //if (tx < POTF2_NB) A[ iter + tx * lda ] = MAGMA_Z_CONJ( A[ tx + iter * lda ] );
         #ifdef ENABLE_COND2
         }
         #endif
@@ -111,7 +111,7 @@ static inline __device__ void zpotf2_sminout_fixsize_device(const int m, magmaDo
             #pragma unroll
             for (int j=iter+1; j < POTF2_NB; j++)
             {
-                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_Z_CNJG(A[iter * lda + j]);
+                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_Z_CONJ(A[iter * lda + j]);
                 //A [tx + j * lda] -= A[tx + iter * lda]  *  row[j];
                 //A [tx + j * lda] -= A[tx + iter * lda]  *  A[iter +lda * j];
             }   
@@ -182,7 +182,7 @@ static inline __device__ void zgemm_v20_1_fixsize_device(int m, int k,
             #pragma unroll
             for (int i=0; i < POTF2_NB; i++)
             {
-                sB[tx + i * POTF2_NB] = MAGMA_Z_CNJG(rp[i]);
+                sB[tx + i * POTF2_NB] = MAGMA_Z_CONJ(rp[i]);
             }
         }
 
@@ -298,7 +298,7 @@ static inline __device__ void zgemm_v20_1_anywidth_device(int m, int n, int k,
             #pragma unroll
             for (int i=0; i < POTF2_NB; i++)
             {
-                sB[tx + i * POTF2_NB] = MAGMA_Z_CNJG(rp[i]);
+                sB[tx + i * POTF2_NB] = MAGMA_Z_CONJ(rp[i]);
             }
         }
 

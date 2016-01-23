@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Ichitaro Yamazaki
        @author Stan Tomov
 
-       @generated from src/zhetrf_nopiv_gpu.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zhetrf_nopiv_gpu.cpp normal z -> d, Fri Jan 22 21:41:40 2016
 */
 #include "magma_internal.h"
 #include "trace.h"
@@ -40,7 +40,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -81,10 +81,12 @@ magma_dsytrf_nopiv_gpu(
     #define dW(i, j)  (dW +(j)*ldda + (i))
     #define dWt(i, j) (dW +(j)*nb   + (i))
 
-    /* Local variables */
+    /* Constants */
     double c_one     = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
-    int                upper = (uplo == MagmaUpper);
+    
+    /* Local variables */
+    bool upper = (uplo == MagmaUpper);
     magma_int_t j, k, jb, nb, ib, iinfo;
 
     *info = 0;

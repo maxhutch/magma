@@ -1,18 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlange.cu normal z -> c, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlange.cu normal z -> c, Fri Jan 22 21:42:00 2016
        @author Mark Gates
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 #include "magma_templates.h"
 
@@ -288,22 +283,4 @@ magmablas_clange_q(
     magma_sgetvector( 1, &dwork[0], 1, &result, 1, queue );
     
     return result;
-}
-
-
-// ------------------------------------------------------------
-// define v1 interface
-#undef magmablas_clange
-
-/**
-    @see magmablas_clange_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" float
-magmablas_clange(
-    magma_norm_t norm, magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloat_ptr dwork, magma_int_t lwork )
-{
-    return magmablas_clange_q( norm, m, n, dA, ldda, dwork, lwork, magmablasGetQueue() );
 }

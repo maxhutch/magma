@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zsymmetrize_tiles.cu normal z -> c, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zsymmetrize_tiles.cu normal z -> c, Fri Jan 22 21:42:04 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -35,7 +35,7 @@ csymmetrize_tiles_lower( int m, magmaFloatComplex *dA, int ldda, int mstride, in
         dAT += i*ldda;
         magmaFloatComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dAT = MAGMA_C_CNJG(*dA);  // upper := lower
+            *dAT = MAGMA_C_CONJ(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
@@ -58,7 +58,7 @@ csymmetrize_tiles_upper( int m, magmaFloatComplex *dA, int ldda, int mstride, in
         dAT += i*ldda;
         magmaFloatComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dA  = MAGMA_C_CNJG(*dAT);  // lower := upper
+            *dA  = MAGMA_C_CONJ(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
@@ -161,18 +161,4 @@ magmablas_csymmetrize_tiles_q(
             <<< grid, threads, 0, queue->cuda_stream() >>>
             ( m, dA, ldda, mstride, nstride );
     }
-}
-
-
-/**
-    @see magmablas_csymmetrize_tiles_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_csymmetrize_tiles(
-    magma_uplo_t uplo, magma_int_t m,
-    magmaFloatComplex_ptr dA, magma_int_t ldda,
-    magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
-{
-    magmablas_csymmetrize_tiles_q( uplo, m, dA, ldda, ntile, mstride, nstride, magmablasGetQueue() );
 }

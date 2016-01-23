@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -651,7 +651,7 @@ magma_dlaex3_m(
                     if (n23 != 0) {
                         magma_setdevice( dev+1 );
                         magma_dgetmatrix( ni_loc[dev+1], ib, dQ(dev+1, ind), n2_loc,
-                                          Q(n1+n2_loc*(dev/2),iil-1+i), ldq, queues[dev][ind] );
+                                          Q(n1+n2_loc*(dev/2),iil-1+i), ldq, queues[dev+1][ind] );
                         //magma_dgetmatrix_async( ni_loc[dev+1], ib, dQ(dev+1, ind), n2_loc,
                         //                        Q(n1+n2_loc*(dev/2),iil-1+i), ldq, queues[dev+1][ind] );
                     }

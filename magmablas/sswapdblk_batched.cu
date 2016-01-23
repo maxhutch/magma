@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zswapdblk_batched.cu normal z -> s, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zswapdblk_batched.cu normal z -> s, Fri Jan 22 21:42:10 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 /*********************************************************/
@@ -116,7 +116,7 @@ sswapdblk_batched_kernel( int nb, int n_mod_nb,
     @ingroup magma_saux2
     ********************************************************************/
 extern "C" void 
-magmablas_sswapdblk_batched_q(
+magmablas_sswapdblk_batched(
     magma_int_t n, magma_int_t nb,
     float **dA_array, magma_int_t ldda, magma_int_t inca,
     float **dB_array, magma_int_t lddb, magma_int_t incb,
@@ -156,19 +156,4 @@ magmablas_sswapdblk_batched_q(
             ( nb, n_mod_nb, dA_array, ldda, inca,
                   dB_array, lddb, incb );
     }
-}
-
-
-/**
-    @see magmablas_sswapdblk_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void 
-magmablas_sswapdblk_batched(
-    magma_int_t n, magma_int_t nb,
-    float **dA_array, magma_int_t ldda, magma_int_t inca,
-    float **dB_array, magma_int_t lddb, magma_int_t incb, 
-    magma_int_t batchCount)
-{
-    magmablas_sswapdblk_batched_q( n, nb, dA_array, ldda, inca, dB_array, lddb, incb, batchCount, magmablasGetQueue() );
 }

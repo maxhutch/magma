@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/magma_zutil.cpp normal z -> d, Wed Jan  6 17:59:46 2016
+       @generated from testing/magma_zutil.cpp normal z -> d, Fri Jan 22 21:42:32 2016
 
        @author Mark Gates
 
@@ -103,7 +103,7 @@ double safe_lapackf77_dlansy(
 {
     #ifdef MAGMA_WITH_MKL
     // work around MKL bug in multi-threaded dlansy
-    int la_threads = magma_get_lapack_numthreads();
+    magma_int_t la_threads = magma_get_lapack_numthreads();
     magma_set_lapack_numthreads( 1 );
     #endif
     

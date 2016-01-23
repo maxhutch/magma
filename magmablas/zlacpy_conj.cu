@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLOCK_SIZE 64
 
@@ -40,14 +40,4 @@ magmablas_zlacpy_conj_q(
     dim3 threads( BLOCK_SIZE );
     dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     zlacpy_conj_kernel<<< blocks, threads, 0, queue->cuda_stream() >>>( n, dA1, lda1, dA2, lda2 );
-}
-
-
-extern "C" void 
-magmablas_zlacpy_conj(
-    magma_int_t n,
-    magmaDoubleComplex_ptr dA1, magma_int_t lda1, 
-    magmaDoubleComplex_ptr dA2, magma_int_t lda2)
-{
-    magmablas_zlacpy_conj_q( n, dA1, lda1, dA2, lda2, magmablasGetQueue() );
 }

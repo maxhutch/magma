@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Ichitaro Yamazaki                                                                   
        @author Adrien Remy
        
-       @generated from src/zsytrf_nopiv_cpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
+       @generated from src/zsytrf_nopiv_cpu.cpp normal z -> c, Fri Jan 22 21:41:40 2016
        
  
 */
@@ -30,6 +30,7 @@ magma_int_t csyrk_d(
     magmaFloatComplex *Akj;
 
     /* Check input arguments */
+    magma_int_t i, j, k;
     magma_int_t info = 0;
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
         info = -1;
@@ -62,13 +63,13 @@ magma_int_t csyrk_d(
     }
 
     if ( uplo == MagmaLower ) {
-        for (int j=0; j < m; j++) {
-            for (int i=j; i < m; i++) {
+        for (j=0; j < m; j++) {
+            for (i=j; i < m; i++) {
                 magmaFloatComplex tmp = MAGMA_C_ZERO;
                 Aik = A+i;
                 Dkk = D;
                 Akj = A+j;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += (*Aik) * (*Dkk) * ( *Akj );
                     Aik += lda; 
                     Dkk += incD; 
@@ -79,10 +80,10 @@ magma_int_t csyrk_d(
         }
     }
     else {
-        for (int j=0; j < m; j++) {
-            for (int i=0; i <= j; i++) {
+        for (j=0; j < m; j++) {
+            for (i=0; i <= j; i++) {
                 magmaFloatComplex tmp = MAGMA_C_ZERO;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += A(i, k) * D( k ) * A(k, j);
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;

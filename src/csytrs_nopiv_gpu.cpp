@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        @author Adrien REMY
 
-       @generated from src/zsytrs_nopiv_gpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
+       @generated from src/zsytrs_nopiv_gpu.cpp normal z -> c, Fri Jan 22 21:41:41 2016
 
 */
 #include "magma_internal.h"
@@ -105,7 +105,7 @@ magma_csytrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_clascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_clascl_diag( MagmaUpper, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ctrsm( MagmaLeft, MagmaUpper,
                      MagmaNoTrans, MagmaUnit,
@@ -117,7 +117,7 @@ magma_csytrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_clascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_clascl_diag( MagmaLower, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ctrsm( MagmaLeft, MagmaLower,
                      MagmaTrans, MagmaUnit,

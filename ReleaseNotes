@@ -26,7 +26,8 @@ single (s), double (d), single-complex (c), double-complex (z).
 
 
  2.0.0
-       - beta 2: Jan 6, 2016
+       - beta 3: Jan 22, 2016
+       - beta 2: Jan  6, 2016
     * See "README-v2.txt" for details about updating code.
     * Removed support for CUDA arch 1.x, which NVIDIA no longer supports since CUDA 6.
     * Changed to non-recursive Makefile.

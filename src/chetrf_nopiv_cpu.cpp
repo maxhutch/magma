@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zhetrf_nopiv_cpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
+       @generated from src/zhetrf_nopiv_cpu.cpp normal z -> c, Fri Jan 22 21:41:40 2016
  
 */
 #include "magma_internal.h"
@@ -19,11 +19,13 @@
 
 // TODO: change alpha and beta to be float, per BLAS, instead of float-complex
 // trailing submatrix update with inner-blocking
-int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-            magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
-            magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
-            magmaFloatComplex *D, magma_int_t incD)
+magma_int_t cherk_d(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
+    magmaFloatComplex *D, magma_int_t incD)
 {
+    magma_int_t i, j, k;
     magmaFloatComplex *Aik;
     magmaFloatComplex *Dkk;
     magmaFloatComplex *Akj;
@@ -55,13 +57,13 @@ int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     }
 
     if ( uplo == MagmaLower ) {
-        for (int j=0; j < m; j++) {
-            for (int i=j; i < m; i++) {
+        for (j=0; j < m; j++) {
+            for (i=j; i < m; i++) {
                 magmaFloatComplex tmp = MAGMA_C_ZERO;
                 Aik = A+i;
                 Dkk = D;
                 Akj = A+j;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += (*Aik) * (*Dkk) * conj( *Akj );
                     Aik += lda;
                     Dkk += incD;
@@ -72,10 +74,10 @@ int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
         }
     }
     else {
-        for (int j=0; j < m; j++) {
-            for (int i=0; i <= j; i++) {
+        for (j=0; j < m; j++) {
+            for (i=0; i <= j; i++) {
                 magmaFloatComplex tmp = MAGMA_C_ZERO;
-                for (int k=0; k < n; k++) {
+                for (k=0; k < n; k++) {
                     tmp += A(i, k) * D( k ) * conj( A(k, j) );
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;
@@ -89,10 +91,11 @@ int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 // TODO: change alpha and beta to be float, per BLAS, instead of float-complex
 // trailing submatrix update with inner-blocking, using workshpace that
 // stores D*L'
-int cherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
-                      magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
-                      magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
-                      magmaFloatComplex *work, magma_int_t ldw)
+magma_int_t cherk_d_workspace(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t k,
+    magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
+    magmaFloatComplex *work, magma_int_t ldw)
 {
     magmaFloatComplex c_one     = MAGMA_C_ONE;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
@@ -139,8 +142,9 @@ int cherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
 
 
 // diagonal factorization with inner-block
-int chetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
-                      magmaFloatComplex *A, magma_int_t lda)
+magma_int_t chetrf_diag_nopiv(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda)
 {
     /* Quick return */
     if (n == 1)

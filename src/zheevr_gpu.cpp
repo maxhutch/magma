@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -165,8 +165,8 @@
 
     @param[in]
     lddz    INTEGER
-            The leading dimension of the array Z.  LDZ >= 1, and if
-            JOBZ = MagmaVec, LDZ >= max(1,N).
+            The leading dimension of the array Z.  LDDZ >= 1, and if
+            JOBZ = MagmaVec, LDDZ >= max(1,N).
 
     @param[out]
     isuppz  INTEGER ARRAY, dimension ( 2*max(1,M) )
@@ -339,8 +339,8 @@ magma_zheevr_gpu(
     lrwmin = 24 * n;
     liwmin = 10 * n;
     
-    work[0] = MAGMA_Z_MAKE( lwmin, 0 );
-    rwork[0] = lrwmin;
+    work[0] = magma_zmake_lwork( lwmin );
+    rwork[0] = magma_dmake_lwork( lrwmin );
     iwork[0] = liwmin;
     
     if (lwork < lwmin && ! lquery) {
@@ -557,8 +557,8 @@ magma_zheevr_gpu(
     }
     
     /* Set WORK[0] to optimal complex workspace size. */
-    work[1] = MAGMA_Z_MAKE( lopt, 0 );
-    rwork[1] = (double) lrwmin;
+    work[1] = magma_zmake_lwork( lopt );
+    rwork[1] = magma_dmake_lwork( lrwmin );
     iwork[1] = liwmin;
     
     magma_queue_destroy( queue );

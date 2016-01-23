@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -288,7 +288,7 @@ typedef struct magma_queue* magma_queue_t;
 #define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
-#define MAGMA_VERSION_STAGE "beta2"
+#define MAGMA_VERSION_STAGE "beta3"
 
 #define MagmaMaxGPUs 8
 #define MagmaMaxAccelerators 8

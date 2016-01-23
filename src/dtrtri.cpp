@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Hatem Ltaief
        @author Mark Gates
        
-       @generated from src/ztrtri.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/ztrtri.cpp normal z -> d, Fri Jan 22 21:41:30 2016
 
 */
 #include "magma_internal.h"
@@ -38,7 +38,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the triangular matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of the array A contains
             the upper triangular matrix, and the strictly lower

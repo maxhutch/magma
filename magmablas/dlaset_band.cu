@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from magmablas/zlaset_band.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlaset_band.cu normal z -> d, Fri Jan 22 21:42:02 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -148,15 +148,15 @@ void dlaset_band_lower(
             Currently, K <= 1024 due to CUDA restrictions (max. number of threads per block).
     
     @param[in]
-    offdiag DOUBLE_PRECISION
+    offdiag DOUBLE PRECISION
             Off-diagonal elements in the band are set to OFFDIAG.
     
     @param[in]
-    diag    DOUBLE_PRECISION
+    diag    DOUBLE PRECISION
             All the main diagonal elements are set to DIAG.
     
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
@@ -207,18 +207,4 @@ magmablas_dlaset_band_q(
         dim3 grid( magma_ceildiv( min(m,n), NB ) );
         dlaset_band_lower<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_dlaset_band_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dlaset_band(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
-    double offdiag, double diag,
-    magmaDouble_ptr dA, magma_int_t ldda)
-{
-    magmablas_dlaset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }

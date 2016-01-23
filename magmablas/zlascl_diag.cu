@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @precisions normal z -> s d c
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -139,19 +139,4 @@ magmablas_zlascl_diag_q(
             <<< grid, threads, 0, queue->cuda_stream() >>>
             (m, n, dD, lddd, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_zlascl_diag_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zlascl_diag(
-    magma_type_t type, magma_int_t m, magma_int_t n,
-    magmaDoubleComplex_const_ptr dD, magma_int_t lddd,
-    magmaDoubleComplex_ptr       dA, magma_int_t ldda,
-    magma_int_t *info )
-{
-    magmablas_zlascl_diag_q( type, m, n, dD, lddd, dA, ldda, magmablasGetQueue(), info );
 }

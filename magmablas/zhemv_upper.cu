@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CNJG.
+       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CONJ.
        
        zhemv_kernel_U (upper) in zhemv_upper.cu is very similar to
        zhemv_kernel_L (lower) in zhemv.cu; diff the two files to compare.
@@ -14,7 +14,7 @@
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 
 #define PRECISION_z
@@ -150,7 +150,7 @@ zhemv_kernel_U(
     #pragma unroll
     for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j > tx2 ) {
-            sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
+            sA32(j, tx2) = MAGMA_Z_CONJ( sA32(tx2, j) );
         }
     }
     __syncthreads();
@@ -211,7 +211,7 @@ zhemv_kernel_U(
     #pragma unroll
     for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j > tx2 ) {
-            sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
+            sA32(j, tx2) = MAGMA_Z_CONJ( sA32(tx2, j) );
         }
     }
     __syncthreads();
@@ -273,7 +273,7 @@ zhemv_kernel_U(
     psum = MAGMA_Z_ZERO;
     #pragma unroll
     for (int j=0; j < 4; j++) {
-        psum += MAGMA_Z_CNJG( sA32(ty2 + j*8, tx2) ) * sx_blk[j*8 + ty2];
+        psum += MAGMA_Z_CONJ( sA32(ty2 + j*8, tx2) ) * sx_blk[j*8 + ty2];
     }
     //__syncthreads();  // no sync needed here
     
@@ -374,7 +374,7 @@ zhemv_kernel_U(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = MAGMA_Z_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_Z_CONJ( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
     

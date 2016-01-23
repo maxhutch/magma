@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlarfg.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlarfg.cu normal z -> s, Fri Jan 22 21:42:01 2016
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 #define REAL
@@ -173,19 +173,4 @@ void magmablas_slarfg_q(
     dim3 threads( NB );
     dim3 blocks( 1 );
     slarfg_kernel<<< blocks, threads, 0, queue->cuda_stream() >>>( n, dalpha, dx, incx, dtau );
-}
-
-
-/**
-    @see magmablas_slarfg_q
-    @ingroup magma_saux1
-    ********************************************************************/
-extern "C"
-void magmablas_slarfg(
-    magma_int_t n,
-    magmaFloat_ptr dalpha,
-    magmaFloat_ptr dx, magma_int_t incx,
-    magmaFloat_ptr dtau )
-{
-    magmablas_slarfg_q( n, dalpha, dx, incx, dtau, magmablasGetQueue() );
 }

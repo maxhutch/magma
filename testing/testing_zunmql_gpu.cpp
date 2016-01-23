@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -19,6 +19,7 @@
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ int main( int argc, char** argv )
     TESTING_INIT();
     
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double error, work[1];
+    double Cnorm, error, work[1];
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magma_int_t ione = 1;
     magma_int_t mm, m, n, k, size, info;
@@ -83,6 +84,8 @@ int main( int argc, char** argv )
             
             // need at least 2*nb*nb for geqlf
             lwork_max = max( max( m*nb, n*nb ), 2*nb*nb );
+            // this rounds it up slightly if needed to agree with lwork query below
+            lwork_max = int( real( magma_zmake_lwork( lwork_max )));
             
             TESTING_MALLOC_CPU( C,     magmaDoubleComplex, ldc*n );
             TESTING_MALLOC_CPU( R,     magmaDoubleComplex, ldc*n );
@@ -125,6 +128,7 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
+            // magma_zunmql2_gpu doesn't take workspace
             //// query for workspace size
             //lwork = -1;
             //magma_zunmql2_gpu( side[iside], trans[itran],
@@ -167,10 +171,10 @@ int main( int argc, char** argv )
             /* =====================================================================
                compute relative error |QC_magma - QC_lapack| / |QC_lapack|
                =================================================================== */
-            error = lapackf77_zlange( "Fro", &m, &n, C, &ldc, work );
             size = ldc*n;
             blasf77_zaxpy( &size, &c_neg_one, C, &ione, R, &ione );
-            error = lapackf77_zlange( "Fro", &m, &n, R, &ldc, work ) / error;
+            Cnorm = lapackf77_zlange( "Fro", &m, &n, C, &ldc, work );
+            error = lapackf77_zlange( "Fro", &m, &n, R, &ldc, work ) / (sqrt(m*n) * Cnorm);
             
             printf( "%5d %5d %5d   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                     (int) m, (int) n, (int) k,

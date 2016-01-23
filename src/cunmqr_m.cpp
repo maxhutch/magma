@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zunmqr_m.cpp normal z -> c, Wed Jan  6 17:59:32 2016
+       @generated from src/zunmqr_m.cpp normal z -> c, Fri Jan 22 21:41:39 2016
 
 */
 #include "magma_internal.h"
@@ -147,8 +147,8 @@ magma_cunmqr_m(
     magma_int_t nb = 128;
     magmaFloatComplex *T = NULL;
     magmaFloatComplex_ptr dw[MagmaMaxGPUs] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs][2] = { NULL };
-    magma_event_t events[MagmaMaxGPUs][2] = { NULL };
+    magma_queue_t queues[MagmaMaxGPUs][2] = {{ NULL }};
+    magma_event_t events[MagmaMaxGPUs][2] = {{ NULL }};
 
     magma_int_t ind_c;
     magma_device_t dev;
@@ -192,7 +192,7 @@ magma_cunmqr_m(
 
     magma_int_t lwkopt = max(1,nw) * nb;
     if (*info == 0) {
-        work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+        work[0] = magma_cmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -384,7 +384,7 @@ magma_cunmqr_m(
     }
 
 cleanup:
-    work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+    work[0] = magma_cmake_lwork( lwkopt );
 
     for (dev = 0; dev < ngpu; ++dev) {
         magma_setdevice( dev );
@@ -394,8 +394,8 @@ cleanup:
         magma_queue_destroy( queues[dev][1] );
         magma_free( dw[dev] );
     }
-    magma_free_pinned( T );
     magma_setdevice( orig_dev );
+    magma_free_pinned( T );
 
     return *info;
 } /* magma_cunmqr */

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd_gpu.cpp normal z -> s, Wed Jan  6 17:59:32 2016
+       @generated from src/zhetrd_gpu.cpp normal z -> s, Fri Jan 22 21:41:42 2016
 
 */
 #include "magma_internal.h"
@@ -73,8 +73,8 @@
 
     @param[out]
     A       (workspace) REAL array, dimension (LDA,N)
-            On exit the diagonal, the  upper part (UPLO=MagmaUpper)
-            or the lower part (UPLO=MagmaLower) are copies of DA
+            On exit the diagonal, the  upper part (if uplo=MagmaUpper)
+            or the lower part (if uplo=MagmaLower) are copies of dA
 
     @param[in]
     lda     INTEGER
@@ -173,7 +173,7 @@ magma_ssytrd_gpu(
     magma_int_t lquery;
 
     *info = 0;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
@@ -192,7 +192,7 @@ magma_ssytrd_gpu(
     lddw = magma_roundup( n, 32 );
     lwkopt = n * nb;
     if (*info == 0) {
-        work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+        work[0] = magma_smake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -320,7 +320,7 @@ magma_ssytrd_gpu(
     magma_free_cpu( work2 );
     magma_queue_destroy( queue );
     
-    work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
     
     return *info;
 } /* magma_ssytrd_gpu */

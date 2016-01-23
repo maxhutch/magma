@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlarfbx.cu normal z -> c, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlarfbx.cu normal z -> c, Fri Jan 22 21:42:00 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_c.h"
 #include "magma_templates.h"
 
@@ -34,7 +34,7 @@ magma_cgemv_kernel1(int m, const magmaFloatComplex * __restrict__ V, int ldv,
     /*  lsum := v**H * C  */
     lsum = MAGMA_C_ZERO;
     for (int j = i; j < m; j += BLOCK_SIZE)
-       lsum += MAGMA_C_MUL( MAGMA_C_CNJG( dV[j] ), c[j] );
+       lsum += MAGMA_C_MUL( MAGMA_C_CONJ( dV[j] ), c[j] );
     
     sum[i] = lsum;
     magma_sum_reduce< BLOCK_SIZE >( i, sum );
@@ -47,7 +47,7 @@ magma_cgemv_kernel1(int m, const magmaFloatComplex * __restrict__ V, int ldv,
 //==============================================================================
 /*  ----------------------------------------------------------------------------- 
     Call 
-        magma_cgemv_kernel3<<< n, BLOCK_SIZE >>>(m, V, ldv, c, dwork, tau)
+        magma_cgemv_kernel3<<< n, BLOCK_SIZE, 0, queue->cuda_stream() >>>(m, V, ldv, c, dwork, tau)
     to compute
         CGEMV( "Conjugate transpose", m, n, -tau[0], V, ldv, c, 1, zero, dwork, 1)
         and to set c[0] to 1.
@@ -71,7 +71,7 @@ magma_cgemv_kernel3(int m, const magmaFloatComplex * __restrict__ V, int ldv, ma
     /*  lsum := v**H * C  */
     lsum = MAGMA_C_ZERO;
     for (int j = i; j < m; j += BLOCK_SIZE)
-       lsum += MAGMA_C_MUL( MAGMA_C_CNJG( dV[j] ), c[j] );
+       lsum += MAGMA_C_MUL( MAGMA_C_CONJ( dV[j] ), c[j] );
 
     sum[i] = lsum;
     magma_sum_reduce< BLOCK_SIZE >( i, sum );
@@ -138,16 +138,4 @@ magma_clarfbx_gpu_q(
         <<< blocks3, threads3, 0, queue->cuda_stream() >>>
         ( m, k, V, ldv, dwork+k, c);
 }
-
-extern "C" void
-magma_clarfbx_gpu(
-    magma_int_t m, magma_int_t k,
-    magmaFloatComplex_ptr V,  magma_int_t ldv,
-    magmaFloatComplex_ptr dT, magma_int_t ldt,
-    magmaFloatComplex_ptr c,
-    magmaFloatComplex_ptr dwork)
-{
-    magma_clarfbx_gpu_q( m, k, V, ldv, dT, ldt, c, dwork, magmablasGetQueue() );
-}
-
 //==============================================================================

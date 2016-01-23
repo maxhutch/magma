@@ -1,19 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from magmablas/zlanhe.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlanhe.cu normal z -> s, Fri Jan 22 21:42:00 2016
 
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 #include "magma_templates.h"
 
@@ -21,6 +16,7 @@
 #define max_bs 64
 
 #define PRECISION_s
+#define REAL
 
 
 /* ====================================================================== */
@@ -92,7 +88,7 @@ slansy_inf_kernel_lower(
             if ( i < tx ) {
                 la[i][tx] = la[tx][i];
             }
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             else if ( i == tx ) {
                 la[i][i] = MAGMA_S_MAKE( MAGMA_S_REAL( la[i][i] ), 0 );
             }
@@ -308,7 +304,7 @@ slansy_inf_kernel_upper(
             if ( i > tx ) {                            //#
                 la[i][tx] = la[tx][i];
             }
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             else if ( i == tx ) {
                 la[i][i] = MAGMA_S_MAKE( MAGMA_S_REAL( la[i][i] ), 0 );
             }
@@ -669,22 +665,4 @@ magmablas_slansy_q(
     magma_sgetvector( 1, &dwork[0], 1, &res, 1, queue );
     
     return res;
-}
-
-
-// ------------------------------------------------------------
-// define v1 interface
-#undef magmablas_slansy
-
-/**
-    @see magmablas_slansy_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" float
-magmablas_slansy(
-    magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
-    magmaFloat_ptr dwork, magma_int_t lwork )
-{
-    return magmablas_slansy_q( norm, uplo, n, dA, ldda, dwork, lwork, magmablasGetQueue() );
 }

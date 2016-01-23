@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -60,23 +60,23 @@ init_butterfly(
             of the matrix B.  nrhs >= 0.
 
     @param[in,out]
-    dA      COMPLEX_16 array, dimension (LDA,n).
+    dA      COMPLEX_16 array, dimension (LDDA,n).
             On entry, the M-by-n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,n).
+            The leading dimension of the array A.  LDDA >= max(1,n).
 
     @param[in,out]
-    dB      COMPLEX_16 array, dimension (LDB,nrhs)
+    dB      COMPLEX_16 array, dimension (LDDB,nrhs)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,n).
+            The leading dimension of the array B.  LDDB >= max(1,n).
 
     @param[in,out]
     U       COMPLEX_16 array, dimension (2,n)

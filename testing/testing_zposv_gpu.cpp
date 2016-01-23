@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -43,7 +43,7 @@ int main( int argc, char** argv)
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -70,8 +70,8 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &sizeB, h_B );
             magma_zmake_hpd( N, h_A, lda );
             
-            magma_zsetmatrix( N, N,         h_A, N, d_A, ldda );
-            magma_zsetmatrix( N, opts.nrhs, h_B, N, d_B, lddb );
+            magma_zsetmatrix( N, N,         h_A, lda, d_A, ldda );
+            magma_zsetmatrix( N, opts.nrhs, h_B, lda, d_B, lddb );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -80,9 +80,10 @@ int main( int argc, char** argv)
             magma_zposv_gpu( opts.uplo, N, opts.nrhs, d_A, ldda, d_B, lddb, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zpotrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
 
             /* =====================================================================
                Residual
@@ -109,9 +110,10 @@ int main( int argc, char** argv)
                 lapackf77_zposv( lapack_uplo_const(opts.uplo), &N, &opts.nrhs, h_A, &lda, h_B, &ldb, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_zposv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int) N, (int) opts.nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,

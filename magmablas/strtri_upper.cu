@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrtri_upper.cu normal z -> s, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/ztrtri_upper.cu normal z -> s, Fri Jan 22 21:42:05 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -16,7 +16,7 @@
        It's convenient to have separate files for lower & upper, to diff the sources.
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "strtri.cuh"
 
 
@@ -30,7 +30,7 @@ static __device__ void
 strtri_diag_upper_device(
     magma_diag_t diag, int n, const float *A, int lda, float *d_dinvA)
 {
-    int tx   = threadIdx.x;
+    int tx = threadIdx.x;
     int bx = blockIdx.x;
     int blk_ind = bx*IB;
     //int ind = blk_ind + tx;

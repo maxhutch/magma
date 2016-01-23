@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -86,8 +86,7 @@ magma_zgesv_rbt_batched(
                   magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
-    
-    magma_int_t info;
+    magma_int_t i, info;
     info = 0;
     if (n < 0) {
         info = -1;
@@ -138,7 +137,7 @@ magma_zgesv_rbt_batched(
     magma_int_t *cpu_info = NULL;
     magma_imalloc_cpu( &cpu_info, batchCount );
     magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
-    for (int i=0; i < batchCount; i++)
+    for (i=0; i < batchCount; i++)
     {
         if (cpu_info[i] != 0 ) {
             printf("magma_zgetrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );
@@ -163,7 +162,7 @@ magma_zgesv_rbt_batched(
 
     magma_zsetvector( 2*n, hv, 1, dv, 1, queue );
 
-    for (int i = 0; i < nrhs; i++)
+    for (i = 0; i < nrhs; i++)
         magmablas_zprbt_mv_batched(n, dv, dB_array+(i), batchCount, queue);
 
  //   magma_zgetmatrix( n, nrhs, db, nn, B, ldb, queue );

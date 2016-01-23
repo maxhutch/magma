@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zher2k_mgpu.cpp normal z -> d, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_zher2k_mgpu.cpp normal z -> d, Fri Jan 22 21:42:34 2016
        
        @author Mark Gates
 */
@@ -42,11 +42,11 @@ int main( int argc, char** argv)
     double           Anorm, error, work[1];
     double *hA, *hR, *hR2, *hV, *hW;
     magmaDouble_ptr dV[MagmaMaxGPUs], dW[MagmaMaxGPUs], dA[MagmaMaxGPUs];
-    magma_int_t n, k, size, lda, ldda, nb, ngpu, nstream;
+    magma_int_t n, k, size, lda, ldda, nb, ngpu, nqueue;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
 
-    magma_queue_t streams[MagmaMaxGPUs][20];
+    magma_queue_t queues[MagmaMaxGPUs][20];
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -57,7 +57,7 @@ int main( int argc, char** argv)
     
     ngpu    = opts.ngpu;
     nb      = (opts.nb      > 0 ? opts.nb      : 64);
-    nstream = (opts.nstream > 0 ? opts.nstream :  2);
+    nqueue  = (opts.nqueue  > 0 ? opts.nqueue  :  2);
     
     printf( "%% version 1: magmablas_dsyr2k_mgpu2     %s\n", (opts.version == 1 ? "(enabled)" : ""));
     //printf( "%% version 2: magmablas_dsyr2k_mgpu_spec %s\n", (opts.version == 2 ? "(enabled)" : ""));
@@ -66,8 +66,8 @@ int main( int argc, char** argv)
 #endif
     printf( "\n" );
     
-    printf("%% nb %d, ngpu %d, nstream %d\n", (int) nb, (int) ngpu, (int) nstream );
-    printf("%%   n     k    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R|/(|V|*|W|+|A|)\n");
+    printf("%% nb %d, ngpu %d, nqueue %d\n", (int) nb, (int) ngpu, (int) nqueue );
+    printf("%%   n     k    nb offset  CPU Gflop/s (sec)   GPU Gflop/s (sec)   |R|/(|V|*|W|+|A|)\n");
     printf("%%==================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         n = opts.nsize[itest];
@@ -90,8 +90,8 @@ int main( int argc, char** argv)
                     TESTING_MALLOC_DEV( dA[d], double, ldda*nlocal );
                     TESTING_MALLOC_DEV( dV[d], double, ldda*k*2    );
                     //TESTING_MALLOC_DEV( dW[d], double, ldda*k      );
-                    for( int i = 0; i < nstream; ++i ) {
-                        magma_queue_create( &streams[d][i] );
+                    for( int i = 0; i < nqueue; ++i ) {
+                        magma_queue_create( &queues[d][i] );
                     }
                 }
                 
@@ -121,7 +121,7 @@ int main( int argc, char** argv)
                         alpha, dV, ldda, 0,
                                dW, ldda, 0,
                         beta,  dA, ldda, offset,
-                        ngpu, nb, streams, nstream );
+                        ngpu, nb, queues, nqueue );
                 }
                 else if ( opts.version == 2 ) {
                     // see src/obsolete and magmablas/obsolete
@@ -131,7 +131,7 @@ int main( int argc, char** argv)
                     //    alpha, dV, ldda, 0,
                     //           dW, ldda, 0,
                     //    beta,  dA, ldda, offset,
-                    //    ngpu, nb, streams, nstream );
+                    //    ngpu, nb, queues, nqueue );
                 }
                 else {
 #ifdef ICHI
@@ -140,7 +140,7 @@ int main( int argc, char** argv)
                         alpha, dV, ldda,
                                //dW, ldda,
                         beta,  dA, ldda, offset,
-                        nstream, streams );
+                        nqueue, queues );
 #endif
                 }
                 
@@ -197,8 +197,8 @@ int main( int argc, char** argv)
                     TESTING_FREE_DEV( dA[d] );
                     TESTING_FREE_DEV( dV[d] );
                     //TESTING_FREE_DEV( dW[d] );
-                    for( int i = 0; i < nstream; ++i ) {
-                        magma_queue_destroy( streams[d][i] );
+                    for( int i = 0; i < nqueue; ++i ) {
+                        magma_queue_destroy( queues[d][i] );
                     }
                 }
                 fflush( stdout );

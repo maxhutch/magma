@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zunghr.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zunghr.cpp normal z -> d, Fri Jan 22 21:41:51 2016
 
 */
 #include "magma_internal.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    DORGHR generates a DOUBLE_PRECISION unitary matrix Q which is defined as the
+    DORGHR generates a DOUBLE PRECISION orthogonal matrix Q which is defined as the
     product of IHI-ILO elementary reflectors of order N, as returned by
     DGEHRD:
 
@@ -35,22 +35,22 @@
             1 <= ILO <= IHI <= N, if N > 0; ILO=1 and IHI=0, if N=0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the vectors which define the elementary reflectors,
             as returned by DGEHRD.
-            On exit, the N-by-N unitary matrix Q.
+            On exit, the N-by-N orthogonal matrix Q.
 
     @param[in]
     lda     INTEGER
             The leading dimension of the array A. LDA >= max(1,N).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (N-1)
+    tau     DOUBLE PRECISION array, dimension (N-1)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGEHRD.
 
     @param[in]
-    dT      DOUBLE_PRECISION array on the GPU device.
+    dT      DOUBLE PRECISION array on the GPU device.
             DT contains the T matrices used in blocking the elementary
             reflectors H(i), e.g., this can be the 9th argument of
             magma_dgehrd.

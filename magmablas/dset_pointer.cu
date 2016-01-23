@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       @generated from magmablas/zset_pointer.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zset_pointer.cu normal z -> d, Fri Jan 22 21:42:10 2016
        @author Azzam Haidar
        @author Tingxing Dong
 
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 ///////////////////////////////////////////////////////////////////////////////////////
 __global__ void kernel_dset_pointer(
     double **output_array,
@@ -37,10 +37,10 @@ __global__ void kernel_dset_pointer(
 
     @param[out]
     output_array 	Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of DIMENSION ( lda, column ) on the GPU
+             Each is a DOUBLE PRECISION array A of DIMENSION ( lda, column ) on the GPU
    
     @param[in]
-    input      DOUBLE_PRECISION array of dimension ( LDDA, N*batchCount ) on the GPU.
+    input      DOUBLE PRECISION array of dimension ( LDDA, N*batchCount ) on the GPU.
 
 
     @param[in]
@@ -113,7 +113,7 @@ __global__ void zdisplace_pointers_kernel(double **output_array,
    
     @param[in]
     input_array 	Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of DIMENSION ( lda, column ) on the GPU
+             Each is a DOUBLE PRECISION array A of DIMENSION ( lda, column ) on the GPU
 
     @param[in]
     lda    INTEGER

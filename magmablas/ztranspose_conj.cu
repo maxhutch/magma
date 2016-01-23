@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define PRECISION_z
 
@@ -68,7 +68,7 @@ ztranspose_conj_device(
             #pragma unroll
             for( int j2=0; j2 < NB; j2 += NY ) {
                 if (j + j2 < n) {
-                    sA[ty + j2][tx] = MAGMA_Z_CNJG( A[j2*lda] );
+                    sA[ty + j2][tx] = MAGMA_Z_CONJ( A[j2*lda] );
                 }
             }
         }
@@ -193,22 +193,6 @@ magmablas_ztranspose_conj_q(
 
 
 /**
-    @see magmablas_ztranspose_conj_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_ztranspose_conj(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex_const_ptr dA,  magma_int_t ldda,
-    magmaDoubleComplex_ptr       dAT, magma_int_t lddat )
-{
-    magmablas_ztranspose_conj_q( m, n, dA, ldda, dAT, lddat, magmablasGetQueue() );
-}
-
-
-
-
-/**
     Purpose
     -------
     ztranspose_conj_batched_q copies and conjugate-transposes a matrix dA_array[i] to matrix dAT_array[i].
@@ -255,10 +239,11 @@ magmablas_ztranspose_conj(
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_ztranspose_conj_batched_q(
+magmablas_ztranspose_conj_batched(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex **dA_array,  magma_int_t ldda,
-    magmaDoubleComplex **dAT_array, magma_int_t lddat, magma_int_t batchCount, magma_queue_t queue )
+    magmaDoubleComplex **dAT_array, magma_int_t lddat,
+    magma_int_t batchCount, magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -283,18 +268,4 @@ magmablas_ztranspose_conj_batched_q(
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ), batchCount );
     ztranspose_conj_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA_array, ldda, dAT_array, lddat );
-}
-
-
-/**
-    @see magmablas_ztranspose_conj_batched_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_ztranspose_conj_batched(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex **dA_array,  magma_int_t ldda,
-    magmaDoubleComplex **dAT_array, magma_int_t lddat, magma_int_t batchCount )
-{
-    magmablas_ztranspose_conj_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magmablasGetQueue() );
 }

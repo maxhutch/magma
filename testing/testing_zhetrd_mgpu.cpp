@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -62,7 +62,7 @@ int main( int argc, char** argv)
     work  = NULL;
 
     printf("%% uplo = %s, ngpu %d\n", lapack_uplo_const(opts.uplo), (int) opts.ngpu );
-    printf("%% N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
+    printf("%% N     CPU Gflop/s (sec)   GPU Gflop/s (sec)   |A-QHQ^H|/N|A|   |I-QQ^H|/N\n");
     printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -89,7 +89,7 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             magma_zmake_hermitian( N, h_A, lda );
             
-            lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -103,7 +103,7 @@ int main( int argc, char** argv)
                                   tau, h_work, lwork, &info);
             }
             gpu_time = magma_wtime() - gpu_time;
-            if ( info != 0 ) {
+            if (info != 0) {
                 printf("magma_zhetrd_mgpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             }
@@ -159,7 +159,7 @@ int main( int argc, char** argv)
                                  h_work, &lwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if ( info != 0 ) {
+                if (info != 0) {
                     printf("lapackf77_zhetrd returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 }
@@ -176,12 +176,12 @@ int main( int argc, char** argv)
             }
             printf("   %7.2f (%7.2f)", gpu_perf, gpu_time );
             if ( opts.check ) {
-                printf("   %8.2e        %8.2e   %s\n",
+                printf("     %8.2e        %8.2e   %s\n",
                        result[0], result[1], (result[0] < tol && result[1] < tol ? "ok" : "failed") );
                 status += ! (result[0] < tol && result[1] < tol);
             }
             else {
-                printf("     ---  \n");
+                printf("       ---  \n");
             }
 
             TESTING_FREE_PIN( h_R );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgerbt_batched.cpp normal z -> c, Wed Jan  6 17:59:36 2016
+       @generated from src/zgerbt_batched.cpp normal z -> c, Fri Jan 22 21:41:55 2016
        @author Adrien REMY
 */
 #include "magma_internal.h"
@@ -121,6 +121,9 @@ magma_cgerbt_batched(
     magmaFloatComplex *U, magmaFloatComplex *V,
     magma_int_t *info, magma_int_t batchCount, magma_queue_t queue)
 {
+    magmaFloatComplex *du, *dv;
+    magma_int_t i;
+    
     /* Function Body */
     *info = 0;
     if ( ! (gen == MagmaTrue) &&
@@ -146,8 +149,6 @@ magma_cgerbt_batched(
     if (nrhs == 0 || n == 0)
         return *info;
 
-    magmaFloatComplex *du, *dv;
-
     /* Allocate memory for the buterfly matrices */
     if (MAGMA_SUCCESS != magma_cmalloc( &du, 2*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -172,7 +173,7 @@ magma_cgerbt_batched(
     /* Compute U^T.b on the GPU*/
 
     // TODO fix for multiple RHS
-    for (int i= 0; i < nrhs; i++)
+    for (i= 0; i < nrhs; i++)
         magmablas_cprbt_mtv_batched(n, du, dB_array, batchCount, queue);
 
     magma_free( du );

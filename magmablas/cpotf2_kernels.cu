@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -8,9 +8,9 @@
    @author Azzam Haidar
    @author Ahmad Ahmad
 
-   @generated from magmablas/zpotf2_kernels.cu normal z -> c, Wed Jan  6 17:59:39 2016
+   @generated from magmablas/zpotf2_kernels.cu normal z -> c, Fri Jan 22 21:42:09 2016
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 #define PRECISION_c

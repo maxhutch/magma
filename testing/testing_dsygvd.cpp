@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zhegvd.cpp normal z -> d, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zhegvd.cpp normal z -> d, Fri Jan 22 21:42:47 2016
 
 */
 
@@ -72,13 +72,13 @@ int main( int argc, char** argv)
            (int) abs_ngpu );
 
     if (opts.version == 1) {
-        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |AZ-BZD|   |I-ZZ'B|\n");
+        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |AZ-BZD|   |I-ZZ^H B|\n");
     }
     else if ( opts.version == 2) {
-        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |ABZ-ZD|   |I-ZZ'B|\n");
+        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |ABZ-ZD|   |I-ZZ^H B|\n");
     }
     else if ( opts.version == 3) {
-        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |BAZ-ZD|   |B-ZZ'|\n");
+        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |BAZ-ZD|   |B-ZZ^H|\n");
     }
     printf("%%===========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -143,9 +143,10 @@ int main( int argc, char** argv)
                                 &info );
             }
             gpu_time = magma_wtime() - gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dsygvd returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             bool okay = true;
             if ( opts.check && opts.jobz != MagmaNoVec ) {
@@ -156,8 +157,8 @@ int main( int argc, char** argv)
                    (1)    | A Z - B Z D | / ( |A| |Z| N )   (itype = 1)
                           | A B Z - Z D | / ( |A| |Z| N )   (itype = 2)
                           | B A Z - Z D | / ( |A| |Z| N )   (itype = 3)
-                   (2)    | I - V V' B | / ( N )            (itype = 1,2)
-                          | B - V V' | / ( |B| N )          (itype = 3)
+                   (2)    | I - V V^H B | / ( N )           (itype = 1,2)
+                          | B - V V^H   | / ( |B| N )       (itype = 3)
                    (3)    | D(with V) - D(w/o V) | / | D |
                    =================================================================== */
                 //double *tau;
@@ -231,9 +232,10 @@ int main( int argc, char** argv)
                 //              #endif
                 //              iwork, liwork,
                 //              &info );
-                //if (info != 0)
+                //if (info != 0) {
                 //    printf("magma_dsygvd returned error %d: %s.\n",
                 //           (int) info, magma_strerror( info ));
+                //}
                 //
                 //double maxw=0, diff=0;
                 //for (int j=0; j < N; j++) {
@@ -258,9 +260,10 @@ int main( int argc, char** argv)
                                   iwork, &liwork,
                                   &info );
                 cpu_time = magma_wtime() - cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dsygvd returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // compare eigenvalues
                 double maxw=0, diff=0;

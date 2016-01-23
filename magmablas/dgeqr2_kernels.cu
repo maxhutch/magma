@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from magmablas/zgeqr2_kernels.cu normal z -> d, Wed Jan  6 17:59:40 2016
+   @generated from magmablas/zgeqr2_kernels.cu normal z -> d, Fri Jan 22 21:42:10 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 
@@ -59,7 +59,7 @@ dgeqrf_copy_upper_kernel_batched(
 
     @param[in]
     dV_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N).
 
     @param[in]
     lddv    INTEGER
@@ -67,7 +67,7 @@ dgeqrf_copy_upper_kernel_batched(
 
     @param[in,out]
     dR_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDR,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDR,N).
 
     @param[in]
     lddr    INTEGER

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgetrf.cpp normal z -> c, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgetrf.cpp normal z -> c, Fri Jan 22 21:42:41 2016
        @author Mark Gates
 */
 // includes, system
@@ -75,9 +75,10 @@ float get_residual(
     
     // solve Ax = b
     lapackf77_cgetrs( "Notrans", &n, &ione, A, &lda, ipiv, x, &n, &info );
-    if (info != 0)
+    if (info != 0) {
         printf("lapackf77_cgetrs returned error %d: %s.\n",
                (int) info, magma_strerror( info ));
+    }
     
     // reset to original A
     init_matrix( opts, m, n, A, lda );
@@ -177,10 +178,10 @@ int main( int argc, char** argv)
 
     printf("%% ngpu %d, version %d\n", (int) opts.ngpu, (int) opts.version );
     if ( opts.check == 2 ) {
-        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
+        printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
     }
     else {
-        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)\n");
+        printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |PA-LU|/(N*|A|)\n");
     }
     printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -205,9 +206,10 @@ int main( int argc, char** argv)
                 lapackf77_cgetrf( &M, &N, h_A, &lda, ipiv, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_cgetrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
             }
             
             /* ====================================================================
@@ -233,9 +235,10 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_cgetrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Check the factorization

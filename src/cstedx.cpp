@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
     
        @author Raffaele Solca
     
-       @generated from src/zstedx.cpp normal z -> c, Wed Jan  6 17:59:33 2016
+       @generated from src/zstedx.cpp normal z -> c, Fri Jan 22 21:41:43 2016
 
 */
 #include "magma_internal.h"
@@ -182,7 +182,7 @@ magma_cstedx(
             liwmin = 3 + 5*n;
         }
 
-        rwork[0] = lrwmin;
+        rwork[0] = magma_smake_lwork( lrwmin );
         iwork[0] = liwmin;
 
         if (lrwork < lrwmin && ! lquery) {
@@ -223,7 +223,7 @@ magma_cstedx(
             }
     }
 
-    rwork[0] = lrwmin;
+    rwork[0] = magma_smake_lwork( lrwmin );
     iwork[0] = liwmin;
 
     return *info;

@@ -1,18 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zhemv_mgpu.cu normal z -> s, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zhemv_mgpu.cu normal z -> s, Fri Jan 22 21:42:07 2016
 
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_s.h"
-
-#define PRECISION_s
 
 #define NB_X         64
 #define NB_Y          4
@@ -160,7 +158,7 @@ ssymv_kernel_L_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
-                sA32(j, tx2) = MAGMA_S_CNJG( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_S_CONJ( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -221,7 +219,7 @@ ssymv_kernel_L_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
-                sA32(j, tx2) = MAGMA_S_CNJG( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_S_CONJ( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -291,7 +289,7 @@ ssymv_kernel_L_mgpu(
         psum_t = MAGMA_S_ZERO;
         #pragma unroll
         for (int j=0; j < 4; j++) {
-            psum_t += MAGMA_S_CNJG( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
+            psum_t += MAGMA_S_CONJ( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
 
@@ -377,7 +375,7 @@ ssymv_kernel_L_mgpu(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = MAGMA_S_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_S_CONJ( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
 
@@ -678,7 +676,7 @@ magmablas_ssymv_mgpu(
     
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     
     magma_int_t offset_block_id = offset / NB_X;
     magma_int_t offset_gpu_id   = offset_block_id % ngpu;

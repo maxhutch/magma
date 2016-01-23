@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgeqr2x_gpu-v4.cu normal z -> s, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgeqr2x_gpu-v4.cu normal z -> s, Fri Jan 22 21:42:08 2016
 
 */
 #include "magma_internal.h"
@@ -45,13 +45,13 @@
     @param[in,out]
     dA      REAL array, dimension (LDA,N)
             On entry, the m by n matrix A.
-            On exit, the unitary matrix Q as a
+            On exit, the orthogonal matrix Q as a
             product of elementary reflectors (see Further Details).
     \n
             the elements on and above the diagonal of the array
             contain the min(m,n) by n upper trapezoidal matrix R (R is
             upper triangular if m >= n); the elements below the diagonal,
-            with the array TAU, represent the unitary matrix Q as a
+            with the array TAU, represent the orthogonal matrix Q as a
             product of elementary reflectors (see Further Details).
 
     @param[in]
@@ -74,7 +74,7 @@
             LAPACK stores this array in A. There are 0s below the diagonal.
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array, dimension (3 N)
+    dwork   (workspace) REAL array, dimension (3 N)
 
     @param[out]
     info    INTEGER

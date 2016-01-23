@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Mark Gates
 
-       @generated from src/zunmql.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zunmql.cpp normal z -> d, Fri Jan 22 21:41:38 2016
 
 */
 #include "magma_internal.h"
@@ -24,7 +24,7 @@
     TRANS = MagmaTrans:  Q**H * C           C * Q**H
     @endverbatim
 
-    where Q is a real unitary matrix defined as the product of k
+    where Q is a real orthogonal matrix defined as the product of k
     elementary reflectors
 
           Q = H(k) . . . H(2) H(1)
@@ -61,7 +61,7 @@
             if SIDE = MagmaRight, N >= K >= 0.
 
     @param[in]
-    A       DOUBLE_PRECISION array, dimension (LDA,K)
+    A       DOUBLE PRECISION array, dimension (LDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
             DGEQLF in the last k columns of its array argument A.
@@ -74,12 +74,12 @@
             if SIDE = MagmaRight, LDA >= max(1,N).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (K)
+    tau     DOUBLE PRECISION array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGEQLF.
 
     @param[in,out]
-    C       DOUBLE_PRECISION array, dimension (LDC,N)
+    C       DOUBLE PRECISION array, dimension (LDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q.
 
@@ -88,7 +88,7 @@
             The leading dimension of the array C. LDC >= max(1,M).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -166,7 +166,7 @@ magma_dormql(
     if (*info == 0) {
         nb = magma_get_dgelqf_nb( m, n );
         lwkopt = max(1,nw)*nb;
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -288,7 +288,7 @@ magma_dormql(
         magma_free( dwork );
         magma_free_pinned( T );
     }
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
 
     return *info;
 } /* magma_dormql */

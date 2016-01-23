@@ -1,19 +1,20 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrsm_batched.cpp normal z -> d, Wed Jan  6 17:59:42 2016
+       @generated from magmablas/ztrsm_batched.cpp normal z -> d, Fri Jan 22 21:42:10 2016
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
        @author Azzam Haidar
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
+
 /**
     Purpose
     -------
@@ -79,14 +80,14 @@
             On entry, n specifies the number of columns of B. n >= 0.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, alpha specifies the scalar alpha. When alpha is
             zero then A is not referenced and B need not be set before
             entry.
 
     @param[in]
     dA_array      Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of dimension ( ldda, k ), where k is m
+             Each is a DOUBLE PRECISION array A of dimension ( ldda, k ), where k is m
              when side = MagmaLeft and is n when side = MagmaRight.
              Before entry with uplo = MagmaUpper, the leading k by k
              upper triangular part of the array A must contain the upper
@@ -107,7 +108,7 @@
 
     @param[in]
     dB_array       Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array B of dimension ( lddb, n ).
+             Each is a DOUBLE PRECISION array B of dimension ( lddb, n ).
              Before entry, the leading m by n part of the array B must
              contain the right-hand side matrix B.
 
@@ -118,7 +119,7 @@
 
     @param[in,out]
     dX_array       Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array X of dimension ( lddx, n ).
+             Each is a DOUBLE PRECISION array X of dimension ( lddx, n ).
              On entry, should be set to 0
              On exit, the solution matrix X
 
@@ -129,7 +130,7 @@
 
     @param
     dinvA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array dinvA, a workspace on device.
+            Each is a DOUBLE PRECISION array dinvA, a workspace on device.
             If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
             If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
             where TRI_NB = 128.
@@ -550,14 +551,14 @@ void magmablas_dtrsm_outofplace_batched(
             On entry, n specifies the number of columns of B. n >= 0.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, alpha specifies the scalar alpha. When alpha is
             zero then A is not referenced and B need not be set before
             entry.
 
     @param[in]
     dA_array      Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of dimension ( ldda, k ), where k is m
+             Each is a DOUBLE PRECISION array A of dimension ( ldda, k ), where k is m
              when side = MagmaLeft and is n when side = MagmaRight.
              Before entry with uplo = MagmaUpper, the leading k by k
              upper triangular part of the array A must contain the upper
@@ -578,7 +579,7 @@ void magmablas_dtrsm_outofplace_batched(
 
     @param[in,out]
     dB_array       Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array B of dimension ( lddb, n ).
+             Each is a DOUBLE PRECISION array B of dimension ( lddb, n ).
              Before entry, the leading m by n part of the array B must
              contain the right-hand side matrix B.
              \n
@@ -591,7 +592,7 @@ void magmablas_dtrsm_outofplace_batched(
 
     @param[in,out]
     dX_array       Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array X of dimension ( lddx, n ).
+             Each is a DOUBLE PRECISION array X of dimension ( lddx, n ).
              On entry, should be set to 0
              On exit, the solution matrix X
 
@@ -602,7 +603,7 @@ void magmablas_dtrsm_outofplace_batched(
 
     @param
     dinvA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array dinvA, a workspace on device.
+            Each is a DOUBLE PRECISION array dinvA, a workspace on device.
             If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
             If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
             where TRI_NB = 128.
@@ -760,14 +761,14 @@ void magmablas_dtrsm_work_batched(
             On entry, n specifies the number of columns of B. n >= 0.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, alpha specifies the scalar alpha. When alpha is
             zero then A is not referenced and B need not be set before
             entry.
 
     @param[in]
     dA_array      Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array A of dimension ( ldda, k ), where k is m
+             Each is a DOUBLE PRECISION array A of dimension ( ldda, k ), where k is m
              when side = MagmaLeft and is n when side = MagmaRight.
              Before entry with uplo = MagmaUpper, the leading k by k
              upper triangular part of the array A must contain the upper
@@ -788,7 +789,7 @@ void magmablas_dtrsm_work_batched(
 
     @param[in,out]
     dB_array       Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array B of dimension ( lddb, n ).
+             Each is a DOUBLE PRECISION array B of dimension ( lddb, n ).
              Before entry, the leading m by n part of the array B must
              contain the right-hand side matrix B.
              \n

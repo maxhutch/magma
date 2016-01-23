@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -62,7 +62,7 @@ ztrsv_backwards_tri_device( int n,
             }
             else
             {
-                a = MAGMA_Z_CNJG(A[ (n-1) + (n-1) * lda - tx * lda  - step]); // columwise access data, not in a coalesced way
+                a = MAGMA_Z_CONJ(A[ (n-1) + (n-1) * lda - tx * lda  - step]); // columwise access data, not in a coalesced way
             }
 
 
@@ -123,7 +123,7 @@ ztrsv_forwards_tri_device(int n,
             }
             else
             {
-                a = MAGMA_Z_CNJG(A[ tx * lda  + step]); // columwise access data, not in a coalesced way
+                a = MAGMA_Z_CONJ(A[ tx * lda  + step]); // columwise access data, not in a coalesced way
             }
 
 

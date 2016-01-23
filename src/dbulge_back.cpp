@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,10 +9,10 @@
        @author Stan Tomov
        @author Raffaele Solca
        
-       @generated from src/zbulge_back.cpp normal z -> d, Wed Jan  6 17:59:34 2016
+       @generated from src/zbulge_back.cpp normal z -> d, Fri Jan 22 21:41:46 2016
 
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_dbulge.h"
 
@@ -114,6 +114,10 @@ magma_dbulge_back(
     real_Double_t timeaplQ2=0.0;
     double f= 1.;
     magma_int_t n_gpu = ne;
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
 
 //#ifdef REAL
     //double gpu_cpu_perf = 50;  // gpu over cpu performance  //100% ev // SandyB. - Kepler (K20c)
@@ -190,15 +194,15 @@ n_gpu=ne;
         magma_dapplyQ_data_destroy(&data_applyQ);
 
 
-        magma_dsetmatrix(n, ne-n_gpu, Z + n_gpu*ldz, ldz, dZ + n_gpu*ldz, lddz);
+        magma_dsetmatrix( n, ne-n_gpu, Z + n_gpu*ldz, ldz, dZ + n_gpu*ldz, lddz, queues[0] );
 
         /*============================
          *  use only GPU
          *==========================*/
     } else {
-        magma_dsetmatrix(n, ne, Z, ldz, dZ, lddz);
+        magma_dsetmatrix( n, ne, Z, ldz, dZ, lddz, queues[0] );
         magma_dbulge_applyQ_v2(MagmaLeft, ne, n, nb, Vblksiz, dZ, lddz, V, ldv, T, ldt, info);
-        magma_device_sync();
+        //magma_device_sync();
     }
 
     timeaplQ2 = magma_wtime()-timeaplQ2;
@@ -271,10 +275,14 @@ static void *magma_dapplyQ_parallel_section(void *arg)
         #ifdef ENABLE_TIMER
         timeQgpu = magma_wtime();
         #endif
+        magma_queue_t queues[2];
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queues[0] );
 
-        magma_dsetmatrix(n, n_gpu, E, lde, dE, ldde);
+        magma_dsetmatrix( n, n_gpu, E, lde, dE, ldde, queues[0] );
         magma_dbulge_applyQ_v2(MagmaLeft, n_gpu, n, nb, Vblksiz, dE, ldde, V, ldv, T, ldt, &info);
-        magma_device_sync();
+        //magma_device_sync();
 
         #ifdef ENABLE_TIMER
         timeQgpu = magma_wtime()-timeQgpu;

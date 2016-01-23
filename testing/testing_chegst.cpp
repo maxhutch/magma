@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from testing/testing_zhegst.cpp normal z -> c, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zhegst.cpp normal z -> c, Fri Jan 22 21:42:47 2016
 
 */
 
@@ -72,9 +72,10 @@ int main( int argc, char** argv)
             magma_cmake_hermitian( N, h_A, lda );
             magma_cmake_hpd(       N, h_B, lda );
             magma_cpotrf( opts.uplo, N, h_B, lda, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_cpotrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
@@ -84,9 +85,10 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime();
             magma_chegst( opts.itype, opts.uplo, N, h_R, lda, h_B, lda, &info );
             gpu_time = magma_wtime() - gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_chegst returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -96,9 +98,10 @@ int main( int argc, char** argv)
                 lapackf77_chegst( &opts.itype, lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, h_B, &lda, &info );
                 cpu_time = magma_wtime() - cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_chegst returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 blasf77_caxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
                 Anorm = safe_lapackf77_clanhe("f", lapack_uplo_const(opts.uplo), &N, h_A, &lda, work );

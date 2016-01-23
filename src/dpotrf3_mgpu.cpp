@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zpotrf3_mgpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zpotrf3_mgpu.cpp normal z -> d, Fri Jan 22 21:41:29 2016
 
 */
 #include "magma_internal.h"
@@ -68,7 +68,7 @@
             The block size used for the factorization and distribution.
 
     @param[in,out]
-    d_lA    DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu).
+    d_lA    DOUBLE PRECISION array of pointers on the GPU, dimension (ngpu).
             On entry, the symmetric matrix dA distributed over GPU.
             (d_lAT[d] points to the local matrix on d-th GPU).
             If UPLO = MagmaLower or MagmaUpper, it respectively uses 
@@ -85,7 +85,7 @@
             factorization dA = U**H * U or dA = L * L**H.
 
     @param[in,out]
-    d_lP    DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu).
+    d_lP    DOUBLE PRECISION array of pointers on the GPU, dimension (ngpu).
             d_LAT[d] points to workspace of size h*lddp*nb on d-th GPU.
 
     @param[in]
@@ -99,7 +99,7 @@
             divisible by 16.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array on the CPU, dimension (LDA,H*NB)
+    A       DOUBLE PRECISION array on the CPU, dimension (LDA,H*NB)
             On exit, the panel is copied back to the CPU
 
     @param[in]
@@ -153,7 +153,7 @@ magma_dpotrf3_mgpu(
     double c_neg_one = MAGMA_D_NEG_ONE;
     double          d_one     =  1.0;
     double          d_neg_one = -1.0;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     double *dlpanel;
     magma_int_t n_local[MagmaMaxGPUs], ldpanel;
     const magma_int_t stream1 = 0, stream2 = 1, stream3 = 2;
@@ -179,8 +179,8 @@ magma_dpotrf3_mgpu(
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(DTRSM_WORK)
     /* used by dtrsm_work */
     double c_zero    = MAGMA_D_ZERO;
-    int trsm_nb = 128;
-    int trsm_n = magma_roundup( nb, trsm_nb );
+    magma_int_t trsm_nb = 128;
+    magma_int_t trsm_n = magma_roundup( nb, trsm_nb );
     double *d_dinvA[MagmaMaxGPUs];
     double *dx[MagmaMaxGPUs];
     #define dinvA(d,j) &(d_dinvA[(d)][(j)*trsm_nb*trsm_n])
@@ -414,7 +414,7 @@ magma_dpotrf3_mgpu(
                     /* even on 1 gpu, off-diagonals are copied to cpu (synchronize at the end).      *
                      * so we have the Cholesky factor, but only diagonal submatrix of the big panel, *
                      * on cpu at the end.                                                            */
-                    int d2, buf2;
+                    magma_int_t d2, buf2;
                     magma_setdevice(d);
                     /* lookahead done */
                     magma_queue_wait_event( queues[d][stream3], events[d][4] );
@@ -459,7 +459,7 @@ magma_dpotrf3_mgpu(
                         magma_setdevice(d);
                         trace_gpu_start( d, stream2, "trsm", "trsm" );
                         #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(DTRSM_WORK)
-                            int flag = 0;
+                            bool flag = 0;
                             if (flag == 0) {
                                 magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
                             } else {
@@ -657,7 +657,7 @@ magma_dpotrf3_mgpu(
                 
                     /* even on 1 gpu, we copy off-diagonal to cpu (but don't synchronize).  */
                     /* so we have the Cholesky factor on cpu at the end.                    */
-                    int d2, buf2;
+                    magma_int_t d2, buf2;
 //#define DPOTRF_DEVICE_TO_DEVICE
 #ifdef DPOTRF_DEVICE_TO_DEVICE
                     // lookahead done
@@ -720,7 +720,7 @@ magma_dpotrf3_mgpu(
                         magma_setdevice(d);
                         /* update the remaining blocks in the column */
                         #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(DTRSM_WORK)
-                            int flag = 0;
+                            bool flag = 0;
                             if (flag == 0) {
                                 magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
                             } else {

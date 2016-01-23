@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        @author Adrien REMY
 
-       @generated from src/zgesv_nopiv_gpu.cpp normal z -> s, Wed Jan  6 17:59:29 2016
+       @generated from src/zgesv_nopiv_gpu.cpp normal z -> s, Fri Jan 22 21:41:30 2016
 */
 #include "magma_internal.h"
 

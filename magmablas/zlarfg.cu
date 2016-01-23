@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 #define COMPLEX
@@ -173,19 +173,4 @@ void magmablas_zlarfg_q(
     dim3 threads( NB );
     dim3 blocks( 1 );
     zlarfg_kernel<<< blocks, threads, 0, queue->cuda_stream() >>>( n, dalpha, dx, incx, dtau );
-}
-
-
-/**
-    @see magmablas_zlarfg_q
-    @ingroup magma_zaux1
-    ********************************************************************/
-extern "C"
-void magmablas_zlarfg(
-    magma_int_t n,
-    magmaDoubleComplex_ptr dalpha,
-    magmaDoubleComplex_ptr dx, magma_int_t incx,
-    magmaDoubleComplex_ptr dtau )
-{
-    magmablas_zlarfg_q( n, dalpha, dx, incx, dtau, magmablasGetQueue() );
 }

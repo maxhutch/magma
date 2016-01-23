@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from src/zunglq.cpp normal z -> s, Wed Jan  6 17:59:31 2016
+       @generated from src/zunglq.cpp normal z -> s, Fri Jan 22 21:41:37 2016
 
 */
 #include "magma_internal.h"
@@ -102,7 +102,7 @@ magma_sorglq(
     *info = 0;
     nb = magma_get_sgelqf_nb( m, n );
     lwkopt = nb*nb;
-    work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
     lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;
@@ -128,7 +128,7 @@ magma_sorglq(
     
     // Quick return if possible
     if (m <= 0) {
-        work[0] = MAGMA_S_MAKE( 1, 0 );
+        work[0] = c_one;
         return *info;
     }
     
@@ -215,6 +215,6 @@ cleanup:
     //    magma_free_cpu( work2 );
     //}
     
-    work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
     return *info;
 }

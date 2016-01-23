@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztranspose.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/ztranspose.cu normal z -> s, Fri Jan 22 21:42:04 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define PRECISION_s
 
@@ -122,7 +122,7 @@ void stranspose_kernel_batched(
 /**
     Purpose
     -------
-    stranspose_q copies and transposes a matrix dA to matrix dAT.
+    stranspose copies and transposes a matrix dA to matrix dAT.
     
     Same as stranspose, but adds queue argument.
         
@@ -192,25 +192,9 @@ magmablas_stranspose_q(
 
 
 /**
-    @see magmablas_stranspose_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_stranspose(
-    magma_int_t m, magma_int_t n,
-    magmaFloat_const_ptr dA,  magma_int_t ldda,
-    magmaFloat_ptr       dAT, magma_int_t lddat )
-{
-    magmablas_stranspose_q( m, n, dA, ldda, dAT, lddat, magmablasGetQueue() );
-}
-
-
-
-
-/**
     Purpose
     -------
-    stranspose_batched_q copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
+    stranspose_batched copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
     
     Same as stranspose_batched, but adds queue argument.
         
@@ -254,7 +238,7 @@ magmablas_stranspose(
     @ingroup magma_saux2
     ********************************************************************/
 extern "C" void
-magmablas_stranspose_batched_q(
+magmablas_stranspose_batched(
     magma_int_t m, magma_int_t n,
     float **dA_array,  magma_int_t ldda,
     float **dAT_array, magma_int_t lddat,
@@ -284,19 +268,4 @@ magmablas_stranspose_batched_q(
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ), batchCount );
     stranspose_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA_array, ldda, dAT_array, lddat );
-}
-
-
-/**
-    @see magmablas_stranspose_batched_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_stranspose_batched(
-    magma_int_t m, magma_int_t n,
-    float **dA_array,  magma_int_t ldda,
-    float **dAT_array, magma_int_t lddat,
-    magma_int_t batchCount )
-{
-    magmablas_stranspose_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magmablasGetQueue() );
 }

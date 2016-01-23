@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgebrd.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zgebrd.cpp normal z -> d, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -29,7 +29,7 @@
             The number of columns in the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N general matrix to be reduced.
             On exit,
             if m >= n, the diagonal and the first superdiagonal are
@@ -65,17 +65,17 @@
             if m < n, E(i) = A(i+1,i) for i = 1,2,...,m-1.
 
     @param[out]
-    tauq    DOUBLE_PRECISION array dimension (min(M,N))
+    tauq    DOUBLE PRECISION array dimension (min(M,N))
             The scalar factors of the elementary reflectors which
             represent the orthogonal matrix Q. See Further Details.
 
     @param[out]
-    taup    DOUBLE_PRECISION array, dimension (min(M,N))
+    taup    DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors which
             represent the orthogonal matrix P. See Further Details.
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -171,7 +171,7 @@ magma_dgebrd(
     ldda = m;
 
     lwkopt = (m + n) * nb;
-    work[0] = MAGMA_D_MAKE( lwkopt, 0. );
+    work[0] = magma_dmake_lwork( lwkopt );
     lquery = (lwork == -1);
     
     /* Check arguments */
@@ -306,7 +306,7 @@ magma_dgebrd(
     lapackf77_dgebrd( &nrow, &ncol,
                       A(i, i), &lda, d+i, e+i,
                       tauq+i, taup+i, work, &lwork, &iinfo);
-    work[0] = MAGMA_D_MAKE( lwkopt, 0. );
+    work[0] = magma_dmake_lwork( lwkopt );
 
     magma_free_cpu( work2 );
     magma_free( dA );

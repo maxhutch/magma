@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Mark Gates
-       @generated from src/dgesdd.cpp normal d -> s, Wed Jan  6 17:59:40 2016
+       @generated from src/dgesdd.cpp normal d -> s, Fri Jan 22 21:41:52 2016
 
 */
 #include "magma_internal.h"
@@ -413,7 +413,7 @@ magma_sgesdd(
             }
         }
         maxwrk = max(maxwrk,minwrk);
-        work[1] = (float) maxwrk;
+        work[1] = magma_smake_lwork( maxwrk );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -1239,7 +1239,7 @@ magma_sgesdd(
     }
 
     /* Return optimal workspace in WORK[0] */
-    work[1] = (float) maxwrk;
+    work[1] = magma_smake_lwork( maxwrk );
 
     return *info;
 } /* magma_sgesdd */

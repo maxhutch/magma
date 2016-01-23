@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from src/zunmbr.cpp normal z -> c, Wed Jan  6 17:59:36 2016
+       @generated from src/zunmbr.cpp normal z -> c, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -218,7 +218,7 @@ magma_cunmbr(
         else {
             lwkopt = 1;
         }
-        work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+        work[0] = magma_cmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -312,6 +312,6 @@ magma_cunmbr(
             #endif
         }
     }
-    work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+    work[0] = magma_cmake_lwork( lwkopt );
     return *info;
 } /* magma_cunmbr */

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,13 +10,16 @@
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
+       @author Azzam Haidar
        
        This file implements lower case, and is called by ztrtri_kernel.cu.
        It's convenient to have separate files for lower & upper, to diff the sources.
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "ztrtri.cuh"
+
+
 /*
     This inverts the diagonal IB by IB inner blocks of A,
     and stores the results in d_dinvA.
@@ -1088,9 +1091,6 @@ triple_zgemm_above64_part3_lower_kernel(
     triple_zgemm_above64_part3_lower_device( n, Ain, lda, d_dinvA, jb, npages);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 

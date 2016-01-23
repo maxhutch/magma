@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zswapdblk_batched.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zswapdblk_batched.cu normal z -> d, Fri Jan 22 21:42:10 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 /*********************************************************/
@@ -77,7 +77,7 @@ dswapdblk_batched_kernel( int nb, int n_mod_nb,
 
     @param[in,out]
     dA_array Array of pointers, dimension (batchCount). 
-             Each is a DOUBLE_PRECISION array dA, dimension (ldda,n)
+             Each is a DOUBLE PRECISION array dA, dimension (ldda,n)
              The matrix dA.
 
     @param[in]
@@ -93,7 +93,7 @@ dswapdblk_batched_kernel( int nb, int n_mod_nb,
 
     @param[in,out]
     dB_array Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array dB, dimension (lddb,n)
+             Each is a DOUBLE PRECISION array dB, dimension (lddb,n)
              The matrix dB.
 
     @param[in]
@@ -116,7 +116,7 @@ dswapdblk_batched_kernel( int nb, int n_mod_nb,
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void 
-magmablas_dswapdblk_batched_q(
+magmablas_dswapdblk_batched(
     magma_int_t n, magma_int_t nb,
     double **dA_array, magma_int_t ldda, magma_int_t inca,
     double **dB_array, magma_int_t lddb, magma_int_t incb,
@@ -156,19 +156,4 @@ magmablas_dswapdblk_batched_q(
             ( nb, n_mod_nb, dA_array, ldda, inca,
                   dB_array, lddb, incb );
     }
-}
-
-
-/**
-    @see magmablas_dswapdblk_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void 
-magmablas_dswapdblk_batched(
-    magma_int_t n, magma_int_t nb,
-    double **dA_array, magma_int_t ldda, magma_int_t inca,
-    double **dB_array, magma_int_t lddb, magma_int_t incb, 
-    magma_int_t batchCount)
-{
-    magmablas_dswapdblk_batched_q( n, nb, dA_array, ldda, inca, dB_array, lddb, incb, batchCount, magmablasGetQueue() );
 }

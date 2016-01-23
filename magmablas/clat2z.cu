@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions mixed zc -> ds
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -184,19 +184,4 @@ magmablas_clat2z_q(
     else if (uplo == MagmaUpper) {
         clat2z_upper<<< grid, threads, 0, queue->cuda_stream() >>> (n, SA, ldsa, A, lda);
     }
-}
-
-
-/**
-    @see magmablas_clat2z_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_clat2z(
-    magma_uplo_t uplo, magma_int_t n,
-    magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
-    magmaDoubleComplex_ptr      A,  magma_int_t lda,
-    magma_int_t *info )
-{
-    magmablas_clat2z_q( uplo, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

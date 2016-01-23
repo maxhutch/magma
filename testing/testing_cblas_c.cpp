@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @generated from testing/testing_cblas_z.cpp normal z -> c, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_cblas_z.cpp normal z -> c, Fri Jan 22 21:42:34 2016
        @author Mark Gates
        
        These tests ensure that the MAGMA implementations of CBLAS routines
@@ -69,13 +69,13 @@ magmaFloatComplex blasf77_cdotu( const magma_int_t* n,
 
 // ----------------------------------------
 float gTol = 0;
-int gStatus = 0;
+magma_int_t gStatus = 0;
 
 const float SKIPPED_FLAG = -1;
 
 void output(
     const char* routine,
-    int m, int n, int k, int incx, int incy,
+    magma_int_t m, magma_int_t n, magma_int_t k, magma_int_t incx, magma_int_t incy,
     float error_cblas, float error_fblas, float error_inline )
 {
     // SKIPPED_FLAG indicates skipped, e.g., cdotc with MKL -- it isn't an error
@@ -85,7 +85,7 @@ void output(
     gStatus += ! okay;
     
     printf( "%5d %5d %5d %5d %5d   %-8s",
-            m, n, k, incx, incy, routine );
+            int(m), int(n), int(k), int(incx), int(incy), routine );
     
     if ( error_cblas == SKIPPED_FLAG )
         printf( "   %8s", "n/a" );
@@ -112,7 +112,7 @@ int main( int argc, char** argv )
     magmaFloatComplex  *A, *B;
     float error_cblas, error_fblas, error_inline;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t m, n, k, size, maxn, ld;
+    magma_int_t i, j, k, m, n, size, maxn, ld;
     
     // complex x for magma, cblas, fortran, inline blas respectively
     magmaFloatComplex x2_m, x2_c, x2_f, x2_i;
@@ -133,10 +133,10 @@ int main( int argc, char** argv )
     float tol = opts.tolerance * lapackf77_slamch("E");
     gTol = tol;
     
-    int inc[] = { -2, -1, 1, 2 };  //{ 1 };  //{ -1, 1 };
-    int ninc = sizeof(inc)/sizeof(*inc);
-    int maxinc = 0;
-    for( int i=0; i < ninc; ++i ) {
+    magma_int_t inc[] = { -2, -1, 1, 2 };  //{ 1 };  //{ -1, 1 };
+    magma_int_t ninc = sizeof(inc)/sizeof(*inc);
+    magma_int_t maxinc = 0;
+    for( i=0; i < ninc; ++i ) {
         maxinc = max( maxinc, abs(inc[i]) );
     }
     
@@ -196,7 +196,7 @@ int main( int argc, char** argv )
                     error_cblas  = 0;
                     error_fblas  = 0;
                     error_inline = 0;
-                    for( int j = 0; j < k; ++j ) {
+                    for( j=0; j < k; ++j ) {
                         x_m = magma_cblas_scasum( m, A(0,j), incx );
                         
                         #ifdef HAVE_CBLAS
@@ -212,7 +212,7 @@ int main( int argc, char** argv )
                         
                         // inline implementation
                         x_i = 0;
-                        for( int i=0; i < m; ++i ) {
+                        for( i=0; i < m; ++i ) {
                             x_i += MAGMA_C_ABS1( *A(i*incx,j) );  // |real(Aij)| + |imag(Aij)|
                         }
                         error_inline = max( error_inline, fabs(x_m - x_i) / fabs(m*x_i) );
@@ -237,7 +237,7 @@ int main( int argc, char** argv )
                     error_cblas  = 0;
                     error_fblas  = 0;
                     error_inline = 0;
-                    for( int j = 0; j < k; ++j ) {
+                    for( j=0; j < k; ++j ) {
                         x_m = magma_cblas_scnrm2( m, A(0,j), incx );
                         
                         #ifdef HAVE_CBLAS
@@ -253,7 +253,7 @@ int main( int argc, char** argv )
                         
                         // inline implementation (poor -- doesn't scale)
                         x_i = 0;
-                        for( int i=0; i < m; ++i ) {
+                        for( i=0; i < m; ++i ) {
                             x_i += real( *A(i*incx,j) ) * real( *A(i*incx,j) )
                                 +  imag( *A(i*incx,j) ) * imag( *A(i*incx,j) );
                             // same: real( conj( *A(i*incx,j) ) * *A(i*incx,j) );
@@ -280,7 +280,7 @@ int main( int argc, char** argv )
                 error_cblas  = 0;
                 error_fblas  = 0;
                 error_inline = 0;
-                for( int j = 0; j < k; ++j ) {
+                for( j=0; j < k; ++j ) {
                     // MAGMA implementation, not just wrapper
                     x2_m = magma_cblas_cdotc( m, A(0,j), incx, B(0,j), incy );
                     
@@ -310,7 +310,7 @@ int main( int argc, char** argv )
                     x2_i = MAGMA_C_ZERO;
                     magma_int_t A_offset = (incx > 0 ? 0 : (-n + 1)*incx);
                     magma_int_t B_offset = (incy > 0 ? 0 : (-n + 1)*incy);
-                    for( int i=0; i < m; ++i ) {
+                    for( i=0; i < m; ++i ) {
                         x2_i += conj( *A(A_offset + i*incx,j) ) * *B(B_offset + i*incy,j);
                     }
                     error_inline = max( error_inline, fabs(x2_m - x2_i) / fabs(m*x2_i) );
@@ -337,7 +337,7 @@ int main( int argc, char** argv )
                 error_cblas  = 0;
                 error_fblas  = 0;
                 error_inline = 0;
-                for( int j = 0; j < k; ++j ) {
+                for( j=0; j < k; ++j ) {
                     // MAGMA implementation, not just wrapper
                     x2_m = magma_cblas_cdotu( m, A(0,j), incx, B(0,j), incy );
                     
@@ -367,7 +367,7 @@ int main( int argc, char** argv )
                     x2_i = MAGMA_C_ZERO;
                     magma_int_t A_offset = (incx > 0 ? 0 : (-n + 1)*incx);
                     magma_int_t B_offset = (incy > 0 ? 0 : (-n + 1)*incy);
-                    for( int i=0; i < m; ++i ) {
+                    for( i=0; i < m; ++i ) {
                         x2_i += *A(A_offset + i*incx,j) * *B(B_offset + i*incy,j);
                     }
                     error_inline = max( error_inline, fabs(x2_m - x2_i) / fabs(m*x2_i) );

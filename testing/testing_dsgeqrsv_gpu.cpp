@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zcgeqrsv_gpu.cpp mixed zc -> ds, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_zcgeqrsv_gpu.cpp mixed zc -> ds, Fri Jan 22 21:42:41 2016
 
 */
 
@@ -21,7 +21,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_d
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dsgeqrsv
@@ -105,12 +104,12 @@ int main( int argc, char** argv)
             /* Initialize the matrices */
             size = lda*N;
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
-            lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_A2, &lda );
+            lapackf77_dlacpy( MagmaFullStr, &M, &N, h_A, &lda, h_A2, &lda );
             
             // make random RHS
             size = ldb*nrhs;
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
-            lapackf77_dlacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
+            lapackf77_dlacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
             magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda );
             magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
@@ -124,9 +123,10 @@ int main( int argc, char** argv)
                                 d_X, lddx, &qrsv_iters, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dsgeqrsv returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             // compute the residual
             magma_dgetmatrix( N, nrhs, d_X, lddx, h_X, ldb );
@@ -172,16 +172,17 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
-            lapackf77_dlacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_X, &ldb );
+            lapackf77_dlacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_X, &ldb );
             
             cpu_time = magma_wtime();
             lapackf77_dgels( MagmaNoTransStr, &M, &N, &nrhs,
                              h_A, &lda, h_X, &ldb, h_workd, &lhwork, &info );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("lapackf77_dgels returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             blasf77_dgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
                            &c_neg_one, h_A2, &lda,

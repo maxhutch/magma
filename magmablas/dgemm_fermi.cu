@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgemm_fermi.cu normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgemm_fermi.cu normal z -> d, Fri Jan 22 21:42:06 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -21,7 +21,7 @@
        
        The batched version uses gemm_kernel_batched.cuh instead of gemm_kernel.cuh.
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_d.h"
 
 #define PRECISION_d
@@ -84,11 +84,11 @@
             be at least  zero.
     
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             On entry, ALPHA specifies the scalar alpha.
     
     @param[in]
-    dA      DOUBLE_PRECISION array of DIMENSION ( LDA, ka ), where ka is
+    dA      DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
             k  when  transA = MagmaNoTrans,  and is  m  otherwise.
             Before entry with  transA = MagmaNoTrans,  the leading  m by k
             part of the array dA must contain the matrix dA, otherwise
@@ -103,7 +103,7 @@
             least  max( 1, k ).
     
     @param[in]
-    dB      DOUBLE_PRECISION array of DIMENSION ( LDB, kb ), where kb is
+    dB      DOUBLE PRECISION array of DIMENSION ( LDB, kb ), where kb is
             n  when  transB = MagmaNoTrans,  and is  k  otherwise.
             Before entry with  transB = MagmaNoTrans,  the leading  k by n
             part of the array dB must contain the matrix dB, otherwise
@@ -118,12 +118,12 @@
             least  max( 1, n ).
     
     @param[in]
-    beta    DOUBLE_PRECISION.
+    beta    DOUBLE PRECISION.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
             supplied as zero then dC need not be set on input.
     
     @param[in,out]
-    dC      DOUBLE_PRECISION array of DIMENSION ( LDC, n ).
+    dC      DOUBLE PRECISION array of DIMENSION ( LDC, n ).
             Before entry, the leading  m by n  part of the array  dC must
             contain the matrix  dC,  except when  beta  is zero, in which
             case dC need not be set on entry.
@@ -203,7 +203,7 @@ magmablas_dgemm_q(
     {
         magma_dgemm( transA, transB, m, n, k, alpha,
                      dA, ldda, dB, lddb,
-                     beta, dC, lddc );
+                     beta, dC, lddc, queue );
         return;
     }
 
@@ -306,24 +306,4 @@ magmablas_dgemm_q(
         cudaUnbindTexture( tex_ref_A );
         cudaUnbindTexture( tex_ref_B );
     #endif
-}
-
-
-/**
-    @see magmablas_dgemm_q
-    @ingroup magma_dblas3
-    ********************************************************************/
-extern "C" void
-magmablas_dgemm(
-    magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
-    double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_const_ptr dB, magma_int_t lddb,
-    double beta,
-    magmaDouble_ptr       dC, magma_int_t lddc )
-{
-    magmablas_dgemm_q( transA, transB, m, n, k,
-                       alpha, dA, ldda,
-                              dB, lddb,
-                       beta,  dC, lddc, magmablasGetQueue() );
 }

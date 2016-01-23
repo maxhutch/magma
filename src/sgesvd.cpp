@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
     
        @author Stan Tomov
        @author Mark Gates
-       @generated from src/dgesvd.cpp normal d -> s, Wed Jan  6 17:59:47 2016
+       @generated from src/dgesvd.cpp normal d -> s, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -71,7 +71,7 @@
             The number of columns of the input matrix A.  N >= 0.
     
     @param[in,out]
-    A       REAL array, dimension (LDA,N)
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit,
       -     if JOBU = MagmaOverwriteVec,  A is overwritten with the first min(m,n)
@@ -86,11 +86,11 @@
             The leading dimension of the array A.  LDA >= max(1,M).
     
     @param[out]
-    s       REAL array, dimension (min(M,N))
+    s       DOUBLE_PRECISION array, dimension (min(M,N))
             The singular values of A, sorted so that S(i) >= S(i+1).
     
     @param[out]
-    U       REAL array, dimension (LDU,UCOL)
+    U       DOUBLE_PRECISION array, dimension (LDU,UCOL)
             (LDU,M) if JOBU = MagmaAllVec or (LDU,min(M,N)) if JOBU = MagmaSomeVec.
       -     If JOBU = MagmaAllVec, U contains the M-by-M orthogonal matrix U;
       -     if JOBU = MagmaSomeVec, U contains the first min(m,n) columns of U
@@ -103,7 +103,7 @@
             JOBU = MagmaSomeVec or MagmaAllVec, LDU >= M.
     
     @param[out]
-    VT      REAL array, dimension (LDVT,N)
+    VT      DOUBLE_PRECISION array, dimension (LDVT,N)
       -     If JOBVT = MagmaAllVec, VT contains the N-by-N orthogonal matrix
             V**T;
       -     if JOBVT = MagmaSomeVec, VT contains the first min(m,n) rows of
@@ -117,7 +117,7 @@
       -     if JOBVT = MagmaSomeVec, LDVT >= min(M,N).
     
     @param[out]
-    work    (workspace) REAL array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the required LWORK.
             if INFO > 0, WORK(2:MIN(M,N)) contains the unconverged
             superdiagonal elements of an upper bidiagonal matrix B
@@ -241,10 +241,7 @@ magma_sgesvd(
         nb = magma_get_sgesvd_nb( m, n );
         minwrk = (m + n)*nb + 3*minmn;
         
-        // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-        // if it cannot be exactly represented in floating point.
-        real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-        work[0] = MAGMA_S_MAKE( minwrk * one_eps, 0 );
+        work[0] = magma_smake_lwork( minwrk );
         if ( !lquery && (lwork < minwrk) ) {
             *info = -13;
         }

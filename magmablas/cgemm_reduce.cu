@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgemm_reduce.cu normal z -> c, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zgemm_reduce.cu normal z -> c, Fri Jan 22 21:41:58 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 
@@ -51,7 +51,7 @@ void cgemm_reduce_kernel(
         /*  w := v**H * C  */
         lsum = MAGMA_C_ZERO;
         for( int j = tx; j < k; j += BLK_K )
-            lsum += MAGMA_C_CNJG( dA[j] )* dB[j];
+            lsum += MAGMA_C_CONJ( dA[j] )* dB[j];
         
         sum[tx][threadIdx.y][threadIdx.z] = lsum;
         magma_sum_reduce_3d< BLK_K, BLK_M+1, BLK_N+1 >( tx, threadIdx.y, threadIdx.z, sum );
@@ -136,22 +136,4 @@ magmablas_cgemm_reduce_q(
         cgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, queue->cuda_stream() >>>
             ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
     }
-}
-
-
-/**
-    @see magmablas_cgemm_reduce_q
-    @ingroup magma_cblas3
-    ********************************************************************/
-extern "C" void
-magmablas_cgemm_reduce(
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex alpha,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
-    magmaFloatComplex beta,
-    magmaFloatComplex_ptr       dC, magma_int_t lddc )
-{
-    magmablas_cgemm_reduce_q(
-        m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc, magmablasGetQueue() );
 }

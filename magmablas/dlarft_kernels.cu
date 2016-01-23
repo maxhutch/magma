@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlarft_kernels.cu normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zlarft_kernels.cu normal z -> d, Fri Jan 22 21:42:05 2016
        @author Azzam Haidar
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 #define dgemv_bs 32
 #define BLOCK_SIZE 512
@@ -43,16 +43,16 @@ void dlarft_gemvcolwise_device( int m, double *v, double *tau,
             else
                 tmp = MAGMA_D_ZERO;
             for( int j = tx+1; j < m; j += BLOCK_SIZE ) {
-                tmp +=  MAGMA_D_CNJG( v[j] ) * dc[j];
+                tmp +=  MAGMA_D_CONJ( v[j] ) * dc[j];
             }
             sum[tx] = tmp;
             magma_sum_reduce< BLOCK_SIZE >( tx, sum );
             #if defined (use_gemm_larft)
-            *(T+thblk) = MAGMA_D_CNJG(sum[0]);
+            *(T+thblk) = MAGMA_D_CONJ(sum[0]);
             #else
-            tmp = - MAGMA_D_CNJG(*tau) * sum[0]; 
-            *(T+thblk) = MAGMA_D_CNJG(tmp); // T = - tau(tx) * V(tx:n,1:tx-1)' * V(tx:n,tx) = tmp'
-            //*(T+thblk) = - MAGMA_D_CNJG(sum[0]) * (*tau); // T = - tau(tx) * V(tx:n,1:tx-1)' * V(tx:n,tx) = tmp'
+            tmp = - MAGMA_D_CONJ(*tau) * sum[0]; 
+            *(T+thblk) = MAGMA_D_CONJ(tmp); // T = - tau(tx) * V(tx:n,1:tx-1)' * V(tx:n,tx) = tmp'
+            //*(T+thblk) = - MAGMA_D_CONJ(sum[0]) * (*tau); // T = - tau(tx) * V(tx:n,1:tx-1)' * V(tx:n,tx) = tmp'
             #endif
         }
         else {
@@ -95,12 +95,13 @@ void magmablas_dlarft_gemvcolwise(
     magma_int_t m,  magma_int_t step,
     double *v, magma_int_t ldv, 
     double *T,  magma_int_t ldt,
-    double *tau)
+    double *tau,
+    magma_queue_t queue )
 {
     dim3 grid( step+1, 1, 1 );
     dim3 threads( BLOCK_SIZE );
     dlarft_gemvcolwise_kernel
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, v, ldv, tau, T, ldt, step);
 }
 
@@ -154,7 +155,7 @@ dlarft_gemvrowwise_device(
     {
         for (int s=tx; s < m; s += dgemv_bs)
         {
-            res += MAGMA_D_CNJG (v_ptr[s]) * x_ptr[s*incx];
+            res += MAGMA_D_CONJ (v_ptr[s]) * x_ptr[s*incx];
         }
     
         sdata[ty * dgemv_bs + tx] = res;
@@ -224,13 +225,14 @@ void magmablas_dlarft_gemvrowwise(
     double *tau, 
     double *v, magma_int_t ldv, 
     double *T, magma_int_t ldt,
-    double *W)
+    double *W,
+    magma_queue_t queue )
 {
     dim3 grid(1);
     dim3 threads(dgemv_bs, max(i,1), 1);
     size_t shmem = sizeof(double)*dgemv_bs*(i+1);
     dlarft_gemvrowwise_kernel
-        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
         (m, i, tau, v, ldv, T, ldt);
 }
 
@@ -300,7 +302,7 @@ dlarft_gemv_loop_inside_device(
 
             for (int s=tx; s < m; s += dgemv_bs)
             {
-                res += MAGMA_D_CNJG (v_ptr[s]) * x_ptr[s*incx];
+                res += MAGMA_D_CONJ (v_ptr[s]) * x_ptr[s*incx];
             }
     
             sdata[ty * dgemv_bs + tx] = res;
@@ -370,13 +372,14 @@ void magmablas_dlarft_gemv_loop_inside(
     magma_int_t n, magma_int_t k, 
     double *tau, 
     double *v, magma_int_t ldv, 
-    double *T, magma_int_t ldt)
+    double *T, magma_int_t ldt,
+    magma_queue_t queue )
 {
     dim3 grid(1);
     dim3 threads(dgemv_bs, max(k,1), 1);
     size_t shmem = sizeof(double) * (dgemv_bs*(k+1));
     dlarft_gemv_loop_inside_kernel
-        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
         (n, k, tau, v, ldv, T, ldt); 
 }
 
@@ -496,13 +499,14 @@ void magmablas_dlarft_dtrmv_sm32x32(
     magma_int_t m, magma_int_t n, 
     double *tau, 
     double *Tin, magma_int_t ldtin, 
-    double *Tout, magma_int_t ldtout)
+    double *Tout, magma_int_t ldtout,
+    magma_queue_t queue )
 {
     dim3 grid(1);
     dim3 threads(max(m,1), 1, 1);
     size_t shmem = sizeof(double)*(m*m);
     dlarft_dtrmv_sm32x32_kernel
-        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
         (m, n,  tau, Tin, ldtin, Tout, ldtout);
 }
 
@@ -598,13 +602,14 @@ void magmablas_dlarft_recdtrmv_sm32x32(
     magma_int_t m, magma_int_t n, 
     double *tau, 
     double *Trec, magma_int_t ldtrec, 
-    double *Ttri, magma_int_t ldttri)
+    double *Ttri, magma_int_t ldttri,
+    magma_queue_t queue )
 {
     dim3 grid(1);
     dim3 threads(max(m,1), 1, 1);
     size_t shmem = sizeof(double)*(m*n);
     dlarft_recdtrmv_sm32x32_kernel
-        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
         (m, n,  tau, Trec, ldtrec, Ttri, ldttri);
 }
 

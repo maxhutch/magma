@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from src/zunmbr.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zunmbr.cpp normal z -> d, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -33,13 +33,13 @@
     TRANS = MagmaNoTrans:        P*C                  C*P
     TRANS = MagmaTrans:     P**H*C               C*P**H
     
-    Here Q and P**H are the unitary matrices determined by DGEBRD when
+    Here Q and P**H are the orthogonal matrices determined by DGEBRD when
     reducing A real matrix A to bidiagonal form: A = Q*B * P**H. Q
     and P**H are defined as products of elementary reflectors H(i) and
     G(i) respectively.
     
     Let nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Thus nq is the
-    order of the unitary matrix Q or P**H that is applied.
+    order of the orthogonal matrix Q or P**H that is applied.
     
     If VECT = MagmaQ, A is assumed to have been an NQ-by-K matrix:
     if nq >= k, Q = H(1) H(2) . . . H(k);
@@ -83,7 +83,7 @@
             K >= 0.
     
     @param[in]
-    A       DOUBLE_PRECISION array, dimension
+    A       DOUBLE PRECISION array, dimension
                                   (LDA,min(nq,K)) if VECT = MagmaQ
                                   (LDA,nq)        if VECT = MagmaP
             The vectors which define the elementary reflectors H(i) and
@@ -97,13 +97,13 @@
             if VECT = MagmaP, LDA >= max(1,min(nq,K)).
     
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (min(nq,K))
+    tau     DOUBLE PRECISION array, dimension (min(nq,K))
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i) or G(i) which determines Q or P, as returned
             by DGEBRD in the array argument TAUQ or TAUP.
     
     @param[in,out]
-    C       DOUBLE_PRECISION array, dimension (LDC,N)
+    C       DOUBLE PRECISION array, dimension (LDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q
             or P*C or P**H*C or C*P or C*P**H.
@@ -113,7 +113,7 @@
             The leading dimension of the array C. LDC >= max(1,M).
     
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     
     @param[in]
@@ -218,7 +218,7 @@ magma_dormbr(
         else {
             lwkopt = 1;
         }
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -312,6 +312,6 @@ magma_dormbr(
             #endif
         }
     }
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
     return *info;
 } /* magma_dormbr */

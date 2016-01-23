@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgeqr2x_gpu-v4.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgeqr2x_gpu-v4.cu normal z -> c, Fri Jan 22 21:42:08 2016
 
 */
 #include "magma_internal.h"
@@ -74,7 +74,7 @@
             LAPACK stores this array in A. There are 0s below the diagonal.
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array, dimension (3 N)
+    dwork   (workspace) REAL array, dimension (3 N)
 
     @param[out]
     info    INTEGER

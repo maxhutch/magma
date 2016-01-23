@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Stan Tomov
 
-       @generated from src/zgeqr2x_gpu-v3.cpp normal z -> c, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqr2x_gpu-v3.cpp normal z -> c, Fri Jan 22 21:41:35 2016
 
 */
 #include "magma_internal.h"
@@ -83,7 +83,7 @@ magma_clarfb2_gpu(
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX array, dimension (LDA,N)
+    dA      COMPLEX array, dimension (LDDA,N)
             On entry, the m by n matrix A.
             On exit, the unitary matrix Q as a
             product of elementary reflectors (see Further Details).
@@ -96,7 +96,7 @@ magma_clarfb2_gpu(
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+            The leading dimension of the array A.  LDDA >= max(1,M).
 
     @param[out]
     dtau    COMPLEX array, dimension (min(M,N))
@@ -114,7 +114,7 @@ magma_clarfb2_gpu(
             LAPACK stores this array in A. There are 0s below the diagonal.
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array, dimension (3 N)
+    dwork   (workspace) REAL array, dimension (3 N)
 
     @param[out]
     info    INTEGER

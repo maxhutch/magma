@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/dgeev_m.cpp normal d -> s, Wed Jan  6 17:59:36 2016
+       @generated from src/dgeev_m.cpp normal d -> s, Fri Jan 22 21:41:51 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -195,7 +195,7 @@ magma_sgeev_m(
     if (*info == 0) {
         minwrk = (2 +   nb + nb*ngpu)*n;
         optwrk = (2 + 2*nb + nb*ngpu)*n;
-        work[0] = MAGMA_S_MAKE( (float) optwrk, 0. );
+        work[0] = magma_smake_lwork( optwrk );
         
         if (lwork < minwrk && ! lquery) {
             *info = -13;
@@ -512,7 +512,7 @@ CLEANUP:
     timer_printf( "sgeev flops n %5d, gehrd %7lld, unghr %7lld, hseqr %7lld, trevc %7lld, total %7lld, sum %7lld\n",
                   (int) n, flop_gehrd, flop_unghr, flop_hseqr, flop_trevc, flop_total, flop_sum );
     
-    work[0] = MAGMA_S_MAKE( (float) optwrk, 0. );
+    work[0] = magma_smake_lwork( optwrk );
     
     return *info;
 } /* magma_sgeev */

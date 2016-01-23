@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgels3_gpu.cpp normal z -> s, Wed Jan  6 17:59:30 2016
+       @generated from src/zgels3_gpu.cpp normal z -> s, Fri Jan 22 21:41:33 2016
 
 */
 #include "magma_internal.h"
@@ -39,7 +39,7 @@
             The number of columns of the matrix C. NRHS >= 0.
 
     @param[in,out]
-    dA      REAL array, dimension (LDA,N)
+    dA      REAL array, dimension (LDDA,N)
             On entry, the M-by-N matrix A.
             On exit, A is overwritten by details of its QR
             factorization as returned by SGEQRF3.
@@ -93,7 +93,7 @@ magma_sgels3_gpu(
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
 
-    hwork[0] = MAGMA_S_MAKE( (float)lwkopt, 0. );
+    hwork[0] = magma_smake_lwork( lwkopt );
 
     *info = 0;
     /* For now, N is the only case working */
@@ -128,7 +128,7 @@ magma_sgels3_gpu(
     /*
      * Allocate temporary buffers
      */
-    int ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nb;
+    magma_int_t ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nb;
     if (nb < nrhs)
         ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nrhs;
     if (MAGMA_SUCCESS != magma_smalloc( &dT, ldtwork )) {

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zaxpycp.cu normal z -> s, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zaxpycp.cu normal z -> s, Fri Jan 22 21:41:57 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -44,14 +44,4 @@ magmablas_saxpycp_q(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
     saxpycp_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, r, x, b );
-}
-
-extern "C" void
-magmablas_saxpycp(
-    magma_int_t m,
-    magmaFloat_ptr r,
-    magmaFloat_ptr x,
-    magmaFloat_const_ptr b)
-{
-    magmablas_saxpycp_q( m, r, x, b, magmablasGetQueue() );
 }

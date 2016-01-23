@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from testing/testing_zgeqrf_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
+       @generated from testing/testing_zgeqrf_batched.cpp normal z -> s, Fri Jan 22 21:42:50 2016
 
 */
 
@@ -115,7 +115,7 @@ int main( int argc, char** argv)
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("%% BatchCount   M     N   MAGMA GFlop/s (ms)   CUBLAS GFlop/s (ms)    CPU GFlop/s (ms)   |R - Q^H*A|_mag   |I - Q^H*Q|_mag   |R - Q^H*A|_cub   |I - Q^H*Q|_cub\n");
+    printf("%% BatchCount   M     N   MAGMA Gflop/s (ms)   CUBLAS Gflop/s (ms)    CPU Gflop/s (ms)   |R - Q^H*A|_mag   |I - Q^H*Q|_mag   |R - Q^H*A|_cub   |I - Q^H*Q|_cub\n");
     printf("%%============================================================================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -138,13 +138,13 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A,   float, ldda*N * batchCount );
 
             TESTING_MALLOC_DEV( dtau_magma,  float, min_mn * batchCount);
-            TESTING_MALLOC_DEV( dtau_cublas,  float, min_mn * batchCount);
+            TESTING_MALLOC_DEV( dtau_cublas, float, min_mn * batchCount);
 
             TESTING_MALLOC_DEV(  dinfo_magma,  magma_int_t, batchCount);
-            TESTING_MALLOC_DEV(  dinfo_cublas,  magma_int_t, batchCount);
+            TESTING_MALLOC_DEV(  dinfo_cublas, magma_int_t, batchCount);
 
-            magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
-            magma_malloc((void**)&dtau_array, batchCount * sizeof(*dtau_array));
+            TESTING_MALLOC_DEV( dA_array,   float*, batchCount );
+            TESTING_MALLOC_DEV( dtau_array, float*, batchCount );
         
             // to determine the size of lwork
             lwork = -1;
@@ -157,7 +157,7 @@ int main( int argc, char** argv)
             column = N * batchCount;
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_slacpy( MagmaUpperLowerStr, &M, &column, h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &M, &column, h_A, &lda, h_R, &lda );
        
             /* ====================================================================
                Performs operation using MAGMA
@@ -175,9 +175,10 @@ int main( int argc, char** argv)
 
             magma_sgetmatrix( M, column, d_A, ldda, h_Amagma, lda);
 
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_sgeqrf_batched returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* ====================================================================
                Performs operation using CUBLAS
@@ -191,15 +192,16 @@ int main( int argc, char** argv)
 
             cublas_time = magma_sync_wtime( opts.queue );
     
-            int cublas_info;  // int, not magma_int_t
+            int cublas_info;  // not magma_int_t
             cublasSgeqrfBatched( opts.handle, M, N, dA_array, ldda, dtau_array, &cublas_info, batchCount);
 
             cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
 
-            if (cublas_info != 0)
+            if (cublas_info != 0) {
                 printf("cublasSgeqrfBatched returned error %d: %s.\n",
                        (int) cublas_info, magma_strerror( cublas_info ));
+            }
             #endif
 
             /* =====================================================================
@@ -218,9 +220,10 @@ int main( int argc, char** argv)
                 {
                     magma_int_t locinfo;
                     lapackf77_sgeqrf(&M, &N, h_A + s * lda * N, &lda, tau + s * min_mn, h_work + s * lwork, &lwork, &locinfo);
-                    if (locinfo != 0)
+                    if (locinfo != 0) {
                         printf("lapackf77_sgeqrf matrix %d returned error %d: %s.\n",
                                (int) s, (int) locinfo, magma_strerror( locinfo ));
+                    }
                 }
 
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
@@ -229,9 +232,10 @@ int main( int argc, char** argv)
                 
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_sgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 /* =====================================================================
                    Check the MAGMA CUBLAS result compared to LAPACK

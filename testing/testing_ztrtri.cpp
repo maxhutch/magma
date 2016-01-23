@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -34,7 +34,7 @@ int main( int argc, char** argv)
     magma_int_t N, n2, lda, info;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    double      work[1], error, norm;
+    double      Anorm, error, work[1];
     magma_int_t status = 0;
 
     magma_opts opts;
@@ -44,7 +44,7 @@ int main( int argc, char** argv)
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("%%   N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||A||_F\n");
+    printf("%%   N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R||_F / ||A||_F\n");
     printf("%%================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -61,7 +61,7 @@ int main( int argc, char** argv)
                =================================================================== */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             magma_zmake_hpd( N, h_A, lda );
-            lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
 
             /* ====================================================================
                Performs operation using MAGMA
@@ -82,9 +82,10 @@ int main( int argc, char** argv)
             magma_ztrtri( opts.uplo, opts.diag, N, h_R, lda, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_ztrtri returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -96,16 +97,17 @@ int main( int argc, char** argv)
                 lapackf77_ztrtri( lapack_uplo_const(opts.uplo), lapack_diag_const(opts.diag), &N, h_A, &lda, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_ztrtri returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                norm  = lapackf77_zlantr("f", lapack_uplo_const(opts.uplo), MagmaNonUnitStr, &N, &N, h_A, &N, work);
                 blasf77_zaxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
-                error = lapackf77_zlantr("f", lapack_uplo_const(opts.uplo), MagmaNonUnitStr, &N, &N, h_R, &N, work) / norm;
+                Anorm = lapackf77_zlantr("f", lapack_uplo_const(opts.uplo), MagmaNonUnitStr, &N, &N, h_A, &lda, work);
+                error = lapackf77_zlantr("f", lapack_uplo_const(opts.uplo), MagmaNonUnitStr, &N, &N, h_R, &lda, work) / Anorm;
                 bool okay = (error < tol);
                 status += ! okay;
                 printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",

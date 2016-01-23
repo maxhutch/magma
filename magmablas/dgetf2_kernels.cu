@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgetf2_kernels.cu normal z -> d, Wed Jan  6 17:59:41 2016
+       @generated from magmablas/zgetf2_kernels.cu normal z -> d, Fri Jan 22 21:42:09 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 #include "magma_templates.h"
 
@@ -277,7 +277,7 @@ magma_int_t magma_idamax_lg_batched(magma_int_t length, double **x_array, magma_
 
     @param[in]
     x_array     Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array of dimension
+            Each is a DOUBLE PRECISION array of dimension
 
 
     @param[in]
@@ -407,7 +407,7 @@ void dswap_kernel_batched(magma_int_t n, double **x_array, magma_int_t incx, mag
 
     @param[in]
     x_array     Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array of dimension
+            Each is a DOUBLE PRECISION array of dimension
 
 
     @param[in]
@@ -609,7 +609,7 @@ void dgetf2trsm_kernel_batched(int ib, int n, double **dA_array, int step, int l
 
     @param[in,out]
     dA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N).
             On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -977,7 +977,7 @@ kernel_dgetf2_sm_batched(
 
     @param[in,out]
     dA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N).
             On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.

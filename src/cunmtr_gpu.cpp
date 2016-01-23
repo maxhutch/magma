@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from src/zunmtr_gpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
+       @generated from src/zunmtr_gpu.cpp normal z -> c, Fri Jan 22 21:41:42 2016
 
 */
 #include "magma_internal.h"
@@ -125,12 +125,11 @@ magma_cunmtr_gpu(
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     magma_int_t i1, i2, mi, ni, nq;
-    int left, upper;
     magma_int_t iinfo;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    upper  = (uplo == MagmaUpper);
+    bool left   = (side == MagmaLeft);
+    bool upper  = (uplo == MagmaUpper);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {

@@ -29,6 +29,7 @@ var group__magma__cblas1 =
     [ "magma_scasum_q", "group__magma__cblas1.html#ga08d4c31e48752a7dc057035245211188", null ],
     [ "magma_scnrm2", "group__magma__cblas1.html#ga5cda22ae6b43caf3d53b5f8de023fac9", null ],
     [ "magma_scnrm2_q", "group__magma__cblas1.html#gad7207e710e7bd577f8a9cb2edb0aac65", null ],
-    [ "magmablas_cswap", "group__magma__cblas1.html#ga6b92ff081cf518a3bbf509b4cce7008d", null ],
-    [ "magmablas_cswap_q", "group__magma__cblas1.html#ga5c61441096b4926aa41b6c3093a85390", null ]
+    [ "magmablas_caxpycp", "group__magma__cblas1.html#ga1999feb68f433405418c16ea868728c1", null ],
+    [ "magmablas_csetmatrix_transpose", "group__magma__cblas1.html#ga918c2f97c3e9522f6195da4b3fcd72a5", null ],
+    [ "magmablas_cswap", "group__magma__cblas1.html#ga6b92ff081cf518a3bbf509b4cce7008d", null ]
 ];

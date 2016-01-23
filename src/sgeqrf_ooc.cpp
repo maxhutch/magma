@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqrf_ooc.cpp normal z -> s, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqrf_ooc.cpp normal z -> s, Fri Jan 22 21:41:37 2016
 
 */
 #include <cuda_runtime.h>
@@ -113,7 +113,7 @@ magma_sgeqrf_ooc(
     magma_int_t nb = magma_get_sgeqrf_nb( m, n );
 
     magma_int_t lwkopt = n * nb;
-    work[0] = MAGMA_S_MAKE( (float)lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
     bool lquery = (lwork == -1);
     *info = 0;
     if (m < 0) {

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zswapdblk.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zswapdblk.cu normal z -> d, Fri Jan 22 21:42:03 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 /*********************************************************/
@@ -61,7 +61,7 @@ dswapdblk_kernel( int nb,
             NB > 0 and NB <= maximum threads per CUDA block (512 or 1024).
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The matrix dA.
 
     @param[in]
@@ -76,7 +76,7 @@ dswapdblk_kernel( int nb,
             inca = 0 means blocks are stored side-by-side    at dA(0,    i*nb).
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array, dimension (LDDB,N)
+    dB      DOUBLE PRECISION array, dimension (LDDB,N)
             The matrix dB.
 
     @param[in]
@@ -128,18 +128,4 @@ magmablas_dswapdblk_q(
             ( nb, dA, ldda, inca,
                   dB, lddb, incb );
     }
-}
-
-
-/**
-    @see magmablas_dswapdblk_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void 
-magmablas_dswapdblk(
-    magma_int_t n, magma_int_t nb,
-    magmaDouble_ptr dA, magma_int_t ldda, magma_int_t inca,
-    magmaDouble_ptr dB, magma_int_t lddb, magma_int_t incb )
-{
-    magmablas_dswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magmablasGetQueue() );
 }

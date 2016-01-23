@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -23,7 +23,7 @@
        The batched version uses gemm_kernel_batched.cuh instead of gemm_kernel.cuh.
 */
 #include "cublas_v2.h"
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 
 #define PRECISION_z

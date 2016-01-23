@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgeqr2_batched.cu normal z -> s, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zgeqr2_batched.cu normal z -> s, Fri Jan 22 21:42:10 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 #include "batched_kernel_param.h"
 
@@ -46,7 +46,7 @@ void slarfx_device( int m, int n,  float *v, float *tau,
             else
                 lsum = MAGMA_S_ZERO;
             for (int j = tx+1; j < m; j += BLOCK_SIZE) {
-                lsum += MAGMA_S_MUL( MAGMA_S_CNJG( v[j] ), dc[j+ldc*k] );
+                lsum += MAGMA_S_MUL( MAGMA_S_CONJ( v[j] ), dc[j+ldc*k] );
             }
 
             sum[tx] = lsum;
@@ -55,7 +55,7 @@ void slarfx_device( int m, int n,  float *v, float *tau,
         magma_sum_reduce< BLOCK_SIZE >( tx, sum );
         __syncthreads();
 
-        float z__1 = - MAGMA_S_CNJG(*tau) * sum[0];
+        float z__1 = - MAGMA_S_CONJ(*tau) * sum[0];
         /*  C := C - v * w  */
         if (tx < BLOCK_SIZE)
         {

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgeadd_batched.cu normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgeadd_batched.cu normal z -> d, Fri Jan 22 21:42:08 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -68,12 +68,12 @@ dgeadd_batched_kernel(
             The number of columns of each matrix dAarray[i].  N >= 0.
     
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             The scalar alpha.
             
     @param[in]
     dAarray array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a DOUBLE_PRECISION array, dimension (LDDA,N)
+            with each array a DOUBLE PRECISION array, dimension (LDDA,N)
             The m by n matrices dAarray[i].
     
     @param[in]
@@ -82,7 +82,7 @@ dgeadd_batched_kernel(
             
     @param[in,out]
     dBarray array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a DOUBLE_PRECISION array, dimension (LDDB,N)
+            with each array a DOUBLE PRECISION array, dimension (LDDB,N)
             The m by n matrices dBarray[i].
     
     @param[in]
@@ -101,7 +101,7 @@ dgeadd_batched_kernel(
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void
-magmablas_dgeadd_batched_q(
+magmablas_dgeadd_batched(
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr  const dAarray[], magma_int_t ldda,
@@ -134,21 +134,4 @@ magmablas_dgeadd_batched_q(
     
     dgeadd_batched_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
-}
-
-
-/**
-    @see magmablas_dgeadd_batched_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dgeadd_batched(
-    magma_int_t m, magma_int_t n,
-    double alpha,
-    magmaDouble_const_ptr  const dAarray[], magma_int_t ldda,
-    magmaDouble_ptr              dBarray[], magma_int_t lddb,
-    magma_int_t batchCount )
-{
-    magmablas_dgeadd_batched_q(
-        m, n, alpha, dAarray, ldda, dBarray, lddb, batchCount, magmablasGetQueue() );
 }

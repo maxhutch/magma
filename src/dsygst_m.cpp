@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from src/zhegst_m.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zhegst_m.cpp normal z -> d, Fri Jan 22 21:41:49 2016
 */
 #include "magma_internal.h"
 
@@ -110,7 +110,7 @@ static void magma_dsygst_m_1_L_col_update(
             The order of the matrices A and B.  N >= 0.
     
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -127,7 +127,7 @@ static void magma_dsygst_m_1_L_col_update(
             The leading dimension of the array A.  LDA >= max(1,N).
     
     @param[in,out]
-    B       DOUBLE_PRECISION array, dimension (LDB,N)
+    B       DOUBLE PRECISION array, dimension (LDB,N)
             The triangular factor from the Cholesky factorization of B,
             as returned by DPOTRF.
             

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqrf_mgpu.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqrf_mgpu.cpp normal z -> d, Fri Jan 22 21:41:36 2016
 
 */
 #include "magma_internal.h"
@@ -31,7 +31,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dlA     DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu).
+    dlA     DOUBLE PRECISION array of pointers on the GPU, dimension (ngpu).
             On entry, the M-by-N matrix A distributed over GPUs
             (d_lA[d] points to the local matrix on d-th GPU).
             It uses 1D block column cyclic format with the block size of nb,
@@ -50,7 +50,7 @@
             divisible by 16.
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (min(M,N))
+    tau     DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 

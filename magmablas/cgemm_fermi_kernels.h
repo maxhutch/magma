@@ -2,7 +2,7 @@
 #define CGEMM_FERMI_KERNELS_H
 
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -14,7 +14,7 @@
 
        See [zcds]gemm_fermi.cu for description of related files.
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

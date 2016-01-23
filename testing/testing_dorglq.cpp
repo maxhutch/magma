@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zunglq.cpp normal z -> d, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zunglq.cpp normal z -> d, Fri Jan 22 21:42:45 2016
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
     double tol = opts.tolerance * lapackf77_dlamch("E");
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("%%   m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
+    printf("%%   m     n     k   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R|| / ||A||\n");
     printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -91,9 +91,10 @@ int main( int argc, char** argv )
             // first, get LQ factors in both hA and hR
             magma_dsetmatrix( m, n, hA, lda, dA, ldda );
             magma_dgelqf_gpu( m, n, dA, ldda, tau, h_work, lwork, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dgelqf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             magma_dgetmatrix( m, n, dA, ldda, hA, lda );
             lapackf77_dlacpy( MagmaFullStr, &m, &n, hA, &lda, hR, &lda );
             
@@ -101,9 +102,10 @@ int main( int argc, char** argv )
             magma_dorglq( m, n, k, hR, lda, tau, h_work, lwork, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dorglq returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -113,9 +115,10 @@ int main( int argc, char** argv )
                 lapackf77_dorglq( &m, &n, &k, hA, &lda, tau, h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dorglq returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 if ( opts.verbose ) {
                     printf( "R=" );  magma_dprint( m, n, hR, lda );

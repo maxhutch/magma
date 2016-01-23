@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgemm_fermi.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgemm_fermi.cu normal z -> c, Fri Jan 22 21:42:06 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -21,7 +21,7 @@
        
        The batched version uses gemm_kernel_batched.cuh instead of gemm_kernel.cuh.
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_c.h"
 
 #define PRECISION_c
@@ -203,7 +203,7 @@ magmablas_cgemm_q(
     {
         magma_cgemm( transA, transB, m, n, k, alpha,
                      dA, ldda, dB, lddb,
-                     beta, dC, lddc );
+                     beta, dC, lddc, queue );
         return;
     }
 
@@ -306,24 +306,4 @@ magmablas_cgemm_q(
         cudaUnbindTexture( tex_ref_A );
         cudaUnbindTexture( tex_ref_B );
     #endif
-}
-
-
-/**
-    @see magmablas_cgemm_q
-    @ingroup magma_cblas3
-    ********************************************************************/
-extern "C" void
-magmablas_cgemm(
-    magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex alpha,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
-    magmaFloatComplex beta,
-    magmaFloatComplex_ptr       dC, magma_int_t lddc )
-{
-    magmablas_cgemm_q( transA, transB, m, n, k,
-                       alpha, dA, ldda,
-                              dB, lddb,
-                       beta,  dC, lddc, magmablasGetQueue() );
 }

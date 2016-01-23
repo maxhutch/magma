@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
-       @generated from src/zlarfb_gemm_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zlarfb_gemm_batched.cpp normal z -> d, Fri Jan 22 21:41:57 2016
 */
 
 #include "magma_internal.h"
@@ -18,7 +18,7 @@
     Purpose
     -------
     DLARFB applies a real block reflector H or its transpose H^H to a
-    DOUBLE_PRECISION m by n matrix C, from the left.
+    DOUBLE PRECISION m by n matrix C, from the left.
     
     __Note that this function assumes__ that the upper part of dV_array is 0
     because it is referenced. Same for upper/lower part of dT_array.
@@ -63,7 +63,7 @@
             reflectors whose product defines the block reflector).
 
     @param[in]
-    dV_array      DOUBLE_PRECISION array on the GPU, dimension
+    dV_array      DOUBLE PRECISION array on the GPU, dimension
                 (LDDV,K) if STOREV = MagmaColumnwise
                 (LDDV,M) if STOREV = MagmaRowwise and SIDE = MagmaLeft
                 (LDDV,N) if STOREV = MagmaRowwise and SIDE = MagmaRight
@@ -77,7 +77,7 @@
             if STOREV = MagmaRowwise, LDDV >= K.
 
     @param[in]
-    dT_array      DOUBLE_PRECISION array on the GPU, dimension (LDDT,K)
+    dT_array      DOUBLE PRECISION array on the GPU, dimension (LDDT,K)
             The triangular k by k matrix T in the representation of the
             block reflector.
 
@@ -86,7 +86,7 @@
             The leading dimension of the array T. LDDT >= K.
 
     @param[in,out]
-    dC_array      DOUBLE_PRECISION array on the GPU, dimension (LDDC,N)
+    dC_array      DOUBLE PRECISION array on the GPU, dimension (LDDC,N)
             On entry, the m by n matrix C.
             On exit, C is overwritten by H*C, or H^H*C, or C*H, or C*H^H.
 
@@ -95,7 +95,7 @@
             The leading dimension of the array C. LDA >= max(1,M).
 
     @param
-    dwork_array   (workspace) DOUBLE_PRECISION array, dimension (LDWORK,K)
+    dwork_array   (workspace) DOUBLE PRECISION array, dimension (LDWORK,K)
 
     @param[in]
     ldwork  INTEGER
@@ -104,7 +104,7 @@
             if SIDE = MagmaRight, LDWORK >= max(1,M);
 
     @param
-    dworkvt_array (workspace) DOUBLE_PRECISION array, dimension (LDWORKT,K)
+    dworkvt_array (workspace) DOUBLE PRECISION array, dimension (LDWORKT,K)
 
     @param[in]
     ldworkvt INTEGER

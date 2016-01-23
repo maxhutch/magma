@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgesv.cpp normal z -> c, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgesv.cpp normal z -> c, Fri Jan 22 21:42:41 2016
        @author Mark Gates
 */
 // includes, system
@@ -47,10 +47,10 @@ int main(int argc, char **argv)
     
     printf("%% ngpu %d\n", (int) opts.ngpu );
     if (opts.lapack) {
-        printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||  ||B - AX|| / N*||A||*||X||_CPU\n");
+        printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||  ||B - AX|| / N*||A||*||X||_CPU\n");
         printf("%%================================================================================================================\n");
     } else {
-        printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+        printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
         printf("%%===============================================================================\n");
     }
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -86,9 +86,10 @@ int main(int argc, char **argv)
             magma_cgesv( N, nrhs, h_LU, lda, ipiv, h_X, ldb, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_cgesv returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             //=====================================================================
             // Residual
@@ -117,9 +118,10 @@ int main(int argc, char **argv)
                 lapackf77_cgesv( &N, &nrhs, h_LU, &lda, ipiv, h_X, &ldb, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_cgesv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 //Anorm = lapackf77_clange("I", &N, &N,    h_A, &lda, work);
                 Xnorm = lapackf77_clange("I", &N, &nrhs, h_X, &ldb, work);

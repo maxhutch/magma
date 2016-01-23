@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zlaset_band.cpp normal z -> d, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_zlaset_band.cpp normal z -> d, Fri Jan 22 21:42:36 2016
        @author Mark Gates
 */
 
@@ -31,15 +31,18 @@ int main( int argc, char** argv)
     #define h_A(i_,j_) (h_A + (i_) + (j_)*lda)
     #define d_A(i_,j_) (d_A + (i_) + (j_)*ldda)
 
+    // Constants
+    double  c_neg_one = MAGMA_D_NEG_ONE;
+    magma_int_t ione     = 1;
+
+    // Local variables
     real_Double_t    gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double           error, work[1];
-    double  c_neg_one = MAGMA_D_NEG_ONE;
     double *h_A, *h_R;
     magmaDouble_ptr d_A;
     double offdiag = MAGMA_D_MAKE( 1.2000, 6.7000 );
     double diag    = MAGMA_D_MAKE( 3.1415, 2.7183 );
-    magma_int_t M, N, nb, cnt, size, lda, ldda;
-    magma_int_t ione     = 1;
+    magma_int_t i, j, k, M, N, nb, cnt, size, lda, ldda;
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -55,7 +58,7 @@ int main( int argc, char** argv)
     for( int iuplo = 0; iuplo < 2; ++iuplo ) {
       for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            int inset = 0;
+            magma_int_t inset = 0;
             M = opts.msize[itest] + 2*inset;
             N = opts.nsize[itest] + 2*inset;
             lda    = M;
@@ -68,8 +71,8 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A, double, ldda*N );
             
             /* Initialize the matrix */
-            for( int j = 0; j < N; ++j ) {
-                for( int i = 0; i < M; ++i ) {
+            for( j = 0; j < N; ++j ) {
+                for( i = 0; i < M; ++i ) {
                     h_A[i + j*lda] = MAGMA_D_MAKE( i + j/10000., j );
                 }
             }
@@ -82,8 +85,8 @@ int main( int argc, char** argv)
             cpu_time = magma_wtime();
             
             cnt = 0;
-            for( int j=inset; j < N-inset; ++j ) {
-                for( int k=0; k < nb; ++k ) {  // set k-th sub- or super-diagonal
+            for( j=inset; j < N-inset; ++j ) {
+                for( k=0; k < nb; ++k ) {  // set k-th sub- or super-diagonal
                     if ( k == 0 && j < M-inset ) {
                         *h_A(j,j)   = diag;
                         cnt += 1;
@@ -110,8 +113,8 @@ int main( int argc, char** argv)
             magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             
-            int mm = M - 2*inset;
-            int nn = N - 2*inset;
+            magma_int_t mm = M - 2*inset;
+            magma_int_t nn = N - 2*inset;
             magmablas_dlaset_band( uplo[iuplo], mm, nn, nb, offdiag, diag, d_A(inset,inset), ldda );
             
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,10 +9,10 @@
        @author Stan Tomov
        @author Raffaele Solca
        
-       @generated from src/zbulge_back_m.cpp normal z -> s, Wed Jan  6 17:59:35 2016
+       @generated from src/zbulge_back_m.cpp normal z -> s, Fri Jan 22 21:41:47 2016
 
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_sbulge.h"
 
@@ -207,7 +207,7 @@ n_gpu = ne;
          *==========================*/
     } else {
         magma_sbulge_applyQ_v2_m(ngpu, MagmaLeft, ne, n, nb, Vblksiz, Z, ldz, V, ldv, T, ldt, info);
-        magma_device_sync();
+        //magma_device_sync();
     }
 
     timeaplQ2 = magma_wtime()-timeaplQ2;
@@ -258,8 +258,8 @@ static void *magma_sapplyQ_m_parallel_section(void *arg)
 #endif
     affinity_set original_set;
     affinity_set new_set(my_core_id);
-    int check  = 0;
-    int check2 = 0;
+    magma_int_t check  = 0;
+    magma_int_t check2 = 0;
     // bind threads
     check = original_set.get_affinity();
     if (check == 0) {
@@ -285,7 +285,7 @@ static void *magma_sapplyQ_m_parallel_section(void *arg)
         #endif
 
         magma_sbulge_applyQ_v2_m(ngpu, MagmaLeft, n_gpu, n, nb, Vblksiz, E, lde, V, ldv, T, ldt, &info);
-        magma_device_sync();
+        //magma_device_sync();
 
         #ifdef ENABLE_TIMER
         timeQgpu = magma_wtime()-timeQgpu;

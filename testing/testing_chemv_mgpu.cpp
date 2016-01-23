@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zhemv_mgpu.cpp normal z -> c, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_zhemv_mgpu.cpp normal z -> c, Fri Jan 22 21:42:34 2016
        
        @author Mark Gates
 */
@@ -24,8 +24,6 @@
 
 #include "magma_operators.h"
 
-#define PRECISION_c
-
 
 // --------------------
 int main(int argc, char **argv)
@@ -33,7 +31,7 @@ int main(int argc, char **argv)
     TESTING_INIT();
 
     real_Double_t gflops, cpu_time=0, cpu_perf=0, gpu_time, gpu_perf, mgpu_time, mgpu_perf, cuda_time, cuda_perf;
-    float      error=0, error2=0, work[1];
+    float      Ynorm, error=0, error2=0, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
@@ -194,9 +192,10 @@ int main(int argc, char **argv)
                 hwork, lhwork,
                 dwork, ldwork,
                 opts.ngpu, nb, queues );
-            if ( info != 0 )
+            if (info != 0) {
                 printf("magmablas_chemv_mgpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             info = magmablas_chemv_mgpu_sync(
                 opts.uplo, N,
@@ -208,9 +207,10 @@ int main(int argc, char **argv)
                 hwork, lhwork,
                 dwork, ldwork,
                 opts.ngpu, nb, queues );
-            if ( info != 0 )
+            if (info != 0) {
                 printf("magmablas_chemv_sync returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             mgpu_time = magma_sync_wtime(0) - mgpu_time;
             mgpu_perf = gflops / mgpu_time;
@@ -232,17 +232,17 @@ int main(int argc, char **argv)
                 /* =====================================================================
                    Compute the Difference LAPACK vs. Magma
                    =================================================================== */
-                error2 = lapackf77_clange( "F", &Noffset, &ione, Ylapack, &Noffset, work );
+                Ynorm  = lapackf77_clange( "F", &Noffset, &ione, Ylapack, &Noffset, work );
                 blasf77_caxpy( &Noffset, &c_neg_one, Ymagma, &incx, Ylapack, &incx );
-                error2 = lapackf77_clange( "F", &Noffset, &ione, Ylapack, &Noffset, work ) / error2;
+                error2 = lapackf77_clange( "F", &Noffset, &ione, Ylapack, &Noffset, work ) / Ynorm;
             }
             
             /* =====================================================================
                Compute the Difference Cublas vs. Magma
                =================================================================== */
-            error = lapackf77_clange( "F", &Noffset, &ione, Ycublas, &Noffset, work );
+            Ynorm = lapackf77_clange( "F", &Noffset, &ione, Ycublas, &Noffset, work );
             blasf77_caxpy( &Noffset, &c_neg_one, Ymagma, &incx, Ycublas, &incx );
-            error = lapackf77_clange( "F", &Noffset, &ione, Ycublas, &Noffset, work ) / error;
+            error = lapackf77_clange( "F", &Noffset, &ione, Ycublas, &Noffset, work ) / Ynorm;
             
             bool okay = (error < tol && error2 < tol);
             status += ! okay;

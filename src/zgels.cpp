@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -96,7 +96,7 @@ magma_zgels(
     magma_int_t lwkopt = max( n*nb, 2*nb*nb ); // (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
 
-    hwork[0] = MAGMA_Z_MAKE( (double)lwkopt, 0. );
+    hwork[0] = magma_zmake_lwork( lwkopt );
 
     *info = 0;
     /* For now, N is the only case working */
@@ -124,7 +124,7 @@ magma_zgels(
 
     k = min(m,n);
     if (k == 0) {
-        hwork[0] = MAGMA_Z_ONE;
+        hwork[0] = c_one;
         return *info;
     }
 

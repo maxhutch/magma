@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zunmqr_gpu.cpp normal z -> s, Wed Jan  6 17:59:31 2016
+       @generated from src/zunmqr_gpu.cpp normal z -> s, Fri Jan 22 21:41:36 2016
 
 */
 #include "magma_internal.h"
@@ -24,7 +24,7 @@
     TRANS = MagmaTrans:   Q**H * C            C * Q**H
     @endverbatim
 
-    where Q is a real unitary matrix defined as the product of k
+    where Q is a real orthogonal matrix defined as the product of k
     elementary reflectors
 
           Q = H(1) H(2) . . . H(k)
@@ -160,7 +160,7 @@ magma_sormqr_gpu(
         nw = m;
     }
     lwkopt = (nq - k + nb)*(nw + nb) + nw*nb;
-    hwork[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    hwork[0] = magma_smake_lwork( lwkopt );
     
     if ( ! left && side != MagmaRight ) {
         *info = -1;
@@ -332,7 +332,7 @@ magma_sormqr_gpu(
     // TODO: sgeqrs_gpu ASSUMES that hwork contains the last block of A and C.
     // That needs to be fixed, but until then, don't modify hwork[0] here.
     // In LAPACK: On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.
-    //hwork[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    //hwork[0] = magma_smake_lwork( lwkopt );
     
     magma_queue_destroy( queue );
     

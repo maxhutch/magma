@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zlahru_m.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zlahru_m.cpp normal z -> d, Fri Jan 22 21:41:52 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -37,7 +37,7 @@
             Block size
 
     @param[out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N-K)
+    A       DOUBLE PRECISION array, dimension (LDA,N-K)
             On entry, the N-by-(N-K) general matrix to be updated. The
             computation is done on the GPU. After Am is updated on the GPU
             only Am(1:NB) is transferred to the CPU - to update the

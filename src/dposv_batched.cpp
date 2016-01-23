@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Azzam Haidar
 
-       @generated from src/zposv_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zposv_batched.cpp normal z -> d, Fri Jan 22 21:41:56 2016
 */
 #include "magma_internal.h"
 /**
@@ -42,7 +42,7 @@
 
     @param[in,out]
     dA_array    Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+             Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
              On entry, each pointer is a symmetric matrix A.  
              If UPLO = MagmaUpper, the leading
              N-by-N upper triangular part of A contains the upper
@@ -62,7 +62,7 @@
 
     @param[in,out]
     dB_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDB,NRHS)
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDB,NRHS)
             On entry, each pointer is a right hand side matrix B.
             On exit, each pointer is the corresponding solution matrix X.
 
@@ -94,7 +94,6 @@ magma_dposv_batched(
                   magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
-    
     magma_int_t info = 0;
 
     if ( uplo != MagmaUpper && uplo != MagmaLower )
@@ -128,7 +127,7 @@ magma_dposv_batched(
     magma_int_t *cpu_info = NULL;
     magma_imalloc_cpu( &cpu_info, batchCount );
     magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
-    for (int i=0; i < batchCount; i++)
+    for (magma_int_t i=0; i < batchCount; i++)
     {
         if (cpu_info[i] != 0 ) {
             printf("magma_dpotrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );

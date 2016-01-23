@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -14,7 +14,8 @@
        @author Ahmad Abdelfattah
        
 */
-#include "common_magma.h"
+#include "magma_internal.h"
+
 #define PRECISION_s
 
 #include "herk_template_kernel_batched.cuh"
@@ -22,7 +23,9 @@
 #include "gemm_config/sgemm_param_nt.h"
 #include "gemm_config/sgemm_param_tn.h"
 #include "gemm_config/sgemm_param_tt.h"
+
 #define version(s,v) s ## _V_ ## v
+
 /**
     Purpose
     -------
@@ -60,7 +63,7 @@
 
             trans = MagmaNoTrans C := alpha*A*A**H + beta*C.
 
-            trans = MagmaConjTrans C := alpha*A**H*A + beta*C.
+            trans = MagmaTrans   C := alpha*A**H*A + beta*C.
 
     @param[in]
     n       INTEGER.
@@ -71,7 +74,7 @@
     k       INTEGER.
             On entry with trans = MagmaNoTrans, k specifies the number
             of columns of the matrix A, and on entry with
-            trans = MagmaConjTrans, k specifies the number of rows of the
+            trans = MagmaTrans, k specifies the number of rows of the
             matrix A. K must be at least zero.
 
     @param[in]
@@ -150,11 +153,7 @@ magmablas_ssyrk_batched(
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    #if defined(PRECISION_c) || defined(PRECISION_z) 
-    else if ( trans != MagmaNoTrans && trans != MagmaConjTrans )
-    #else 
-    else if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
-    #endif
+    else if ( trans != MagmaNoTrans && trans != MagmaTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_ztrsv.cpp normal z -> c, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_ztrsv.cpp normal z -> c, Fri Jan 22 21:42:33 2016
        @author Chongxiao Cao
 */
 // includes, system
@@ -31,7 +31,7 @@ int main( int argc, char** argv)
 
     real_Double_t   gflops, cublas_perf, cublas_time, cpu_perf=0, cpu_time=0;
     float          cublas_error, normA, normx, normr, work[1];
-    magma_int_t N, info;
+    magma_int_t i, j, N, info;
     magma_int_t sizeA;
     magma_int_t lda, ldda;
     magma_int_t ione     = 1;
@@ -75,8 +75,8 @@ int main( int argc, char** argv)
              * (i.e., from U), while U fails when used with unit diagonal. */
             lapackf77_clarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_cgetrf( &N, &N, h_A, &lda, ipiv, &info );
-            for( int j = 0; j < N; ++j ) {
-                for( int i = 0; i < j; ++i ) {
+            for( j = 0; j < N; ++j ) {
+                for( i = 0; i < j; ++i ) {
                     *h_A(i,j) = *h_A(j,i);
                 }
             }

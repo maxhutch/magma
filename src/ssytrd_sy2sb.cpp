@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,12 +8,12 @@
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from src/zhetrd_he2hb.cpp normal z -> s, Wed Jan  6 17:59:33 2016
+       @generated from src/zhetrd_he2hb.cpp normal z -> s, Fri Jan 22 21:41:46 2016
 
 */
 #include <cuda_runtime.h>
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
 
 
@@ -151,10 +151,16 @@ magma_ssytrd_sy2sb(
     magmaFloat_ptr dT,
     magma_int_t *info)
 {
-    #define  A(a_1,a_2)  ( A + ((a_2)-1)*( lda) + (a_1)-1)
+    #ifdef HAVE_clBLAS
+    #define dA(a_1,a_2)  (dA, (dA_offset + ((a_2)-1)*(ldda) + (a_1)-1))
+    #define dT(a_1)      (dT, (dT_offset + ((a_1)-1)*(lddt)))
+    #else
     #define dA(a_1,a_2)  (dA + ((a_2)-1)*(ldda) + (a_1)-1)
-    #define tau_ref(a_1) (tau + (a_1)-1)
     #define dT(a_1)      (dT + ((a_1)-1)*(lddt))
+    #endif
+
+    #define  A(a_1,a_2)  ( A + ((a_2)-1)*( lda) + (a_1)-1)
+    #define tau_ref(a_1) (tau + (a_1)-1)
 
     magma_int_t ldda = magma_roundup( n, 32 );
     magma_int_t lddt = nb;
@@ -187,7 +193,7 @@ magma_ssytrd_sy2sb(
     /* Determine the block size. */
     lwkopt = n * nb;
     if (*info == 0) {
-        work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+        work[0] = magma_smake_lwork( lwkopt );
     }
 
     if (*info != 0)
@@ -201,9 +207,6 @@ magma_ssytrd_sy2sb(
         return *info;
     }
 
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-    
     float *dA;
     if (MAGMA_SUCCESS != magma_smalloc( &dA, (n + 2*nb)*ldda )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -221,18 +224,18 @@ magma_ssytrd_sy2sb(
     #ifdef TRACING
     char buf[80];
     #endif
-    magma_queue_t stream[3];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
-    stream[2] = 0;  // default stream
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
     
-    trace_init( 1, 1, 3, stream );
+    trace_init( 1, 1, 3, queues );
 
     lwork -= nb*nb;
     float *hT = work + lwork;
     memset( hT, 0, nb*nb*sizeof(float));
 
-    magmablasSetKernelStream( stream[0] );
     magma_event_t Pupdate_event;
     cudaEventCreateWithFlags(&Pupdate_event,cudaEventDisableTiming);
     //magma_event_create(&Pupdate_event);
@@ -247,7 +250,7 @@ magma_ssytrd_sy2sb(
             trace_gpu_start( 0, 0, "set", "set A" );
             magma_ssetmatrix_async( (n-nb), (n-nb),
                                     A(nb+1, nb+1),  lda,
-                                    dA(nb+1, nb+1), ldda, stream[0] );
+                                    dA(nb+1, nb+1), ldda, queues[0] );
             trace_gpu_end( 0, 0 );
         }
 
@@ -270,22 +273,22 @@ magma_ssytrd_sy2sb(
                 magma_spanel_to_q(MagmaUpper, pn-1, A(i, i+1), lda, work);
 
                 trace_gpu_start( 0, 1, "get", "get panel" );
-                //magma_queue_sync( stream[0] );
-                magma_queue_wait_event(stream[1], Pupdate_event);  //, 0);
+                //magma_queue_sync( queues[0] );
+                magma_queue_wait_event(queues[1], Pupdate_event);  //, 0);
                 magma_sgetmatrix_async( (pm+pn), pn,
                                         dA( i, i), ldda,
-                                        A ( i, i), lda, stream[1] );
+                                        A ( i, i), lda, queues[1] );
                 trace_gpu_end( 0, 1 );
 
                 trace_gpu_start( 0, 2, "her2k", "her2k" );
-                magma_ssyr2k(MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old, c_neg_one,
+                magma_ssyr2k( MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old, c_neg_one,
                      dA(indi_old+pn_old, indj_old), ldda,
                      dW + pn_old,            pm_old, d_one,
-                     dA(indi_old+pn_old, indi_old+pn_old), ldda);
+                     dA(indi_old+pn_old, indi_old+pn_old), ldda, queues[0] );
                 trace_gpu_end( 0, 2 );
 
                 trace_cpu_start( 0, "sync", "sync on 1" );
-                magma_queue_sync( stream[1] );
+                magma_queue_sync( queues[1] );
                 trace_cpu_end( 0 );
                 magma_sq_to_panel(MagmaUpper, pn-1, A(i, i+1), lda, work);
             }
@@ -316,12 +319,12 @@ magma_ssytrd_sy2sb(
             trace_gpu_start( 0, 0, "set", "set V and T" );
             magma_ssetmatrix_async( pm, pk,
                                     A(indi, indj),  lda,
-                                    dA(indi, indj), ldda, stream[0] );
+                                    dA(indi, indj), ldda, queues[0] );
 
             /* Send the triangular factor T to the GPU */
             magma_ssetmatrix_async( pk, pk,
                                     hT,       nb,
-                                    dT(i), lddt, stream[0] );
+                                    dT(i), lddt, queues[0] );
             trace_gpu_end( 0, 0 );
             
             /* ==========================================================
@@ -335,22 +338,22 @@ magma_ssytrd_sy2sb(
             // because below we made a restore magma_sq_to_panel and this restore need
             // to ensure that the copy has been finished. we did it here to allow
             // overlapp of restore with next gemm and symm.
-            magma_queue_sync( stream[0] );
+            magma_queue_sync( queues[0] );
             trace_cpu_end( 0 );
             
             trace_gpu_start( 0, 2, "gemm", "work = V*T" );
-            magma_sgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
+            magma_sgemm( MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
                         c_one, dA(indi, indj), ldda,
                         dT(i), lddt,
-                        c_zero, dwork, pm);
+                        c_zero, dwork, pm, queues[0] );
             trace_gpu_end( 0, 2 );
             
             /* dW = X = A*V*T. dW = A*dwork */
             trace_gpu_start( 0, 2, "hemm", "X = A*work" );
-            magma_ssymm(MagmaLeft, uplo, pm, pk,
+            magma_ssymm( MagmaLeft, uplo, pm, pk,
                         c_one, dA(indi, indi), ldda,
                         dwork, pm,
-                        c_zero, dW, pm);
+                        c_zero, dW, pm, queues[0] );
             trace_gpu_end( 0, 2 );
             /* restore the panel */
             magma_sq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
@@ -359,19 +362,19 @@ magma_ssytrd_sy2sb(
              * compute T'*V'*X ==> dwork'*W ==>
              * dwork + pm*nb = ((T' * V') * X) = dwork' * X = dwork' * W */
             trace_gpu_start( 0, 2, "gemm", "work = T'*V'*X" );
-            magma_sgemm(MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
+            magma_sgemm( MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
                         c_one, dwork, pm,
                         dW, pm,
-                        c_zero, dwork + pm*nb, nb);
+                        c_zero, dwork + pm*nb, nb, queues[0] );
             trace_gpu_end( 0, 2 );
             
             /* W = X - 0.5 * V * T'*V'*X
              *   = X - 0.5 * V * (dwork + pm*nb) = W - 0.5 * V * (dwork + pm*nb) */
             trace_gpu_start( 0, 2, "gemm", "W = X - 0.5*V*(T'*V'*X)" );
-            magma_sgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
+            magma_sgemm( MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
                         c_neg_half, dA(indi, indj), ldda,
                         dwork + pm*nb, nb,
-                        c_one,     dW, pm);
+                        c_one,     dW, pm, queues[0] );
             trace_gpu_end( 0, 2 );
 
             /* ==========================================================
@@ -382,27 +385,27 @@ magma_ssytrd_sy2sb(
                 /* There would be next iteration;
                    do lookahead - update the next panel */
                 trace_gpu_start( 0, 2, "gemm", "gemm 4 next panel left" );
-                magma_sgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+                magma_sgemm( MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
                             dA(indi, indj), ldda,
                             dW,                 pm, c_one,
-                            dA(indi, indi), ldda);
+                            dA(indi, indi), ldda, queues[0] );
                 trace_gpu_end( 0, 2 );
             
                 trace_gpu_start( 0, 2, "gemm", "gemm 5 next panel right" );
-                magma_sgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+                magma_sgemm( MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
                             dW,                 pm,
                             dA(indi, indj), ldda, c_one,
-                            dA(indi, indi), ldda);
+                            dA(indi, indi), ldda, queues[0] );
                 trace_gpu_end( 0, 2 );
-                magma_event_record(Pupdate_event, stream[0]);
+                magma_event_record(Pupdate_event, queues[0]);
             }
             else {
                 /* no look-ahead as this is last iteration */
                 trace_gpu_start( 0, 2, "her2k", "her2k last iteration" );
-                magma_ssyr2k(MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
+                magma_ssyr2k( MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
                              dA(indi, indj), ldda,
                              dW,                 pm, d_one,
-                             dA(indi, indi), ldda);
+                             dA(indi, indi), ldda, queues[0] );
                 trace_gpu_end( 0, 2 );
             }
             
@@ -419,7 +422,7 @@ magma_ssytrd_sy2sb(
             trace_gpu_start( 0, 2, "get", "get last block" );
             magma_sgetmatrix( pk, pk,
                               dA(n-pk+1, n-pk+1), ldda,
-                              A(n-pk+1, n-pk+1),  lda );
+                              A(n-pk+1, n-pk+1),  lda, queues[0] );
             trace_gpu_end( 0, 2 );
             magma_sq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
         }
@@ -427,12 +430,13 @@ magma_ssytrd_sy2sb(
     
     trace_finalize( "ssytrd_sy2sb.svg", "trace.css" );
 
+    magma_queue_sync( queues[0] );
+    magma_queue_sync( queues[1] );
     magma_event_destroy( Pupdate_event );
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free( dA );
 
-    magmablasSetKernelStream( orig_stream );
     magma_set_lapack_numthreads( orig_threads );
 
     return *info;

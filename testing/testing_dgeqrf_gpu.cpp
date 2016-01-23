@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgeqrf_gpu.cpp normal z -> d, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgeqrf_gpu.cpp normal z -> d, Fri Jan 22 21:42:43 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -58,11 +58,11 @@ int main( int argc, char** argv)
     
     printf( "%% version %d\n", (int) opts.version );
     if ( opts.check == 1 ) {
-        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
+        printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
         printf("%%==============================================================================\n");
     }
     else {
-        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)    |b - A*x|\n");
+        printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)    |b - A*x|\n");
         printf("%%===============================================================\n");
     }
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -126,9 +126,10 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dgeqrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             if ( opts.check == 1 && (opts.version == 2 || opts.version == 3) ) {
                 if ( opts.version == 3 ) {
@@ -214,9 +215,10 @@ int main( int argc, char** argv)
                     magma_dgeqrs_gpu( M, N, 1,
                                       d_A, ldda, tau, dT,
                                       d_B, M, hwork, lwork2, &info );
-                    if (info != 0)
+                    if (info != 0) {
                         printf("magma_dgeqrs returned error %d: %s.\n",
                                (int) info, magma_strerror( info ));
+                    }
                     TESTING_FREE_CPU( hwork );
                 }
                 #ifdef HAVE_CUBLAS
@@ -232,9 +234,10 @@ int main( int argc, char** argv)
                     magma_dgeqrs3_gpu( M, N, 1,
                                        d_A, ldda, tau, dT,
                                        d_B, M, hwork, lwork2, &info );
-                    if (info != 0)
+                    if (info != 0) {
                         printf("magma_dgeqrs3 returned error %d: %s.\n",
                                (int) info, magma_strerror( info ));
+                    }
                     TESTING_FREE_CPU( hwork );
                 }
                 #endif
@@ -247,7 +250,7 @@ int main( int argc, char** argv)
                 // compute r = Ax - b, saved in b
                 blasf77_dgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_neg_one, b, &ione );
 
-                // compute residual |Ax - b| / (n*|A|*|x|)
+                // compute residual |Ax - b| / (max(m,n)*|A|*|x|)
                 double norm_x, norm_A, norm_r, work[1];
                 norm_A = lapackf77_dlange( "F", &M, &N, h_A, &lda, work );
                 norm_r = lapackf77_dlange( "F", &M, &ione, b, &M, work );
@@ -257,7 +260,7 @@ int main( int argc, char** argv)
                 TESTING_FREE_CPU( b );
                 TESTING_FREE_DEV( d_B );
 
-                error = norm_r / (N * norm_A * norm_x);
+                error = norm_r / (max(M,N) * norm_A * norm_x);
             }
             
             /* =====================================================================
@@ -268,9 +271,10 @@ int main( int argc, char** argv)
                 lapackf77_dgeqrf( &M, &N, h_A, &lda, tau, h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
             }
             
             /* =====================================================================

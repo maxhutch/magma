@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from src/zhegst_gpu.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zhegst_gpu.cpp normal z -> d, Fri Jan 22 21:41:49 2016
 */
 
 #include "magma_internal.h"
@@ -45,7 +45,7 @@
             The order of the matrices A and B.  N >= 0.
     
     @param[in,out]
-    dA      DOUBLE_PRECISION array, on the GPU device, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, on the GPU device, dimension (LDDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -62,7 +62,7 @@
             The leading dimension of the array A.  LDDA >= max(1,N).
     
     @param[in]
-    dB      DOUBLE_PRECISION array, on the GPU device, dimension (LDDB,N)
+    dB      DOUBLE PRECISION array, on the GPU device, dimension (LDDB,N)
             The triangular factor from the Cholesky factorization of B,
             as returned by DPOTRF.
     

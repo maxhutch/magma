@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zunmqr.cpp normal z -> s, Wed Jan  6 17:59:32 2016
+       @generated from src/zunmqr.cpp normal z -> s, Fri Jan 22 21:41:38 2016
 
 */
 #include "magma_internal.h"
@@ -24,7 +24,7 @@
     TRANS = MagmaTrans:  Q**H * C           C * Q**H
     @endverbatim
 
-    where Q is a real unitary matrix defined as the product of k
+    where Q is a real orthogonal matrix defined as the product of k
     elementary reflectors
 
         Q = H(1) H(2) . . . H(k)
@@ -169,7 +169,7 @@ magma_sormqr(
     if (*info == 0) {
         nb = magma_get_sgelqf_nb( m, n );
         lwkopt = max(1,nw)*nb;
-        work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+        work[0] = magma_smake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -296,7 +296,7 @@ magma_sormqr(
         magma_free( dwork );
         magma_free_cpu( T );
     }
-    work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    work[0] = magma_smake_lwork( lwkopt );
 
     return *info;
 } /* magma_sormqr */

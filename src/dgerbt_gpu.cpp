@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgerbt_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgerbt_gpu.cpp normal z -> d, Fri Jan 22 21:41:32 2016
        @author Adrien REMY
 */
 #include "magma_internal.h"
@@ -60,32 +60,32 @@ init_butterfly(
             of the matrix B.  nrhs >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDA,n).
+    dA      DOUBLE PRECISION array, dimension (LDDA,n).
             On entry, the M-by-n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,n).
+            The leading dimension of the array A.  LDDA >= max(1,n).
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array, dimension (LDB,nrhs)
+    dB      DOUBLE PRECISION array, dimension (LDDB,nrhs)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,n).
+            The leading dimension of the array B.  LDDB >= max(1,n).
 
     @param[in,out]
-    U       DOUBLE_PRECISION array, dimension (2,n)
+    U       DOUBLE PRECISION array, dimension (2,n)
             Random butterfly matrix, if gen = MagmaTrue U is generated and returned as output;
             else we use U given as input.
             CPU memory
 
     @param[in,out]
-    V       DOUBLE_PRECISION array, dimension (2,n)
+    V       DOUBLE PRECISION array, dimension (2,n)
             Random butterfly matrix, if gen = MagmaTrue V is generated and returned as output;
             else we use U given as input.
             CPU memory

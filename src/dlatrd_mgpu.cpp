@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @author Ichitaro Yamazaki
        @author Mark Gates
 
-       @generated from src/zlatrd_mgpu.cpp normal z -> d, Wed Jan  6 17:59:33 2016
+       @generated from src/zlatrd_mgpu.cpp normal z -> d, Fri Jan 22 21:41:44 2016
 
 */
 #include "magma_internal.h"
@@ -60,7 +60,7 @@
             nb and nb0 can be different for the final step of dsytrd.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             n-by-n upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -86,20 +86,20 @@
             The leading dimension of the array A.  LDA >= (1,N).
 
     @param[out]
-    e       DOUBLE_PRECISION array, dimension (N-1)
+    e       DOUBLE PRECISION array, dimension (N-1)
             If UPLO = MagmaUpper, E(n-nb:n-1) contains the superdiagonal
             elements of the last NB columns of the reduced matrix;
             if UPLO = MagmaLower, E(1:nb) contains the subdiagonal elements of
             the first NB columns of the reduced matrix.
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (N-1)
+    tau     DOUBLE PRECISION array, dimension (N-1)
             The scalar factors of the elementary reflectors, stored in
             TAU(n-nb:n-1) if UPLO = MagmaUpper, and in TAU(1:nb) if UPLO = MagmaLower.
             See Further Details.
 
     @param[out]
-    W       DOUBLE_PRECISION array, dimension (LDW,NB)
+    W       DOUBLE PRECISION array, dimension (LDW,NB)
             The n-by-nb matrix W required to update the unreduced part
             of A.
 

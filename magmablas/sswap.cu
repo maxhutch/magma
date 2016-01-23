@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,10 +7,10 @@
        
        @author Mark Gates
 
-       @generated from magmablas/zswap.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zswap.cu normal z -> s, Fri Jan 22 21:42:03 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -73,18 +73,4 @@ magmablas_sswap_q(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( n, NB ) );
     sswap_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dx, incx, dy, incy );
-}
-
-
-/**
-    @see magmablas_sswap_q
-    @ingroup magma_sblas1
-    ********************************************************************/
-extern "C" void 
-magmablas_sswap(
-    magma_int_t n,
-    magmaFloat_ptr dx, magma_int_t incx, 
-    magmaFloat_ptr dy, magma_int_t incy)
-{
-    magmablas_sswap_q( n, dx, incx, dy, incy, magmablasGetQueue() );
 }

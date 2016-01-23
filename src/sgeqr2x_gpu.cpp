@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
        
        @author Stan Tomov
 
-       @generated from src/zgeqr2x_gpu.cpp normal z -> s, Wed Jan  6 17:59:30 2016
+       @generated from src/zgeqr2x_gpu.cpp normal z -> s, Fri Jan 22 21:41:34 2016
 
 */
 #include "magma_internal.h"
@@ -42,20 +42,20 @@
             The number of columns of the matrix A. 0 <= N <= min(M, 128).
 
     @param[in,out]
-    dA      REAL array, dimension (LDA,N)
+    dA      REAL array, dimension (LDDA,N)
             On entry, the m by n matrix A.
-            On exit, the unitary matrix Q as a
+            On exit, the orthogonal matrix Q as a
             product of elementary reflectors (see Further Details).
     \n
             the elements on and above the diagonal of the array
             contain the min(m,n) by n upper trapezoidal matrix R (R is
             upper triangular if m >= n); the elements below the diagonal,
-            with the array TAU, represent the unitary matrix Q as a
+            with the array TAU, represent the orthogonal matrix Q as a
             product of elementary reflectors (see Further Details).
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+            The leading dimension of the array A.  LDDA >= max(1,M).
 
     @param[out]
     dtau    REAL array, dimension (min(M,N))

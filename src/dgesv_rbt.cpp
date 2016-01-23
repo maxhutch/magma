@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgesv_rbt.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgesv_rbt.cpp normal z -> d, Fri Jan 22 21:41:32 2016
 
 */
 #include "magma_internal.h"
@@ -43,7 +43,7 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N).
+    A       DOUBLE PRECISION array, dimension (LDA,N).
             On entry, the M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -53,7 +53,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    B       DOUBLE_PRECISION array, dimension (LDB,NRHS)
+    B       DOUBLE PRECISION array, dimension (LDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
     
@@ -83,7 +83,7 @@ magma_dgesv_rbt(
     magma_int_t nn = magma_roundup( n, 4 );  // n + ((4-(n % 4))%4);
     double *hu=NULL, *hv=NULL;
     magmaDouble_ptr dA=NULL, dB=NULL, dAo=NULL, dBo=NULL, dwork=NULL, dv=NULL;
-    magma_int_t iter;
+    magma_int_t i, iter;
     magma_queue_t queue=NULL;
     
     /* Function Body */
@@ -172,7 +172,7 @@ magma_dgesv_rbt(
 
     magma_dsetvector( 2*nn, hv, 1, dv, 1, queue );
     
-    for (int i = 0; i < nrhs; i++) {
+    for (i = 0; i < nrhs; i++) {
         magmablas_dprbt_mv( nn, dv, dB+(i*nn), queue );
     }
 

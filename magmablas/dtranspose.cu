@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztranspose.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/ztranspose.cu normal z -> d, Fri Jan 22 21:42:04 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define PRECISION_d
 
@@ -122,7 +122,7 @@ void dtranspose_kernel_batched(
 /**
     Purpose
     -------
-    dtranspose_q copies and transposes a matrix dA to matrix dAT.
+    dtranspose copies and transposes a matrix dA to matrix dAT.
     
     Same as dtranspose, but adds queue argument.
         
@@ -137,7 +137,7 @@ void dtranspose_kernel_batched(
             The number of columns of the matrix dA.  N >= 0.
     
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The M-by-N matrix dA.
     
     @param[in]
@@ -145,7 +145,7 @@ void dtranspose_kernel_batched(
             The leading dimension of the array dA.  LDDA >= M.
     
     @param[in]
-    dAT     DOUBLE_PRECISION array, dimension (LDDAT,M)
+    dAT     DOUBLE PRECISION array, dimension (LDDAT,M)
             The N-by-M matrix dAT.
     
     @param[in]
@@ -192,25 +192,9 @@ magmablas_dtranspose_q(
 
 
 /**
-    @see magmablas_dtranspose_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dtranspose(
-    magma_int_t m, magma_int_t n,
-    magmaDouble_const_ptr dA,  magma_int_t ldda,
-    magmaDouble_ptr       dAT, magma_int_t lddat )
-{
-    magmablas_dtranspose_q( m, n, dA, ldda, dAT, lddat, magmablasGetQueue() );
-}
-
-
-
-
-/**
     Purpose
     -------
-    dtranspose_batched_q copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
+    dtranspose_batched copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
     
     Same as dtranspose_batched, but adds queue argument.
         
@@ -226,7 +210,7 @@ magmablas_dtranspose(
     
     @param[in]
     dA_array 
-            DOUBLE_PRECISION* array, dimension (batchCount)
+            DOUBLE PRECISION* array, dimension (batchCount)
             array of pointers to the matrices dA, where each dA is of dimension (LDDA,N)
             The M-by-N matrix dA.
     
@@ -236,7 +220,7 @@ magmablas_dtranspose(
     
     @param[in]
     dAT_array     
-            DOUBLE_PRECISION* array, dimension (batchCount)
+            DOUBLE PRECISION* array, dimension (batchCount)
             array of pointers to the matrices dAT, where each dAT is of dimension (LDDAT,M)
             The N-by-M matrix dAT.
     
@@ -254,7 +238,7 @@ magmablas_dtranspose(
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void
-magmablas_dtranspose_batched_q(
+magmablas_dtranspose_batched(
     magma_int_t m, magma_int_t n,
     double **dA_array,  magma_int_t ldda,
     double **dAT_array, magma_int_t lddat,
@@ -284,19 +268,4 @@ magmablas_dtranspose_batched_q(
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ), batchCount );
     dtranspose_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA_array, ldda, dAT_array, lddat );
-}
-
-
-/**
-    @see magmablas_dtranspose_batched_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dtranspose_batched(
-    magma_int_t m, magma_int_t n,
-    double **dA_array,  magma_int_t ldda,
-    double **dAT_array, magma_int_t lddat,
-    magma_int_t batchCount )
-{
-    magmablas_dtranspose_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magmablasGetQueue() );
 }

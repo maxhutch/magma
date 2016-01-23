@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 /*********************************************************/
@@ -128,18 +128,4 @@ magmablas_zswapdblk_q(
             ( nb, dA, ldda, inca,
                   dB, lddb, incb );
     }
-}
-
-
-/**
-    @see magmablas_zswapdblk_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void 
-magmablas_zswapdblk(
-    magma_int_t n, magma_int_t nb,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t inca,
-    magmaDoubleComplex_ptr dB, magma_int_t lddb, magma_int_t incb )
-{
-    magmablas_zswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magmablasGetQueue() );
 }

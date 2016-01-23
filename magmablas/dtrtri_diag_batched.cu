@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrtri_diag_batched.cu normal z -> d, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/ztrtri_diag_batched.cu normal z -> d, Fri Jan 22 21:42:10 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -16,7 +16,7 @@
        in the library. The actual kernels are in dtrtri_lower.cu and dtrtri_upper.cu
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "dtrtri.cuh"
 
 
@@ -48,7 +48,7 @@
 
     @param[in]
     dA_array      Array of pointers, dimension (batchCount). 
-             Each is a DOUBLE_PRECISION array A of dimension ( ldda, n )
+             Each is a DOUBLE PRECISION array A of dimension ( ldda, n )
              The triangular matrix A.
     \n
              If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A
@@ -68,7 +68,7 @@
 
     @param[out]
     dinvA_array Array of pointers, dimension (batchCount). 
-                Each is a DOUBLE_PRECISION array dinvA of dimension (NB, ceil(n/NB)*NB),
+                Each is a DOUBLE PRECISION array dinvA of dimension (NB, ceil(n/NB)*NB),
                 where NB = 128.
                 On exit, contains inverses of the NB-by-NB diagonal blocks of A.
 

@@ -1,6 +1,6 @@
 
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
    @author Azzam Haidar
    @author Ahmad Ahmad
 
-   @generated from magmablas/zpotf2_devicesfunc.cuh normal z -> s, Wed Jan  6 17:59:51 2016
+   @generated from magmablas/zpotf2_devicesfunc.cuh normal z -> s, Fri Jan 22 21:42:53 2016
  */
 
 
@@ -57,7 +57,7 @@ static inline __device__ void spotf2_sminout_anywidth_device(const int m, const 
             #pragma unroll 
             for (int j=iter+1; j < n; j++)
             {
-                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_S_CNJG(A[iter * lda + j]);
+                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_S_CONJ(A[iter * lda + j]);
             }   
         #ifdef ENABLE_COND1
         }
@@ -94,8 +94,8 @@ static inline __device__ void spotf2_sminout_fixsize_device(const int m, float *
             A[ tx + iter * lda ] *= factor;
 
             //A[ tx + iter * lda ]  = tx == iter ? MAGMA_S_MAKE(xreal, 0.0) : A[ tx + iter * lda ] * factor;
-            //if (tx < POTF2_NB) row[ tx ] = MAGMA_S_CNJG( A[ tx + iter * lda ] );
-            //if (tx < POTF2_NB) A[ iter + tx * lda ] = MAGMA_S_CNJG( A[ tx + iter * lda ] );
+            //if (tx < POTF2_NB) row[ tx ] = MAGMA_S_CONJ( A[ tx + iter * lda ] );
+            //if (tx < POTF2_NB) A[ iter + tx * lda ] = MAGMA_S_CONJ( A[ tx + iter * lda ] );
         #ifdef ENABLE_COND2
         }
         #endif
@@ -111,7 +111,7 @@ static inline __device__ void spotf2_sminout_fixsize_device(const int m, float *
             #pragma unroll
             for (int j=iter+1; j < POTF2_NB; j++)
             {
-                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_S_CNJG(A[iter * lda + j]);
+                A [tx + j * lda] -= A[tx + iter * lda]  *  MAGMA_S_CONJ(A[iter * lda + j]);
                 //A [tx + j * lda] -= A[tx + iter * lda]  *  row[j];
                 //A [tx + j * lda] -= A[tx + iter * lda]  *  A[iter +lda * j];
             }   
@@ -182,7 +182,7 @@ static inline __device__ void sgemm_v20_1_fixsize_device(int m, int k,
             #pragma unroll
             for (int i=0; i < POTF2_NB; i++)
             {
-                sB[tx + i * POTF2_NB] = MAGMA_S_CNJG(rp[i]);
+                sB[tx + i * POTF2_NB] = MAGMA_S_CONJ(rp[i]);
             }
         }
 
@@ -298,7 +298,7 @@ static inline __device__ void sgemm_v20_1_anywidth_device(int m, int n, int k,
             #pragma unroll
             for (int i=0; i < POTF2_NB; i++)
             {
-                sB[tx + i * POTF2_NB] = MAGMA_S_CNJG(rp[i]);
+                sB[tx + i * POTF2_NB] = MAGMA_S_CONJ(rp[i]);
             }
         }
 

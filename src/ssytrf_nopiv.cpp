@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Ichitaro Yamazaki
        @author Stan Tomov
 
-       @generated from src/zhetrf_nopiv.cpp normal z -> s, Wed Jan  6 17:59:32 2016
+       @generated from src/zhetrf_nopiv.cpp normal z -> s, Fri Jan 22 21:41:40 2016
 */
 #include "magma_internal.h"
 #include "trace.h"
@@ -81,9 +81,12 @@ magma_ssytrf_nopiv(
     #define dW(i, j)  (dW +(j)*ldda + (i))
     #define dWt(i, j) (dW +(j)*nb   + (i))
 
-    float c_one     = MAGMA_S_ONE;
-    float c_neg_one = MAGMA_S_NEG_ONE;
-    int                upper = (uplo == MagmaUpper);
+    /* Constants */
+    const float c_one     = MAGMA_S_ONE;
+    const float c_neg_one = MAGMA_S_NEG_ONE;
+    
+    /* Local variables */
+    bool upper = (uplo == MagmaUpper);
     magma_int_t j, k, jb, ldda, nb, ib, iinfo;
     magmaFloat_ptr dA;
     magmaFloat_ptr dW;

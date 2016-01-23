@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zheevd.cpp normal z -> d, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zheevd.cpp normal z -> d, Fri Jan 22 21:42:46 2016
 
 */
 
@@ -79,8 +79,8 @@ int main( int argc, char** argv)
            lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
            opts.fraction, int(abs_ngpu) );
 
-    printf("%%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU'|   |I-U'U| \n");
-    printf("%%==========================================================================\n");
+    printf("%%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|\n");
+    printf("%%============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -181,7 +181,7 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
-            magma_dmake_symmetric( N, h_A, N );
+            magma_dmake_symmetric( N, h_A, lda );
             
             lapackf77_dlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
@@ -276,17 +276,18 @@ int main( int argc, char** argv)
                 #endif
             }
             gpu_time = magma_wtime() - gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dsyevd returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             bool okay = true;
             if ( opts.check && opts.jobz != MagmaNoVec ) {
                 /* =====================================================================
                    Check the results following the LAPACK's [zcds]drvst routine.
-                   A is factored as A = U S U' and the following 3 tests computed:
-                   (1)    | A - U S U' | / ( |A| N )
-                   (2)    | I - U'U | / ( N )
+                   A is factored as A = U S U^H and the following 3 tests computed:
+                   (1)    | A - U S U^H | / ( |A| N )
+                   (2)    | I - U^H U   | / ( N )
                    (3)    | S(with U) - S(w/o U) | / | S |    // currently disabled, but compares to LAPACK
                    =================================================================== */
                 double *work;
@@ -321,9 +322,10 @@ int main( int argc, char** argv)
                 //              #endif
                 //              iwork, liwork,
                 //              &info );
-                //if (info != 0)
+                //if (info != 0) {
                 //    printf("magma_dsyevd returned error %d: %s.\n",
                 //           (int) info, magma_strerror( info ));
+                //}
                 //
                 //double maxw=0, diff=0;
                 //for( int j=0; j < N; j++ ) {
@@ -383,9 +385,10 @@ int main( int argc, char** argv)
                     lapackf77_dlacpy( "Full", &N, &N, h_Z, &lda, h_A, &lda );
                 }
                 cpu_time = magma_wtime() - cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dsyevd returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 // compare eigenvalues
                 double maxw=0, diff=0;
@@ -397,21 +400,21 @@ int main( int argc, char** argv)
                 result[3] = diff / (N*maxw);
                 
                 okay = okay && (result[3] < tolulp);
-                printf("%5d   %9.4f        %9.4f        %8.2e   ",
+                printf("%5d   %9.4f        %9.4f         %8.2e  ",
                        (int) N, cpu_time, gpu_time, result[3] );
             }
             else {
-                printf("%5d      ---           %9.4f          ---      ",
+                printf("%5d      ---           %9.4f           ---     ",
                        (int) N, gpu_time);
             }
             
             // print error checks
             if ( opts.check && opts.jobz != MagmaNoVec ) {
                 okay = okay && (result[0] < tol) && (result[1] < tol);
-                printf("   %8.2e   %8.2e", result[0], result[1] );
+                printf("    %8.2e    %8.2e", result[0], result[1] );
             }
             else {
-                printf("     ---        ---   ");
+                printf("      ---         ---   ");
             }
             printf("   %s\n", (okay ? "ok" : "failed"));
             status += ! okay;

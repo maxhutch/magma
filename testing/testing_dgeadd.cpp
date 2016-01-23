@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgeadd.cpp normal z -> d, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_zgeadd.cpp normal z -> d, Fri Jan 22 21:42:35 2016
        @author Mark Gates
 */
 // includes, system
@@ -32,7 +32,7 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double          error, work[1];
+    double          Bnorm, error, work[1];
     double *h_A, *h_B, *d_A, *d_B;
     double alpha = MAGMA_D_MAKE( 3.1415, 2.71828 );
     double beta  = MAGMA_D_MAKE( 6.0221, 6.67408 );
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
     //magmablas_dgeadd(  M,  N, alpha, d_A, M-1,  d_B, ldda );
     //magmablas_dgeadd(  M,  N, alpha, d_A, ldda, d_B, N-1  );
 
-    printf("%%   M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    |Bl-Bm|/|Bl|\n");
+    printf("%%   M     N   CPU Gflop/s (ms)    GPU Gflop/s (ms)    |Bl-Bm|/|Bl|\n");
     printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -117,9 +117,9 @@ int main( int argc, char** argv)
                =================================================================== */
             magma_dgetmatrix( M, N, d_B, ldda, h_A, lda );
             
-            error = lapackf77_dlange( "F", &M, &N, h_B, &lda, work );
-            blasf77_daxpy( &size, &c_neg_one, h_A, &ione, h_B, &ione );
-            error = lapackf77_dlange( "F", &M, &N, h_B, &lda, work ) / error;
+            blasf77_daxpy( &size, &c_neg_one, h_B, &ione, h_A, &ione );
+            Bnorm = lapackf77_dlange( "F", &M, &N, h_B, &lda, work );
+            error = lapackf77_dlange( "F", &M, &N, h_A, &lda, work ) / Bnorm;
             
             printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                    (int) M, (int) N,

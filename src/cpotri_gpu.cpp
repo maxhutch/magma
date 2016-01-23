@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zpotri_gpu.cpp normal z -> c, Wed Jan  6 17:59:28 2016
+       @generated from src/zpotri_gpu.cpp normal z -> c, Fri Jan 22 21:41:28 2016
 
 */
 #include "magma_internal.h"
@@ -29,7 +29,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX array on the GPU, dimension (LDA,N)
+    dA      COMPLEX array on the GPU, dimension (LDDA,N)
             On entry, the triangular factor U or L from the Cholesky
             factorization A = U**T*U or A = L*L**T, as computed by
             CPOTRF.

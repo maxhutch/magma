@@ -1,70 +1,3 @@
-var NAVTREE =
-[
-  [ "MAGMA", "index.html", [
-    [ "MAGMA User Guide", "index.html", null ],
-    [ "Collaborators", "authors.html", null ],
-    [ "Installing MAGMA", "installing.html", null ],
-    [ "Running tests", "testing.html", null ],
-    [ "Example", "example.html", null ],
-    [ "Routine names", "routines.html", [
-      [ "Driver routines  ", "routines.html#driver", null ],
-      [ "Computational routines  ", "routines.html#comp", null ],
-      [ "BLAS routines  ", "routines.html#blas", null ],
-      [ "Auxiliary routines  ", "routines.html#aux", null ],
-      [ "Utility routines  ", "routines.html#util", null ]
-    ] ],
-    [ "Data types & complex numbers", "types.html", null ],
-    [ "Conventions for variables", "variables.html", null ],
-    [ "Constants", "constants.html", null ],
-    [ "Errors", "errors.html", null ],
-    [ "Methodology", "methodology.html", null ],
-    [ "Sparse-Iter", "sparse-iter.html", [
-      [ "Sparse Data Structures ", "sparse-iter.html#datastructures", null ],
-      [ "Sparse I/O ", "sparse-iter.html#io", null ],
-      [ "Matrix Formats ", "sparse-iter.html#formats", null ],
-      [ "Memory Handling ", "sparse-iter.html#memorhandling", null ],
-      [ "Iterative Solvers ", "sparse-iter.html#sparsesolvers", null ],
-      [ "Example ", "sparse-iter.html#sparseexample", null ]
-    ] ],
-    [ "Contributor's Guide", "contributors-guide.html", [
-      [ "Coding Style ", "contributors-guide.html#style", null ],
-      [ "Naming Conventions ", "contributors-guide.html#naming", null ],
-      [ "Coding Practices ", "contributors-guide.html#coding", null ]
-    ] ],
-    [ "Deprecated List", "deprecated.html", null ],
-    [ "Modules", "modules.html", "modules" ],
-    [ "Classes", null, [
-      [ "Class List", "annotated.html", "annotated" ],
-      [ "Class Index", "classes.html", null ],
-      [ "Class Members", "functions.html", [
-        [ "All", "functions.html", null ],
-        [ "Functions", "functions_func.html", null ],
-        [ "Related Functions", "functions_rela.html", null ]
-      ] ]
-    ] ],
-    [ "Files", null, [
-      [ "File List", "files.html", "files" ]
-    ] ]
-  ] ]
-];
-
-var NAVTREEINDEX =
-[
-"annotated.html",
-"group__magma__cgeqp3__aux.html#ga828099ff0760147d8f4555c63f0435fc",
-"group__magma__dblas1.html#ga6945fa1dbfa46614510c2e8f3c726b46",
-"group__magma__dsyev__comp.html#ga894ce156db4fe17a0997135548f3db20",
-"group__magma__sgels__driver.html#gaaf1d00b107f2c5c058465263a0e66870",
-"group__magma__zaux2.html#gadcec0370486edd54eb2f39076fd98702",
-"group__magma__zheev__comp.html",
-"group__magmasparse__cgepr.html#ga32a1c889ade45d58e10655210fef3d68",
-"group__magmasparse__dgesv.html#ga32c1461f94ad7263d34861aeec3c2e2b",
-"group__magmasparse__shepr.html",
-"group__magmasparse__zhepr.html#gadfc02cb240090c6ca1eb9f1ac0e0eccf"
-];
-
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
 var navTreeSubIndices = new Array();
 
 function getData(varName)
@@ -172,7 +105,7 @@ function createIndent(o,domNode,node,level)
     node.expandToggle.onclick = function() {
       if (node.expanded) {
         $(node.getChildrenUL()).slideUp("fast");
-        node.plus_img.src = node.relpath+"ftv2pnode.png";
+        node.plus_img.src = node.relpath+"arrowright.png";
         node.expanded = false;
       } else {
         expandNode(o, node, false, false);
@@ -180,7 +113,7 @@ function createIndent(o,domNode,node,level)
     }
     node.expandToggle.appendChild(imgNode);
     domNode.appendChild(node.expandToggle);
-    imgNode.src = node.relpath+"ftv2pnode.png";
+    imgNode.src = node.relpath+"arrowright.png";
   } else {
     var span = document.createElement("span");
     span.style.display = 'inline-block';
@@ -336,9 +269,9 @@ function expandNode(o, node, imm, showRoot)
         $(node.getChildrenUL()).slideDown("fast");
       }
       if (node.isLast) {
-        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
+        node.plus_img.src = node.relpath+"arrowdown.png";
       } else {
-        node.plus_img.src = node.relpath+"ftv2mnode.png";
+        node.plus_img.src = node.relpath+"arrowdown.png";
       }
       node.expanded = true;
     }
@@ -408,11 +341,7 @@ function showNode(o, node, index, hash)
         getNode(o, node);
       }
       $(node.getChildrenUL()).css({'display':'block'});
-      if (node.isLast) {
-        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
-      } else {
-        node.plus_img.src = node.relpath+"ftv2mnode.png";
-      }
+      node.plus_img.src = node.relpath+"arrowdown.png";
       node.expanded = true;
       var n = node.children[o.breadcrumbs[index]];
       if (index+1<o.breadcrumbs.length) {
@@ -550,7 +479,7 @@ function initNavTree(toroot,relpath)
   o.node.expanded = false;
   o.node.isLast = true;
   o.node.plus_img = document.createElement("img");
-  o.node.plus_img.src = relpath+"ftv2pnode.png";
+  o.node.plus_img.src = relpath+"arrowright.png";
   o.node.plus_img.width = 16;
   o.node.plus_img.height = 22;
 

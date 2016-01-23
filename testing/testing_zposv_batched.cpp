@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -56,13 +56,13 @@ int main(int argc, char **argv)
     opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
-    magma_queue_t queue = opts.queue; //NULL; // The batched routine prefer stream NULL
+    magma_queue_t queue = opts.queue;
 
     nrhs = opts.nrhs;
     batchCount = opts.batchcount;
 
     printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("%% BatchCount   N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%% BatchCount   N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("%%==========================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -86,8 +86,8 @@ int main(int argc, char **argv)
             TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*nrhs*batchCount );
             TESTING_MALLOC_DEV( dinfo_array, magma_int_t, batchCount );
 
-            magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
-            magma_malloc((void**)&dB_array, batchCount * sizeof(*dB_array));
+            TESTING_MALLOC_DEV( dA_array, magmaDoubleComplex*, batchCount );
+            TESTING_MALLOC_DEV( dB_array, magmaDoubleComplex*, batchCount );
 
             /* Initialize the matrices */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, h_A );
@@ -119,8 +119,10 @@ int main(int argc, char **argv)
                     printf("magma_zposv_batched matrix %d returned internal error %d\n", i, (int)cpu_info[i] );
                 }
             }
-            if (info != 0)
-                printf("magma_zposv_batched returned argument error %d: %s.\n", (int) info, magma_strerror( info ));
+            if (info != 0) {
+                printf("magma_zposv_batched returned argument error %d: %s.\n",
+                       (int) info, magma_strerror( info ));
+            }
             
             //=====================================================================
             // Residual
@@ -166,10 +168,10 @@ int main(int argc, char **argv)
                 {
                     magma_int_t locinfo;
                     lapackf77_zposv( lapack_uplo_const(opts.uplo), &N, &nrhs, h_A + s * lda * N, &lda, h_B + s * ldb * nrhs, &ldb, &locinfo );
-                    if (locinfo != 0){
+                    if (locinfo != 0) {
                         printf("lapackf77_zposv matrix %d returned error %d: %s.\n", 
                                int(s), int(locinfo), magma_strerror( locinfo ));
-                        }
+                    }
                 }
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
                     magma_set_lapack_numthreads(nthreads);
@@ -198,8 +200,8 @@ int main(int argc, char **argv)
 
             TESTING_FREE_DEV( dinfo_array );
 
-            magma_free(dA_array);
-            magma_free(dB_array);
+            TESTING_FREE_DEV( dA_array );
+            TESTING_FREE_DEV( dB_array );
 
             fflush( stdout );
         }

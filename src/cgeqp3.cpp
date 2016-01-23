@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
   
-       @generated from src/zgeqp3.cpp normal z -> c, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqp3.cpp normal z -> c, Fri Jan 22 21:41:38 2016
 
        @author Stan Tomov
        @author Ichitaro Yamazaki
@@ -141,7 +141,7 @@ magma_cgeqp3(
             lwkopt += 2*n;
             #endif
         }
-        work[0] = MAGMA_C_MAKE( lwkopt, 0. );
+        work[0] = magma_cmake_lwork( lwkopt );
 
         if (lwork < lwkopt && ! lquery) {
             *info = -8;
@@ -282,7 +282,7 @@ magma_cgeqp3(
         }
     }
 
-    work[0] = MAGMA_C_MAKE( lwkopt, 0. );
+    work[0] = magma_cmake_lwork( lwkopt );
     magma_free( dwork );
 
     magma_queue_destroy( queue );

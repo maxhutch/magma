@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_ztrtri_diag.cpp normal z -> c, Wed Jan  6 17:59:48 2016
+       @generated from testing/testing_ztrtri_diag.cpp normal z -> c, Fri Jan 22 21:42:37 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -36,8 +36,9 @@ void cgeadd(
     #define B(i_, j_) (B + (i_) + (j_)*ldb)
     
     const magma_int_t ione = 1;
+    magma_int_t j;
     
-    for( int j=0; j < n; ++j ) {
+    for( j=0; j < n; ++j ) {
         blasf77_caxpy( &m, &alpha, A(0,j), &ione, B(0,j), &ione );
     }
 }
@@ -52,7 +53,7 @@ int main( int argc, char** argv )
 
     real_Double_t   gflops, magma_perf, magma_time=0;  //, cpu_perf=0, cpu_time=0;
     float          magma_error, norm_invA, work[1];
-    magma_int_t N, lda, ldda, info;
+    magma_int_t i, j, N, lda, ldda, info;
     magma_int_t jb, nb, nblock, sizeA, size_inv;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -100,8 +101,8 @@ int main( int argc, char** argv )
             sizeA = lda*N;
             lapackf77_clarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_cgetrf( &N, &N, h_A, &lda, ipiv, &info );
-            for( int j = 0; j < N; ++j ) {
-                for( int i = 0; i < j; ++i ) {
+            for( j = 0; j < N; ++j ) {
+                for( i = 0; i < j; ++i ) {
                     *h_A(i,j) = *h_A(j,i);
                 }
             }
@@ -145,7 +146,7 @@ int main( int argc, char** argv )
                 // |invA - invA_magma| / |invA|, accumulated over all diagonal blocks
                 magma_error = 0;
                 norm_invA   = 0;
-                for( int i=0; i < N; i += nb ) {
+                for( i=0; i < N; i += nb ) {
                     jb = min( nb, N-i );
                     cgeadd( jb, jb, c_neg_one, h_A(i, i), lda, h_dinvA(0, i), nb );
                     magma_error = max( magma_error, lapackf77_clantr( "M", uplo_, MagmaNonUnitStr, &jb, &jb, h_dinvA(0, i), &nb,  work ));

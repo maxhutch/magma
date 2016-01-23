@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CNJG.
+       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CONJ.
        
        zsymv_kernel_U (upper) in zsymv_upper.cu is very similar to
        zsymv_kernel_L (lower) in zsymv.cu; diff the two files to compare.
@@ -15,7 +15,7 @@
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 
 #define PRECISION_z

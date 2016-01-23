@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -124,8 +124,8 @@ magma_zgeqrf(
     
     // need 2*nb*nb to store T and upper triangle of V simultaneously
     magma_int_t lwkopt = max( n*nb, 2*nb*nb );
-    work[0] = MAGMA_Z_MAKE( (double)lwkopt, 0 );
-    int lquery = (lwork == -1);
+    work[0] = magma_zmake_lwork( lwkopt );
+    bool lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;
     } else if (n < 0) {

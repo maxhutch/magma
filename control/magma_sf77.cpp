@@ -1758,13 +1758,13 @@ void magmaf_sgesv_nopiv_gpu(
 void magmaf_sgetf2_gpu(
     magma_int_t *m, magma_int_t *n,
     devptr_t *dA, magma_int_t *ldda,
-    magma_int_t *ipiv,
+    magma_int_t *ipiv, magma_queue_t *queue,
     magma_int_t *info )
 {
     magma_sgetf2_gpu(
         *m, *n,
         magma_sdevptr(dA), *ldda,
-        ipiv,
+        ipiv, *queue,
         info );
 }
 
@@ -1959,13 +1959,13 @@ void magmaf_slarf_gpu(
     magma_int_t *m, magma_int_t *n,
     devptr_t *dv,
     devptr_t *dtau,
-    devptr_t *dC, magma_int_t *lddc )
+    devptr_t *dC, magma_int_t *lddc, magma_queue_t *queue )
 {
     magma_slarf_gpu(
         *m, *n,
         magma_sdevptr(dv),
         magma_sdevptr(dtau),
-        magma_sdevptr(dC), *lddc );
+        magma_sdevptr(dC), *lddc, *queue );
 }
 
 #define magmaf_slarfb2_gpu FORTRAN_NAME( magmaf_slarfb2_gpu, MAGMAF_SLARFB2_GPU )
@@ -2013,12 +2013,12 @@ void magmaf_sposv_gpu(
 #define magmaf_spotf2_gpu FORTRAN_NAME( magmaf_spotf2_gpu, MAGMAF_SPOTF2_GPU )
 void magmaf_spotf2_gpu(
     const char* uplo, magma_int_t *n,
-    devptr_t *dA, magma_int_t *ldda,
+    devptr_t *dA, magma_int_t *ldda, magma_queue_t *queue,
     magma_int_t *info )
 {
     magma_spotf2_gpu(
         magma_uplo_const(*uplo), *n,
-        magma_sdevptr(dA), *ldda,
+        magma_sdevptr(dA), *ldda, *queue,
         info );
 }
 
@@ -2160,6 +2160,30 @@ void magmaf_sormtr_gpu(
         magma_sdevptr(dC), *lddc,
         wA, *ldwa,
         info );
+}
+
+#define magmaf_s_isnan FORTRAN_NAME( magmaf_s_isnan, MAGMAF_S_ISNAN )
+void magmaf_s_isnan(
+    float *x )
+{
+    magma_s_isnan(
+        *x );
+}
+
+#define magmaf_s_isinf FORTRAN_NAME( magmaf_s_isinf, MAGMAF_S_ISINF )
+void magmaf_s_isinf(
+    float *x )
+{
+    magma_s_isinf(
+        *x );
+}
+
+#define magmaf_s_isnan_inf FORTRAN_NAME( magmaf_s_isnan_inf, MAGMAF_S_ISNAN_INF )
+void magmaf_s_isnan_inf(
+    float *x )
+{
+    magma_s_isnan_inf(
+        *x );
 }
 
 #define magmaf_snan_inf FORTRAN_NAME( magmaf_snan_inf, MAGMAF_SNAN_INF )

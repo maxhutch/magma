@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgetrf2_mgpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgetrf2_mgpu.cpp normal z -> d, Fri Jan 22 21:41:32 2016
 
 */
 #include "magma_internal.h"
@@ -53,7 +53,7 @@
             this routine will factorize.
 
     @param[in,out]
-    d_lAT   DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu).
+    d_lAT   DOUBLE PRECISION array of pointers on the GPU, dimension (ngpu).
             On entry, the M-by-N matrix A distributed over GPUs
             (d_lAT[d] points to the local matrix on d-th GPU).
             It uses a 1D block column cyclic format (with the block size
@@ -71,13 +71,13 @@
             matrix was interchanged with row IPIV(i).
 
     @param[in] 
-    d_lAP   DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu).
+    d_lAP   DOUBLE PRECISION array of pointers on the GPU, dimension (ngpu).
             d_lAP[d] is the workspace on d-th GPU. Each local workspace
             must be of size (3+ngpu)*nb*maxm, where maxm is m rounded
             up to a multiple of 32 and nb is the block size.
 
     @param[in] 
-    W       DOUBLE_PRECISION array, dimension (ngpu*nb*maxm).
+    W       DOUBLE PRECISION array, dimension (ngpu*nb*maxm).
             It is used to store panel on CPU.
 
     @param[in]

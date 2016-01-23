@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zgelqf.cpp normal z -> d, Wed Jan  6 17:59:49 2016
+       @generated from testing/testing_zgelqf.cpp normal z -> d, Fri Jan 22 21:42:44 2016
 
 */
 
@@ -49,7 +49,7 @@ int main( int argc, char** argv)
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |L - A*Q^H|   |I - Q*Q^H|\n");
+    printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |L - A*Q^H|   |I - Q*Q^H|\n");
     printf("%%==============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -84,9 +84,10 @@ int main( int argc, char** argv)
             magma_dgelqf( M, N, h_R, lda, tau, h_work, lwork, &info);
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dgelqf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
 
             /* =====================================================================
                Check the result, following zlqt01 except using the reduced Q.
@@ -139,9 +140,10 @@ int main( int argc, char** argv)
                 lapackf77_dgelqf( &M, &N, h_A, &lda, tau, h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapack_dgelqf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
             }
             
             /* =====================================================================

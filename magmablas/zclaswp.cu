@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions mixed zc -> ds
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -130,21 +130,4 @@ magmablas_zclaswp_q(
         zclaswp_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, A, lda, SA, ldsa, m, ipiv);
     else
         zclaswp_inv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, A, lda, SA, ldsa, m, ipiv);
-}
-
-
-/**
-    Note magmablas_zclaswp_q also adds ldsa. This assumes ldsa = lda.
-    @see magmablas_zclaswp_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zclaswp(
-    magma_int_t n,
-    magmaDoubleComplex_ptr A, magma_int_t lda,
-    magmaFloatComplex_ptr SA,
-    magma_int_t m,
-    const magma_int_t *ipiv, magma_int_t incx )
-{
-    magmablas_zclaswp_q( n, A, lda, SA, lda, m, ipiv, incx, magmablasGetQueue() );
 }

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlacpy.cu normal z -> d, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlacpy.cu normal z -> d, Fri Jan 22 21:41:59 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 // To deal with really large matrices, this launchs multiple super blocks,
 // each with up to 64K-1 x 64K-1 thread blocks, which is up to 4194240 x 4194240 matrix with BLK=64.
@@ -231,7 +231,7 @@ void dlacpy_upper_kernel_batched(
             The number of columns of the matrix dA.  N >= 0.
     
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
@@ -241,7 +241,7 @@ void dlacpy_upper_kernel_batched(
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
     @param[out]
-    dB      DOUBLE_PRECISION array, dimension (LDDB,N)
+    dB      DOUBLE PRECISION array, dimension (LDDB,N)
             The M-by-N matrix dB.
             On exit, dB = dA in the locations specified by UPLO.
     
@@ -346,20 +346,6 @@ magmablas_dlacpy_q(
 }
 
 
-/**
-    @see magmablas_dlacpy_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dlacpy(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr       dB, magma_int_t lddb )
-{
-    magmablas_dlacpy_q( uplo, m, n, dA, ldda, dB, lddb, magmablasGetQueue() );
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -386,7 +372,7 @@ magmablas_dlacpy(
             The number of columns of each matrix dA.  N >= 0.
     
     @param[in]
-    dAarray DOUBLE_PRECISION* array, dimension (batchCount)
+    dAarray DOUBLE PRECISION* array, dimension (batchCount)
             Array of pointers to the matrices dA, where each dA is of dimension (LDDA,N).
             The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
@@ -397,7 +383,7 @@ magmablas_dlacpy(
             The leading dimension of each array dA.  LDDA >= max(1,M).
     
     @param[out]
-    dBarray DOUBLE_PRECISION* array, dimension (batchCount)
+    dBarray DOUBLE PRECISION* array, dimension (batchCount)
             Array of pointers to the matrices dB, where each dB is of dimension (LDDB,N).
             The M-by-N matrix dB.
             On exit, dB = dA in the locations specified by UPLO.

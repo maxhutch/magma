@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -74,7 +74,7 @@
             LAPACK stores this array in A. There are 0s below the diagonal.
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array, dimension (3 N)
+    dwork   (workspace) DOUBLE PRECISION array, dimension (3 N)
 
     @param[out]
     info    INTEGER

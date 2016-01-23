@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Stan Tomov
-       @generated from src/zgegqr_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgegqr_gpu.cpp normal z -> d, Fri Jan 22 21:41:34 2016
 
 */
 #include "magma_internal.h"
@@ -55,7 +55,7 @@
             The number of columns of the matrix A. 128 >= n >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (ldda,n)
+    dA      DOUBLE PRECISION array on the GPU, dimension (ldda,n)
             On entry, the m-by-n matrix A.
             On exit, the m-by-n matrix Q with orthogonal columns.
 
@@ -66,14 +66,14 @@
             divisible by 16.
 
     @param
-    dwork   (GPU workspace) DOUBLE_PRECISION array, dimension:
+    dwork   (GPU workspace) DOUBLE PRECISION array, dimension:
             n^2                    for ikind = 1
             3 n^2 + min(m, n) + 2  for ikind = 2
             0 (not used)           for ikind = 3
             n^2                    for ikind = 4
 
     @param[out]
-    work    (CPU workspace) DOUBLE_PRECISION array, dimension 3 n^2.
+    work    (CPU workspace) DOUBLE PRECISION array, dimension 3 n^2.
             On exit, work(1:n^2) holds the rectangular matrix R.
             Preferably, for higher performance, work should be in pinned memory.
  

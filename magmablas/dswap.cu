@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,10 +7,10 @@
        
        @author Mark Gates
 
-       @generated from magmablas/zswap.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zswap.cu normal z -> d, Fri Jan 22 21:42:03 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -44,14 +44,14 @@ __global__ void dswap_kernel(
     n       Number of elements in vector x and y. n >= 0.
 
     @param[in,out]
-    dx      DOUBLE_PRECISION array on GPU device.
+    dx      DOUBLE PRECISION array on GPU device.
             The n element vector x of dimension (1 + (n-1)*incx).
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
     @param[in,out]
-    dy      DOUBLE_PRECISION array on GPU device.
+    dy      DOUBLE PRECISION array on GPU device.
             The n element vector y of dimension (1 + (n-1)*incy).
 
     @param[in]
@@ -73,18 +73,4 @@ magmablas_dswap_q(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( n, NB ) );
     dswap_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dx, incx, dy, incy );
-}
-
-
-/**
-    @see magmablas_dswap_q
-    @ingroup magma_dblas1
-    ********************************************************************/
-extern "C" void 
-magmablas_dswap(
-    magma_int_t n,
-    magmaDouble_ptr dx, magma_int_t incx, 
-    magmaDouble_ptr dy, magma_int_t incy)
-{
-    magmablas_dswap_q( n, dx, incx, dy, incy, magmablasGetQueue() );
 }

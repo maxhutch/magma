@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @precisions normal z -> s d c
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -35,7 +35,7 @@ zsymmetrize_tiles_lower( int m, magmaDoubleComplex *dA, int ldda, int mstride, i
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dAT = MAGMA_Z_CNJG(*dA);  // upper := lower
+            *dAT = MAGMA_Z_CONJ(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
@@ -58,7 +58,7 @@ zsymmetrize_tiles_upper( int m, magmaDoubleComplex *dA, int ldda, int mstride, i
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dA  = MAGMA_Z_CNJG(*dAT);  // lower := upper
+            *dA  = MAGMA_Z_CONJ(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
@@ -161,18 +161,4 @@ magmablas_zsymmetrize_tiles_q(
             <<< grid, threads, 0, queue->cuda_stream() >>>
             ( m, dA, ldda, mstride, nstride );
     }
-}
-
-
-/**
-    @see magmablas_zsymmetrize_tiles_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zsymmetrize_tiles(
-    magma_uplo_t uplo, magma_int_t m,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda,
-    magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
-{
-    magmablas_zsymmetrize_tiles_q( uplo, m, dA, ldda, ntile, mstride, nstride, magmablasGetQueue() );
 }

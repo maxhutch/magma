@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -82,7 +82,7 @@ void zlacpy_sym_out_lower_device(
             for( int jj=0; jj < BLK_Y; ++jj ) {
                 int j = rows[2*(iby+jj)+1];
                 if (ind <= j)
-                    dB[j + ind*ldda] = MAGMA_Z_CNJG( dA[ind + (iby+jj)*lddb] );
+                    dB[j + ind*ldda] = MAGMA_Z_CONJ( dA[ind + (iby+jj)*lddb] );
                 else
                     dB[ind + j*ldda] = dA[ind + (iby+jj)*lddb];
             }
@@ -92,7 +92,7 @@ void zlacpy_sym_out_lower_device(
             for( int jj=0; jj < BLK_Y && iby+jj < n; ++jj ) {
                 int j = rows[2*(iby+jj)+1];
                 if (ind <= j)
-                    dB[j + ind*ldda] = MAGMA_Z_CNJG( dA[ind + (iby+jj)*lddb] );
+                    dB[j + ind*ldda] = MAGMA_Z_CONJ( dA[ind + (iby+jj)*lddb] );
                 else
                     dB[ind + j*ldda] = dA[ind + (iby+jj)*lddb];
             }
@@ -275,19 +275,4 @@ magmablas_zlacpy_sym_out_q(
     else {
         zlacpy_sym_out_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, dA, ldda, dB, lddb );
     }
-}
-
-
-/**
-    @see magmablas_zlacpy_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zlacpy_sym_out(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magma_int_t *rows, magma_int_t *perm,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_ptr       dB, magma_int_t lddb )
-{
-    magmablas_zlacpy_sym_out_q( uplo, m, n, rows, perm, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

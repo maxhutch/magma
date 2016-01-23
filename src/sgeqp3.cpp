@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
   
-       @generated from src/zgeqp3.cpp normal z -> s, Wed Jan  6 17:59:32 2016
+       @generated from src/zgeqp3.cpp normal z -> s, Fri Jan 22 21:41:39 2016
 
        @author Stan Tomov
        @author Ichitaro Yamazaki
@@ -39,7 +39,7 @@
             On exit, the upper triangle of the array contains the
             min(M,N)-by-N upper trapezoidal matrix R; the elements below
             the diagonal, together with the array TAU, represent the
-            unitary matrix Q as a product of min(M,N) elementary
+            orthogonal matrix Q as a product of min(M,N) elementary
             reflectors.
 
     @param[in]
@@ -141,7 +141,7 @@ magma_sgeqp3(
             lwkopt += 2*n;
             #endif
         }
-        work[0] = MAGMA_S_MAKE( lwkopt, 0. );
+        work[0] = magma_smake_lwork( lwkopt );
 
         if (lwork < lwkopt && ! lquery) {
             *info = -8;
@@ -282,7 +282,7 @@ magma_sgeqp3(
         }
     }
 
-    work[0] = MAGMA_S_MAKE( lwkopt, 0. );
+    work[0] = magma_smake_lwork( lwkopt );
     magma_free( dwork );
 
     magma_queue_destroy( queue );

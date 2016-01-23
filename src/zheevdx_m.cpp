@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -271,11 +271,8 @@ magma_zheevdx_m(
         liwmin = 1;
     }
     
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0.);
-    rwork[0] = lrwmin * one_eps;
+    work[0]  = magma_zmake_lwork( lwmin );
+    rwork[0] = magma_dmake_lwork( lrwmin );
     iwork[0] = liwmin;
     
     if ((lwork < lwmin) && !lquery) {
@@ -371,6 +368,7 @@ magma_zheevdx_m(
        transformations represented as Householder vectors in A. */
     if (! wantz) {
         lapackf77_dsterf(&n, w, &rwork[inde], info);
+        magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
     }
     else {
         timer_start( time );
@@ -405,8 +403,8 @@ magma_zheevdx_m(
         blasf77_dscal(&imax, &d__1, w, &ione);
     }
 
-    work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0.);  // round up
-    rwork[0] = lrwmin * one_eps;
+    work[0]  = magma_zmake_lwork( lwmin );
+    rwork[0] = magma_dmake_lwork( lrwmin );
     iwork[0] = liwmin;
 
     return *info;

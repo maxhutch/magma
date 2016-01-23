@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -115,10 +115,10 @@ float test( magma_int_t m, magma_int_t n )
     const magma_int_t ione = 1;
     magma_int_t lda = max(m,n);
     
-    magma_smalloc_cpu( &sA,    lda*n );
-    magma_dmalloc_cpu( &dA,    lda*n );
-    magma_smalloc_cpu( &swork, m     );
-    magma_dmalloc_cpu( &dwork, m     );
+    TESTING_MALLOC_CPU( &sA,    float,  lda*n );
+    TESTING_MALLOC_CPU( &dA,    double, lda*n );
+    TESTING_MALLOC_CPU( &swork, float,  m     );
+    TESTING_MALLOC_CPU( &dwork, double, m     );
     
     for( magma_int_t j = 0; j < n; ++j ) {
         for( magma_int_t i = 0; i < lda; ++i ) {
@@ -206,6 +206,11 @@ float test( magma_int_t m, magma_int_t n )
         printf( "ok\n" );
     }
     printf( "\n" );
+    
+    TESTING_FREE_CPU( sA );
+    TESTING_FREE_CPU( dA );
+    TESTING_FREE_CPU( swork );
+    TESTING_FREE_CPU( dwork );
     
     return 1.125;
 }

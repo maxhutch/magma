@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -35,22 +35,22 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      COMPLEX_16 array on the GPU, dimension (LDA,N)
+    dA      COMPLEX_16 array on the GPU, dimension (LDDA,N)
             The block diagonal matrix D and the multipliers used to
             obtain the factor U or L as computed by ZHETRF_NOPIV_GPU.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[in,out]
-    dB      COMPLEX_16 array on the GPU, dimension (LDB,NRHS)
+    dB      COMPLEX_16 array on the GPU, dimension (LDDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,N).
+            The leading dimension of the array B.  LDDB >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -106,7 +106,7 @@ magma_zhetrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_zlascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_zlascl_diag( MagmaUpper, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ztrsm( MagmaLeft, MagmaUpper,
                      MagmaNoTrans, MagmaUnit,
@@ -118,7 +118,7 @@ magma_zhetrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_zlascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_zlascl_diag( MagmaLower, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ztrsm( MagmaLeft, MagmaLower,
                      MagmaConjTrans, MagmaUnit,

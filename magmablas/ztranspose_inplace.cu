@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 16
 
@@ -197,17 +197,4 @@ magmablas_ztranspose_inplace_q(
         dim3 grid( nblock+1, nblock/2 );
         ztranspose_inplace_even<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
-}
-
-
-/**
-    @see magmablas_ztranspose_inplace_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_ztranspose_inplace(
-    magma_int_t n,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda )
-{
-    magmablas_ztranspose_inplace_q( n, dA, ldda, magmablasGetQueue() );
 }

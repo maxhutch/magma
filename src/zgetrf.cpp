@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -152,15 +152,15 @@ magma_zgetrf(
         size_t mem_size = magma_queue_mem_size( queues[0] );
         mem_size /= sizeof(magmaDoubleComplex);
 
-        int h = 1+(2+ngpu);
-        int ngpu2 = ngpu;
-        int NB = (magma_int_t)(0.8*mem_size/maxm - h*nb);
+        magma_int_t h = 1+(2+ngpu);
+        magma_int_t ngpu2 = ngpu;
+        magma_int_t NB = (magma_int_t)(0.8*mem_size/maxm - h*nb);
         const char* ngr_nb_char = getenv("MAGMA_NGR_NB");
         if ( ngr_nb_char != NULL )
             NB = max( nb, min( NB, atoi(ngr_nb_char) ) );
 
         if ( ngpu > ceil((double)NB/nb) ) {
-            ngpu2 = (int)ceil((double)NB/nb);
+            ngpu2 = (magma_int_t)ceil((double)NB/nb);
             h = 1+(2+ngpu2);
             NB = (magma_int_t)(0.8*mem_size/maxm - h*nb);
         }

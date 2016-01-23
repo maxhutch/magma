@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -42,7 +42,7 @@
             The number of columns of the matrix A. 0 <= N <= min(M, 128).
 
     @param[in,out]
-    dA      COMPLEX_16 array, dimension (LDA,N)
+    dA      COMPLEX_16 array, dimension (LDDA,N)
             On entry, the m by n matrix A.
             On exit, the unitary matrix Q as a
             product of elementary reflectors (see Further Details).
@@ -55,7 +55,7 @@
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+            The leading dimension of the array A.  LDDA >= max(1,M).
 
     @param[out]
     dtau    COMPLEX_16 array, dimension (min(M,N))

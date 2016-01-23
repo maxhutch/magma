@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zungbr.cpp normal z -> s, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zungbr.cpp normal z -> s, Fri Jan 22 21:42:48 2016
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -53,7 +53,7 @@ int main( int argc, char** argv )
     
     magma_vect_t vects[] = { MagmaQ, MagmaP };
     
-    printf("%% Q/P   m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
+    printf("%% Q/P   m     n     k   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R|| / ||A||\n");
     printf("%%============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int ivect = 0; ivect < 2; ++ivect ) {
@@ -112,9 +112,10 @@ int main( int argc, char** argv )
                =================================================================== */
             // first, get GEBRD factors in both hA and hR
             magma_sgebrd( m, n, hA, lda, d, e, tauq, taup, h_work, lwork, &info );
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_sgelqf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             lapackf77_slacpy( MagmaFullStr, &m, &n, hA, &lda, hR, &lda );
             
             gpu_time = magma_wtime();
@@ -126,9 +127,10 @@ int main( int argc, char** argv )
             }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_sorgbr returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -145,9 +147,10 @@ int main( int argc, char** argv )
                 }
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_sorgbr returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 if ( opts.verbose ) {
                     printf( "R=" );  magma_sprint( m, n, hR, lda );

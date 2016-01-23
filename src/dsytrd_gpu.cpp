@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd_gpu.cpp normal z -> d, Wed Jan  6 17:59:32 2016
+       @generated from src/zhetrd_gpu.cpp normal z -> d, Fri Jan 22 21:41:42 2016
 
 */
 #include "magma_internal.h"
@@ -33,7 +33,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -57,31 +57,31 @@
             The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
-    d       DOUBLE_PRECISION array, dimension (N)
+    d       DOUBLE PRECISION array, dimension (N)
             The diagonal elements of the tridiagonal matrix T:
             D(i) = A(i,i).
 
     @param[out]
-    e       DOUBLE_PRECISION array, dimension (N-1)
+    e       DOUBLE PRECISION array, dimension (N-1)
             The off-diagonal elements of the tridiagonal matrix T:
             E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (N-1)
+    tau     DOUBLE PRECISION array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    A       (workspace) DOUBLE_PRECISION array, dimension (LDA,N)
-            On exit the diagonal, the  upper part (UPLO=MagmaUpper)
-            or the lower part (UPLO=MagmaLower) are copies of DA
+    A       (workspace) DOUBLE PRECISION array, dimension (LDA,N)
+            On exit the diagonal, the  upper part (if uplo=MagmaUpper)
+            or the lower part (if uplo=MagmaLower) are copies of dA
 
     @param[in]
     lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -173,7 +173,7 @@ magma_dsytrd_gpu(
     magma_int_t lquery;
 
     *info = 0;
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
     lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
@@ -192,7 +192,7 @@ magma_dsytrd_gpu(
     lddw = magma_roundup( n, 32 );
     lwkopt = n * nb;
     if (*info == 0) {
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -320,7 +320,7 @@ magma_dsytrd_gpu(
     magma_free_cpu( work2 );
     magma_queue_destroy( queue );
     
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
     
     return *info;
 } /* magma_dsytrd_gpu */

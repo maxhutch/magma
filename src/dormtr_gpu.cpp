@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from src/zunmtr_gpu.cpp normal z -> d, Wed Jan  6 17:59:32 2016
+       @generated from src/zunmtr_gpu.cpp normal z -> d, Fri Jan 22 21:41:42 2016
 
 */
 #include "magma_internal.h"
@@ -22,7 +22,7 @@
     TRANS = MagmaNoTrans:       Q * C               C * Q
     TRANS = MagmaTrans:    Q**H * C            C * Q**H
 
-    where Q is a real unitary matrix of order nq,
+    where Q is a real orthogonal matrix of order nq,
     with nq = m if SIDE = MagmaLeft
     and  nq = n if SIDE = MagmaRight. Q is defined as the product of
     nq-1 elementary reflectors, as returned by DSYTRD:
@@ -59,7 +59,7 @@
             The number of columns of the matrix C. N >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension
+    dA      DOUBLE PRECISION array, dimension
                                  (LDDA,M) if SIDE = MagmaLeft
                                  (LDDA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
@@ -74,14 +74,14 @@
             if SIDE = MagmaRight, LDDA >= max(1,N).
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension
+    tau     DOUBLE PRECISION array, dimension
                                  (M-1) if SIDE = MagmaLeft
                                  (N-1) if SIDE = MagmaRight
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DSYTRD.
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array, dimension (LDDC,N)
+    dC      DOUBLE PRECISION array, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).
 
@@ -90,7 +90,7 @@
             The leading dimension of the array C. LDDC >= max(1,M).
 
     @param[in]
-    wA      DOUBLE_PRECISION array, dimension
+    wA      DOUBLE PRECISION array, dimension
                                  (LDWA,M) if SIDE = MagmaLeft
                                  (LDWA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
@@ -125,12 +125,11 @@ magma_dormtr_gpu(
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     magma_int_t i1, i2, mi, ni, nq;
-    int left, upper;
     magma_int_t iinfo;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    upper  = (uplo == MagmaUpper);
+    bool left   = (side == MagmaLeft);
+    bool upper  = (uplo == MagmaUpper);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {

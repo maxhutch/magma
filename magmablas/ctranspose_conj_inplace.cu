@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztranspose_conj_inplace.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/ztranspose_conj_inplace.cu normal z -> c, Fri Jan 22 21:42:04 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
-#define PRECISION_c
+#include "magma_internal.h"
 
 #define NB 16
 
@@ -49,7 +48,7 @@ __global__ void ctranspose_conj_inplace_odd( int n, magmaFloatComplex *matrix, i
     magmaFloatComplex *A = matrix + ii+i + (jj+j)*lda;
     if ( ii == jj ) {
         if ( ii+i < n && jj+j < n ) {
-            sA[j][i] = MAGMA_C_CNJG( *A );
+            sA[j][i] = MAGMA_C_CONJ( *A );
         }
         __syncthreads();
         if ( ii+i < n && jj+j < n ) {
@@ -59,10 +58,10 @@ __global__ void ctranspose_conj_inplace_odd( int n, magmaFloatComplex *matrix, i
     else {
         magmaFloatComplex *B = matrix + jj+i + (ii+j)*lda;
         if ( ii+i < n && jj+j < n ) {
-            sA[j][i] = MAGMA_C_CNJG( *A );
+            sA[j][i] = MAGMA_C_CONJ( *A );
         }
         if ( jj+i < n && ii+j < n ) {
-            sB[j][i] = MAGMA_C_CNJG( *B );
+            sB[j][i] = MAGMA_C_CONJ( *B );
         }
         __syncthreads();
         if ( ii+i < n && jj+j < n ) {
@@ -111,7 +110,7 @@ __global__ void ctranspose_conj_inplace_even( int n, magmaFloatComplex *matrix, 
     magmaFloatComplex *A = matrix + ii+i + (jj+j)*lda;
     if ( ii == jj ) {
         if ( ii+i < n && jj+j < n ) {
-            sA[j][i] = MAGMA_C_CNJG( *A );
+            sA[j][i] = MAGMA_C_CONJ( *A );
         }
         __syncthreads();
         if ( ii+i < n && jj+j < n ) {
@@ -121,10 +120,10 @@ __global__ void ctranspose_conj_inplace_even( int n, magmaFloatComplex *matrix, 
     else {
         magmaFloatComplex *B = matrix + jj+i + (ii+j)*lda;
         if ( ii+i < n && jj+j < n ) {
-            sA[j][i] = MAGMA_C_CNJG( *A );
+            sA[j][i] = MAGMA_C_CONJ( *A );
         }
         if ( jj+i < n && ii+j < n ) {
-            sB[j][i] = MAGMA_C_CNJG( *B );
+            sB[j][i] = MAGMA_C_CONJ( *B );
         }
         __syncthreads();
         if ( ii+i < n && jj+j < n ) {
@@ -195,17 +194,4 @@ magmablas_ctranspose_conj_inplace_q(
         dim3 grid( nblock+1, nblock/2 );
         ctranspose_conj_inplace_even<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
-}
-
-
-/**
-    @see magmablas_ctranspose_conj_inplace_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_ctranspose_conj_inplace(
-    magma_int_t n,
-    magmaFloatComplex_ptr dA, magma_int_t ldda )
-{
-    magmablas_ctranspose_conj_inplace_q( n, dA, ldda, magmablasGetQueue() );
 }

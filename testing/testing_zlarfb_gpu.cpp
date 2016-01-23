@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -38,7 +38,7 @@ int main( int argc, char** argv )
     // local variables
     magma_int_t M, N, K, size, ldc, ldv, ldt, ldw, ldw2, nv;
     magma_int_t ISEED[4] = {0,0,0,1};
-    double error, work[1];
+    double Cnorm, error, work[1];
     magma_int_t status = 0;
     
     // test all combinations of input parameters
@@ -160,10 +160,11 @@ int main( int argc, char** argv )
             //printf( "dHC=" );  magma_zprint( M, N, R, ldc );
             
             // compute relative error |HC_magma - HC_lapack| / |HC_lapack|
-            error = lapackf77_zlange( "Fro", &M, &N, C, &ldc, work );
             size = ldc*N;
             blasf77_zaxpy( &size, &c_neg_one, C, &ione, R, &ione );
-            error = lapackf77_zlange( "Fro", &M, &N, R, &ldc, work ) / error;
+            Cnorm = lapackf77_zlange( "Fro", &M, &N, C, &ldc, work );
+            error = lapackf77_zlange( "Fro", &M, &N, R, &ldc, work ) / Cnorm;
+            
             printf( "%5d %5d %5d      %c       %c       %c       %c      %8.2e   %s\n",
                     (int) M, (int) N, (int) K,
                     lapacke_storev_const(storev[istor]), lapacke_side_const(side[iside]),

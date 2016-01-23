@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -105,7 +105,7 @@ magma_zsytrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_zlascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_zlascl_diag( MagmaUpper, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ztrsm( MagmaLeft, MagmaUpper,
                      MagmaNoTrans, MagmaUnit,
@@ -117,7 +117,7 @@ magma_zsytrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_zlascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_zlascl_diag( MagmaLower, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ztrsm( MagmaLeft, MagmaLower,
                      MagmaTrans, MagmaUnit,

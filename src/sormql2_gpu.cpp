@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Mark Gates
 
-       @generated from src/zunmql2_gpu.cpp normal z -> s, Wed Jan  6 17:59:31 2016
+       @generated from src/zunmql2_gpu.cpp normal z -> s, Fri Jan 22 21:41:36 2016
 
 */
 #include "magma_internal.h"
@@ -24,7 +24,7 @@
     TRANS = MagmaTrans:   Q**H * C           C * Q**H
     @endverbatim
 
-    where Q is a real unitary matrix defined as the product of k
+    where Q is a real orthogonal matrix defined as the product of k
     elementary reflectors
 
           Q = H(k) . . . H(2) H(1)

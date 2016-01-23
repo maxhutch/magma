@@ -1,5 +1,5 @@
 /*
-   -- MAGMA (version 2.0.0-beta2) --
+   -- MAGMA (version 2.0.0-beta3) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from src/zgetrf_panel_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+   @generated from src/zgetrf_panel_batched.cpp normal z -> d, Fri Jan 22 21:41:54 2016
 */
 
 #include "magma_internal.h"
@@ -48,7 +48,7 @@
 
     @param[in,out]
     dA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N).
             On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -68,7 +68,7 @@
 
     @param[in,out]
     dX_array       Array of pointers, dimension (batchCount).
-             Each is a DOUBLE_PRECISION array X of dimension ( lddx, n ).
+             Each is a DOUBLE PRECISION array X of dimension ( lddx, n ).
              On entry, should be set to 0
              On exit, the solution matrix X
 
@@ -78,7 +78,7 @@
 
     @param[in,out]
     dinvA_array    Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array dinvA, a workspace on device.
+            Each is a DOUBLE PRECISION array dinvA, a workspace on device.
             If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
             If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
             where TRI_NB = 128.

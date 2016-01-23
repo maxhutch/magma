@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -19,7 +19,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_z
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zgeqrf_mgpu
@@ -49,11 +48,11 @@ int main( int argc, char** argv )
 
     printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 1 ) {
-        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
+        printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
         printf("%%===============================================================================================\n");
     }
     else {
-        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F /(M*||A||_F)\n");
+        printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R||_F /(M*||A||_F)\n");
         printf("%%=========================================================================\n");
     }
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -109,12 +108,13 @@ int main( int argc, char** argv )
                 magmaDoubleComplex *tau2;
                 TESTING_MALLOC_CPU( tau2, magmaDoubleComplex, min_mn );
                 cpu_time = magma_wtime();
-                lapackf77_zgeqrf( &M, &N, h_A, &M, tau2, h_work, &lhwork, &info );
+                lapackf77_zgeqrf( &M, &N, h_A, &lda, tau2, h_work, &lhwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapack_zgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 TESTING_FREE_CPU( tau2 );
             }
             
@@ -127,9 +127,10 @@ int main( int argc, char** argv )
             magma_zgeqrf2_mgpu( ngpu, M, N, d_lA, ldda, tau, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_zgeqrf2 returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             magma_zgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_R, lda, ngpu, nb );
             

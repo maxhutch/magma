@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqrs_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgeqrs_gpu.cpp normal z -> d, Fri Jan 22 21:41:35 2016
 
 */
 #include "magma_internal.h"
@@ -32,7 +32,7 @@
             The number of columns of the matrix C. NRHS >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,n, as returned by
             DGEQRF_GPU in the first n columns of its array argument A.
@@ -42,17 +42,17 @@
             The leading dimension of the array A, LDDA >= M.
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (N)
+    tau     DOUBLE PRECISION array, dimension (N)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by MAGMA_DGEQRF_GPU.
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+    dB      DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
             On entry, the M-by-NRHS matrix C.
             On exit, the N-by-NRHS solution matrix X.
 
     @param[in,out]
-    dT      DOUBLE_PRECISION array that is the output (the 6th argument)
+    dT      DOUBLE PRECISION array that is the output (the 6th argument)
             of magma_dgeqrf_gpu of size
             2*MIN(M, N)*NB + ceil(N/32)*32 )* MAX(NB, NRHS).
             The array starts with a block of size MIN(M,N)*NB that stores
@@ -66,7 +66,7 @@
             The leading dimension of the array dB. LDDB >= M.
 
     @param[out]
-    hwork   (workspace) DOUBLE_PRECISION array, dimension (LWORK)
+    hwork   (workspace) DOUBLE PRECISION array, dimension (LWORK)
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -113,7 +113,7 @@ magma_dgeqrs_gpu(
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
 
-    hwork[0] = MAGMA_D_MAKE( (double)lwkopt, 0. );
+    hwork[0] = magma_dmake_lwork( lwkopt );
 
     *info = 0;
     if (m < 0)

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        @author Adrien REMY
 
-       @generated from src/zhetrs_nopiv_gpu.cpp normal z -> s, Wed Jan  6 17:59:31 2016
+       @generated from src/zhetrs_nopiv_gpu.cpp normal z -> s, Fri Jan 22 21:41:40 2016
 
 */
 #include "magma_internal.h"
@@ -35,22 +35,22 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      REAL array on the GPU, dimension (LDA,N)
+    dA      REAL array on the GPU, dimension (LDDA,N)
             The block diagonal matrix D and the multipliers used to
             obtain the factor U or L as computed by SSYTRF_NOPIV_GPU.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[in,out]
-    dB      REAL array on the GPU, dimension (LDB,NRHS)
+    dB      REAL array on the GPU, dimension (LDDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,N).
+            The leading dimension of the array B.  LDDB >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -106,7 +106,7 @@ magma_ssytrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_slascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_slascl_diag( MagmaUpper, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_strsm( MagmaLeft, MagmaUpper,
                      MagmaNoTrans, MagmaUnit,
@@ -118,7 +118,7 @@ magma_ssytrs_nopiv_gpu(
                      n, nrhs, c_one,
                      dA, ldda, dB, lddb, queue );
         magmablas_slascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
-        //for (int i = 0; i < nrhs; i++)
+        //for (i = 0; i < nrhs; i++)
         //    magmablas_slascl_diag( MagmaLower, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_strsm( MagmaLeft, MagmaLower,
                      MagmaConjTrans, MagmaUnit,

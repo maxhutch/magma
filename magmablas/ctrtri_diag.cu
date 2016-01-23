@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztrtri_diag.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/ztrtri_diag.cu normal z -> c, Fri Jan 22 21:42:05 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -16,7 +16,7 @@
        in the library. The actual kernels are in ctrtri_lower.cu and ctrtri_upper.cu
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "ctrtri.cuh"
 
 
@@ -183,17 +183,4 @@ magmablas_ctrtri_diag_q(
             if ( kb >= n ) break;
         }
     }
-}
-
-/**
-    @see magmablas_ctrtri_diag_q
-    @ingroup magma_cblas3
-    ********************************************************************/
-extern "C" void
-magmablas_ctrtri_diag(
-    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_ptr d_dinvA)
-{
-    magmablas_ctrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magmablasGetQueue() );
 }

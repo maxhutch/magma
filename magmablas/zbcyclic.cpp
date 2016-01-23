@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -16,8 +16,6 @@
 #include "magmablas_v1.h"
 
 #include "magma_internal.h"
-
-#define PRECISION_z
 
 #ifdef HAVE_clBLAS
     #define dA( dev, i_, j_ )  dA[dev], ((i_) + (j_)*ldda)

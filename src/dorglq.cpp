@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Mark Gates
 
-       @generated from src/zunglq.cpp normal z -> d, Wed Jan  6 17:59:32 2016
+       @generated from src/zunglq.cpp normal z -> d, Fri Jan 22 21:41:38 2016
 
 */
 #include "magma_internal.h"
@@ -39,7 +39,7 @@
             matrix Q. M >= K >= 0.
     
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the i-th row must contain the vector which defines
             the elementary reflector H(i), for i = 1,2,...,k, as returned
             by DGELQF in the first k rows of its array argument A.
@@ -50,12 +50,12 @@
             The first dimension of the array A. LDA >= max(1,M).
     
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension (K)
+    tau     DOUBLE PRECISION array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by DGELQF.
     
     @param[out]
-    work    DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
     
     @param[in]
@@ -102,7 +102,7 @@ magma_dorglq(
     *info = 0;
     nb = magma_get_dgelqf_nb( m, n );
     lwkopt = nb*nb;
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
     lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;
@@ -128,7 +128,7 @@ magma_dorglq(
     
     // Quick return if possible
     if (m <= 0) {
-        work[0] = MAGMA_D_MAKE( 1, 0 );
+        work[0] = c_one;
         return *info;
     }
     
@@ -215,6 +215,6 @@ cleanup:
     //    magma_free_cpu( work2 );
     //}
     
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
     return *info;
 }

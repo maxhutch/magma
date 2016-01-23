@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from src/zheevx.cpp normal z -> c, Wed Jan  6 17:59:33 2016
+       @generated from src/zheevx.cpp normal z -> c, Fri Jan 22 21:41:42 2016
 
  */
 #include "magma_internal.h"
@@ -247,7 +247,7 @@ magma_cheevx(
     
     lopt = n * (nb + 1);
     
-    work[0] = MAGMA_C_MAKE( lopt, 0 );
+    work[0] = magma_cmake_lwork( lopt );
     
     if (lwork < lopt && ! lquery) {
         *info = -17;
@@ -418,7 +418,7 @@ magma_cheevx(
     }
     
     /* Set WORK[0] to optimal complex workspace size. */
-    work[1] = MAGMA_C_MAKE( lopt, 0 );
+    work[1] = magma_cmake_lwork( lopt );
     
     return *info;
 } /* magma_cheevx */

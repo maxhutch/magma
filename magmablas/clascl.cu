@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlascl.cu normal z -> c, Wed Jan  6 17:59:37 2016
-
+       @generated from magmablas/zlascl.cu normal z -> c, Fri Jan 22 21:42:01 2016
 
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -221,20 +220,4 @@ magmablas_clascl_q(
      
         cnt += 1;
     }
-}
-
-
-/**
-    @see magmablas_clascl_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_clascl(
-    magma_type_t type, magma_int_t kl, magma_int_t ku,
-    float cfrom, float cto,
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_ptr dA, magma_int_t ldda,
-    magma_int_t *info )
-{
-    magmablas_clascl_q( type, kl, ku, cfrom, cto, m, n, dA, ldda, magmablasGetQueue(), info );
 }

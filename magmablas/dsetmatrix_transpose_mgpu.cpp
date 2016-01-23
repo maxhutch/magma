@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zsetmatrix_transpose_mgpu.cpp normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zsetmatrix_transpose_mgpu.cpp normal z -> d, Fri Jan 22 21:42:07 2016
        @author Ichitaro Yamazaki
 */
-#include "common_magma.h"
-
-#define PRECISION_d
+#include "magma_internal.h"
 
 //
 //    m, n - dimensions in the source (input) matrix.

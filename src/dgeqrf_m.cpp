@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqrf_m.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqrf_m.cpp normal z -> d, Fri Jan 22 21:41:39 2016
 
 */
 #include "magma_internal.h" 
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    DGEQRF computes a QR factorization of a DOUBLE_PRECISION M-by-N matrix A:
+    DGEQRF computes a QR factorization of a DOUBLE PRECISION M-by-N matrix A:
     A = Q * R using multiple GPUs. This version does not require work space on the GPU
     passed as input. GPU memory is allocated in the routine.
 
@@ -32,7 +32,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, the elements on and above the diagonal of the array
             contain the min(M,N)-by-N upper trapezoidal matrix R (R is
@@ -49,12 +49,12 @@
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (min(M,N))
+    tau     DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
@@ -103,14 +103,14 @@ magma_dgeqrf_m(
     double *da[MagmaMaxGPUs];
     double c_one = MAGMA_D_ONE;
 
-    int i, k, ldda;
+    magma_int_t i, k, ldda;
 
     *info = 0;
-    int nb = magma_get_dgeqrf_nb( m, n );
+    magma_int_t nb = magma_get_dgeqrf_nb( m, n );
 
-    int lwkopt = n * nb;
-    work[0] = MAGMA_D_MAKE( (double)lwkopt, 0 );
-    int lquery = (lwork == -1);
+    magma_int_t lwkopt = n * nb;
+    work[0] = magma_dmake_lwork( lwkopt );
+    bool lquery = (lwork == -1);
     if (ngpu < 0 || ngpu > MagmaMaxGPUs) {
         *info = -1;
     } else if (m < 0) {
@@ -159,14 +159,14 @@ magma_dgeqrf_m(
 
     if (m > nb && n > nb) {
         magma_queue_t queues[MagmaMaxGPUs];
-        for( int dev=0; dev < ngpu; dev++ ) {
+        for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_create( dev, &queues[dev] );
         }
 
         /* Copy the matrix to the GPUs in 1D block cyclic distribution */
         magma_dsetmatrix_1D_col_bcyclic(m, n, A, lda, da, ldda, ngpu, nb, queues);
-        for( int dev=0; dev < ngpu; dev++ ) {
+        for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_sync( queues[dev] );
         }
@@ -176,7 +176,7 @@ magma_dgeqrf_m(
 
         /* Copy the matrix back from the GPUs to the CPU */
         magma_dgetmatrix_1D_col_bcyclic(m, n, da, ldda, A, lda, ngpu, nb, queues);
-        for( int dev=0; dev < ngpu; dev++ ) {
+        for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_sync( queues[dev] );
             magma_queue_destroy( queues[dev] );

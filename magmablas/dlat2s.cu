@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlat2c.cu mixed zc -> ds, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlat2c.cu mixed zc -> ds, Fri Jan 22 21:42:03 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define PRECISION_d
 
@@ -241,19 +241,4 @@ magmablas_dlat2s_q(
     }
     
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
-}
-
-
-/**
-    @see magmablas_dlat2s_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dlat2s(
-    magma_uplo_t uplo, magma_int_t n,
-    magmaDouble_const_ptr  A, magma_int_t lda,
-    magmaFloat_ptr        SA, magma_int_t ldsa,
-    magma_int_t *info )
-{
-    magmablas_dlat2s_q( uplo, n, A, lda, SA, ldsa, magmablasGetQueue(), info );
 }

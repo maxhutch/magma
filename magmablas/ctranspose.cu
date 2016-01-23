@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztranspose.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/ztranspose.cu normal z -> c, Fri Jan 22 21:42:04 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define PRECISION_c
 
@@ -122,7 +122,7 @@ void ctranspose_kernel_batched(
 /**
     Purpose
     -------
-    ctranspose_q copies and transposes a matrix dA to matrix dAT.
+    ctranspose copies and transposes a matrix dA to matrix dAT.
     
     Same as ctranspose, but adds queue argument.
         
@@ -192,25 +192,9 @@ magmablas_ctranspose_q(
 
 
 /**
-    @see magmablas_ctranspose_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_ctranspose(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr dA,  magma_int_t ldda,
-    magmaFloatComplex_ptr       dAT, magma_int_t lddat )
-{
-    magmablas_ctranspose_q( m, n, dA, ldda, dAT, lddat, magmablasGetQueue() );
-}
-
-
-
-
-/**
     Purpose
     -------
-    ctranspose_batched_q copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
+    ctranspose_batched copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
     
     Same as ctranspose_batched, but adds queue argument.
         
@@ -254,7 +238,7 @@ magmablas_ctranspose(
     @ingroup magma_caux2
     ********************************************************************/
 extern "C" void
-magmablas_ctranspose_batched_q(
+magmablas_ctranspose_batched(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex **dA_array,  magma_int_t ldda,
     magmaFloatComplex **dAT_array, magma_int_t lddat,
@@ -284,19 +268,4 @@ magmablas_ctranspose_batched_q(
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ), batchCount );
     ctranspose_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA_array, ldda, dAT_array, lddat );
-}
-
-
-/**
-    @see magmablas_ctranspose_batched_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_ctranspose_batched(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex **dA_array,  magma_int_t ldda,
-    magmaFloatComplex **dAT_array, magma_int_t lddat,
-    magma_int_t batchCount )
-{
-    magmablas_ctranspose_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magmablasGetQueue() );
 }

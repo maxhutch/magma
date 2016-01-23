@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -182,7 +182,7 @@ magma_zstedx_m(
             liwmin = 3 + 5*n;
         }
 
-        rwork[0] = lrwmin;
+        rwork[0] = magma_dmake_lwork( lrwmin );
         iwork[0] = liwmin;
 
         if (lrwork < lrwmin && ! lquery) {
@@ -223,7 +223,7 @@ magma_zstedx_m(
             }
     }
 
-    rwork[0] = lrwmin;
+    rwork[0] = magma_dmake_lwork( lrwmin );
     iwork[0] = liwmin;
 
     return *info;

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,10 +9,10 @@
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zheevdx_2stage_m.cpp normal z -> d, Wed Jan  6 17:59:34 2016
+       @generated from src/zheevdx_2stage_m.cpp normal z -> d, Fri Jan 22 21:41:47 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #define REAL
@@ -59,7 +59,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA, N)
+    A       DOUBLE PRECISION array, dimension (LDA, N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -103,7 +103,7 @@
             If INFO = 0, the required m eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -291,11 +291,8 @@ magma_dsyevdx_2stage_m(
         liwmin = 1;
     }
 
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = MAGMA_D_MAKE( lwmin * one_eps, 0.);  // round up
-    rwork[0] = lrwmin * one_eps;
+    work[0]  = magma_dmake_lwork( lwmin );
+    rwork[0] = magma_dmake_lwork( lrwmin );
     iwork[0] = liwmin;
 
     if ((lwork < lwmin) && !lquery) {
@@ -314,10 +311,7 @@ magma_dsyevdx_2stage_m(
         liwmin = 1;
     }
 
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = lwmin * one_eps;
+    work[0]  = magma_dmake_lwork( lwmin );
     iwork[0] = liwmin;
 
     if ((lwork < lwmin) && !lquery) {
@@ -438,6 +432,7 @@ magma_dsyevdx_2stage_m(
     double *Wedc              = Wstg1 + n*n;
     magma_int_t lwedc         = 1 + 4*n + n*n; // lwork - indWEDC; //used only for wantz>0
     #endif
+    magma_int_t i;
 
     magma_timer_t time=0, time_total=0, time_alloc=0, time_dist=0, time_band=0;
     timer_start( time_total );
@@ -458,15 +453,14 @@ magma_dsyevdx_2stage_m(
     timer_start( time );
 #else
     magma_int_t nstream = max(3,ngpu+2);
-    magma_queue_t streams[MagmaMaxGPUs][20];
+    magma_queue_t queues[MagmaMaxGPUs][20];
     double *dA[MagmaMaxGPUs], *dT1[MagmaMaxGPUs];
     magma_int_t ldda = magma_roundup( n, 32 );
 
-    magma_int_t ver = 0;
     magma_int_t distblk = max(256, 4*nb);
 
     #ifdef ENABLE_DEBUG
-    printf("voici ngpu %d distblk %d NB %d nstream %d version %d \n ", ngpu, distblk, nb, nstream, ver);
+    printf("voici ngpu %d distblk %d NB %d nstream %d\n ", ngpu, distblk, nb, nstream);
     #endif
 
     timer_start( time_alloc );
@@ -476,23 +470,31 @@ magma_dsyevdx_2stage_m(
         // TODO check malloc
         magma_dmalloc(&dA[dev], ldda*mlocal );
         magma_dmalloc(&dT1[dev], (n*nb) );
-        for( int i = 0; i < nstream; ++i ) {
-            magma_queue_create( &streams[dev][i] );
+        for( i = 0; i < nstream; ++i ) {
+            magma_queue_create( dev, &queues[dev][i] );
         }
     }
     timer_stop( time_alloc );
     
     timer_start( time_dist );
-    magma_dsetmatrix_1D_col_bcyclic( n, n, A, lda, dA, ldda, ngpu, distblk );
+    magma_queue_t distqueues[MagmaMaxGPUs];
+    for( magma_int_t dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_create( dev, &distqueues[dev] );
+    }
+    magma_dsetmatrix_1D_col_bcyclic( n, n, A, lda, dA, ldda, ngpu, distblk, distqueues );
+    for( magma_int_t dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_sync( distqueues[dev] );
+        magma_queue_destroy( distqueues[dev] );
+    }
+
     magma_setdevice(0);
     timer_stop( time_dist );
 
     timer_start( time_band );
-    if (ver == 30) {
-        magma_dsytrd_sy2sb_mgpu_spec(uplo, n, nb, A, lda, TAU1, Wstg1, lwstg1, dA, ldda, dT1, nb, ngpu, distblk, streams, nstream, info);
-    } else {
-        magma_dsytrd_sy2sb_mgpu(uplo, n, nb, A, lda, TAU1, Wstg1, lwstg1, dA, ldda, dT1, nb, ngpu, distblk, streams, nstream, info);
-    }
+    magma_dsytrd_sy2sb_mgpu( uplo, n, nb, A, lda, TAU1, Wstg1, lwstg1, dA, ldda,
+                             dT1, nb, ngpu, distblk, queues, nstream, info );
     timer_stop( time_band );
     timer_printf("    time alloc %7.4f, ditribution %7.4f, dsytrd_sy2sb_m only = %7.4f\n", time_alloc, time_dist, time_band );
 
@@ -500,8 +502,9 @@ magma_dsyevdx_2stage_m(
         magma_setdevice( dev );
         magma_free( dA[dev] );
         magma_free( dT1[dev] );
-        for( int i = 0; i < nstream; ++i ) {
-            magma_queue_destroy( streams[dev][i] );
+        for( i = 0; i < nstream; ++i ) {
+            magma_queue_sync( queues[dev][i] );
+            magma_queue_destroy( queues[dev][i] );
         }
     }
 #endif // not SINGLEGPU
@@ -550,10 +553,23 @@ magma_dsyevdx_2stage_m(
     else {
         timer_start( time_total );
         timer_start( time );
-        
+
+#ifdef SINGLEGPU
+        double* dwedc;
+        if (MAGMA_SUCCESS != magma_dmalloc( &dwedc, 3*n*(n/2 + 1) )) {
+            // TODO free dT1, etc. --- see goto cleanup in dlaex0_m.cpp, etc.
+            *info = MAGMA_ERR_DEVICE_ALLOC;
+            return *info;
+        }
+        magma_dstedx(range, n, vl, vu, il, iu, W, E,
+                     Z, ldz, Wedc, lwedc,
+                     iwork, liwork, dwedc, info);
+        magma_free( dwedc );
+#else
         magma_dstedx_m(ngpu, range, n, vl, vu, il, iu, W, E,
                      Z, ldz, Wedc, lwedc,
                      iwork, liwork, info);
+#endif
 
         timer_stop( time );
         timer_printf( "  N= %10d  nb= %5d time dstedx_m = %6.2f\n", (int)n, (int)nb, time );
@@ -584,20 +600,8 @@ magma_dsyevdx_2stage_m(
         timer_start( time );
 
 #ifdef SINGLEGPU
-        double *dAsgpu;
-        magma_int_t lddasgpu = n;
-
-        if (MAGMA_SUCCESS != magma_dmalloc( &dAsgpu, n*lddasgpu )) {
-            *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
-        }
-
-        magma_dsetmatrix( n, n, A, lda, dAsgpu, lddasgpu );
-
-        magma_dormqr_gpu_2stages(MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, dAsgpu+nb, lddasgpu,
-                                 dZ+nb, n, dT1sgpu, nb, info);
-
-        magma_dgetmatrix( n, *m, dZ, lddz, A, lda );
+        magma_dormqr( MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, A+nb, lda, TAU1,
+                       Z +ldz*(il-1)+nb, ldz, Wmqr1, lwmqr1, info);
 #else
         magma_dormqr_m(ngpu, MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, A+nb, lda, TAU1,
                        Z +ldz*(il-1)+nb, ldz, Wmqr1, lwmqr1, info);
@@ -610,7 +614,6 @@ magma_dsyevdx_2stage_m(
 #ifdef SINGLEGPU
         magma_free(dT1sgpu);
         magma_free(dZ);
-        magma_free(dAsgpu);
 #endif // not SINGLEGPU
 
         timer_stop( time_total );
@@ -628,9 +631,9 @@ magma_dsyevdx_2stage_m(
         blasf77_dscal(&imax, &d__1, W, &ione);
     }
 
-    work[0]  = MAGMA_D_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = magma_dmake_lwork( lwmin );
     #ifdef COMPLEX
-    rwork[0] = lrwmin * one_eps;
+    rwork[0] = magma_dmake_lwork( lrwmin );
     #endif
     iwork[0] = liwmin;
 

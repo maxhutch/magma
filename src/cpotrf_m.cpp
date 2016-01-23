@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zpotrf_m.cpp normal z -> c, Wed Jan  6 17:59:30 2016
+       @generated from src/zpotrf_m.cpp normal z -> c, Fri Jan 22 21:41:30 2016
 
 */
 #include <cuda_runtime.h>
@@ -95,7 +95,7 @@ magma_cpotrf_m(
     magmaFloatComplex     c_one     = MAGMA_C_ONE;
     magmaFloatComplex     c_neg_one = MAGMA_C_NEG_ONE;
     const char* uplo_  = lapack_uplo_const( uplo  );
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     magmaFloatComplex *dwork[MagmaMaxGPUs], *dt[MagmaMaxGPUs];
     magma_int_t     ldda, lddla, nb, iinfo, n_local[MagmaMaxGPUs], J2, d, ngpu0 = ngpu;

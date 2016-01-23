@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -44,7 +44,7 @@ int main( int argc, char** argv)
 
     real_Double_t   gflops, magma_perf, magma_time=0, cublas_perf=0, cublas_time=0, cpu_perf=0, cpu_time=0;
     double          magma_error, cublas_error, normx, normr, normA, work[1];
-    magma_int_t N, info;
+    magma_int_t i, j, s, N, info;
     magma_int_t Ak;
     magma_int_t sizeA, sizeB;
     magma_int_t lda, ldda;
@@ -101,14 +101,14 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A,       magmaDoubleComplex, ldda*Ak*batchCount );
             TESTING_MALLOC_DEV( d_b,       magmaDoubleComplex, N*batchCount  );
             
-            magma_malloc((void**)&d_A_array, batchCount * sizeof(*d_A_array));
-            magma_malloc((void**)&d_b_array, batchCount * sizeof(*d_b_array));
-            magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
+            TESTING_MALLOC_DEV( d_A_array,   magmaDoubleComplex*, batchCount );
+            TESTING_MALLOC_DEV( d_b_array,   magmaDoubleComplex*, batchCount );
+            TESTING_MALLOC_DEV( dwork_array, magmaDoubleComplex*, batchCount );
 
 
-            magmaDoubleComplex* dwork=NULL; // invA and work are workspace in ztrsm
+            magmaDoubleComplex_ptr dwork=NULL; // invA and work are workspace in ztrsm
             magma_int_t dwork_batchSize = N;
-            magma_zmalloc( &dwork, dwork_batchSize * batchCount );
+            TESTING_MALLOC_DEV( dwork, magmaDoubleComplex, dwork_batchSize * batchCount );
     
             magma_zset_pointer( dwork_array, dwork, N, 0, 0, dwork_batchSize, batchCount, opts.queue );
 
@@ -121,10 +121,10 @@ int main( int argc, char** argv)
              * (i.e., from U), while U fails when used with unit diagonal. */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, h_A );
 
-            for (int s=0; s < batchCount; s++) {
+            for (s=0; s < batchCount; s++) {
                 lapackf77_zgetrf( &Ak, &Ak, h_A + s * lda * Ak, &lda, ipiv, &info );
-                for( int j = 0; j < Ak; ++j ) {
-                    for( int i = 0; i < j; ++i ) {
+                for( j = 0; j < Ak; ++j ) {
+                    for( i = 0; i < j; ++i ) {
                         *h_A(i,j,s) = *h_A(j,i,s);
                     }
                 }
@@ -190,7 +190,7 @@ int main( int argc, char** argv)
                 magma_set_omp_numthreads(nthreads);
                 #pragma omp parallel for schedule(dynamic)
                 #endif
-                for (int s=0; s < batchCount; s++) {
+                for (s=0; s < batchCount; s++) {
                     blasf77_ztrsv(
                         lapack_uplo_const(opts.uplo),
                         lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
@@ -211,7 +211,7 @@ int main( int argc, char** argv)
             // ||b - Ax|| / (||A||*||x||)
             magma_error  = 0;
             cublas_error = 0;
-            for (int s=0; s < batchCount; s++) {
+            for (s=0; s < batchCount; s++) {
                 // error for CUBLAS
                 normA = lapackf77_zlange( "F", &N, &N, h_A + s * lda * Ak, &lda, work );
                 double err;
@@ -286,12 +286,11 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_b );
-            magma_free(d_A_array);
-            magma_free(d_b_array);
+            TESTING_FREE_DEV( d_A_array );
+            TESTING_FREE_DEV( d_b_array );
 
             TESTING_FREE_DEV( dwork );
-            magma_free(dwork_array);
-
+            TESTING_FREE_DEV( dwork_array );
             
             fflush( stdout );
         }

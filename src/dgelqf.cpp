@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgelqf.cpp normal z -> d, Wed Jan  6 17:59:31 2016
+       @generated from src/zgelqf.cpp normal z -> d, Fri Jan 22 21:41:37 2016
 
 */
 #include "magma_internal.h"
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    DGELQF computes an LQ factorization of a DOUBLE_PRECISION M-by-N matrix A:
+    DGELQF computes an LQ factorization of a DOUBLE PRECISION M-by-N matrix A:
     A = L * Q.
 
     Arguments
@@ -29,7 +29,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, the elements on and below the diagonal of the array
             contain the m-by-min(m,n) lower trapezoidal matrix L (L is
@@ -45,12 +45,12 @@
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[out]
-    tau     DOUBLE_PRECISION array, dimension (min(M,N))
+    tau     DOUBLE PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -100,7 +100,7 @@ magma_dgelqf(
     
     /* Constants */
     const double c_one = MAGMA_D_ONE;
-    const magma_int_t ione  = 1;
+    const magma_int_t ione = 1;
     MAGMA_UNUSED( ione );  // used only for real
     
     /* Local variables */
@@ -113,7 +113,7 @@ magma_dgelqf(
     nb = magma_get_dgelqf_nb( m, n );
     min_mn = min( m, n );
 
-    work[0] = MAGMA_D_MAKE( (double)(m*nb), 0 );
+    work[0] = magma_dmake_lwork( m*nb );
     bool lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;

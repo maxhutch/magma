@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zlabrd_gpu.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/zlabrd_gpu.cpp normal z -> d, Fri Jan 22 21:41:53 2016
 
 */
 #include "magma_internal.h"
@@ -43,7 +43,7 @@
             The number of leading rows and columns of A to be reduced.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the m by n general matrix to be reduced.
             On exit, the first NB rows and columns of the matrix are
             overwritten; the rest of the array is unchanged.
@@ -67,7 +67,7 @@
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             Copy of A on GPU.
 
     @param[in]
@@ -75,27 +75,27 @@
             The leading dimension of the array dA.  LDDA >= max(1,M).
 
     @param[out]
-    d       DOUBLE_PRECISION array, dimension (NB)
+    d       DOUBLE PRECISION array, dimension (NB)
             The diagonal elements of the first NB rows and columns of
             the reduced matrix.  D(i) = A(i,i).
 
     @param[out]
-    e       DOUBLE_PRECISION array, dimension (NB)
+    e       DOUBLE PRECISION array, dimension (NB)
             The off-diagonal elements of the first NB rows and columns of
             the reduced matrix.
 
     @param[out]
-    tauq    DOUBLE_PRECISION array dimension (NB)
+    tauq    DOUBLE PRECISION array dimension (NB)
             The scalar factors of the elementary reflectors which
             represent the orthogonal matrix Q. See Further Details.
 
     @param[out]
-    taup    DOUBLE_PRECISION array, dimension (NB)
+    taup    DOUBLE PRECISION array, dimension (NB)
             The scalar factors of the elementary reflectors which
             represent the orthogonal matrix P. See Further Details.
 
     @param[out]
-    X       DOUBLE_PRECISION array, dimension (LDX,NB)
+    X       DOUBLE PRECISION array, dimension (LDX,NB)
             The m-by-nb matrix X required to update the unreduced part
             of A.
 
@@ -104,7 +104,7 @@
             The leading dimension of the array X. LDX >= M.
 
     @param[out]
-    dX      DOUBLE_PRECISION array, dimension (LDDX,NB)
+    dX      DOUBLE PRECISION array, dimension (LDDX,NB)
             Copy of X on GPU.
 
     @param[in]
@@ -112,7 +112,7 @@
             The leading dimension of the array dX. LDDX >= M.
 
     @param[out]
-    Y       DOUBLE_PRECISION array, dimension (LDY,NB)
+    Y       DOUBLE PRECISION array, dimension (LDY,NB)
             The n-by-nb matrix Y required to update the unreduced part
             of A.
 
@@ -121,7 +121,7 @@
             The leading dimension of the array Y. LDY >= N.
 
     @param[out]
-    dY      DOUBLE_PRECISION array, dimension (LDDY,NB)
+    dY      DOUBLE PRECISION array, dimension (LDDY,NB)
             Copy of Y on GPU.
 
     @param[in]
@@ -129,7 +129,7 @@
             The leading dimension of the array dY. LDDY >= N.
 
     @param
-    work    DOUBLE_PRECISION array, dimension (LWORK)
+    work    DOUBLE PRECISION array, dimension (LWORK)
             Workspace.
 
     @param[in]

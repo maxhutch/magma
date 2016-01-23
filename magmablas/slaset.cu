@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlaset.cu normal z -> s, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlaset.cu normal z -> s, Fri Jan 22 21:42:02 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 // To deal with really large matrices, this launchs multiple super blocks,
@@ -363,20 +363,6 @@ void magmablas_slaset_q(
             }
         }
     }
-}
-
-
-/**
-    @see magmablas_slaset_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C"
-void magmablas_slaset(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    float offdiag, float diag,
-    magmaFloat_ptr dA, magma_int_t ldda )
-{
-    magmablas_slaset_q( uplo, m, n, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        @author Tingxing Dong
        @author Ahmad Abdelfattah
        
-       @generated from src/zgetri_outofplace_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from src/zgetri_outofplace_batched.cpp normal z -> d, Fri Jan 22 21:41:55 2016
 */
 
 #include "magma_internal.h"
@@ -36,7 +36,7 @@
 
     @param[in,out]
     dA_array Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the factors L and U from the factorization
             A = P*L*U as computed by DGETRF_GPU.
             On exit, if INFO = 0, the inverse of the original matrix A.
@@ -53,7 +53,7 @@
 
     @param[out]
     dinvA_array Array of pointers, dimension (batchCount).
-            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDIA,N)
+            Each is a DOUBLE PRECISION array on the GPU, dimension (LDDIA,N)
             It contains the inverse of the matrix
   
     @param[in]

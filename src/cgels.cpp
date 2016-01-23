@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgels.cpp normal z -> c, Wed Jan  6 17:59:31 2016
+       @generated from src/zgels.cpp normal z -> c, Fri Jan 22 21:41:37 2016
 
 */
 #include "magma_internal.h"
@@ -96,7 +96,7 @@ magma_cgels(
     magma_int_t lwkopt = max( n*nb, 2*nb*nb ); // (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
 
-    hwork[0] = MAGMA_C_MAKE( (float)lwkopt, 0. );
+    hwork[0] = magma_cmake_lwork( lwkopt );
 
     *info = 0;
     /* For now, N is the only case working */
@@ -124,7 +124,7 @@ magma_cgels(
 
     k = min(m,n);
     if (k == 0) {
-        hwork[0] = MAGMA_C_ONE;
+        hwork[0] = c_one;
         return *info;
     }
 

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -498,8 +498,8 @@ magma_zmdotc(
     // not necessary to zero GPU mem
     magma_zgpumemzero<<<Gs, Bs, 0, queue->cuda_stream >>>( d1, n*k,1 );
     magma_zgpumemzero<<<Gs, Bs, 0, queue->cuda_stream >>>( d2, n*k,1 );
-    //magmablas_zlaset( MagmaUpperLower, n, k, d1, n );
-    //magmablas_zlaset( MagmaUpperLower, n, k, d2, n );
+    //magmablas_zlaset( MagmaFull, n, k, d1, n );
+    //magmablas_zlaset( MagmaFull, n, k, d2, n );
     while( Gs.x > 1 ) {
         Gs_next.x = magma_ceildiv( Gs.x, Bs.x );
         magma_zblockreduce_kernel<<< Gs_next.x, Bs.x, Ms, queue->cuda_stream >>> 

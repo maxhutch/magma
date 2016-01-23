@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgels_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgels_gpu.cpp normal z -> d, Fri Jan 22 21:41:33 2016
 
 */
 #include "magma_internal.h"
@@ -39,7 +39,7 @@
             The number of columns of the matrix C. NRHS >= 0.
 
     @param[in,out]
-    dA       DOUBLE_PRECISION array on the GPU, dimension (LDA,N)
+    dA       DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the M-by-N matrix A.
             On exit, A is overwritten by details of its QR
             factorization as returned by DGEQRF.
@@ -49,7 +49,7 @@
             The leading dimension of the array A, LDDA >= M.
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+    dB      DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
             On entry, the M-by-NRHS matrix C.
             On exit, the N-by-NRHS solution matrix X.
 
@@ -58,7 +58,7 @@
             The leading dimension of the array dB. LDDB >= M.
 
     @param[out]
-    hwork   (workspace) DOUBLE_PRECISION array, dimension MAX(1,LWORK).
+    hwork   (workspace) DOUBLE PRECISION array, dimension MAX(1,LWORK).
             On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -93,7 +93,7 @@ magma_dgels_gpu(
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
 
-    hwork[0] = MAGMA_D_MAKE( (double)lwkopt, 0. );
+    hwork[0] = magma_dmake_lwork( lwkopt );
 
     *info = 0;
     /* For now, N is the only case working */

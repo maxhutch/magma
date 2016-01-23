@@ -21,7 +21,7 @@ int main( int argc, char** argv )
     
     printf( "nb       %d\n", (int) opts.nb       );
     printf( "nrhs     %d\n", (int) opts.nrhs     );
-    printf( "nstream  %d\n", (int) opts.nstream  );
+    printf( "nqueue   %d\n", (int) opts.nqueue   );
     printf( "ngpu     %d\n", (int) opts.ngpu     );
     printf( "niter    %d\n", (int) opts.niter    );
     printf( "nthread  %d\n", (int) opts.nthread  );

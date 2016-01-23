@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgesv_rbt.cpp normal z -> s, Wed Jan  6 17:59:30 2016
+       @generated from src/zgesv_rbt.cpp normal z -> s, Fri Jan 22 21:41:32 2016
 
 */
 #include "magma_internal.h"
@@ -83,7 +83,7 @@ magma_sgesv_rbt(
     magma_int_t nn = magma_roundup( n, 4 );  // n + ((4-(n % 4))%4);
     float *hu=NULL, *hv=NULL;
     magmaFloat_ptr dA=NULL, dB=NULL, dAo=NULL, dBo=NULL, dwork=NULL, dv=NULL;
-    magma_int_t iter;
+    magma_int_t i, iter;
     magma_queue_t queue=NULL;
     
     /* Function Body */
@@ -172,7 +172,7 @@ magma_sgesv_rbt(
 
     magma_ssetvector( 2*nn, hv, 1, dv, 1, queue );
     
-    for (int i = 0; i < nrhs; i++) {
+    for (i = 0; i < nrhs; i++) {
         magmablas_sprbt_mv( nn, dv, dB+(i*nn), queue );
     }
 

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlacpy.cu normal z -> c, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlacpy.cu normal z -> c, Fri Jan 22 21:41:59 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 // To deal with really large matrices, this launchs multiple super blocks,
 // each with up to 64K-1 x 64K-1 thread blocks, which is up to 4194240 x 4194240 matrix with BLK=64.
@@ -343,20 +343,6 @@ magmablas_clacpy_q(
             }
         }
     }
-}
-
-
-/**
-    @see magmablas_clacpy_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_clacpy(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_ptr       dB, magma_int_t lddb )
-{
-    magmablas_clacpy_q( uplo, m, n, dA, ldda, dB, lddb, magmablasGetQueue() );
 }
 
 

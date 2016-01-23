@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/ztranspose_inplace.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/ztranspose_inplace.cu normal z -> d, Fri Jan 22 21:42:04 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 16
 
@@ -153,7 +153,7 @@ __global__ void dtranspose_inplace_even(
             The number of rows & columns of the matrix dA.  N >= 0.
     
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The N-by-N matrix dA.
             On exit, dA(j,i) = dA_original(i,j), for 0 <= i,j < N.
     
@@ -197,17 +197,4 @@ magmablas_dtranspose_inplace_q(
         dim3 grid( nblock+1, nblock/2 );
         dtranspose_inplace_even<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
-}
-
-
-/**
-    @see magmablas_dtranspose_inplace_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dtranspose_inplace(
-    magma_int_t n,
-    magmaDouble_ptr dA, magma_int_t ldda )
-{
-    magmablas_dtranspose_inplace_q( n, dA, ldda, magmablasGetQueue() );
 }

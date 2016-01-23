@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -79,29 +79,31 @@ magma_zhetrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
                    magma_int_t *ipiv, magma_int_t *info)
 {
 #define A(i, j)  (A    + (j)*nb*lda  + (i)*nb)
-#define dA(i, j) (work + (j)*nb*ldda + (i)*nb)
-#define dT(i, j) (work + (j)*nb*ldda + (i)*nb)
-#define dL(i, j) ((i == j) ? (dL + (i)*nb) : (work + (j-1)*nb*ldda + (i)*nb))
+#define dA(i, j) (dwork + (j)*nb*ldda + (i)*nb)
+#define dT(i, j) (dwork + (j)*nb*ldda + (i)*nb)
+#define dL(i, j) ((i == j) ? (dL + (i)*nb) : (dwork + (j-1)*nb*ldda + (i)*nb))
 #define dH(i, j) (dH   + (i)*nb)
 #define dW(i)    (dW   + (i)*nb*nb)
 #define dX(i)    (dX   + (i)*nb*nb)
 #define dY(i)    (dY   + (i)*nb*nb)
 //#define dW(i)    (dW   + (i)*nb)
 
-#define da(i, j) (work + (j)*ldda + (i))
+#define da(i, j) (dwork + (j)*ldda + (i))
 #define dw(i)    (dW   + (i))
-#define dl(i,j)  (work + (i) + (j)*ldda)
+#define dl(i,j)  (dwork + (i) + (j)*ldda)
 
+    /* Constants */
+    const double d_one  = 1.0;
+    const magmaDoubleComplex c_one  = MAGMA_Z_ONE;
+    const magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    const magmaDoubleComplex c_half = MAGMA_Z_MAKE(0.5, 0.0);
+    
     /* Local variables */
     magma_int_t        ldda, iinfo;
-    double d_one  = 1.0;
-    magmaDoubleComplex    c_one  = MAGMA_Z_ONE;
-    magmaDoubleComplex    c_zero = MAGMA_Z_ZERO;
-    magmaDoubleComplex    c_neg_one = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex    c_half = MAGMA_Z_MAKE(0.5, 0.0);
-    magmaDoubleComplex   *work, *dH, *dW, *dX, *dY, *dL;
+    magmaDoubleComplex_ptr dwork, dH, dW, dX, dY, dL;
     magma_int_t nb = magma_get_zhetrf_aasen_nb(n);
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     *info = 0;
     // if (! upper && uplo != MagmaLower) {
@@ -128,7 +130,7 @@ magma_zhetrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
 
     magma_device_t cdev;
     magma_getdevice( &cdev );
-    for (int i=0; i < num_queues; i++) {
+    for (magma_int_t i=0; i < num_queues; i++) {
         magma_queue_create( cdev, &queues[i] );
         magma_event_create( &events[i]  );
     }
@@ -136,7 +138,7 @@ magma_zhetrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
     /* TODO fix memory leaks, e.g., if last malloc fails */
     magma_int_t lddw = nb*(1+magma_ceildiv(n, nb));
     ldda = magma_roundup(n, 32);
-    if (MAGMA_SUCCESS != magma_zmalloc( &work, magma_roundup(n, nb) *ldda ) ||
+    if (MAGMA_SUCCESS != magma_zmalloc( &dwork, magma_roundup(n, nb) *ldda ) ||
         MAGMA_SUCCESS != magma_zmalloc( &dH,   (2*nb)*ldda ) ||
         MAGMA_SUCCESS != magma_zmalloc( &dL,   nb*ldda ) ||
         MAGMA_SUCCESS != magma_zmalloc( &dX,   nb*lddw ) ||
@@ -378,7 +380,7 @@ magma_zhetrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
                         magma_igetvector_async( min(ib,jb), dipiv_magma, 1, &ipiv[(1+j)*nb], 1, queues[0]);
                         magma_queue_sync( queues[0] );
                         #else
-                        magma_zgetf2_gpu( ib, jb, dA(j+1,j), ldda, &ipiv[(1+j)*nb], &iinfo);
+                        magma_zgetf2_gpu( ib, jb, dA(j+1,j), ldda, &ipiv[(1+j)*nb], queues[0], &iinfo );
                         #endif
                     }
                     // save L(j+1,j+1), and make it to unit-lower triangular
@@ -454,7 +456,7 @@ magma_zhetrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
         }
     }
     
-    for (int i=0; i < num_queues; i++) {
+    for (magma_int_t i=0; i < num_queues; i++) {
         magma_queue_sync( queues[i] );
         magma_queue_destroy( queues[i] );
         magma_event_destroy( events[i] );
@@ -470,7 +472,7 @@ magma_zhetrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
     magma_free_pinned(rows);
     magma_free_cpu(perm);
 
-    magma_free( work );
+    magma_free( dwork );
     magma_free( dH );
     magma_free( dL );
     magma_free( dX );

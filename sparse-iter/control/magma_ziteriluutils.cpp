@@ -1,5 +1,5 @@
 /*
-    -- micMAGMA (version 2.0.0-beta2) --
+    -- micMAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver

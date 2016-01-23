@@ -7,5 +7,5 @@ var group__magma__zgeev__comp =
     [ "magma_ztrevc3_mt", "group__magma__zgeev__comp.html#ga1f0e1380c51ab50558db79e723795f18", null ],
     [ "magma_zunghr", "group__magma__zgeev__comp.html#gab299c0844d352d94c5f1070cf358db63", null ],
     [ "magma_zunghr_m", "group__magma__zgeev__comp.html#ga228476d1a2bc93028785b610a6f52848", null ],
-    [ "ztrevc3", "group__magma__zgeev__comp.html#gaa30824d947f1dc5fce5aef43aaa754cf", null ]
+    [ "ztrevc3", "group__magma__zgeev__comp.html#ga66e85621c715ab3b2eb21b1a264983a3", null ]
 ];

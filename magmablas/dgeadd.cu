@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgeadd.cu normal z -> d, Wed Jan  6 17:59:36 2016
+       @generated from magmablas/zgeadd.cu normal z -> d, Fri Jan 22 21:41:58 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -69,11 +69,11 @@ void dgeadd_full(
             The number of columns of the matrix dA.  N >= 0.
     
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             The scalar alpha.
             
     @param[in]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The m by n matrix dA.
     
     @param[in]
@@ -81,7 +81,7 @@ void dgeadd_full(
             The leading dimension of the array dA.  LDDA >= max(1,M).
             
     @param[in,out]
-    dB      DOUBLE_PRECISION array, dimension (LDDB,N)
+    dB      DOUBLE PRECISION array, dimension (LDDB,N)
             The m by n matrix dB.
     
     @param[in]
@@ -125,19 +125,4 @@ magmablas_dgeadd_q(
     
     dgeadd_full<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, alpha, dA, ldda, dB, lddb );
-}
-
-
-/**
-    @see magmablas_dgeadd_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dgeadd(
-    magma_int_t m, magma_int_t n,
-    double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr       dB, magma_int_t lddb )
-{
-    magmablas_dgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

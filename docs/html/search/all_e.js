@@ -111,7 +111,6 @@ var searchData=
   ['single_20precision',['single precision',['../group__magmasparse__ssyev.html',1,'']]],
   ['single_20precision',['single precision',['../group__magmasparse__ssygpuk.html',1,'']]],
   ['s_5ftranspose_5fcsr',['s_transpose_csr',['../group__magmasparse__saux.html#ga8bdf7aeb061631c6b465a0225afbd0e7',1,'magma_smtranspose.cpp']]],
-  ['sgeqrf_5fcopy_5fupper_5fbatched',['sgeqrf_copy_upper_batched',['../group__magma__sgeqrf__aux.html#ga888f903ca9ec1157060509f0e8062352',1,'sgeqr2_kernels.cu']]],
   ['sparse',['Sparse',['../group__sparse.html',1,'']]],
   ['sparse_2diter',['Sparse-Iter',['../sparse-iter.html',1,'']]],
   ['sparse_20auxiliary',['Sparse auxiliary',['../group__sparse__aux.html',1,'']]],

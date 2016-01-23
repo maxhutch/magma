@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -16,7 +16,7 @@
        It's convenient to have separate files for lower & upper, to diff the sources.
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "ztrtri.cuh"
 
 
@@ -30,7 +30,7 @@ static __device__ void
 ztrtri_diag_upper_device(
     magma_diag_t diag, int n, const magmaDoubleComplex *A, int lda, magmaDoubleComplex *d_dinvA)
 {
-    int tx   = threadIdx.x;
+    int tx = threadIdx.x;
     int bx = blockIdx.x;
     int blk_ind = bx*IB;
     //int ind = blk_ind + tx;

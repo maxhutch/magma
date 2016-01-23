@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -207,18 +207,4 @@ magmablas_zlaset_band_q(
         dim3 grid( magma_ceildiv( min(m,n), NB ) );
         zlaset_band_lower<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_zlaset_band_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zlaset_band(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda)
-{
-    magmablas_zlaset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }

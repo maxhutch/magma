@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -73,8 +73,8 @@ void gemvc_template_batched(
     T beta, T** dy_array, magma_int_t incy,
     magma_int_t batchCount, magma_queue_t queue)
 {
-    dim3 grid    ( 1, magma_ceildiv(n, TILE_SIZE), batchCount );                                                
-    dim3 threads ( DIM_X, DIM_Y);
+    dim3 grid    ( magma_ceildiv(n, TILE_SIZE), 1, batchCount );                                                
+    dim3 threads ( DIM_X, DIM_Y );
     
     if (trans == MagmaConjTrans)
     {                         

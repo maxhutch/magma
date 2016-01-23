@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,10 +9,8 @@
 
        @precisions normal z -> s d c
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
-
-#define PRECISION_z
 
 #define num_threads 256
 
@@ -33,7 +31,7 @@ zgemv_conj_kernel(
         
         #pragma unroll
         for( int i=0; i < n; i ++ ) {
-            res += A[0] * MAGMA_Z_CNJG(x[0]);
+            res += A[0] * MAGMA_Z_CONJ(x[0]);
             A += lda;
             x += incx;
         }
@@ -127,21 +125,4 @@ magmablas_zgemv_conj_q(
 
     zgemv_conj_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
             (m, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
-}
-
-
-/**
-    @see magmablas_zgemv_conj_q
-    @ingroup magma_zblas2
-    ********************************************************************/
-extern "C" void
-magmablas_zgemv_conj(
-    magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr dy, magma_int_t incy)
-{
-    magmablas_zgemv_conj_q(
-        m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magmablasGetQueue() );
 }

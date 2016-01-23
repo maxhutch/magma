@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -36,7 +36,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex_ptr d_A, d_B;
     magmaDoubleComplex **hAarray, **hBarray, **dAarray, **dBarray;
     magmaDoubleComplex alpha = MAGMA_Z_MAKE( 3.1415, 2.718 );
-    magma_int_t M, N, mb, nb, size, lda, ldda, mstride, nstride, ntile;
+    magma_int_t j, M, N, mb, nb, size, lda, ldda, mstride, nstride, ntile, offset, tile;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
@@ -51,7 +51,7 @@ int main( int argc, char** argv)
     nstride = 3*nb;
     
     printf("%% mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
-    printf("%%   M     N ntile   CPU GFlop/s (ms)    GPU GFlop/s (ms)    error   \n");
+    printf("%%   M     N ntile   CPU Gflop/s (ms)    GPU Gflop/s (ms)    error   \n");
     printf("%%===================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -89,17 +89,16 @@ int main( int argc, char** argv)
             magma_zsetmatrix( M, N, h_B, lda, d_B, ldda );
             
             // setup pointers
-            for( int tile = 0; tile < ntile; ++tile ) {
-                int offset = tile*mstride + tile*nstride*ldda;
+            for( tile = 0; tile < ntile; ++tile ) {
+                offset = tile*mstride + tile*nstride*ldda;
                 hAarray[tile] = &d_A[offset];
                 hBarray[tile] = &d_B[offset];
             }
             magma_setvector( ntile, sizeof(magmaDoubleComplex*), hAarray, 1, dAarray, 1 );
             magma_setvector( ntile, sizeof(magmaDoubleComplex*), hBarray, 1, dBarray, 1 );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_zgeadd_batched( mb, nb, alpha, dAarray, ldda, dBarray, ldda, ntile );
+            magmablas_zgeadd_batched( mb, nb, alpha, dAarray, ldda, dBarray, ldda, ntile, opts.queue );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             
@@ -107,9 +106,9 @@ int main( int argc, char** argv)
                Performs operation using LAPACK
                =================================================================== */
             cpu_time = magma_wtime();
-            for( int tile = 0; tile < ntile; ++tile ) {
-                int offset = tile*mstride + tile*nstride*lda;
-                for( int j = 0; j < nb; ++j ) {
+            for( tile = 0; tile < ntile; ++tile ) {
+                offset = tile*mstride + tile*nstride*lda;
+                for( j = 0; j < nb; ++j ) {
                     blasf77_zaxpy( &mb, &alpha,
                                    &h_A[offset + j*lda], &ione,
                                    &h_B[offset + j*lda], &ione );

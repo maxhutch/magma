@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zlanhe.cpp normal z -> d, Wed Jan  6 17:59:47 2016
+       @generated from testing/testing_zlanhe.cpp normal z -> d, Fri Jan 22 21:42:35 2016
        @author Mark Gates
 */
 // includes, system
@@ -89,7 +89,7 @@ int main( int argc, char** argv)
     // because MAGMA doesn't implement Frobenius norm yet.
     MKLVersion mkl_version;
     mkl_get_version( &mkl_version );
-    int la_threads = magma_get_lapack_numthreads();
+    magma_int_t la_threads = magma_get_lapack_numthreads();
     bool mkl_single_thread = (mkl_version.MajorVersion <= 11 && mkl_version.MinorVersion < 2);
     if ( mkl_single_thread ) {
         printf( "\nNote: using single thread to work around MKL dlansy bug.\n\n" );
@@ -154,9 +154,10 @@ int main( int argc, char** argv)
                 &N, h_A, &lda, h_work );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
-            if (norm_lapack < 0)
+            if (norm_lapack < 0) {
                 printf("lapackf77_dlansy returned error %f: %s.\n",
                        norm_lapack, magma_strerror( (int) norm_lapack ));
+            }
             
             /* =====================================================================
                Check the result compared to LAPACK

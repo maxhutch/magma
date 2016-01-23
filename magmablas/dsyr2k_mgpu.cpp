@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zher2k_mgpu.cpp normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zher2k_mgpu.cpp normal z -> d, Fri Jan 22 21:42:07 2016
        @author Mark Gates
        @author Azzam Haidar 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -218,10 +218,8 @@ void magmablas_dsyr2k_mgpu2(
     
     magma_int_t ib, ioff, iblock, idev, di, s;
     
-    magma_device_t cdev;
-    magma_queue_t cqueue;
-    magma_getdevice( &cdev );
-    magmablasGetKernelStream( &cqueue );
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
     
     // loop over all blocks
     // Faster to have two loops: first loop does C_hat = alpha*A*B**H + beta*C
@@ -236,14 +234,13 @@ void magmablas_dsyr2k_mgpu2(
         
         magma_setdevice( idev );
         s = iblock % nqueue;
-        magmablasSetKernelStream( queues[ idev ][ s ] );
         
         // C[i:n,i] = alpha * A[i:n,0] * B[i,0]' + beta*C[i:n,i]
         //printf( "dgemm  n=%4d, ib=%4d, k=%4d, i=%4d\n", n-i, ib, k, i );
         magma_dgemm( MagmaNoTrans, MagmaTrans, n-i, ib, k,
                      alpha, dA(idev,i,0), ldda,
                             dB(idev,i,0), lddb,
-                     cbeta, dC(idev,ioff,di), lddc );
+                     cbeta, dC(idev,ioff,di), lddc, queues[idev][s] );
         blockoffset = 0;
     }
     
@@ -259,17 +256,15 @@ void magmablas_dsyr2k_mgpu2(
         
         magma_setdevice( idev );
         s = iblock % nqueue;
-        magmablasSetKernelStream( queues[ idev ][ s ] );
         
         // C[i:n,i] += conj(alpha) * B[i:n,0] * A[i,0]'
         //printf( "dgemm  n=%4d, ib=%4d, k=%4d, i=%4d\n", n-i, ib, k, i );
         magma_dgemm( MagmaNoTrans, MagmaTrans, n-i, ib, k,
                      alpha, dB(idev,i,0), lddb,
                             dA(idev,i,0), ldda,
-                     c_one, dC(idev,ioff,di), lddc );
+                     c_one, dC(idev,ioff,di), lddc, queues[idev][s] );
         blockoffset = 0;
     }
     
-    magma_setdevice( cdev );
-    magmablasSetKernelStream( cqueue );
+    magma_setdevice( orig_dev );
 }

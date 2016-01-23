@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zsymmetrize_tiles.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zsymmetrize_tiles.cu normal z -> d, Fri Jan 22 21:42:04 2016
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -35,7 +35,7 @@ dsymmetrize_tiles_lower( int m, double *dA, int ldda, int mstride, int nstride )
         dAT += i*ldda;
         double *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dAT = MAGMA_D_CNJG(*dA);  // upper := lower
+            *dAT = MAGMA_D_CONJ(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
@@ -58,7 +58,7 @@ dsymmetrize_tiles_upper( int m, double *dA, int ldda, int mstride, int nstride )
         dAT += i*ldda;
         double *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dA  = MAGMA_D_CNJG(*dAT);  // lower := upper
+            *dA  = MAGMA_D_CONJ(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
@@ -89,7 +89,7 @@ dsymmetrize_tiles_upper( int m, double *dA, int ldda, int mstride, int nstride )
             The number of rows & columns of each square block of dA.  M >= 0.
     
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array, dimension (LDDA,N)
             The matrix dA. N = m + nstride*(ntile-1).
     
     @param[in]
@@ -161,18 +161,4 @@ magmablas_dsymmetrize_tiles_q(
             <<< grid, threads, 0, queue->cuda_stream() >>>
             ( m, dA, ldda, mstride, nstride );
     }
-}
-
-
-/**
-    @see magmablas_dsymmetrize_tiles_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C" void
-magmablas_dsymmetrize_tiles(
-    magma_uplo_t uplo, magma_int_t m,
-    magmaDouble_ptr dA, magma_int_t ldda,
-    magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
-{
-    magmablas_dsymmetrize_tiles_q( uplo, m, dA, ldda, ntile, mstride, nstride, magmablasGetQueue() );
 }

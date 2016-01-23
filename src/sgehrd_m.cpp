@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgehrd_m.cpp normal z -> s, Wed Jan  6 17:59:35 2016
+       @generated from src/zgehrd_m.cpp normal z -> s, Fri Jan 22 21:41:52 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -146,11 +146,11 @@ magma_sgehrd_m(
     magma_int_t lquery;
     struct sgehrd_data data;
 
-    int ngpu = magma_num_gpus();
+    magma_int_t ngpu = magma_num_gpus();
     
     *info = 0;
     iws = n*(nb + nb*ngpu);
-    work[0] = MAGMA_S_MAKE( iws, 0 );
+    work[0] = magma_smake_lwork( iws );
 
     lquery = (lwork == -1);
     if (n < 0) {
@@ -302,7 +302,7 @@ magma_sgehrd_m(
     // add 1 to i for 1-based index
     i += 1;
     lapackf77_sgehd2(&n, &i, &ihi, A, &lda, tau, work, &iinfo);
-    work[0] = MAGMA_S_MAKE( iws, 0 );
+    work[0] = magma_smake_lwork( iws );
     
 CLEANUP:
     for( d = 0; d < ngpu; ++d ) {

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -1097,6 +1097,7 @@ magma_zgeqr2_gpu(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr dtau,
     magmaDouble_ptr        dwork,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1233,6 +1234,7 @@ magma_int_t
 magma_zgetf2_gpu(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1389,18 +1391,6 @@ magma_zhetrd_he2hb_mgpu(
     magma_int_t *info);
 
 magma_int_t
-magma_zhetrd_he2hb_mgpu_spec(
-    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-    magmaDoubleComplex *A, magma_int_t lda,
-    magmaDoubleComplex *tau,
-    magmaDoubleComplex *work, magma_int_t lwork,
-    magmaDoubleComplex_ptr dAmgpu[], magma_int_t ldda,
-    magmaDoubleComplex_ptr dTmgpu[], magma_int_t lddt,
-    magma_int_t ngpu, magma_int_t distblk,
-    magma_queue_t queues[][20], magma_int_t nqueue,
-    magma_int_t *info);
-
-magma_int_t
 magma_zhetrd_mgpu(
     magma_int_t ngpu, magma_int_t nqueue,
     magma_uplo_t uplo, magma_int_t n,
@@ -1473,7 +1463,8 @@ magma_int_t
 magma_zlarf_gpu(
     magma_int_t m,  magma_int_t n,
     magmaDoubleComplex_const_ptr dv, magmaDoubleComplex_const_ptr dtau,
-    magmaDoubleComplex_ptr dC,  magma_int_t lddc);
+    magmaDoubleComplex_ptr dC, magma_int_t lddc,
+    magma_queue_t queue );
 
 // in zgeqr2x_gpu-v3.cpp
 magma_int_t
@@ -1516,6 +1507,7 @@ magma_int_t
 magma_zpotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1662,6 +1654,9 @@ extern const magmaDoubleComplex MAGMA_Z_INF;
 int magma_z_isnan( magmaDoubleComplex x );
 int magma_z_isinf( magmaDoubleComplex x );
 int magma_z_isnan_inf( magmaDoubleComplex x );
+
+magmaDoubleComplex
+magma_zmake_lwork( magma_int_t lwork );
 
 magma_int_t
 magma_znan_inf(

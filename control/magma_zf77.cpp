@@ -1879,13 +1879,13 @@ void magmaf_zgesv_nopiv_gpu(
 void magmaf_zgetf2_gpu(
     magma_int_t *m, magma_int_t *n,
     devptr_t *dA, magma_int_t *ldda,
-    magma_int_t *ipiv,
+    magma_int_t *ipiv, magma_queue_t *queue,
     magma_int_t *info )
 {
     magma_zgetf2_gpu(
         *m, *n,
         magma_zdevptr(dA), *ldda,
-        ipiv,
+        ipiv, *queue,
         info );
 }
 
@@ -2156,13 +2156,13 @@ void magmaf_zlarf_gpu(
     magma_int_t *m, magma_int_t *n,
     devptr_t *dv,
     devptr_t *dtau,
-    devptr_t *dC, magma_int_t *lddc )
+    devptr_t *dC, magma_int_t *lddc, magma_queue_t *queue )
 {
     magma_zlarf_gpu(
         *m, *n,
         magma_zdevptr(dv),
         magma_zdevptr(dtau),
-        magma_zdevptr(dC), *lddc );
+        magma_zdevptr(dC), *lddc, *queue );
 }
 
 #define magmaf_zlarfb2_gpu FORTRAN_NAME( magmaf_zlarfb2_gpu, MAGMAF_ZLARFB2_GPU )
@@ -2210,12 +2210,12 @@ void magmaf_zposv_gpu(
 #define magmaf_zpotf2_gpu FORTRAN_NAME( magmaf_zpotf2_gpu, MAGMAF_ZPOTF2_GPU )
 void magmaf_zpotf2_gpu(
     const char* uplo, magma_int_t *n,
-    devptr_t *dA, magma_int_t *ldda,
+    devptr_t *dA, magma_int_t *ldda, magma_queue_t *queue,
     magma_int_t *info )
 {
     magma_zpotf2_gpu(
         magma_uplo_const(*uplo), *n,
-        magma_zdevptr(dA), *ldda,
+        magma_zdevptr(dA), *ldda, *queue,
         info );
 }
 
@@ -2357,6 +2357,30 @@ void magmaf_zunmtr_gpu(
         magma_zdevptr(dC), *lddc,
         wA, *ldwa,
         info );
+}
+
+#define magmaf_z_isnan FORTRAN_NAME( magmaf_z_isnan, MAGMAF_Z_ISNAN )
+void magmaf_z_isnan(
+    magmaDoubleComplex *x )
+{
+    magma_z_isnan(
+        *x );
+}
+
+#define magmaf_z_isinf FORTRAN_NAME( magmaf_z_isinf, MAGMAF_Z_ISINF )
+void magmaf_z_isinf(
+    magmaDoubleComplex *x )
+{
+    magma_z_isinf(
+        *x );
+}
+
+#define magmaf_z_isnan_inf FORTRAN_NAME( magmaf_z_isnan_inf, MAGMAF_Z_ISNAN_INF )
+void magmaf_z_isnan_inf(
+    magmaDoubleComplex *x )
+{
+    magma_z_isnan_inf(
+        *x );
 }
 
 #define magmaf_znan_inf FORTRAN_NAME( magmaf_znan_inf, MAGMAF_ZNAN_INF )

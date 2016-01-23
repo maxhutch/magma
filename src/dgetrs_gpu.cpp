@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgetrs_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
+       @generated from src/zgetrs_gpu.cpp normal z -> d, Fri Jan 22 21:41:31 2016
 
 */
 #include "magma_internal.h"
@@ -38,7 +38,7 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             The factors L and U from the factorization A = P*L*U as computed
             by DGETRF_GPU.
 
@@ -52,7 +52,7 @@
             matrix was interchanged with row IPIV(i).
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+    dB      DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 

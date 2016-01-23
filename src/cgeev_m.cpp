@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeev_m.cpp normal z -> c, Wed Jan  6 17:59:35 2016
+       @generated from src/zgeev_m.cpp normal z -> c, Fri Jan 22 21:41:51 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -188,7 +188,7 @@ magma_cgeev_m(
     if (*info == 0) {
         minwrk = (1 +   nb + nb*ngpu)*n;
         optwrk = (1 + 2*nb + nb*ngpu)*n;
-        work[0] = MAGMA_C_MAKE( optwrk, 0 );
+        work[0] = magma_cmake_lwork( optwrk );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -461,7 +461,7 @@ CLEANUP:
     magma_free_cpu( T );
     #endif
     
-    work[0] = MAGMA_C_MAKE( (float) minwrk, 0. );  // TODO use optwrk as in dgeev
+    work[0] = magma_cmake_lwork( minwrk );  // TODO use optwrk as in dgeev
 
     return *info;
 } /* magma_cgeev */

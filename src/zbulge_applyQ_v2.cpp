@@ -13,14 +13,17 @@
  */
 #include <cuda_runtime.h>
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_zbulgeinc.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#ifdef HAVE_clBLAS
+#define dE(i,j)  (dE, (dE_offset + (i) + ldde*(j)))
+#else
 #define dE(i,j)  (dE+(i) + ldde*(j))
+#endif
 #define V(j)     (V+(j))
 #define T(j)     (T+(j))
 /***************************************************************************
@@ -89,18 +92,17 @@ magma_zbulge_applyQ_v2(
     */
 
     // Initialize streaming and events
-    magma_device_sync();
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
 
     magma_event_t myevent[2];
     cudaEventCreateWithFlags(&myevent[0],cudaEventDisableTiming);
     cudaEventCreateWithFlags(&myevent[1],cudaEventDisableTiming);
-
+    //magma_event_create(&myevent[0]);
+    //magma_event_create(&myevent[1]);
 
 
     // Azzam 21/11/2012
@@ -208,9 +210,8 @@ magma_zbulge_applyQ_v2(
                             tpos = copyst*Vblksiz*ldt;
                             vld  = mysiz * ldv;
                             tld  = mysiz * ldt;
-                            magmablasSetKernelStream(stream[1]);
-                            magma_zsetmatrix_async(vld, Vblksiz, V(vpos), vld, dV1, vld, stream[1]);
-                            magma_zsetmatrix_async(tld, Vblksiz, T(tpos), tld, dT1, tld, stream[1]);
+                            magma_zsetmatrix_async(vld, Vblksiz, V(vpos), vld, dV1, vld, queues[1]);
+                            magma_zsetmatrix_async(tld, Vblksiz, T(tpos), tld, dT1, tld, queues[1]);
                             //printf("doing the first copy   of mysiz %2d copyst %2d copyed %2d vpos %8d tpos %8d into dV1 dT1\n",mysiz,copyst,copyed,vpos,tpos);
                         }
                     }
@@ -229,14 +230,12 @@ magma_zbulge_applyQ_v2(
                             tld  = mysiz * ldt;
                             if (flip == 0) { // now I am working on dV0 so copy the next and put it on dV1
                                 //printf("doing overlapping copy of mysiz %2d copyst %2d copyed %2d vpos %8d tpos %8d into dV1 dT1\n",mysiz,copyst,copyed,vpos,tpos);
-                                magmablasSetKernelStream(stream[1]);
-                                magma_zsetmatrix_async(vld, Vblksiz, V(vpos), vld, dV1, vld, stream[1]);
-                                magma_zsetmatrix_async(tld, Vblksiz, T(tpos), tld, dT1, tld, stream[1]);
+                                magma_zsetmatrix_async(vld, Vblksiz, V(vpos), vld, dV1, vld, queues[1]);
+                                magma_zsetmatrix_async(tld, Vblksiz, T(tpos), tld, dT1, tld, queues[1]);
                             } else { // now I am working on dV1 so copy the next and put it on dV0
                                 //printf("doing overlapping copy of mysiz %2d copyst %2d copyed %2d vpos %8d tpos %8d into dV0 dT0\n",mysiz,copyst,copyed,vpos,tpos);
-                                magmablasSetKernelStream(stream[0]);
-                                magma_zsetmatrix_async(vld, Vblksiz, V(vpos), vld, dV0, vld, stream[0]);
-                                magma_zsetmatrix_async(tld, Vblksiz, T(tpos), tld, dT0, tld, stream[0]);
+                                magma_zsetmatrix_async(vld, Vblksiz, V(vpos), vld, dV0, vld, queues[0]);
+                                magma_zsetmatrix_async(tld, Vblksiz, T(tpos), tld, dT0, tld, queues[0]);
                             }
                         }
                     }
@@ -247,25 +246,23 @@ magma_zbulge_applyQ_v2(
                         magma_int_t lctpos   = locpos*Vblksiz*lddt;
                         //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d locvpos %5d loctpos %5d  blkid %2d  using data in dV%1d dT%1d \n",blkj,blki,Vm, Vn,mycol,lcvpos,lctpos, blkid,flip,flip);
                         if (flip == 0) {
-                            magmablasSetKernelStream(stream[0]);
-                            magma_queue_wait_event( stream[0], myevent[1] );
+                            magma_queue_wait_event( queues[0], myevent[1] );
                             for (magma_int_t i=0; i < NE; i += sz_bl) {
                                 ib = min(sz_bl, NE-i);
                                 lddw = min(lddwork,sz_bl);
-                                //magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0+lcvpos, lddv, dT0+lctpos, lddt, dE(myrow,i), ldde, dwork0, lddw);
-                                magma_zlarfb_gpu_gemm( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0+lcvpos, lddv, dT0+lctpos, lddt, dE(myrow,i), ldde, dwork0, lddw, dwvt0, lddv);
+                                //magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0+lcvpos, lddv, dT0+lctpos, lddt, dE(myrow,i), ldde, dwork0, lddw, queues[0] );
+                                magma_zlarfb_gpu_gemm( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0+lcvpos, lddv, dT0+lctpos, lddt, dE(myrow,i), ldde, dwork0, lddw, dwvt0, lddv, queues[0] );
                             }
-                            magma_event_record( myevent[0], stream[0] );
+                            magma_event_record( myevent[0], queues[0] );
                         } else {
-                            magmablasSetKernelStream(stream[1]);
-                            magma_queue_wait_event( stream[1], myevent[0] );
+                            magma_queue_wait_event( queues[1], myevent[0] );
                             for (magma_int_t i=0; i < NE; i += sz_bl) {
                                 ib = min(sz_bl, NE-i);
                                 lddw = min(lddwork,sz_bl);
-                                //magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV1+lcvpos, lddv, dT1+lctpos, lddt, dE(myrow,i), ldde, dwork1, lddw);
-                                magma_zlarfb_gpu_gemm( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV1+lcvpos, lddv, dT1+lctpos, lddt, dE(myrow,i), ldde, dwork1, lddw, dwvt1, lddv);
+                                //magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV1+lcvpos, lddv, dT1+lctpos, lddt, dE(myrow,i), ldde, dwork1, lddw, queues[1] );
+                                magma_zlarfb_gpu_gemm( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV1+lcvpos, lddv, dT1+lctpos, lddt, dE(myrow,i), ldde, dwork1, lddw, dwvt1, lddv, queues[1] );
                             }
-                            magma_event_record( myevent[1], stream[1] );
+                            magma_event_record( myevent[1], queues[1] );
                         }
                     }  // end for (Vm &Vn) > 0
                 } // end for blki
@@ -305,12 +302,12 @@ magma_zbulge_applyQ_v2(
                          * Note that Vs and Ts have special storage done
                          * by the bulgechasing function*/
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
-                        magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, NULL);
-                        magma_zsetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, NULL);
+                        magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, queues[0]);
+                        magma_zsetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, queues[0]);
                         //printf("voici blki %d  rownbm %d mycol %d  coled %d  blkid %d vpos %d  tpos %d\n", blki, rownbm, mycol, coled, blkid, vpos, tpos);
                         for (magma_int_t i=0; i < NE; i += sz_bl) {
                             ib = min(sz_bl, NE-i);
-                            magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0, lddv, dT0, lddt, dE(myrow,i), ldde, dwork, NE);
+                            magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0, lddv, dT0, lddt, dE(myrow,i), ldde, dwork, NE, queues[0] );
                         }
                     } // end for (Vm &Vn) > 0
                 } // end for blkj
@@ -350,9 +347,9 @@ magma_zbulge_applyQ_v2(
                          * Note that Vs and Ts have special storage done
                          * by the bulgechasing function*/
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
-                        magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, NULL);
-                        magma_zsetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, NULL);
-                        magma_zlarfb_gpu( MagmaRight, MagmaNoTrans, MagmaForward, MagmaColumnwise, NE, Vm, Vn, dV0, lddv, dT0, lddt, dE(0, myrow), ldde, dwork, NE);
+                        magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, queues[0]);
+                        magma_zsetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, queues[0]);
+                        magma_zlarfb_gpu( MagmaRight, MagmaNoTrans, MagmaForward, MagmaColumnwise, NE, Vm, Vn, dV0, lddv, dT0, lddt, dE(0, myrow), ldde, dwork, NE, queues[0] );
                     } // end for (Vm &Vn) > 0
                 } // end for blki
             } // end fo blkj
@@ -386,9 +383,9 @@ magma_zbulge_applyQ_v2(
                          * Note that Vs and Ts have special storage done
                          * by the bulgechasing function*/
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
-                        magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, NULL);
-                        magma_zsetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, NULL);
-                        magma_zlarfb_gpu( MagmaRight, MagmaNoTrans, MagmaForward, MagmaColumnwise, NE, Vm, Vn, dV0, lddv, dT0, lddt, dE(0, myrow), ldde, dwork, NE);
+                        magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, queues[0]);
+                        magma_zsetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, queues[0]);
+                        magma_zlarfb_gpu( MagmaRight, MagmaNoTrans, MagmaForward, MagmaColumnwise, NE, Vm, Vn, dV0, lddv, dT0, lddt, dE(0, myrow), ldde, dwork, NE, queues[0] );
                     } // end for (Vm &Vn) > 0
                 } //end for blkj
             } // end for blki
@@ -396,12 +393,12 @@ magma_zbulge_applyQ_v2(
     } // end RIGHT
 
 
-    magma_device_sync();
-    magmablasSetKernelStream( orig_stream );
+    magma_queue_sync( queues[0] );
+    magma_queue_sync( queues[1] );
     magma_event_destroy( myevent[0] );
     magma_event_destroy( myevent[1] );
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free(dwork);
 
 

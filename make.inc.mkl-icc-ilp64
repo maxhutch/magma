@@ -1,5 +1,5 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.0-beta2) --
+#   -- MAGMA (version 2.0.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
@@ -45,8 +45,8 @@ LDFLAGS   =     $(FPIC)              -openmp
 
 # Defining MAGMA_ILP64 or MKL_ILP64 changes magma_int_t to int64_t in include/magma_types.h
 CFLAGS    += -DMKL_ILP64
-FFLAGS    += -fdefault-integer-8
-F90FLAGS  += -fdefault-integer-8
+FFLAGS    += -integer-size 64
+F90FLAGS  += -integer-size 64
 NVCCFLAGS += -DMKL_ILP64
 
 # Options to do extra checks for non-standard things like variable length arrays;

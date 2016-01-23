@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Azzam Haidar
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
     #define MAGMA_OS_LINUX 1

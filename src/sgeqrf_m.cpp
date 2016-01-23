@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqrf_m.cpp normal z -> s, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqrf_m.cpp normal z -> s, Fri Jan 22 21:41:39 2016
 
 */
 #include "magma_internal.h" 
@@ -103,14 +103,14 @@ magma_sgeqrf_m(
     float *da[MagmaMaxGPUs];
     float c_one = MAGMA_S_ONE;
 
-    int i, k, ldda;
+    magma_int_t i, k, ldda;
 
     *info = 0;
-    int nb = magma_get_sgeqrf_nb( m, n );
+    magma_int_t nb = magma_get_sgeqrf_nb( m, n );
 
-    int lwkopt = n * nb;
-    work[0] = MAGMA_S_MAKE( (float)lwkopt, 0 );
-    int lquery = (lwork == -1);
+    magma_int_t lwkopt = n * nb;
+    work[0] = magma_smake_lwork( lwkopt );
+    bool lquery = (lwork == -1);
     if (ngpu < 0 || ngpu > MagmaMaxGPUs) {
         *info = -1;
     } else if (m < 0) {
@@ -159,14 +159,14 @@ magma_sgeqrf_m(
 
     if (m > nb && n > nb) {
         magma_queue_t queues[MagmaMaxGPUs];
-        for( int dev=0; dev < ngpu; dev++ ) {
+        for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_create( dev, &queues[dev] );
         }
 
         /* Copy the matrix to the GPUs in 1D block cyclic distribution */
         magma_ssetmatrix_1D_col_bcyclic(m, n, A, lda, da, ldda, ngpu, nb, queues);
-        for( int dev=0; dev < ngpu; dev++ ) {
+        for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_sync( queues[dev] );
         }
@@ -176,7 +176,7 @@ magma_sgeqrf_m(
 
         /* Copy the matrix back from the GPUs to the CPU */
         magma_sgetmatrix_1D_col_bcyclic(m, n, da, ldda, A, lda, ngpu, nb, queues);
-        for( int dev=0; dev < ngpu; dev++ ) {
+        for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_sync( queues[dev] );
             magma_queue_destroy( queues[dev] );

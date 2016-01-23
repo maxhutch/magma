@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -126,7 +126,7 @@
             The dimension of the array WORK.
             Let x = max(M,N) and y = min(M,N). The optimal block size
             nb can be obtained through magma_get_dgesvd_nb( M, N ).
-            The threshold for x >> y currently is x >= int( y*17/9 ).
+            The threshold for x >> y currently is x >= floor( y*17/9 ).
             *Required size different than in LAPACK.* In most cases, these
             sizes should give optimal performance for both MAGMA and LAPACK.
       -     If JOBZ = MagmaNoVec,
@@ -447,7 +447,7 @@ magma_zgesdd(
         maxwrk = max(maxwrk, minwrk);
     }
     if (*info == 0) {
-        work[1] = MAGMA_Z_MAKE( maxwrk, 0 );
+        work[1] = magma_zmake_lwork( maxwrk );
         if (lwork < minwrk && ! lquery) {
             *info = -13;
         }
@@ -1828,7 +1828,7 @@ magma_zgesdd(
     }
 
     /* Return optimal workspace in WORK[0] */
-    work[1] = MAGMA_Z_MAKE( maxwrk, 0 );
+    work[1] = magma_zmake_lwork( maxwrk );
 
     return *info;
 } /* magma_zgesdd */

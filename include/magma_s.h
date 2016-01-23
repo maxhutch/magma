@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from include/magma_z.h normal z -> s, Wed Jan  6 17:59:51 2016
+       @generated from include/magma_z.h normal z -> s, Fri Jan 22 21:42:53 2016
 */
 
 #ifndef MAGMA_S_H
@@ -1097,6 +1097,7 @@ magma_sgeqr2_gpu(
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dtau,
     magmaFloat_ptr        dwork,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1233,6 +1234,7 @@ magma_int_t
 magma_sgetf2_gpu(
     magma_int_t m, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1389,18 +1391,6 @@ magma_ssytrd_sy2sb_mgpu(
     magma_int_t *info);
 
 magma_int_t
-magma_ssytrd_sy2sb_mgpu_spec(
-    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-    float *A, magma_int_t lda,
-    float *tau,
-    float *work, magma_int_t lwork,
-    magmaFloat_ptr dAmgpu[], magma_int_t ldda,
-    magmaFloat_ptr dTmgpu[], magma_int_t lddt,
-    magma_int_t ngpu, magma_int_t distblk,
-    magma_queue_t queues[][20], magma_int_t nqueue,
-    magma_int_t *info);
-
-magma_int_t
 magma_ssytrd_mgpu(
     magma_int_t ngpu, magma_int_t nqueue,
     magma_uplo_t uplo, magma_int_t n,
@@ -1473,7 +1463,8 @@ magma_int_t
 magma_slarf_gpu(
     magma_int_t m,  magma_int_t n,
     magmaFloat_const_ptr dv, magmaFloat_const_ptr dtau,
-    magmaFloat_ptr dC,  magma_int_t lddc);
+    magmaFloat_ptr dC, magma_int_t lddc,
+    magma_queue_t queue );
 
 // in sgeqr2x_gpu-v3.cpp
 magma_int_t
@@ -1516,6 +1507,7 @@ magma_int_t
 magma_spotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
     magma_int_t *info);
 
 magma_int_t
@@ -1662,6 +1654,9 @@ extern const float MAGMA_S_INF;
 int magma_s_isnan( float x );
 int magma_s_isinf( float x );
 int magma_s_isnan_inf( float x );
+
+float
+magma_smake_lwork( magma_int_t lwork );
 
 magma_int_t
 magma_snan_inf(

@@ -10,7 +10,7 @@
  *
  */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define applyQver 113
 

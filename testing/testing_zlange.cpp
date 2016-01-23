@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -110,9 +110,10 @@ int main( int argc, char** argv)
             norm_lapack = lapackf77_zlange( lapack_norm_const(norm[inorm]), &M, &N, h_A, &lda, h_work );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
-            if (norm_lapack < 0)
+            if (norm_lapack < 0) {
                 printf("lapackf77_zlange returned error %f: %s.\n",
                        norm_lapack, magma_strerror( (int) norm_lapack ));
+            }
             
             /* =====================================================================
                Check the result compared to LAPACK

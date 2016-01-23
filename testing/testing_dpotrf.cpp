@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zpotrf.cpp normal z -> d, Wed Jan  6 17:59:48 2016
+       @generated from testing/testing_zpotrf.cpp normal z -> d, Fri Jan 22 21:42:39 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -32,7 +32,7 @@ int main( int argc, char** argv)
     double c_neg_one = MAGMA_D_NEG_ONE;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    double      work[1], error;
+    double      Anorm, error, work[1];
     magma_int_t status = 0;
 
     magma_opts opts;
@@ -42,7 +42,7 @@ int main( int argc, char** argv)
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     printf("%% ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
-    printf("%%   N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
+    printf("%%   N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
     printf("%%=======================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -57,7 +57,7 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             magma_dmake_hpd( N, h_A, lda );
-            lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_dlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -66,9 +66,10 @@ int main( int argc, char** argv)
             magma_dpotrf( opts.uplo, N, h_R, lda, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
-            if (info != 0)
+            if (info != 0) {
                 printf("magma_dpotrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+            }
             
             if ( opts.lapack ) {
                 /* =====================================================================
@@ -78,16 +79,17 @@ int main( int argc, char** argv)
                 lapackf77_dpotrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
+                if (info != 0) {
                     printf("lapackf77_dpotrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
+                }
                 
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                error = lapackf77_dlange("f", &N, &N, h_A, &lda, work);
                 blasf77_daxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
-                error = lapackf77_dlange("f", &N, &N, h_R, &lda, work) / error;
+                Anorm = lapackf77_dlange("f", &N, &N, h_A, &lda, work);
+                error = lapackf77_dlange("f", &N, &N, h_R, &lda, work) / Anorm;
                 
                 printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,

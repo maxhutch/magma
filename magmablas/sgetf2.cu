@@ -1,21 +1,23 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgetf2.cu normal z -> s, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zgetf2.cu normal z -> s, Fri Jan 22 21:42:08 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define sger_bs 512  // 512 is max threads for 1.x cards
 
 void magma_sgetf2_swap(
-    magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx);
+    magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx,
+    magma_queue_t queue );
 
 void magma_sscal_sger(
-    magma_int_t m, magma_int_t n, float *A, magma_int_t lda);
+    magma_int_t m, magma_int_t n, float *dA, magma_int_t ldda,
+    magma_queue_t );
 
 
 // TODO: this function could be in .cpp file -- it has no CUDA code in it.
@@ -74,6 +76,7 @@ magma_sgetf2_gpu(
     magma_int_t m, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t *ipiv,
+    magma_queue_t queue,
     magma_int_t *info )
 {
     #define dA(i, j)  (dA + (i) + (j)*ldda)
@@ -104,7 +107,7 @@ magma_sgetf2_gpu(
         cudaDeviceSetCacheConfig( cudaFuncCachePreferShared );
 
         // Find pivot and test for singularity.
-        jp = j - 1 + magma_isamax(m-j, dA(j,j), 1);
+        jp = j - 1 + magma_isamax( m-j, dA(j,j), 1, queue );
         ipiv[j] = jp + 1;  // ipiv uses Fortran one-based index
         // Can't check value of dA since it is on GPU
         //if ( dA(jp, j) != 0.0) {
@@ -112,12 +115,12 @@ magma_sgetf2_gpu(
             
             // Apply the interchange to columns 1:N.
             if (jp != j) {
-                magma_sgetf2_swap(n, dA, j, jp, ldda);
+                magma_sgetf2_swap( n, dA, j, jp, ldda, queue );
             }
             
             // Compute elements J+1:M of J-th column.
             if (j < m) {
-                magma_sscal_sger(m-j, n-j, dA(j, j), ldda);
+                magma_sscal_sger( m-j, n-j, dA(j, j), ldda, queue );
             }
         //}
         //else if (*info == 0) {
@@ -147,15 +150,14 @@ void kernel_sswap(int n, float *x, int i, int j, int incx)
 
 
 void magma_sgetf2_swap(
-    magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx)
+    magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx,
+    magma_queue_t queue )
 {
-    /*
-    sswap two row vectors: ith and jth
-    */
+    /* sswap two row vectors: ith and jth */
     dim3 threads( sswap_bs );
     dim3 grid( magma_ceildiv( n, sswap_bs ) );
     kernel_sswap
-        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
         (n, x, i, j, incx);
 }
 
@@ -196,7 +198,9 @@ void kernel_sscal_sger(int m, int n, float *A, int lda)
 
 
 void magma_sscal_sger(
-    magma_int_t m, magma_int_t n, magmaFloat_ptr dA, magma_int_t ldda)
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magma_queue_t queue )
 {
     /*
     Specialized kernel that merges sscal and sger
@@ -208,6 +212,6 @@ void magma_sscal_sger(
     dim3 grid( magma_ceildiv( m, sger_bs ) );
     size_t shared_size = sizeof(float)*(n);
     kernel_sscal_sger
-        <<< grid, threads, shared_size, magmablasGetQueue()->cuda_stream() >>>
+        <<< grid, threads, shared_size, queue->cuda_stream() >>>
         (m, n, dA, ldda);
 }

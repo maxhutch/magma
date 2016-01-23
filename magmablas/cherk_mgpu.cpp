@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,21 +8,20 @@
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from magmablas/zherk_mgpu.cpp normal z -> c, Wed Jan  6 17:59:40 2016
+       @generated from magmablas/zherk_mgpu.cpp normal z -> c, Fri Jan 22 21:42:08 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
 
 /**
     Purpose
     -------
     This cherk_mgpu is internal routine used by cpotrf_mgpu_right.
-    it has specific assumption on the block diagonal.
+    It has specific assumption on the block diagonal.
     
     @ingroup magma_cblas3_internal
     ********************************************************************/
-
 extern "C" void
 magma_cherk_mgpu(
     magma_int_t ngpu,
@@ -43,8 +42,6 @@ magma_cherk_mgpu(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
     
     /* diagonal update */
     for( i=0; i < n; i += nb ) {
@@ -56,11 +53,10 @@ magma_cherk_mgpu(
 
         /* cher2k on diagonal block */
         magma_setdevice(id);
-        magmablasSetKernelStream( queues[id][kk] );
         trace_gpu_start( id, kk, "syr2k", "syr2k" );
-        magma_cherk(uplo, trans, ib, k,
-                    alpha,  dB(id, i,          0 ), lddb,
-                     beta,  dC(id, i+c_offset, ii), lddc);
+        magma_cherk( uplo, trans, ib, k,
+                     alpha,  dB(id, i,          0 ), lddb,
+                      beta,  dC(id, i+c_offset, ii), lddc, queues[id][kk] );
         trace_gpu_end( id, kk );
     }
 
@@ -74,11 +70,10 @@ magma_cherk_mgpu(
             ii = nb*((i+c_offset)/(nb*ngpu));
 
             magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
-            magma_cgemm(MagmaNoTrans, MagmaConjTrans, i, ib, k,
-                        z_alpha, dB(id, 0, 0 ), lddb,
-                                 dB(id, i, 0 ), lddb,
-                        z_beta,  dC(id, 0, ii), lddc);
+            magma_cgemm( MagmaNoTrans, MagmaConjTrans, i, ib, k,
+                         z_alpha, dB(id, 0, 0 ), lddb,
+                                  dB(id, i, 0 ), lddb,
+                         z_beta,  dC(id, 0, ii), lddc, queues[id][kk] );
         }
     }
     else {
@@ -92,12 +87,11 @@ magma_cherk_mgpu(
 
             /* cgemm on off-diagonal blocks */
             magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
             trace_gpu_start( id, kk, "gemm_up", "gemm_up" );
-            magma_cgemm(MagmaNoTrans, MagmaConjTrans, n1, ib, k,
-                        z_alpha, dB(id, i+ib,           0 ), lddb,
-                                 dB(id,  i,             0 ), lddb,
-                        z_beta,  dC(id,  i+c_offset+ib, ii), lddc);
+            magma_cgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
+                         z_alpha, dB(id, i+ib,           0 ), lddb,
+                                  dB(id,  i,             0 ), lddb,
+                         z_beta,  dC(id,  i+c_offset+ib, ii), lddc, queues[id][kk] );
             trace_gpu_end( id, kk );
         }
     }
@@ -109,11 +103,11 @@ magma_cherk_mgpu(
     //    //    magma_queue_sync( queues[id][kk] );
     //}
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
 }
 #undef dB
 #undef dC
 #undef STREAM_ID
+
 
 // ----------------------------------------------------------------------
 extern "C" void
@@ -136,8 +130,6 @@ magma_cherk_mgpu2(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
     
     /* diagonal update */
     for( i=0; i < n; i += nb ) {
@@ -158,13 +150,12 @@ magma_cherk_mgpu2(
             n1 = i+ib;
 
             magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
 
             /* cgemm on diag and off-diagonal blocks */
-            magma_cgemm(MagmaNoTrans, MagmaConjTrans, n1, ib, k,
-                        z_alpha, dB(id, 0, 0 ), lddb,
-                                 dB(id, i, 0 ), lddb,
-                        z_beta,  dC(id, 0, ii), lddc);
+            magma_cgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
+                         z_alpha, dB(id, 0, 0 ), lddb,
+                                  dB(id, i, 0 ), lddb,
+                         z_beta,  dC(id, 0, ii), lddc, queues[id][kk] );
         }
     }
     else {
@@ -177,13 +168,13 @@ magma_cherk_mgpu2(
             n1 = n-i;
 
             magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
+            
             trace_gpu_start( id, kk, "gemm_up", "gemm_up" );
             /* cgemm on diag and off-diagonal blocks */
-            magma_cgemm(MagmaNoTrans, MagmaConjTrans, n1, ib, k,
-                        z_alpha, dB(id, i,           0), lddb,
-                                 dB(id, i,           0), lddb,
-                        z_beta,  dC(id, i+c_offset, ii), lddc);
+            magma_cgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
+                         z_alpha, dB(id, i,           0), lddb,
+                                  dB(id, i,           0), lddb,
+                         z_beta,  dC(id, i+c_offset, ii), lddc, queues[id][kk] );
             trace_gpu_end( id, kk );
         }
     }
@@ -195,7 +186,6 @@ magma_cherk_mgpu2(
     //    //    magma_queue_sync( queues[id][kk] );
     //}
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
 }
 
 #undef dB

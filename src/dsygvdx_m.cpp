@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -276,10 +276,7 @@ magma_dsygvdx_m(
         liwmin = 1;
     }
     
-    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
-    // if it cannot be exactly represented in floating point.
-    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
-    work[0]  = lwmin * one_eps;
+    work[0]  = magma_dmake_lwork( lwmin );
     iwork[0] = liwmin;
     
     if (lwork < lwmin && ! lquery) {
@@ -399,7 +396,7 @@ magma_dsygvdx_m(
         timer_printf( "time setmatrices trsm/mm + getmatrices = %6.2f\n", time );
     }
 
-    work[0]  = lwmin * one_eps;  // round up
+    work[0]  = magma_dmake_lwork( lwmin );
     iwork[0] = liwmin;
 
 

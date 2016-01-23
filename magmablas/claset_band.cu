@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from magmablas/zlaset_band.cu normal z -> c, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlaset_band.cu normal z -> c, Fri Jan 22 21:42:02 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define NB 64
 
@@ -207,18 +207,4 @@ magmablas_claset_band_q(
         dim3 grid( magma_ceildiv( min(m,n), NB ) );
         claset_band_lower<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dA, ldda);
     }
-}
-
-
-/**
-    @see magmablas_claset_band_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_claset_band(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex offdiag, magmaFloatComplex diag,
-    magmaFloatComplex_ptr dA, magma_int_t ldda)
-{
-    magmablas_claset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }

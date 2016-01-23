@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,9 +9,9 @@
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/zgemv_fermi.cu normal z -> d, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgemv_fermi.cu normal z -> d, Fri Jan 22 21:42:06 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_d.h"
 #include "magma_templates.h"
 
@@ -70,8 +70,8 @@ dgemvn_template_fermi(
     double       * __restrict__ y, magma_int_t incy,
     magma_queue_t queue)
 {
-    dim3 grid( magma_ceildiv(m, TILE_SIZE) );
-    dim3 threads( DIM_X, DIM_Y, 1 );
+    dim3 grid( magma_ceildiv(m, TILE_SIZE), 1 );
+    dim3 threads( DIM_X, DIM_Y );
 
     dgemvn_template_kernel_fermi<DIM_X, DIM_Y, TILE_SIZE>
         <<< grid, threads, 0, queue->cuda_stream() >>>
@@ -90,9 +90,9 @@ dgemvc_template_fermi(
     double       * __restrict__ y, magma_int_t incy,
     magma_queue_t queue)
 {
-    dim3 grid    ( 1,  magma_ceildiv(n, TILE_SIZE),  1 );
-    dim3 threads ( DIM_X, DIM_Y, 1 );
-
+    dim3 grid    ( magma_ceildiv(n, TILE_SIZE), 1 );
+    dim3 threads ( DIM_X, DIM_Y );
+    
     if (trans == MagmaConjTrans) {
         dgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaConjTrans >
             <<< grid, threads, 0, queue->cuda_stream() >>>
@@ -140,18 +140,18 @@ dgemvc_template_fermi(
             On entry, n specifies the number of columns of the matrix A
  
     @param[in]
-    alpha   DOUBLE_PRECISION
+    alpha   DOUBLE PRECISION
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension ( LDDA, n ) on the GPU.
+    dA      DOUBLE PRECISION array of dimension ( LDDA, n ) on the GPU.
    
     @param[in]
     ldda    INTEGER
             LDDA specifies the leading dimension of A.
 
     @param[in]
-    dx      DOUBLE_PRECISION array of dimension
+    dx      DOUBLE PRECISION array of dimension
             n if trans == MagmaNoTrans
             m if trans == MagmaTrans or MagmaConjTrans
      
@@ -160,12 +160,12 @@ dgemvc_template_fermi(
             INCX must not be zero.
   
     @param[in]
-    beta    DOUBLE_PRECISION
+    beta    DOUBLE PRECISION
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    dy      DOUBLE_PRECISION array of dimension
+    dy      DOUBLE PRECISION array of dimension
             m if trans == MagmaNoTrans
             n if trans == MagmaTrans or MagmaConjTrans
 
@@ -224,20 +224,4 @@ magmablas_dgemv_q(
         dgemvc_template_fermi<version(T, 189)>
             ( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, queue );
     }
-}
-
-
-/**
-    @see magmablas_dgemv_q
-    @ingroup magma_dblas2
-    ********************************************************************/
-extern "C" void
-magmablas_dgemv(
-    magma_trans_t trans, magma_int_t m, magma_int_t n, double alpha,
-    magmaDouble_const_ptr dA, magma_int_t ldda,
-    magmaDouble_const_ptr dx, magma_int_t incx,
-    double beta,
-    magmaDouble_ptr dy, magma_int_t incy)
-{
-    magmablas_dgemv_q( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magmablasGetQueue() );
 }

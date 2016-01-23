@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -507,10 +507,9 @@ void magma_queue_create_v2_internal(
     queue->cublas__   = NULL;
     queue->cusparse__ = NULL;
     
-    cudaError_t err;
-    err = cudaSetDevice( device );
-    check_xerror( err, func, file, line );
+    magma_setdevice( device );
     
+    cudaError_t err;
     err = cudaStreamCreate( &queue->stream__ );
     check_xerror( err, func, file, line );
     queue->own__ |= own_stream;
@@ -551,9 +550,7 @@ void magma_queue_create_from_cuda_internal(
     queue->cublas__   = NULL;
     queue->cusparse__ = NULL;
     
-    cudaError_t err;
-    err = cudaSetDevice( device );
-    check_xerror( err, func, file, line );
+    magma_setdevice( device );
     
     // stream can be NULL
     queue->stream__ = stream;

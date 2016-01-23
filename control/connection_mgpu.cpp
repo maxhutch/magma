@@ -1,33 +1,26 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Azzam Haidar
-       
-       Work in progress.
 */
 #include <cuda_runtime.h>
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
 extern "C"
-magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][MagmaMaxGPUs+2], magma_int_t *nbcmplx, magma_int_t ngpu)
+magma_int_t magma_buildconnection_mgpu(
+    magma_int_t gnode[MagmaMaxGPUs+2][MagmaMaxGPUs+2],
+    magma_int_t *ncmplx, magma_int_t ngpu)
 {
     magma_int_t *deviceid = NULL;
     magma_imalloc_cpu( &deviceid, ngpu );
-    memset(deviceid, 0, ngpu*sizeof(magma_int_t));
+    memset( deviceid, 0, ngpu*sizeof(magma_int_t) );
 
-    nbcmplx[0] =0;
-
-
-    //printf(" Initializing....\n\n");
-    //printf(" This machine has %d GPU\n", ngpu);
-
-    //printf(" cudaSuccess %d, cudaErrorInvalidDevice %d, cudaErrorPeerAccessAlreadyEnabled %d, cudaErrorInvalidValue %d \n",
-    //       cudaSuccess, cudaErrorInvalidDevice, cudaErrorPeerAccessAlreadyEnabled, cudaErrorInvalidValue );
+    ncmplx[0] = 0;
 
     int samecomplex=-1;
     cudaError_t err;
@@ -42,16 +35,16 @@ magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][Magma
         cudaGetDeviceProperties( &prop, d );
         if ( ! prop.unifiedAddressing ) {
             printf( "device %d doesn't support unified addressing\n", (int) d );
-            magma_free_cpu(deviceid);
+            magma_free_cpu( deviceid );
             return -1;
         }
         // add this device to the list if not added yet.
         // not added yet meaning belong to a new complex
         if (deviceid[d] == 0) {
-            cmplxnb           = cmplxnb+1;
-            cmplxid           = cmplxnb-1;
+            cmplxnb = cmplxnb+1;
+            cmplxid = cmplxnb-1;
             gnode[cmplxid][MagmaMaxGPUs] = 1;
-            lcgpunb           = gnode[cmplxid][MagmaMaxGPUs]-1;
+            lcgpunb = gnode[cmplxid][MagmaMaxGPUs]-1;
             gnode[cmplxid][lcgpunb] = d;
             deviceid[d]=-1;
         }
@@ -63,48 +56,48 @@ magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][Magma
             cudaGetDeviceProperties( &prop, d2 );
             if ( ! prop.unifiedAddressing ) {
                 printf( "device %d doesn't support unified addressing\n", (int) d2 );
-                magma_free_cpu(deviceid);
+                magma_free_cpu( deviceid );
                 return -1;
             }
 
-            /* TODO err = */ cudaDeviceCanAccessPeer(&samecomplex, d, d2);
+            /* TODO err = */ cudaDeviceCanAccessPeer( &samecomplex, d, d2 );
 
-            //printf(" device %d and device %d have samecomplex= %d\n", d, d2, samecomplex);
+            //printf(" device %d and device %d have samecomplex = %d\n", d, d2, samecomplex);
             if (samecomplex == 1) {
                 // d and d2 are on the same complex so add them, note that d is already added
                 // so just enable the peer Access for d and enable+add d2.
                 // FOR d:
                 magma_setdevice( d );
-                err   = cudaDeviceEnablePeerAccess( d2, 0 );
+                err = cudaDeviceEnablePeerAccess( d2, 0 );
                 //printf("enabling devide %d ==> %d  error %d\n", d, d2, err);
                 if ( err != cudaSuccess && err != cudaErrorPeerAccessAlreadyEnabled ) {
                     printf( "device %d cudaDeviceEnablePeerAccess error %d\n", (int) d2, (int) err );
-                    magma_free_cpu(deviceid);
+                    magma_free_cpu( deviceid );
                     return -2;
                 }
 
                 // FOR d2:
                 magma_setdevice( d2 );
-                err   = cudaDeviceEnablePeerAccess( d, 0 );
+                err = cudaDeviceEnablePeerAccess( d, 0 );
                 //printf("enabling devide %d ==> %d  error %d\n", d2, d, err);
                 if ((err == cudaSuccess) || (err == cudaErrorPeerAccessAlreadyEnabled)) {
                     if (deviceid[d2] == 0) {
                         //printf("adding device %d\n", d2);
                         gnode[cmplxid][MagmaMaxGPUs] = gnode[cmplxid][MagmaMaxGPUs]+1;
-                        lcgpunb           = gnode[cmplxid][MagmaMaxGPUs]-1;
+                        lcgpunb                      = gnode[cmplxid][MagmaMaxGPUs]-1;
                         gnode[cmplxid][lcgpunb] = d2;
                         deviceid[d2]=-1;
                     }
                 } else {
                     printf( "device %d cudaDeviceEnablePeerAccess error %d\n", (int) d, (int) err );
-                    magma_free_cpu(deviceid);
+                    magma_free_cpu( deviceid );
                     return -2;
                 }
             }
         }
     }
 
-    nbcmplx[0] = cmplxnb;
-    magma_free_cpu(deviceid);
+    ncmplx[0] = cmplxnb;
+    magma_free_cpu( deviceid );
     return cmplxnb;
 }

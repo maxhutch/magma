@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from src/zgeqlf.cpp normal z -> c, Wed Jan  6 17:59:31 2016
+       @generated from src/zgeqlf.cpp normal z -> c, Fri Jan 22 21:41:37 2016
 
 */
 #include "magma_internal.h"
@@ -131,7 +131,7 @@ magma_cgeqlf(
             work[0] = c_one;
         }
         else {
-            work[0] = MAGMA_C_MAKE( max(n*nb, 2*nb*nb), 0 );
+            work[0] = magma_cmake_lwork( max(n*nb, 2*nb*nb) );
         }
 
         if (lwork < max(max(1,n), 2*nb*nb) && ! lquery)

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -200,7 +200,7 @@ magma_zungqr_m(
         
         // zungqr requires less workspace (n*nb), but is slow if k < zungqr's block size.
         // replacing it with the 4 routines below is much faster (e.g., 60x).
-        //int iinfo;
+        //magma_int_t iinfo;
         //lapackf77_zungqr( &m_kk, &n_kk, &k_kk,
         //                  A(kk, kk), &lda,
         //                  &tau[kk], work, &lwork, &iinfo );

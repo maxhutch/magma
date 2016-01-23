@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
        @author Stan Tomov
-       @generated from magmablas/zgeqr2.cpp normal z -> s, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zgeqr2.cpp normal z -> s, Fri Jan 22 21:42:08 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 /**
@@ -35,7 +35,7 @@
             On exit, the elements on and above the diagonal of the array
             contain the min(m,n) by n upper trapezoidal matrix R (R is
             upper triangular if m >= n); the elements below the diagonal,
-            with the array TAU, represent the unitary matrix Q as a
+            with the array TAU, represent the orthogonal matrix Q as a
             product of elementary reflectors (see Further Details).
 
     @param[in]
@@ -48,7 +48,7 @@
             Details).
 
     @param
-    dwork   (workspace) DOUBLE_PRECISION array, dimension (N)
+    dwork   (workspace) REAL array, dimension (N)
 
     @param[out]
     info    INTEGER
@@ -77,6 +77,7 @@ magma_sgeqr2_gpu(
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dtau,
     magmaFloat_ptr        dwork,
+    magma_queue_t queue,
     magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*(ldda))
@@ -109,15 +110,15 @@ magma_sgeqr2_gpu(
     else {
         for (i = 0; i < k; ++i) {
             /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
-            magma_slarfg_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dwork, &Aks[i]);
+            magma_slarfg_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dwork, &Aks[i], queue );
 
             if (n-i-1 > 0) {
                 /* Apply H(i)' to A(i:m,i+1:n) from the left */
-                magma_slarf_gpu(m-i, n-i-1, dA(i, i), dtau+i, dA(i, i+1), ldda);
+                magma_slarf_gpu( m-i, n-i-1, dA(i, i), dtau+i, dA(i, i+1), ldda, queue );
             }
         }
 
-        magma_scopymatrix( 1, k, Aks, 1, dA(0, 0), ldda+1 );
+        magma_scopymatrix( 1, k, Aks, 1, dA(0, 0), ldda+1, queue );
     }
     
     magma_free(Aks);

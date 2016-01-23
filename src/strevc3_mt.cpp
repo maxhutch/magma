@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from src/dtrevc3_mt.cpp normal d -> s, Wed Jan  6 17:59:37 2016
+       @generated from src/dtrevc3_mt.cpp normal d -> s, Fri Jan 22 21:41:51 2016
 */
 #include "thread_queue.hpp"
 #include "magma_timer.h"

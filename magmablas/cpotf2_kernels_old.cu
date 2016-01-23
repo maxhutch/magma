@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,14 +8,14 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zpotf2_kernels_old.cu normal z -> c, Wed Jan  6 17:59:41 2016
+       @generated from magmablas/zpotf2_kernels_old.cu normal z -> c, Fri Jan 22 21:42:09 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 #include "magma_templates.h"
 
-#define PRECISION_c
+#define COMPLEX
 
 
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
@@ -46,7 +46,7 @@ __global__ void cdotc_kernel_batched(int n, magmaFloatComplex **x_array, int inc
         res = x[tx*incx];
     }
 
-    sdata[tx] = MAGMA_C_REAL(res * MAGMA_C_CNJG(res));
+    sdata[tx] = MAGMA_C_REAL(res * MAGMA_C_CONJ(res));
 
     __syncthreads();
 
@@ -159,7 +159,7 @@ __global__ void clacgv_kernel_batched(int n, magmaFloatComplex **x_array, int in
     magmaFloatComplex *x = x_array[blockIdx.z]+offset;
 
     if ( id < n ) {
-        x[id*incx] = MAGMA_C_CNJG(x[id*incx]);
+        x[id*incx] = MAGMA_C_CONJ(x[id*incx]);
     }
 }
 
@@ -235,7 +235,7 @@ static __device__ void cpotf2_device(int m, int n,
         //2) updates A[iter,iter] = sqrt(A[iter,iter]-sum);
         if (tx < iter)
         {
-            res = MAGMA_C_REAL (sdata_A[iter + tx * m] * MAGMA_C_CNJG(sdata_A[iter + tx * m]));         
+            res = MAGMA_C_REAL (sdata_A[iter + tx * m] * MAGMA_C_CONJ(sdata_A[iter + tx * m]));         
             sum[tx] = res;
         }
         else
@@ -260,10 +260,10 @@ static __device__ void cpotf2_device(int m, int n,
         __syncthreads();
 
         //clacgv conjugates a complex vector of length iter. //TODO
-        #if defined(PRECISION_z) || defined(PRECISION_c)
+        #ifdef COMPLEX
         if (tx < iter)
         {
-            sdata_A[iter + tx * m] = MAGMA_C_CNJG(sdata_A[iter + tx * m]);
+            sdata_A[iter + tx * m] = MAGMA_C_CONJ(sdata_A[iter + tx * m]);
         }
         __syncthreads();  
         #endif
@@ -281,10 +281,10 @@ static __device__ void cpotf2_device(int m, int n,
         __syncthreads();  
 
         //clacgv conjugates a complex vector of length iter.
-        #if defined(PRECISION_z) || defined(PRECISION_c)
+        #ifdef COMPLEX
         if (tx < iter)
         {
-            sdata_A[iter + tx * m] = MAGMA_C_CNJG(sdata_A[iter + tx * m]);
+            sdata_A[iter + tx * m] = MAGMA_C_CONJ(sdata_A[iter + tx * m]);
         }
         __syncthreads();  
         #endif
@@ -458,52 +458,4 @@ magma_cpotf2_tile_batched(
         (m, n, dA_array, lda, alpha, beta, info_array, gbstep);
 
     return arginfo;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-extern "C" magma_int_t
-magma_cpotf2_tile(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaFloatComplex *dA, magma_int_t lda,
-    magma_int_t *info)
-{
-    *info = 0;
-    if ( uplo != MagmaUpper && uplo != MagmaLower) {
-        *info = -1;
-    } else if (m < 0 || n < 0 || m > POTF2_TILE_SIZE) {
-        *info = -2;
-    } else if (lda < max(1,m)) {
-        *info = -4;
-    } else if (m < n) {
-        *info = -10;
-    }
-    if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
-        *info = -1;
-    }
-
-
-    if (*info != 0) {
-        magma_xerbla( __func__, -(*info) );
-        return *info;
-    }
-
-    // Quick return if possible
-    if (m == 0 || n == 0) {
-        return *info;
-    }
-
-    magmaFloatComplex alpha = MAGMA_C_NEG_ONE;
-    magmaFloatComplex beta  = MAGMA_C_ONE;
-
-    dim3 dimGrid(1);
-    dim3 threads(POTF2_TILE_SIZE, 1);
-    size_t shmem = sizeof(magmaFloatComplex)*m*n; // + sizeof(float)*(POTF2_TILE_SIZE+1);
-
-    cpotf2_kernel
-        <<< dimGrid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
-        (m, n, dA, lda, alpha, beta, info);
-
-    return *info;
 }

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from sparse-iter/blas/zmdot_shfl.cu normal z -> d, Wed Jan  6 17:59:41 2016
+       @generated from sparse-iter/blas/zmdot_shfl.cu normal z -> d, Fri Jan 22 21:42:13 2016
        @author Moritz Kreutzer
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #include "magmasparse_d.h"
 #define BLOCK_SIZE 512
@@ -19,8 +19,9 @@
 
 template<typename T>
 __inline__ __device__
-T warpReduceSum(T val) {
-#if MIN_CUDA_ARCH >= 300
+T warpReduceSum(T val)
+{
+#if __CUDA_ARCH__ >= 300
     val += __shfl_down(val, 16);
     val += __shfl_down(val, 8);
     val += __shfl_down(val, 4);
@@ -30,11 +31,13 @@ T warpReduceSum(T val) {
     return val;
 }
 
+
 #ifdef PRECISION_z
 template<>
 __inline__ __device__
-double warpReduceSum<double>(double val) {
-#if MIN_CUDA_ARCH >= 300
+double warpReduceSum<double>(double val)
+{
+#if __CUDA_ARCH__ >= 300
     int4 a = *reinterpret_cast<int4*>(&val);
     a.x += __shfl_down(a.x, 16);
     a.y += __shfl_down(a.y, 16);
@@ -59,13 +62,15 @@ double warpReduceSum<double>(double val) {
 #endif
     return val;
 }
-#endif
+#endif // PRECISION_z
+
 
 #ifdef PRECISION_c
 template<>
 __inline__ __device__
-magmaFloatComplex warpReduceSum<magmaFloatComplex>(magmaFloatComplex val) {
-#if MIN_CUDA_ARCH >= 300
+magmaFloatComplex warpReduceSum<magmaFloatComplex>(magmaFloatComplex val)
+{
+#if __CUDA_ARCH__ >= 300
     float2 a = *reinterpret_cast<float2*>(&val);
     a.x += __shfl_down(a.x, 16);
     a.y += __shfl_down(a.y, 16);
@@ -80,61 +85,66 @@ magmaFloatComplex warpReduceSum<magmaFloatComplex>(magmaFloatComplex val) {
 #endif
     return val;
 }
-#endif
+#endif // PRECISION_c
+
 
 template<typename T>
 __inline__ __device__
-T blockReduceSum_1D(T val) {
-
+T blockReduceSum_1D(T val)
+{
     extern __shared__ T shared[]; // Shared mem for 32 partial sums
     int lane = threadIdx.x % warpSize;
     int wid = threadIdx.x / warpSize;
 
     val = warpReduceSum<T>(val);     // Each warp performs partial reduction
 
-    if (lane==0) shared[wid]=val; // Write reduced value to shared memory
+    if (lane == 0) shared[wid]=val; // Write reduced value to shared memory
 
     __syncthreads();              // Wait for all partial reductions
 
     //read from shared memory only if that warp existed
     val = (threadIdx.x < blockDim.x / warpSize) ? shared[lane] : MAGMA_D_ZERO;
     
-    if (wid==0) val = warpReduceSum<T>(val); //Final reduce within first warp
+    if (wid == 0) val = warpReduceSum<T>(val); //Final reduce within first warp
     return val;
 }
 
+
 template<typename T>
 __inline__ __device__
-T blockReduceSum(T val) {
-
+T blockReduceSum(T val)
+{
     extern __shared__ T shared[]; // Shared mem for 32 partial sums
     int lane = threadIdx.x % warpSize;
     int wid = threadIdx.x / warpSize;
 
     val = warpReduceSum<T>(val);     // Each warp performs partial reduction
 
-    if (lane==0) shared[threadIdx.y*32+wid]=val; // Write reduced value to shared memory
+    if (lane == 0) shared[threadIdx.y*32+wid]=val; // Write reduced value to shared memory
 
     __syncthreads();              // Wait for all partial reductions
 
     //read from shared memory only if that warp existed
     val = (threadIdx.x < blockDim.x / warpSize) ? shared[threadIdx.y*32+lane] : MAGMA_D_ZERO;
     
-    if (wid==0) val = warpReduceSum<T>(val); //Final reduce within first warp
+    if (wid == 0) val = warpReduceSum<T>(val); //Final reduce within first warp
     return val;
 }
 
+
 template<typename T> 
-__global__ void deviceReduceKernel(const T * __restrict__ in, T * __restrict__ out, int N) {
-    T sum = MAGMA_D_MAKE(0.0,0.0);
+__global__ void deviceReduceKernel(const T * __restrict__ in, T * __restrict__ out, int N)
+{
+    T sum = MAGMA_D_MAKE(0.0, 0.0);
     //reduce multiple elements per thread
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x) {
         sum += in[i];
     }
     sum = blockReduceSum<T>(sum);
-    if (threadIdx.x==0)
-    out[blockIdx.x]=sum;
+    if (threadIdx.x == 0)
+        out[blockIdx.x]=sum;
 }
+
 
 // dot product for multiple vectors using shuffle intrinsics and less shared memory
 __global__ void
@@ -148,7 +158,7 @@ magma_dblockdot_kernel_shuffle(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = threadIdx.y;
     double tmp;
-    if (i<n) {
+    if (i < n) {
         tmp = v[i+j*n] * r[i];
     } else {
         tmp = MAGMA_D_ZERO;
@@ -158,6 +168,7 @@ magma_dblockdot_kernel_shuffle(
         vtmp[ blockIdx.x+j*gridDim.x ] = tmp;
     }
 }
+
 
 // dot product for multiple vectors using shuffle intrinsics and less shared memory
 __global__ void
@@ -170,9 +181,9 @@ magma_dblockdot_kernel_shuffle_1dblock(
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j;
-    for (j=0; j<k; j++) {
+    for (j=0; j < k; j++) {
         double tmp;
-        if (i<n) {
+        if (i < n) {
             tmp = v[i+j*n] * r[i];
         } else {
             tmp = MAGMA_D_ZERO;
@@ -183,6 +194,7 @@ magma_dblockdot_kernel_shuffle_1dblock(
         }
     }
 }
+
 
 /**
     Purpose
@@ -232,7 +244,8 @@ magma_dblockdot_kernel_shuffle_1dblock(
     @ingroup magmasparse_dblas
     ********************************************************************/
 
-#define PAD(n,p) (((n)<1 || (p)<1)?(n):(((n) % (p)) ? ((n) + (p) - (n) % (p)) : (n)))
+#define PAD(n, p) (((n) < 1 || (p) < 1)?(n):(((n) % (p)) ? ((n) + (p) - (n) % (p)) : (n)))
+
 extern "C" magma_int_t
 magma_dmdotc_shfl(
     magma_int_t n, 
@@ -244,38 +257,33 @@ magma_dmdotc_shfl(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-#if MIN_CUDA_ARCH < 300
-    return magma_dmdotc(n,k,v,r,d1,d2,skp,queue);
-#else
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
-
-    if (1) { // 1D block kernel seems to be always faster
+    if ( magma_getdevice_arch() < 300 ) {
+        return magma_dmdotc( n, k, v, r, d1, d2, skp, queue );
+    }
+    else if (1) { // 1D block kernel seems to be always faster
         dim3 block( BLOCK_SIZE );
         dim3 grid( magma_ceildiv( n, block.x ) );
         magma_dblockdot_kernel_shuffle_1dblock<<< grid, block, 32*sizeof(double), queue->cuda_stream() >>>( n, k, v, r, d1 );
         int j;
-        for (j=0; j<k; j++) {
-            deviceReduceKernel<double> <<<1,1024,32*sizeof(double),queue->cuda_stream()>>>(d1+grid.x*j,skp+j,grid.x);
+        for (j=0; j < k; j++) {
+            deviceReduceKernel<double> <<<1, 1024, 32*sizeof(double), queue->cuda_stream()>>>(d1+grid.x*j, skp+j, grid.x);
         }
     } else {
-        dim3 block( PAD(magma_ceildiv(BLOCK_SIZE,k),32),k );
+        dim3 block( PAD(magma_ceildiv(BLOCK_SIZE, k), 32), k );
         while (block.x*block.y > 1024) {
-            block.x-=32;
+            block.x -= 32;
         }
         dim3 grid( magma_ceildiv( n, block.x ) );
         magma_dblockdot_kernel_shuffle<<< grid, block, 32*k*sizeof(double), queue->cuda_stream() >>>( n, k, v, r, d1 );
         int j;
-        for (j=0; j<k; j++) {
-            deviceReduceKernel<double> <<<1,1024,32*sizeof(double),queue->cuda_stream()>>>(d1+grid.x*j,skp+j,grid.x);
+        for (j=0; j < k; j++) {
+            deviceReduceKernel<double> <<<1, 1024, 32*sizeof(double), queue->cuda_stream()>>>(d1+grid.x*j, skp+j, grid.x);
         }
     }
    
-    magmablasSetKernelStream( orig_queue );
-   return MAGMA_SUCCESS;
-#endif
+    return MAGMA_SUCCESS;
 }
+
 
 /**
     Purpose
@@ -339,16 +347,16 @@ magma_dgemvmdot_shfl(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-    if (k==1) { // call CUBLAS dotc, we will never be faster
-        double res =  magma_ddot(n,v,1,r,1);
-        magma_dsetvector(1,&res,1,skp,1);
-    } else {
-#if MIN_CUDA_ARCH < 300
-        return magma_dgemvmdot(n,k,v,r,d1,d2,skp,queue);
-#else
+    if (k == 1) { // call CUBLAS dotc, we will never be faster
+        double res = magma_ddot( n, v, 1, r, 1, queue );
+        magma_dsetvector( 1, &res, 1, skp, 1, queue );
+    }
+    else if ( magma_getdevice_arch() < 300 ) {
+        return magma_dgemvmdot( n, k, v, r, d1, d2, skp, queue );
+    }
+    else {
         magma_dmdotc_shfl( n, k, v, r, d1, d2, skp, queue );
-#endif
     }
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

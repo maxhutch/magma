@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
        
-       csymv.cu is nearly identical to chemv.cu, just change names and drop MAGMA_C_CNJG.
+       csymv.cu is nearly identical to chemv.cu, just change names and drop MAGMA_C_CONJ.
        
        csymv_kernel_U (upper) in csymv_upper.cu is very similar to
        csymv_kernel_L (lower) in csymv.cu; diff the two files to compare.
        
        Note: [ds] precisions generated from chemv.cu
-       @generated from magmablas/zsymv.cu normal z -> c, Wed Jan  6 17:59:39 2016
+       @generated from magmablas/zsymv.cu normal z -> c, Fri Jan 22 21:42:03 2016
        
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_c.h"
 
 #define PRECISION_c
@@ -604,7 +604,7 @@ magmablas_csymv_work(
 
     // --------------------
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     magma_int_t blocks = magma_ceildiv( n, NB_X );
     magma_int_t lwmin  = ldda*blocks;
@@ -744,13 +744,14 @@ magmablas_csymv_work(
     ********************************************************************/
 extern "C"
 magma_int_t
-magmablas_csymv(
+magmablas_csymv_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex_ptr dy, magma_int_t incy)
+    magmaFloatComplex_ptr dy, magma_int_t incy,
+    magma_queue_t queue )
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; no CUBLAS version of csymv.
@@ -765,7 +766,7 @@ magmablas_csymv(
 
     // --------------------
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
-    int upper = (uplo == MagmaUpper);
+    bool upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
@@ -806,7 +807,7 @@ magmablas_csymv(
     }
     
     magmablas_csymv_work( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy,
-                          dwork, lwork, magmablasGetQueue() );
+                          dwork, lwork, queue );
     
     magma_free( dwork );
     

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Hatem Ltaief
        @author Mark Gates
        
-       @generated from src/zlauum.cpp normal z -> d, Wed Jan  6 17:59:29 2016
+       @generated from src/zlauum.cpp normal z -> d, Fri Jan 22 21:41:29 2016
 
 */
 #include "magma_internal.h"
@@ -40,7 +40,7 @@
             The order of the triangular factor U or L.  N >= 0.
 
     @param[in,out]
-    A       DOUBLE_PRECISION array, dimension (LDA,N)
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the triangular factor U or L.
             On exit, if UPLO = MagmaUpper, the upper triangle of A is
             overwritten with the upper triangle of the product U * U^H;

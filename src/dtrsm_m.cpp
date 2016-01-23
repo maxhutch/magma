@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Raffaele Solca
 
-       @generated from src/ztrsm_m.cpp normal z -> d, Wed Jan  6 17:59:35 2016
+       @generated from src/ztrsm_m.cpp normal z -> d, Fri Jan 22 21:41:49 2016
 */
 #include "magma_internal.h"
 
@@ -74,13 +74,13 @@ magma_get_dtrsm_m_nb() { return 128; }
             at least zero.
 
     @param[in]
-    alpha   DOUBLE_PRECISION.
+    alpha   DOUBLE PRECISION.
             On entry, ALPHA specifies the scalar alpha. When alpha is
             zero then A is not referenced and B need not be set before
             entry.
 
     @param[in]
-    A       DOUBLE_PRECISION array of DIMENSION ( LDA, k ), where k is m
+    A       DOUBLE PRECISION array of DIMENSION ( LDA, k ), where k is m
             when SIDE = MagmaLeft and is n when SIDE = MagmaRight.
             Before entry with UPLO = MagmaUpper, the leading k by k
             upper triangular part of the array A must contain the upper
@@ -101,7 +101,7 @@ magma_get_dtrsm_m_nb() { return 128; }
             when SIDE = MagmaRight then LDA >= max( 1, n ).
 
     @param[in,out]
-    B       DOUBLE_PRECISION array of DIMENSION ( LDB, n ).
+    B       DOUBLE PRECISION array of DIMENSION ( LDB, n ).
             Before entry, the leading m by n part of the array B must
             contain the right-hand side matrix B, and on exit is
             overwritten by the solution matrix X.

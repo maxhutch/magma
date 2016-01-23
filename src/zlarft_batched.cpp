@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -46,7 +46,7 @@ magma_zlarft_sm32x32_batched(magma_int_t n, magma_int_t k,
             T_array, ldt, batchCount, queue );
     #else
     #if 1
-    for (int i=0; i < k; i++)
+    for (magma_int_t i=0; i < k; i++)
     {
         //W(1:i-1) := - tau(i) * V(i:n,1:i-1)' * V(i:n,i)
         //T( i, i ) = tau( i ) 

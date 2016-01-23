@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_blas_z.cpp normal z -> d, Wed Jan  6 17:59:46 2016
+       @generated from testing/testing_blas_z.cpp normal z -> d, Fri Jan 22 21:42:34 2016
        @author Mark Gates
        
        These tests ensure that the MAGMA wrappers around CUBLAS calls are
@@ -56,7 +56,6 @@ int main( int argc, char** argv )
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t m, n, k, size, maxn, ld, info;
     magma_int_t *piv;
-    magma_int_t err;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -77,16 +76,18 @@ int main( int argc, char** argv )
         maxn = max( max( m, n ), k );
         ld = max( 1, maxn );
         size = ld*maxn;
-        err = magma_malloc_cpu( (void**) &piv, maxn*sizeof(magma_int_t) );  assert( err == 0 );
-        err = magma_dmalloc_pinned( &A,  size );  assert( err == 0 );
-        err = magma_dmalloc_pinned( &B,  size );  assert( err == 0 );
-        err = magma_dmalloc_pinned( &C,  size );  assert( err == 0 );
-        err = magma_dmalloc_pinned( &C2, size );  assert( err == 0 );
-        err = magma_dmalloc_pinned( &LU, size );  assert( err == 0 );
-        err = magma_dmalloc( &dA,  size );        assert( err == 0 );
-        err = magma_dmalloc( &dB,  size );        assert( err == 0 );
-        err = magma_dmalloc( &dC1, size );        assert( err == 0 );
-        err = magma_dmalloc( &dC2, size );        assert( err == 0 );
+        TESTING_MALLOC_CPU( piv, magma_int_t, maxn );
+        
+        TESTING_MALLOC_PIN( A,   double, size );
+        TESTING_MALLOC_PIN( B,   double, size );
+        TESTING_MALLOC_PIN( C,   double, size );
+        TESTING_MALLOC_PIN( C2,  double, size );
+        TESTING_MALLOC_PIN( LU,  double, size );
+        
+        TESTING_MALLOC_DEV( dA,  double, size );
+        TESTING_MALLOC_DEV( dB,  double, size );
+        TESTING_MALLOC_DEV( dC1, double, size );
+        TESTING_MALLOC_DEV( dC2, double, size );
         
         // initialize matrices
         size = maxn*maxn;
@@ -121,7 +122,7 @@ int main( int argc, char** argv )
         error = 0;
         for( int j = 0; j < k; ++j ) {
             magma_int_t i1 = magma_idamax( m, dA(0,j), 1 );
-            int i2;  // NOT magma_int_t, for cublas
+            int i2;  // not magma_int_t
             cublasIdamax( opts.handle, m, dA(0,j), 1, &i2 );
             // todo need sync here?
             assert( i1 == i2 );
@@ -438,16 +439,16 @@ int main( int argc, char** argv )
         printf( "\n" );
         
         // cleanup
-        magma_free_cpu( piv );
-        magma_free_pinned( A  );
-        magma_free_pinned( B  );
-        magma_free_pinned( C  );
-        magma_free_pinned( C2 );
-        magma_free_pinned( LU );
-        magma_free( dA  );
-        magma_free( dB  );
-        magma_free( dC1 );
-        magma_free( dC2 );
+        TESTING_FREE_CPU( piv );
+        TESTING_FREE_PIN( A   );
+        TESTING_FREE_PIN( B   );
+        TESTING_FREE_PIN( C   );
+        TESTING_FREE_PIN( C2  );
+        TESTING_FREE_PIN( LU  );
+        TESTING_FREE_DEV( dA  );
+        TESTING_FREE_DEV( dB  );
+        TESTING_FREE_DEV( dC1 );
+        TESTING_FREE_DEV( dC2 );
         fflush( stdout );
     }
     
@@ -462,6 +463,6 @@ int main( int argc, char** argv )
     opts.cleanup();
     TESTING_FINALIZE();
     
-    int status = (total_error != 0.);
+    magma_int_t status = (total_error != 0.);
     return status;
 }

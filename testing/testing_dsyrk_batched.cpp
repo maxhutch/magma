@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zherk_batched.cpp normal z -> d, Wed Jan  6 17:59:51 2016
+       @generated from testing/testing_zherk_batched.cpp normal z -> d, Fri Jan 22 21:42:49 2016
        @author Chongxiao Cao
        @author Tingxing Dong
 */
@@ -36,7 +36,7 @@ int main( int argc, char** argv)
 
     real_Double_t   gflops, magma_perf, magma_time, cpu_perf=0., cpu_time=0.;
     double          magma_error, Cnorm, work[1];
-    magma_int_t N, K;
+    magma_int_t i, N, K;
     magma_int_t Ak, An;
     magma_int_t sizeA, sizeC;
     magma_int_t lda, ldc, ldda, lddc;
@@ -106,15 +106,15 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A, double, ldda*Ak*batchCount );
             TESTING_MALLOC_DEV( d_C, double, lddc*N*batchCount );
 
-            magma_malloc((void**)&A_array, batchCount * sizeof(*A_array));
-            magma_malloc((void**)&C_array, batchCount * sizeof(*C_array));
+            TESTING_MALLOC_DEV( A_array, double*, batchCount );
+            TESTING_MALLOC_DEV( C_array, double*, batchCount );
 
             /* Initialize the matrices */
             lapackf77_dlarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_dlarnv( &ione, ISEED, &sizeC, h_C );
-            for (int i=0; i < batchCount; i++)
+            for (i=0; i < batchCount; i++)
             {
-               magma_dmake_hpd( N, h_C + i * ldc * N, ldc ); // need modification
+                magma_dmake_hpd( N, h_C + i * ldc * N, ldc ); // need modification
             }
             
             /* =====================================================================
@@ -141,7 +141,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                for (int i=0; i < batchCount; i++)
+                for (i=0; i < batchCount; i++)
                 {
                    blasf77_dsyrk(
                                lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA),
@@ -159,7 +159,7 @@ int main( int argc, char** argv)
             if ( opts.lapack ) {
                 #ifdef MAGMA_WITH_MKL
                 // work around MKL bug in multi-threaded dlansy
-                int la_threads = magma_get_lapack_numthreads();
+                magma_int_t la_threads = magma_get_lapack_numthreads();
                 magma_set_lapack_numthreads( 1 );
                 #endif
                 
@@ -167,7 +167,7 @@ int main( int argc, char** argv)
                 // |C_magma - C_lapack| / |C_lapack|
                 sizeC = ldc*N;
                 magma_error = 0;
-                for (int i=0; i < batchCount; i++)
+                for (i=0; i < batchCount; i++)
                 {
                     blasf77_daxpy( &sizeC, &c_neg_one, h_C+i*ldc*N, &ione, h_Cmagma+i*ldc*N, &ione );
                     Cnorm      = lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_C     +i*ldc*N, &ldc, work );

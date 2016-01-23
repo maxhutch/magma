@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from testing/testing_zlacpy_batched.cpp normal z -> s, Wed Jan  6 17:59:50 2016
+       @generated from testing/testing_zlacpy_batched.cpp normal z -> s, Fri Jan 22 21:42:49 2016
        @author Mark Gates
 
 */
@@ -49,7 +49,7 @@ int main( int argc, char** argv)
     nstride = 3*nb;
     
     printf("%% mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
-    printf("%%   M     N ntile    CPU GFlop/s (ms)    GPU GFlop/s (ms)   check\n");
+    printf("%%   M     N ntile    CPU Gflop/s (ms)    GPU Gflop/s (ms)   check\n");
     printf("%%================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -87,8 +87,8 @@ int main( int argc, char** argv)
             magma_ssetmatrix( M, N, h_B, lda, d_B, ldda );
             
             // setup pointers
-            for( int tile = 0; tile < ntile; ++tile ) {
-                int offset = tile*mstride + tile*nstride*ldda;
+            for( magma_int_t tile = 0; tile < ntile; ++tile ) {
+                magma_int_t offset = tile*mstride + tile*nstride*ldda;
                 hAarray[tile] = &d_A[offset];
                 hBarray[tile] = &d_B[offset];
             }
@@ -96,7 +96,7 @@ int main( int argc, char** argv)
             magma_setvector( ntile, sizeof(float*), hBarray, 1, dBarray, 1 );
             
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_slacpy_batched( MagmaUpperLower, mb, nb, dAarray, ldda, dBarray, ldda, ntile, opts.queue );
+            magmablas_slacpy_batched( MagmaFull, mb, nb, dAarray, ldda, dBarray, ldda, ntile, opts.queue );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
@@ -104,9 +104,9 @@ int main( int argc, char** argv)
                Performs operation using LAPACK
                =================================================================== */
             cpu_time = magma_wtime();
-            for( int tile = 0; tile < ntile; ++tile ) {
-                int offset = tile*mstride + tile*nstride*lda;
-                lapackf77_slacpy( MagmaUpperLowerStr, &mb, &nb,
+            for( magma_int_t tile = 0; tile < ntile; ++tile ) {
+                magma_int_t offset = tile*mstride + tile*nstride*lda;
+                lapackf77_slacpy( MagmaFullStr, &mb, &nb,
                                   &h_A[offset], &lda,
                                   &h_B[offset], &lda );
             }

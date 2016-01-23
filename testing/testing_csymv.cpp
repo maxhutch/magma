@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -9,7 +9,7 @@
        
        Note: [ds] precisions generated from testing_chemv.cu
        
-       @generated from testing/testing_zsymv.cpp normal z -> c, Wed Jan  6 17:59:46 2016
+       @generated from testing/testing_zsymv.cpp normal z -> c, Fri Jan 22 21:42:33 2016
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,7 +21,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_c
 
 int main(int argc, char **argv)
 {

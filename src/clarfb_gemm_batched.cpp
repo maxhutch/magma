@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
-       @generated from src/zlarfb_gemm_batched.cpp normal z -> c, Wed Jan  6 17:59:36 2016
+       @generated from src/zlarfb_gemm_batched.cpp normal z -> c, Fri Jan 22 21:41:57 2016
 */
 
 #include "magma_internal.h"

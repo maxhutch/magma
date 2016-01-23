@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -118,7 +118,7 @@ magma_dlaex0_m(
     magma_int_t dev, j, k, matsiz, msd2, smlsiz;
     magma_int_t submat, subpbs, tlvls;
     magmaDouble_ptr dw[MagmaMaxGPUs] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs][2] = { NULL };
+    magma_queue_t queues[MagmaMaxGPUs][2] = {{ NULL }};
 
     // Test the input parameters.
     *info = 0;

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zgerbt.cu normal z -> c, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zgerbt.cu normal z -> c, Fri Jan 22 21:41:58 2016
 
 
        @author Adrien REMY
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "cgerbt.h"
 
 #define block_height  32
@@ -63,19 +63,8 @@ magmablas_cprbt_mtv_q(
     magmablas_capply_transpose_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, du, 0, db, 0);
 }
 
-/**
-    @see magmablas_cprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_cprbt_mtv(
-    magma_int_t n, 
-    magmaFloatComplex *du, magmaFloatComplex *db)
-{
-    magmablas_cprbt_mtv_q(n, du, db, magmablasGetQueue() );
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
     Purpose
     -------
@@ -118,16 +107,7 @@ magmablas_cprbt_mv_q(
     magmablas_capply_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dv, n+n/2, db, n/2);
 }
 
-/**
-    @see magmablas_cprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_cprbt_mv(
-    magma_int_t n, 
-    magmaFloatComplex *dv, magmaFloatComplex *db)
-{
-    magmablas_cprbt_mv_q(n, dv, db, magmablasGetQueue() );
-}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -185,17 +165,4 @@ magmablas_cprbt_q(
     dim3 grid2( magma_ceildiv( n, 2*block_height ), 
                 magma_ceildiv( n, 2*block_width  ));
     magmablas_celementary_multiplication_kernel<<< grid2, threads2, 0, queue->cuda_stream() >>>(n, dA, 0, ldda, du, -ldda, dv, -ldda);
-}
-
-
-/**
-    @see magmablas_cprbt_q
-    ********************************************************************/
-extern "C" void 
-magmablas_cprbt(
-    magma_int_t n, 
-    magmaFloatComplex *dA, magma_int_t ldda, 
-    magmaFloatComplex *du, magmaFloatComplex *dv)
-{
-    magmablas_cprbt_q(n, dA, ldda, du, dv, magmablasGetQueue() );
 }

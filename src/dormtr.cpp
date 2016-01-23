@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zunmtr.cpp normal z -> d, Wed Jan  6 17:59:33 2016
+       @generated from src/zunmtr.cpp normal z -> d, Fri Jan 22 21:41:44 2016
 
 */
 #include "magma_internal.h"
@@ -22,7 +22,7 @@
     TRANS = MagmaNoTrans:       Q * C               C * Q
     TRANS = MagmaTrans:    Q**H * C            C * Q**H
 
-    where Q is a real unitary matrix of order nq, with nq = m if
+    where Q is a real orthogonal matrix of order nq, with nq = m if
     SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
     nq-1 elementary reflectors, as returned by SSYTRD:
 
@@ -58,7 +58,7 @@
             The number of columns of the matrix C. N >= 0.
 
     @param[in]
-    A       DOUBLE_PRECISION array, dimension
+    A       DOUBLE PRECISION array, dimension
                                  (LDA,M) if SIDE = MagmaLeft
                                  (LDA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
@@ -70,14 +70,14 @@
             LDA >= max(1,M) if SIDE = MagmaLeft; LDA >= max(1,N) if SIDE = MagmaRight.
 
     @param[in]
-    tau     DOUBLE_PRECISION array, dimension
+    tau     DOUBLE PRECISION array, dimension
                                  (M-1) if SIDE = MagmaLeft
                                  (N-1) if SIDE = MagmaRight
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by SSYTRD.
 
     @param[in,out]
-    C       DOUBLE_PRECISION array, dimension (LDC,N)
+    C       DOUBLE PRECISION array, dimension (LDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
 
@@ -86,7 +86,7 @@
             The leading dimension of the array C. LDC >= max(1,M).
 
     @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -127,14 +127,13 @@ magma_dormtr(
 
     magma_int_t  i__2;
     magma_int_t i1, i2, nb, mi, ni, nq, nw;
-    int left, upper, lquery;
     magma_int_t iinfo;
     magma_int_t lwkopt;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    upper  = (uplo == MagmaUpper);
-    lquery = (lwork == -1);
+    bool left   = (side == MagmaLeft);
+    bool upper  = (uplo == MagmaUpper);
+    bool lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -166,7 +165,7 @@ magma_dormtr(
     nb = 32;
     lwkopt = max(1,nw) * nb;
     if (*info == 0) {
-        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+        work[0] = magma_dmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -213,7 +212,7 @@ magma_dormtr(
                      C(i1,i2), ldc, work, lwork, &iinfo);
     }
 
-    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
+    work[0] = magma_dmake_lwork( lwkopt );
 
     return *info;
 } /* magma_dormtr */

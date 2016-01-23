@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/dznrm2.cu normal z -> c, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/dznrm2.cu normal z -> c, Fri Jan 22 21:42:03 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_c.h"
 #include "magma_templates.h"
 
@@ -17,7 +17,7 @@
 #define BLOCK_SIZEx  32
 #define BLOCK_SIZEy  16
 
-#define PRECISION_c
+#define COMPLEX
 
 
 //==============================================================================
@@ -35,7 +35,7 @@ magmablas_scnrm2_kernel(
     // get norm of dx
     float lsum = 0;
     for( int j = tx; j < m; j += BLOCK_SIZE ) {
-        #if (defined(PRECISION_s) || defined(PRECISION_d))
+        #ifdef REAL
             float re = dx[j];
             lsum += re*re;
         #else
@@ -71,7 +71,7 @@ magmablas_scnrm2_check_kernel(
 
     float lsum = 0;
     for( int j = tx; j < m; j += BLOCK_SIZE ) {
-        #if (defined(PRECISION_s) || defined(PRECISION_d))
+        #ifdef REAL
             float re = dx[j];
             lsum += re*re;
         #else
@@ -102,16 +102,6 @@ magmablas_scnrm2_check_q(
         ( m, dA, ldda, dxnorm, dlsticc );
 }
 
-extern "C" void
-magmablas_scnrm2_check(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_ptr dA, magma_int_t ldda, 
-    magmaFloat_ptr dxnorm,
-    magmaFloat_ptr dlsticc ) 
-{
-    magmablas_scnrm2_check_q( m, n, dA, ldda, dxnorm, dlsticc, magmablasGetQueue() );
-}
-
 
 //==============================================================================
 __global__ void
@@ -130,7 +120,7 @@ magmablas_scnrm2_smkernel(
         // get norm of dx
         float lsum = 0;
         for( int j = tx; j < m; j += BLOCK_SIZEx ) {
-            #if (defined(PRECISION_s) || defined(PRECISION_d))
+            #ifdef REAL
                 float re = dx[j];
                 lsum += re*re;
             #else
@@ -166,15 +156,6 @@ magmablas_scnrm2_sm_q(
     magmablas_scnrm2_smkernel
         <<< blocks, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA, ldda, dxnorm );
-}
-
-extern "C" void
-magmablas_scnrm2_sm(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_ptr dA, magma_int_t ldda,
-    magmaFloat_ptr dxnorm )
-{
-    magmablas_scnrm2_sm_q( m, n, dA, ldda, dxnorm, magmablasGetQueue() );
 }
 
 
@@ -213,15 +194,6 @@ magmablas_scnrm2_adjust_q(
     magma_scnrm2_adjust_kernel
         <<< blocks, threads, 0, queue->cuda_stream() >>>
         (dxnorm, dc);
-}
-
-extern "C" void
-magmablas_scnrm2_adjust(
-    magma_int_t k,
-    magmaFloat_ptr dxnorm,
-    magmaFloatComplex_ptr dc )
-{
-    magmablas_scnrm2_adjust_q( k, dxnorm, dc, magmablasGetQueue() );
 }
 
 
@@ -276,17 +248,6 @@ magmablas_scnrm2_row_check_adjust_q(
         (k, tol, dxnorm, dxnorm2, dC, lddc, dlsticc);
 }
 
-extern "C" void
-magmablas_scnrm2_row_check_adjust(
-    magma_int_t k, float tol,
-    magmaFloat_ptr dxnorm,
-    magmaFloat_ptr dxnorm2, 
-    magmaFloatComplex_ptr dC, magma_int_t lddc,
-    magmaFloat_ptr dlsticc )
-{
-    magmablas_scnrm2_row_check_adjust_q( k, tol, dxnorm, dxnorm2, dC, lddc, dlsticc, magmablasGetQueue() );
-}
-
 
 //==============================================================================
 
@@ -309,14 +270,5 @@ magmablas_scnrm2_cols_q(
         ( m, dA, ldda, dxnorm );
 
     // The following would do the computation on one SM
-    // magmablas_scnrm2_sm(m, n, dA, ldda, dxnorm);
-}
-
-extern "C" void
-magmablas_scnrm2_cols(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_ptr dA, magma_int_t ldda, 
-    magmaFloat_ptr dxnorm ) 
-{
-    magmablas_scnrm2_cols_q( m, n, dA, ldda, dxnorm, magmablasGetQueue() );
+    // magmablas_scnrm2_sm_q( m, n, dA, ldda, dxnorm, queue );
 }

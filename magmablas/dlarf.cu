@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        @date January 2016
 
-       @generated from magmablas/zlarf.cu normal z -> d, Wed Jan  6 17:59:38 2016
+       @generated from magmablas/zlarf.cu normal z -> d, Fri Jan 22 21:42:00 2016
        @author Azzam Haidar
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
@@ -39,14 +39,14 @@ void magma_dlarf_kernel( int m, const double *dv, const double *dtau,
         else
             tmp = MAGMA_D_ZERO;
         for( int j = tx+1; j < m; j += BLOCK_SIZE ) {
-            tmp += MAGMA_D_MUL( MAGMA_D_CNJG( dv[j] ), dc[j] );
+            tmp += MAGMA_D_MUL( MAGMA_D_CONJ( dv[j] ), dc[j] );
         }
         sum[tx] = tmp;
         magma_sum_reduce< BLOCK_SIZE >( tx, sum );
 
         /*  C := C - v * w  */
         __syncthreads();
-        tmp = - MAGMA_D_CNJG(*dtau) * sum[0];
+        tmp = - MAGMA_D_CONJ(*dtau) * sum[0];
         for( int j = m-tx-1; j > 0; j -= BLOCK_SIZE )
              dc[j] += tmp * dv[j];
 
@@ -76,14 +76,14 @@ void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
                 if (j == 0)
                    lsum += MAGMA_D_MUL( MAGMA_D_ONE, dc[j] );
                 else
-                   lsum += MAGMA_D_MUL( MAGMA_D_CNJG( dv[j] ), dc[j] );
+                   lsum += MAGMA_D_MUL( MAGMA_D_CONJ( dv[j] ), dc[j] );
             }
             sum[i][col] = lsum;
             magma_sum_reduce_2d< BLOCK_SIZEx, BLOCK_SIZEy+1 >( i, col, sum );
     
             /*  C := C - v * w  */
             __syncthreads();
-            double z__1 = - MAGMA_D_CNJG(*dtau) * sum[0][col];
+            double z__1 = - MAGMA_D_CONJ(*dtau) * sum[0][col];
             for( int j = m-i-1; j >= 0; j -= BLOCK_SIZEx ) {
                 if (j == 0)
                     dc[j] += z__1;
@@ -109,14 +109,17 @@ void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
     This routine uses only one SM (block).
  */
 extern "C" void
-magma_dlarf_sm(magma_int_t m, magma_int_t n, double *dv, double *dtau,
-               double *dc, magma_int_t lddc)
+magma_dlarf_sm(
+    magma_int_t m, magma_int_t n,
+    double *dv, double *dtau,
+    double *dc, magma_int_t lddc,
+    magma_queue_t queue )
 {
     dim3  blocks( 1 );
     dim3 threads( BLOCK_SIZEx, BLOCK_SIZEy );
 
     magma_dlarf_smkernel
-        <<< blocks, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        <<< blocks, threads, 0, queue->cuda_stream() >>>
         ( m, n, dv, dtau, dc, lddc );
 }
 //==============================================================================
@@ -137,13 +140,14 @@ magma_dlarf_gpu(
     magma_int_t m,  magma_int_t n,
     magmaDouble_const_ptr dv,
     magmaDouble_const_ptr dtau,
-    magmaDouble_ptr dC,  magma_int_t lddc)
+    magmaDouble_ptr dC,  magma_int_t lddc,
+    magma_queue_t queue )
 {
     dim3 grid( n, 1, 1 );
     dim3 threads( BLOCK_SIZE );
     if ( n > 0 ) {
         magma_dlarf_kernel
-            <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+            <<< grid, threads, 0, queue->cuda_stream() >>>
             ( m, dv, dtau, dC, lddc);
     }
 

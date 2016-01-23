@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zunmtr.cpp normal z -> c, Wed Jan  6 17:59:33 2016
+       @generated from src/zunmtr.cpp normal z -> c, Fri Jan 22 21:41:44 2016
 
 */
 #include "magma_internal.h"
@@ -127,14 +127,13 @@ magma_cunmtr(
 
     magma_int_t  i__2;
     magma_int_t i1, i2, nb, mi, ni, nq, nw;
-    int left, upper, lquery;
     magma_int_t iinfo;
     magma_int_t lwkopt;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    upper  = (uplo == MagmaUpper);
-    lquery = (lwork == -1);
+    bool left   = (side == MagmaLeft);
+    bool upper  = (uplo == MagmaUpper);
+    bool lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -166,7 +165,7 @@ magma_cunmtr(
     nb = 32;
     lwkopt = max(1,nw) * nb;
     if (*info == 0) {
-        work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+        work[0] = magma_cmake_lwork( lwkopt );
     }
 
     if (*info != 0) {
@@ -213,7 +212,7 @@ magma_cunmtr(
                      C(i1,i2), ldc, work, lwork, &iinfo);
     }
 
-    work[0] = MAGMA_C_MAKE( lwkopt, 0 );
+    work[0] = magma_cmake_lwork( lwkopt );
 
     return *info;
 } /* magma_cunmtr */

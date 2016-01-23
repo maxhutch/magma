@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -10,7 +10,7 @@
 
        @author Adrien REMY
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "zgerbt.h"
 
 #define block_height  32
@@ -63,19 +63,8 @@ magmablas_zprbt_mtv_q(
     magmablas_zapply_transpose_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, du, 0, db, 0);
 }
 
-/**
-    @see magmablas_zprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_zprbt_mtv(
-    magma_int_t n, 
-    magmaDoubleComplex *du, magmaDoubleComplex *db)
-{
-    magmablas_zprbt_mtv_q(n, du, db, magmablasGetQueue() );
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
     Purpose
     -------
@@ -118,16 +107,7 @@ magmablas_zprbt_mv_q(
     magmablas_zapply_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dv, n+n/2, db, n/2);
 }
 
-/**
-    @see magmablas_zprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_zprbt_mv(
-    magma_int_t n, 
-    magmaDoubleComplex *dv, magmaDoubleComplex *db)
-{
-    magmablas_zprbt_mv_q(n, dv, db, magmablasGetQueue() );
-}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -185,17 +165,4 @@ magmablas_zprbt_q(
     dim3 grid2( magma_ceildiv( n, 2*block_height ), 
                 magma_ceildiv( n, 2*block_width  ));
     magmablas_zelementary_multiplication_kernel<<< grid2, threads2, 0, queue->cuda_stream() >>>(n, dA, 0, ldda, du, -ldda, dv, -ldda);
-}
-
-
-/**
-    @see magmablas_zprbt_q
-    ********************************************************************/
-extern "C" void 
-magmablas_zprbt(
-    magma_int_t n, 
-    magmaDoubleComplex *dA, magma_int_t ldda, 
-    magmaDoubleComplex *du, magmaDoubleComplex *dv)
-{
-    magmablas_zprbt_q(n, dA, ldda, du, dv, magmablasGetQueue() );
 }

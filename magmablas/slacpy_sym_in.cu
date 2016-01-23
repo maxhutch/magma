@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 2.0.0-beta2) --
+    -- MAGMA (version 2.0.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,10 @@
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlacpy_sym_in.cu normal z -> s, Wed Jan  6 17:59:37 2016
+       @generated from magmablas/zlacpy_sym_in.cu normal z -> s, Fri Jan 22 21:41:59 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -83,7 +83,7 @@ void slacpy_sym_in_lower_device(
             {
                 int j = rows[2*(iby+jj)];
                 if (perm[ind] <= j)
-                    dB[ind + (iby+jj)*lddb] = MAGMA_S_CNJG( dA[j + perm[ind]*ldda] );
+                    dB[ind + (iby+jj)*lddb] = MAGMA_S_CONJ( dA[j + perm[ind]*ldda] );
                 else
                     dB[ind + (iby+jj)*lddb] = dA[perm[ind] + j*ldda];
             }
@@ -94,7 +94,7 @@ void slacpy_sym_in_lower_device(
             {
                 int j = rows[2*(iby+jj)];
                 if (perm[ind] <= j)
-                    dB[ind + (iby+jj)*lddb] = MAGMA_S_CNJG( dA[j + perm[ind]*ldda] );
+                    dB[ind + (iby+jj)*lddb] = MAGMA_S_CONJ( dA[j + perm[ind]*ldda] );
                 else
                     dB[ind + (iby+jj)*lddb] = dA[perm[ind] + j*ldda];
             }
@@ -275,19 +275,4 @@ magmablas_slacpy_sym_in_q(
     else {
         slacpy_sym_in_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, dA, ldda, dB, lddb );
     }
-}
-
-
-/**
-    @see magmablas_slacpy_q
-    @ingroup magma_saux2
-    ********************************************************************/
-extern "C" void
-magmablas_slacpy_sym_in(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magma_int_t *rows, magma_int_t *perm,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
-    magmaFloat_ptr       dB, magma_int_t lddb )
-{
-    magmablas_slacpy_sym_in_q( uplo, m, n, rows, perm, dA, ldda, dB, lddb, magmablasGetQueue() );
 }
