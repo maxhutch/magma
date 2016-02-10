@@ -6,7 +6,7 @@
  *
  *     @author Azzam Haidar
  *
- *     @generated from src/core_zlarfy.cpp normal z -> c, Fri Jan 22 21:41:48 2016
+ *     @generated from src/core_zlarfy.cpp normal z -> c, Tue Feb  9 16:05:18 2016
  *
  */
 #include "magma_internal.h"
@@ -17,7 +17,7 @@
  * @ingroup magma_caux3
  *
  *  magma_clarfy applies an elementary reflector, or Householder matrix, H,
- *  to a n-by-n hermitian matrix C, from both the left and the right.
+ *  to a n-by-n Hermitian matrix C, from both the left and the right.
  *
  *  H is represented in the form
  *

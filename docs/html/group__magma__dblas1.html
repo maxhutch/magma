@@ -392,7 +392,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -524,7 +525,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dy</td><td>DOUBLE PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -642,7 +644,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dy</td><td>DOUBLE PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -760,7 +763,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dy</td><td>DOUBLE PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -852,7 +856,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x and y. n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -998,7 +1003,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dy</td><td>DOUBLE PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy). On output, overwritten with -conj(s)*x + c*y.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">c</td><td>double. cosine.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>DOUBLE PRECISION. sine. c and s define a rotation [ c s ] where c*c + s*conj(s) = 1. [ -conj(s) c ] </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>DOUBLE PRECISION. sine. c and s define a rotation [ c s ] where c*c + s*conj(s) = 1. [ -conj(s) c ]</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1102,7 +1108,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>Scalar \( \alpha \)</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1220,7 +1227,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dy</td><td>DOUBLE PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1312,7 +1320,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1404,7 +1413,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1614,7 +1624,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:12 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:37 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

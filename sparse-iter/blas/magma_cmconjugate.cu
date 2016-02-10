@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/magma_zmconjugate.cu normal z -> c, Fri Jan 22 21:42:17 2016
+       @generated from sparse-iter/blas/magma_zmconjugate.cu normal z -> c, Tue Feb  9 16:05:46 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 256
 
@@ -24,7 +24,7 @@ magma_cmconjugate_kernel(
 
     if(row < num_rows ){
         for( int i = rowptr[row]; i < rowptr[row+1]; i++){
-            values[i] = MAGMA_C_CNJG( values[i] );
+            values[i] = MAGMA_C_CONJ( values[i] );
         }
     }
 }

@@ -179,7 +179,7 @@ endif()
 
 
 # ----------------------------------------
-# where to put libmagma
+# save magma.lib, magma_sparse.lib, etc. in lib/
 set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY lib )
 
@@ -326,24 +326,6 @@ endif()
 
 
 # ----------------------------------------
-# compile each tester
-# skip Fortran testers, which require an extra file from CUDA
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY testing )
-foreach( f ${testing_allsrc} )
-	if ( ${f} MATCHES "\\.(c|cu|cpp)$" )
-		list( APPEND testing_allsrc_cpp ${f} )
-	endif()
-endforeach()
-foreach( TEST ${testing_allsrc_cpp} )
-	string( REGEX REPLACE "\\.(cpp|f90|F90)" "" EXE ${TEST} )
-	string( REGEX REPLACE "testing/" "" EXE ${EXE} )
-	#message( "${TEST} --> ${EXE}" )
-	add_executable( ${EXE} ${TEST} )
-	target_link_libraries( ${EXE} ${LIBS} )
-endforeach()
-
-
-# ----------------------------------------
 # compile MAGMA sparse library
 
 # sparse doesn't have Fortran at the moment, so no need for above shenanigans
@@ -359,6 +341,30 @@ target_link_libraries( magma_sparse
 	${CUDA_cusparse_LIBRARY}
 )
 set( LIBS_SPARSE ${LIBS} magma_sparse )
+
+
+# ----------------------------------------
+# compile each tester
+
+# save testers to testing/
+# save tester lib files to testing_lib/ to avoid cluttering lib/
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY testing )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY testing_lib )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY testing_lib )
+
+# skip Fortran testers, which require an extra file from CUDA
+foreach( f ${testing_allsrc} )
+	if ( ${f} MATCHES "\\.(c|cu|cpp)$" )
+		list( APPEND testing_allsrc_cpp ${f} )
+	endif()
+endforeach()
+foreach( TEST ${testing_allsrc_cpp} )
+	string( REGEX REPLACE "\\.(cpp|f90|F90)" "" EXE ${TEST} )
+	string( REGEX REPLACE "testing/" "" EXE ${EXE} )
+	#message( "${TEST} --> ${EXE}" )
+	add_executable( ${EXE} ${TEST} )
+	target_link_libraries( ${EXE} ${LIBS} )
+endforeach()
 
 
 # ----------------------------------------

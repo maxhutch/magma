@@ -14,9 +14,6 @@ int main( int argc, char** argv )
     printf( "\n" );
     
     printf( "ntest    %d\n", (int) opts.ntest );
-    printf( "mmax     %d\n", (int) opts.mmax  );
-    printf( "nmax     %d\n", (int) opts.nmax  );
-    printf( "kmax     %d\n", (int) opts.kmax  );
     printf( "\n" );
     
     printf( "nb       %d\n", (int) opts.nb       );

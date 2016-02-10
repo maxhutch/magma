@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zmdotc.cu normal z -> d, Fri Jan 22 21:42:13 2016
+       @generated from sparse-iter/blas/zmdotc.cu normal z -> d, Tue Feb  9 16:05:42 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 256
 
@@ -196,9 +196,6 @@ magma_dmdotc1(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -225,10 +222,9 @@ magma_dmdotc1(
     }
     
         // copy vectors to host
-    magma_dgetvector( 1 , aux1, 1, skp, 1 );
+    magma_dgetvector( 1 , aux1, 1, skp, 1, queue );
     
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -475,9 +471,6 @@ magma_dmdotc2(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -504,10 +497,9 @@ magma_dmdotc2(
     }
     
         // copy vectors to host
-    magma_dgetvector( 2 , aux1, n, skp, 1 );
+    magma_dgetvector( 2 , aux1, n, skp, 1, queue );
     
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -772,9 +764,6 @@ magma_dmdotc3(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -783,7 +772,7 @@ magma_dmdotc3(
     int Ms = 3 * (local_block_size) * sizeof( double ); // 4 skp 
     magmaDouble_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
-    // magma_dmdotc3_gpumemzero<<<Gs, Bs, 0, queue->cuda_stream() >>>( d1, n );
+    // magma_dmdotc3_gpumemzero<<< Gs, Bs, 0, queue->cuda_stream() >>>( d1, n );
 
     magma_dmdotc3_kernel_1<<< Gs, Bs, Ms, queue->cuda_stream() >>>
             ( Gs.x, n, v0, w0, v1, w1, v2, w2, d1 );
@@ -801,10 +790,8 @@ magma_dmdotc3(
     }
     
         // copy vectors to host
-    magma_dgetvector( 3 , aux1, n, skp, 1 );
-    
+    magma_dgetvector( 3 , aux1, n, skp, 1, queue );
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -1083,9 +1070,6 @@ magma_dmdotc4(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -1112,10 +1096,8 @@ magma_dmdotc4(
     }
     
         // copy vectors to host
-    magma_dgetvector( 4 , aux1, n, skp, 1 );
+    magma_dgetvector( 4 , aux1, n, skp, 1, queue );
     
-
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

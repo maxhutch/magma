@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
@@ -664,46 +664,6 @@ magma_zgeqrf_panel_batched(
     magmaDoubleComplex** W2_array,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_zgeqrf_panel_batched_v4(
-    magma_int_t m, magma_int_t n, magma_int_t nb,    
-    magmaDoubleComplex** dA_array,    magma_int_t ldda,
-    magmaDoubleComplex** tau_array, 
-    magmaDoubleComplex** dT_array, magma_int_t ldt, 
-    magmaDoubleComplex** dR_array, magma_int_t ldr,
-    double** dnorm_array,  
-    magmaDoubleComplex** dW0_displ, 
-    magmaDoubleComplex** dW1_displ,
-    magmaDoubleComplex *dwork,  
-    magmaDoubleComplex** W_array, 
-    magmaDoubleComplex** W2_array,
-    magma_int_t *info_array,
-    magma_int_t batchCount, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_zunmqr_batched(
-    magma_side_t side, magma_trans_t trans,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaDoubleComplex **dA_array, magma_int_t ldda,
-    magmaDoubleComplex **tau_array,
-    magmaDoubleComplex **dC_array, magma_int_t lddc,
-    magmaDoubleComplex *hwork, magma_int_t lwork, 
-    magmaDoubleComplex **dT_array, magma_int_t nb, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_zgeqrs_batched(
-    magma_int_t m, magma_int_t n, magma_int_t nrhs,
-    magmaDoubleComplex **dA_array, magma_int_t ldda,
-    magmaDoubleComplex **tau_array,
-    magmaDoubleComplex **dR_array, magma_int_t lddr, 
-    magmaDoubleComplex **dT_array, magma_int_t nb,  
-    magmaDoubleComplex **dB_array, magma_int_t lddb,
-    magmaDoubleComplex *hwork, magma_int_t lwork, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
 
 magma_int_t 
 magma_zgels_batched(

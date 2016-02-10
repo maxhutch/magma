@@ -27,7 +27,7 @@ Click the Configure button.
 
 It will ask to create the build directory; enter Yes.
 
-It will ask what generator to use. We used "Visual Studio 10 Win64",
+It will ask what generator to use. We used "Visual Studio 12 2013 Win64",
 with the default native compilers. Click Finish.
 
 It should spend a few minutes analyzing your system, then return to the
@@ -50,6 +50,10 @@ the setup some.
    For MKL, you can determine what libraries to link with using the
    Intel MKL Link Link Advisor, at
    http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+   
+   For OpenBLAS, we used (again, no spaces before or after):
+   
+   c:\openblas-0.2.14\lib\libopenblas.dll.a
 
 *  If using Intel MKL, also set MKLROOT. In our case, we used:
    C:\Program Files (x86)\Intel\Composer XE\mkl
@@ -76,13 +80,9 @@ In the Toolbar, select the desired Solution Configuration:
 
 From the Build menu, run Build Solution.
 VS does not support parallel builds with nvcc, so it will take a long time
-to build -- perhaps an hour.
+to build -- perhaps several hours.
 
 Once built, the MAGMA library and testers should be in
    build\lib\Debug\
    build\testing\Debug\
 where "Debug" depends on what solution configuration you chose.
-
-CMake would not compile Fortran and C++ files in the same library, so Fortran
-files are compiled into a separate magmaf library. Currently, it is only
-required for the non-symmetric eigenvalue problem, though.

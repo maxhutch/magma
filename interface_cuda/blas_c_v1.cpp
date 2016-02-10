@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
  
        @author Mark Gates
-       @generated from interface_cuda/blas_z_v1.cpp normal z -> c, Fri Jan 22 21:41:27 2016
+       @generated from interface_cuda/blas_z_v1.cpp normal z -> c, Tue Feb  9 16:04:59 2016
 */
 #include "common_magma.h"
 #include "error.h"

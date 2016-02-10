@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -154,8 +154,6 @@ magma_zbicgstab_merge2(
     do
     {
         solver_par->numiter++;
-
-        //magmablasSetKernelStream(queues[0]);
 
         // computes p=r+beta*(p-omega*v)
         CHECK( magma_zbicgmerge1( dofs, skp, v.dval, r.dval, p.dval, queue ));

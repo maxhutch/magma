@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Stan Tomov
-       @generated from magmablas/zgeqr2.cpp normal z -> c, Fri Jan 22 21:42:08 2016
+       @generated from magmablas/zgeqr2.cpp normal z -> c, Tue Feb  9 16:05:37 2016
 
 */
 #include "magma_internal.h"
@@ -49,6 +49,10 @@
 
     @param
     dwork   (workspace) REAL array, dimension (N)
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @param[out]
     info    INTEGER

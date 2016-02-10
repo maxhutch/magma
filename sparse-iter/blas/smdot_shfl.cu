@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zmdot_shfl.cu normal z -> s, Fri Jan 22 21:42:13 2016
+       @generated from sparse-iter/blas/zmdot_shfl.cu normal z -> s, Tue Feb  9 16:05:42 2016
        @author Moritz Kreutzer
 
 */
@@ -15,6 +15,20 @@
 #define BLOCK_SIZE 512
 
 #define PRECISION_s
+
+#include <cuda.h>  // for CUDA_VERSION
+
+#if (CUDA_VERSION <= 6000)
+// CUDA 6.5 adds Double precision version; here's an implementation for CUDA 6.0 and earlier.
+// from https://devblogs.nvidia.com/parallelforall/faster-parallel-reductions-kepler/
+__device__ inline
+real_Double_t __shfl_down(real_Double_t var, unsigned int srcLane, int width=32) {
+  int2 a = *reinterpret_cast<int2*>(&var);
+  a.x = __shfl_down(a.x, srcLane, width);
+  a.y = __shfl_down(a.y, srcLane, width);
+  return *reinterpret_cast<float*>(&a);
+}
+#endif
 
 
 template<typename T>

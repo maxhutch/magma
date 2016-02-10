@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
 
@@ -103,7 +103,7 @@ magma_zgeqrf_m(
     magmaDoubleComplex *da[MagmaMaxGPUs];
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
 
-    magma_int_t i, k, ldda;
+    magma_int_t i, min_mn, ldda;
 
     *info = 0;
     magma_int_t nb = magma_get_zgeqrf_nb( m, n );
@@ -129,8 +129,8 @@ magma_zgeqrf_m(
     else if (lquery)
         return *info;
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         work[0] = c_one;
         return *info;
     }

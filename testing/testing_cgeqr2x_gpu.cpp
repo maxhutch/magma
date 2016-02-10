@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zgeqr2x_gpu.cpp normal z -> c, Fri Jan 22 21:42:42 2016
+       @generated from testing/testing_zgeqr2x_gpu.cpp normal z -> c, Tue Feb  9 16:06:10 2016
 */
 
 // includes, system

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
 
@@ -23,7 +23,7 @@
  *
  *  magma_zhbtype1cb is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel eliminate a column by an column-wise
- *  annihiliation, then it apply a left+right update on the hermitian triangle.
+ *  annihiliation, then it apply a left+right update on the Hermitian triangle.
  *  Note that the column to be eliminated is located at st-1.
  *
  *  All detail are available on technical report or SC11 paper.

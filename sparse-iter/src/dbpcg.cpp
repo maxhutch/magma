@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zbpcg.cpp normal z -> d, Fri Jan 22 21:42:27 2016
+       @generated from sparse-iter/src/zbpcg.cpp normal z -> d, Tue Feb  9 16:05:55 2016
 */
 
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define RTOLERANCE     lapackf77_dlamch( "E" )
 #define ATOLERANCE     lapackf77_dlamch( "E" )
@@ -71,11 +71,6 @@ magma_dbpcg(
 {
     magma_int_t info = 0;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
-
-    
     magma_int_t i, num_vecs = b.num_rows/A.num_rows;
 
     // prepare solver feedback
@@ -134,17 +129,17 @@ magma_dbpcg(
     CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
     CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
 
-    magma_dcopy( dofs*num_vecs, h.dval, 1, p.dval, 1 );                 // p = h
+    magma_dcopy( dofs*num_vecs, h.dval, 1, p.dval, 1, queue );                 // p = h
 
     for( i=0; i<num_vecs; i++) {
-        nom[i] = MAGMA_D_REAL( magma_ddot(dofs, r(i), 1, h(i), 1) );
-        nom0[i] = magma_dnrm2( dofs, r(i), 1 );
+        nom[i] = MAGMA_D_REAL( magma_ddot( dofs, r(i), 1, h(i), 1, queue ) );
+        nom0[i] = magma_dnrm2( dofs, r(i), 1, queue );
     }
                                           
     CHECK( magma_d_spmv( c_one, A, p, c_zero, q, queue ));             // q = A p
 
     for( i=0; i<num_vecs; i++)
-        den[i] = MAGMA_D_REAL( magma_ddot(dofs, p(i), 1, q(i), 1) );  // den = p dot q
+        den[i] = MAGMA_D_REAL( magma_ddot( dofs, p(i), 1, q(i), 1, queue ) );  // den = p dot q
 
     solver_par->init_res = nom0[0];
     
@@ -153,7 +148,6 @@ magma_dbpcg(
     // check positive definite
     if (den[0] <= 0.0) {
         printf("Operator A is not postive definite. (Ar,r) = %f\n", den[0]);
-        magmablasSetKernelStream( orig_queue );
         info = MAGMA_NONSPD; 
         goto cleanup;
     }
@@ -183,16 +177,16 @@ magma_dbpcg(
 
 
         for( i=0; i<num_vecs; i++)
-            gammanew[i] = MAGMA_D_REAL( magma_ddot(dofs, r(i), 1, h(i), 1) );  // gn = < r,h>
+            gammanew[i] = MAGMA_D_REAL( magma_ddot( dofs, r(i), 1, h(i), 1, queue ) );  // gn = < r,h>
 
 
         if ( solver_par->numiter==1 ) {
-            magma_dcopy( dofs*num_vecs, h.dval, 1, p.dval, 1 );                    // p = h
+            magma_dcopy( dofs*num_vecs, h.dval, 1, p.dval, 1, queue );                    // p = h
         } else {
             for( i=0; i<num_vecs; i++) {
                 beta[i] = MAGMA_D_MAKE(gammanew[i]/gammaold[i], 0.);       // beta = gn/go
-                magma_dscal(dofs, beta[i], p(i), 1);            // p = beta*p
-                magma_daxpy(dofs, c_one, h(i), 1, p(i), 1); // p = p + h
+                magma_dscal( dofs, beta[i], p(i), 1, queue );            // p = beta*p
+                magma_daxpy( dofs, c_one, h(i), 1, p(i), 1, queue ); // p = p + h
             }
         }
 
@@ -202,15 +196,15 @@ magma_dbpcg(
 
 
         for( i=0; i<num_vecs; i++) {
-            den[i] = MAGMA_D_REAL(magma_ddot(dofs, p(i), 1, q(i), 1));
+            den[i] = MAGMA_D_REAL(magma_ddot( dofs, p(i), 1, q(i), 1, queue) );
                 // den = p dot q
 
             alpha[i] = MAGMA_D_MAKE(gammanew[i]/den[i], 0.);
-            magma_daxpy(dofs,  alpha[i], p(i), 1, x->dval+dofs*i, 1); // x = x + alpha p
-            magma_daxpy(dofs, -alpha[i], q(i), 1, r(i), 1);      // r = r - alpha q
+            magma_daxpy( dofs,  alpha[i], p(i), 1, x->dval+dofs*i, 1, queue ); // x = x + alpha p
+            magma_daxpy( dofs, -alpha[i], q(i), 1, r(i), 1, queue );      // r = r - alpha q
             gammaold[i] = gammanew[i];
 
-            res[i] = magma_dnrm2( dofs, r(i), 1 );
+            res[i] = magma_dnrm2( dofs, r(i), 1, queue );
         }
 
         if ( solver_par->verbose > 0 ) {
@@ -289,7 +283,6 @@ cleanup:
     magma_free_cpu(den);
     magma_free_cpu(res);
 
-    magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
 }   /* magma_dbpcg */

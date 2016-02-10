@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/ziteric.cu normal z -> d, Fri Jan 22 21:42:16 2016
+       @generated from sparse-iter/blas/ziteric.cu normal z -> d, Tue Feb  9 16:05:45 2016
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define PRECISION_d
 

@@ -295,10 +295,13 @@ const char* magma_strerror( magma_int_t error )
         
         // some sparse-iter errors
         case MAGMA_SLOW_CONVERGENCE:
-            return "stopping criterion not reached";
+            return "stopping criterion not reached within iterations";
         
         case MAGMA_DIVERGENCE:
             return "divergence";
+            
+        case MAGMA_NOTCONVERGED :
+            return "stopping criterion not reached within iterations";
         
         case MAGMA_NONSPD:
             return "not positive definite (SPD/HPD)";

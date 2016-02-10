@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zjacobidomainoverlap.cpp normal z -> c, Fri Jan 22 21:42:32 2016
+       @generated from sparse-iter/src/zjacobidomainoverlap.cpp normal z -> c, Tue Feb  9 16:05:59 2016
 */
 
 #include "magmasparse_internal.h"
@@ -79,10 +79,6 @@ magma_cjacobidomainoverlap(
     magma_c_matrix r={Magma_CSR}, d={Magma_CSR};
     magma_c_matrix hA={Magma_CSR};
     
-    // set queue for old dense routines
-    //magma_queue_t orig_queue=NULL;
-    //magmablasGetKernelStream( &orig_queue );
-
     // prepare solver feedback
     solver_par->solver = Magma_JACOBI;
 
@@ -149,7 +145,6 @@ cleanup:
     magma_cmfree(&hA, queue );
     magma_free( indices );
     
-    //magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
 }   /* magma_cjacobi */

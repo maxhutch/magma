@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zgetmatrix_transpose.cpp normal z -> d, Fri Jan 22 21:42:04 2016
+       @generated from magmablas/zgetmatrix_transpose.cpp normal z -> d, Tue Feb  9 16:05:33 2016
 
 */
 #include "magma_internal.h"
@@ -38,7 +38,7 @@ magmablas_dgetmatrix_transpose_q(
 
     // TODO standard check arguments
     if (lda < m || ldda < n || lddwork < m) {
-        printf("Wrong arguments in dgetmatrix_transpose.\n");
+        fprintf( stderr, "%s: wrong arguments.\n", __func__ );
         return;
     }
 

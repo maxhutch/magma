@@ -120,7 +120,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:gad8b3e0e3a588bb54e691ed75419f0a2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHESV computes the solution to a complex system of linear equations A * X = B, where A is an n-by-n Hermitian matrix and X and B are n-by-nrhs matrices.  <a href="#gad8b3e0e3a588bb54e691ed75419f0a2a">More...</a><br /></td></tr>
 <tr class="separator:gad8b3e0e3a588bb54e691ed75419f0a2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf9fe1185517f6d4f53f1d6e90b248445"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__chesv__driver.html#gaf9fe1185517f6d4f53f1d6e90b248445">magma_chesv_nopiv_gpu</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex_ptr dB, magma_int_t lddb, magma_int_t *info)</td></tr>
-<tr class="memdesc:gaf9fe1185517f6d4f53f1d6e90b248445"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHESV solves a system of linear equations A * X = B where A is an n-by-n hermitian matrix and X and B are n-by-nrhs matrices.  <a href="#gaf9fe1185517f6d4f53f1d6e90b248445">More...</a><br /></td></tr>
+<tr class="memdesc:gaf9fe1185517f6d4f53f1d6e90b248445"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHESV solves a system of linear equations A * X = B where A is an n-by-n Hermitian matrix and X and B are n-by-nrhs matrices.  <a href="#gaf9fe1185517f6d4f53f1d6e90b248445">More...</a><br /></td></tr>
 <tr class="separator:gaf9fe1185517f6d4f53f1d6e90b248445"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -276,7 +276,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>CHESV solves a system of linear equations A * X = B where A is an n-by-n hermitian matrix and X and B are n-by-nrhs matrices. </p>
+<p>CHESV solves a system of linear equations A * X = B where A is an n-by-n Hermitian matrix and X and B are n-by-nrhs matrices. </p>
 <p>The LU decomposition with no pivoting is used to factor A as The factorization has the form A = U^H * D * U, if UPLO = MagmaUpper, or A = L * D * L^H, if UPLO = MagmaLower, where U is an upper triangular matrix, L is lower triangular, and D is a diagonal matrix. The factored form of A is then used to solve the system of equations A * X = B.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -307,7 +307,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:10 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:35 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

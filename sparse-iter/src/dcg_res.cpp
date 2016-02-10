@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zcg_res.cpp normal z -> d, Fri Jan 22 21:42:22 2016
+       @generated from sparse-iter/src/zcg_res.cpp normal z -> d, Tue Feb  9 16:05:51 2016
 */
 
 #include "magmasparse_internal.h"
@@ -137,6 +137,7 @@ magma_dcg_res(
         }
 
         CHECK( magma_d_spmv( c_one, A, p, c_zero, q, queue ));   // q = A p
+        solver_par->spmv_count++;
         den = magma_ddot( dofs, p.dval, 1, q.dval, 1, queue );
                 // den = p dot q
 

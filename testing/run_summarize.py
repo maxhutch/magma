@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 2.0.0-beta3) --
+# MAGMA (version 2.0.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date January 2016
+# @date February 2016
 
 ## @file run_summarize.py
 #  @author Mark Gates
@@ -27,7 +27,7 @@
 #     ignore:          ignore issues like using --ngpu 2 with only 1 gpu.
 #
 # tol  is tolerance given when the tester was run, by default tol = 30.
-# tol2 is specified here, using --tol, by default tol2 = 100.
+# tol2 is specified here, using --tol2, by default tol2 = 100.
 #
 # For each suspect or failed command, prints the command and suspect or failed
 # tests. Also adds the ratio {error/eps} in braces after each error.
@@ -44,14 +44,14 @@ from math import isnan, isinf
 from optparse import OptionParser
 
 parser = OptionParser()
-parser.add_option( '--tol',  action='store',      dest='tol',  help='set tolerance (tol2)', default='100' )
+parser.add_option( '--tol2', action='store',      dest='tol2', help='set tolerance (tol2)', default='100' )
 parser.add_option( '--okay', action='store_true', dest='okay', help='print okay tests',     default=False )
 
 (opts, args) = parser.parse_args()
 
 
 # --------------------
-tol2     = int(opts.tol)
+tol2     = int(opts.tol2)
 
 seps     = 5.96e-08
 deps     = 1.11e-16
@@ -65,8 +65,8 @@ dtol_100 = 100.0  * deps
 stol_1k  = 1000.0 * seps
 dtol_1k  = 1000.0 * deps
 
-print 'single epsilon %.2e,  tol %.0f,  tol*eps %.2e,  30*eps %.2e,  100*eps %.2e,  1000*eps %.2e' % (seps, tol2, tol2*seps, 30*seps, 100*seps, 1000*seps)
-print 'double epsilon %.2e,  tol %.0f,  tol*eps %.2e,  30*eps %.2e,  100*eps %.2e,  1000*eps %.2e' % (deps, tol2, tol2*deps, 30*deps, 100*deps, 1000*deps)
+print 'single epsilon %.2e,  tol2 %.0f,  tol2*eps %.2e,  30*eps %.2e,  100*eps %.2e,  1000*eps %.2e' % (seps, tol2, tol2*seps, 30*seps, 100*seps, 1000*seps)
+print 'double epsilon %.2e,  tol2 %.0f,  tol2*eps %.2e,  30*eps %.2e,  100*eps %.2e,  1000*eps %.2e' % (deps, tol2, tol2*deps, 30*deps, 100*deps, 1000*deps)
 
 epsilons = {
 	's': seps,

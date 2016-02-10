@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zlarfb_gpu.cpp normal z -> d, Fri Jan 22 21:41:35 2016
+       @generated from src/zlarfb_gpu.cpp normal z -> d, Tue Feb  9 16:05:07 2016
 */
 
 // include v1 header first; the v2 header will redefine non-q names,

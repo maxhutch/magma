@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mark Gates
        
@@ -135,14 +135,11 @@ const char *usage_short =
 
 const char *usage =
 "Options are:\n"
-"  --range m0:m1:mstep[,n0:n1:nstep[,k0:k1:kstep]]\n"
-"                   Adds test cases with range m = m0, m0+mstep, ..., m1;\n"
-"                   similarly for n, k. Can be repeated.\n"
-"  -N m[,n[,k]]     Adds one test case with sizes m,n,k. Can be repeated.\n"
-"                   If only m,n given then k=n. If only m given then n=k=m.\n"
-"  -m m             Sets m for all tests, overriding -N and --range.\n"
-"  -n n             Sets n for all tests, overriding -N and --range.\n"
-"  -k k             Sets k for all tests, overriding -N and --range.\n"
+"  -n m[,n[,k]      Adds problem sizes. All of -n, -N, --range are now synonymous.\n"
+"  -N m[,n[,k]      m, n, k can each be a single size or an inclusive range start:end:step.\n"
+"  --range m[,n[,k] If two ranges are given, the number of sizes is limited by the smaller range.\n"
+"                   If only m,n are given, then k=n. If only m is given, then n=k=m.\n"
+"                   Examples:  -N 100  -N 100,200,300  -N 100,200:1000:100,300  -N 100:1000:100\n"
 "  Default test sizes are the range 1088 : 10304 : 1024, that is, 1K+64 : 10K+64 : 1K.\n"
 "  For batched, default sizes are     32 :   512 :   32.\n"
 "\n"
@@ -251,142 +248,128 @@ magma_opts::magma_opts( magma_opts_t flag )
 }
 
 
+// Given pointer to a string, scans the string for a comma,
+// and advances the string to after the comma.
+// Returns true if comma found, otherwise false.
+bool scan_comma( char** handle )
+{
+    char* ptr = *handle;
+    // scan past whitespace
+    while( *ptr == ' ' ) {
+        ptr += 1;
+    }
+    // scan comma
+    if ( *ptr == ',' ) {
+        *handle = ptr + 1;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+
+// Given pointer to a string, scans the string for a range "%d:%d:%d" or a number "%d".
+// If range,  then start, end, step are set accordingly.
+// If number, then start = end and step = 0.
+// Advances the string to after the range or number.
+// Ensures start, end >= 0.
+// If step >= 0, ensures start <= end;
+// if step <  0, ensures start >= end.
+// Returns true if found valid range or number, otherwise false.
+bool scan_range( char** handle, int* start, int* end, int* step )
+{
+    int bytes1, bytes3, cnt;
+    char* ptr = *handle;
+    cnt = sscanf( ptr, "%d%n:%d:%d%n", start, &bytes1, end, step, &bytes3 );
+    if ( cnt == 3 ) {
+        *handle += bytes3;
+        return (*start >= 0 && *end >= 0 && (*step >= 0 ? *start <= *end : *start >= *end));
+    }
+    else if ( cnt == 1 ) {
+        *handle += bytes1;
+        *end  = *start;
+        *step = 0;
+        return (*start >= 0);
+    }
+    else {
+        return false;
+    }
+}
+
+
 // parse values from command line
 void magma_opts::parse_opts( int argc, char** argv )
 {
     printf( usage_short, argv[0] );
-    
-    // negative flag indicating -m, -n, -k not given
-    magma_int_t m = -1;
-    magma_int_t n = -1;
-    magma_int_t k = -1;
     
     int ndevices;  // not magma_int_t
     cudaGetDeviceCount( &ndevices );
     
     bool null_stream = false;
     
-    magma_int_t info;
     this->ntest = 0;
     for( int i = 1; i < argc; ++i ) {
-        // ----- matrix size
-        // each -N fills in next entry of msize, nsize, ksize and increments ntest
-        if ( strcmp("-N", argv[i]) == 0 && i+1 < argc ) {
-            magma_assert( this->ntest < MAX_NTEST, "error: -N %s, max number of tests exceeded, ntest=%d.\n",
-                          argv[i], this->ntest );
+        // ----- problem size
+        // -n or -N or --range fill in single size or range of sizes, and update ntest
+        if ( (strcmp("-n",      argv[i]) == 0 ||
+              strcmp("-N",      argv[i]) == 0 ||
+              strcmp("--range", argv[i]) == 0) && i+1 < argc )
+        {
             i++;
-            int m2, n2, k2;  // not magma_int_t
-            info = sscanf( argv[i], "%d,%d,%d", &m2, &n2, &k2 );
-            if ( info == 3 && m2 >= 0 && n2 >= 0 && k2 >= 0 ) {
-                this->msize[ this->ntest ] = m2;
-                this->nsize[ this->ntest ] = n2;
-                this->ksize[ this->ntest ] = k2;
+            int m_start, m_end, m_step;
+            int n_start, n_end, n_step;
+            int k_start, k_end, k_step;
+            char* ptr = argv[i];
+            bool valid = scan_range( &ptr, &m_start, &m_end, &m_step );
+            if ( valid ) {
+                if ( *ptr == '\0' ) {
+                    n_start = k_start = m_start;
+                    n_end   = k_end   = m_end;
+                    n_step  = k_step  = m_step;
+                }
+                else {
+                    valid = scan_comma( &ptr ) && scan_range( &ptr, &n_start, &n_end, &n_step );
+                    if ( valid ) {
+                        if ( *ptr == '\0' ) {
+                            k_start = n_start;
+                            k_end   = n_end;
+                            k_step  = n_step;
+                        }
+                        else {
+                            valid = scan_comma( &ptr ) && scan_range( &ptr, &k_start, &k_end, &k_step );
+                            valid = (valid && *ptr == '\0');
+                        }
+                    }
+                }
             }
-            else if ( info == 2 && m2 >= 0 && n2 >= 0 ) {
-                this->msize[ this->ntest ] = m2;
-                this->nsize[ this->ntest ] = n2;
-                this->ksize[ this->ntest ] = n2;  // implicitly
-            }
-            else if ( info == 1 && m2 >= 0 ) {
-                this->msize[ this->ntest ] = m2;
-                this->nsize[ this->ntest ] = m2;  // implicitly
-                this->ksize[ this->ntest ] = m2;  // implicitly
-            }
-            else {
-                fprintf( stderr, "error: -N %s is invalid; ensure m >= 0, n >= 0, k >= 0.\n",
-                         argv[i] );
-                exit(1);
-            }
-            this->ntest++;
-        }
-        // --range start:stop:step fills in msize[ntest:], nsize[ntest:], ksize[ntest:]
-        // with given range and updates ntest
-        else if ( strcmp("--range", argv[i]) == 0 && i+1 < argc ) {
-            i++;
-            int start_m, stop_m, step_m;  // not magma_int_t
-            int start_n, stop_n, step_n;  // not magma_int_t
-            int start_k, stop_k, step_k;  // not magma_int_t
             
-            info = sscanf( argv[i], "%d:%d:%d,%d:%d:%d,%d:%d:%d",
-                           &start_m, &stop_m, &step_m,
-                           &start_n, &stop_n, &step_n,
-                           &start_k, &stop_k, &step_k );
-            if ( info == 9 ) {
-                // matched --range m1:m2:mstep,n1:n2:nstep,k1:k2:kstep
-                magma_assert( start_m >= 0 && stop_m >= 0 &&
-                              start_n >= 0 && stop_n >= 0 &&
-                              start_k >= 0 && stop_k >= 0 &&
-                              (step_m != 0 || step_n != 0 || step_k != 0),
-                              "error: --range %s is invalid; ensure start >= 0, stop >= 0, at least one step != 0.\n", argv[i] );
-                for( int lm = start_m, ln = start_n, lk = start_k;
-                     (step_m >= 0 ? lm <= stop_m : lm >= stop_m) &&
-                     (step_n >= 0 ? ln <= stop_n : ln >= stop_n) &&
-                     (step_k >= 0 ? lk <= stop_k : lk >= stop_k);
-                     lm += step_m, ln += step_n, lk += step_k )
-                {
-                    magma_assert( this->ntest < MAX_NTEST, "error: --range %s exceeded maximum number of tests (%d).\n",
-                                  argv[1], MAX_NTEST );
-                    this->msize[ this->ntest ] = lm;
-                    this->nsize[ this->ntest ] = ln;
-                    this->ksize[ this->ntest ] = lk;
-                    this->ntest++;
-                }
-                continue;
-            }
-            else if ( info == 6 ) {
-                // matched --range m1:m2:mstep,n1:n2:nstep
-                magma_assert( start_m >= 0 && stop_m >= 0 &&
-                              start_n >= 0 && stop_n >= 0 &&
-                              (step_m != 0 || step_n != 0),
-                              "error: --range %s is invalid; ensure start >= 0, stop >= 0, at least one step != 0.\n", argv[i] );
-                for( int lm = start_m, ln = start_n;
-                     (step_m >= 0 ? lm <= stop_m : lm >= stop_m) &&
-                     (step_n >= 0 ? ln <= stop_n : ln >= stop_n);
-                     lm += step_m, ln += step_n )
-                {
-                    magma_assert( this->ntest < MAX_NTEST, "error: --range %s exceeded maximum number of tests (%d).\n",
-                                  argv[1], MAX_NTEST );
-                    this->msize[ this->ntest ] = lm;
-                    this->nsize[ this->ntest ] = ln;
-                    this->ksize[ this->ntest ] = ln;
-                    this->ntest++;
-                }
-                continue;
-            }
-            else if ( info == 3 ) {
-                // matched --range n1:n2:nstep
-                magma_assert( start_m >= 0 && stop_m >= 0 && step_m != 0,
-                              "error: --range %s is invalid; ensure start >= 0, stop >= 0, step != 0.\n", argv[i] );
-                for( int lm = start_m;
-                     (step_m >= 0 ? lm <= stop_m : lm >= stop_m);
-                     lm += step_m )
-                {
-                    magma_assert( this->ntest < MAX_NTEST, "error: --range %s exceeded maximum number of tests (%d).\n",
-                                  argv[1], MAX_NTEST );
-                    this->msize[ this->ntest ] = lm;
-                    this->nsize[ this->ntest ] = lm;
-                    this->ksize[ this->ntest ] = lm;
-                    this->ntest++;
-                }
-                continue;
+            magma_assert( valid, "error: '%s %s' is not valid, expected (m|m_start:m_end:m_step)[,(n|n_start:n_end:n_step)[,(k|k_start:k_end:k_step)]]\n",
+                          argv[i-1], argv[i] );
+            // if all zero steps, just give start point
+            if ( m_step == 0 && n_step == 0 && k_step == 0 ) {
+                magma_assert( this->ntest < MAX_NTEST, "error: %s %s exceeded maximum number of tests (%d).\n",
+                              argv[i-1], argv[i], MAX_NTEST );
+                this->msize[ this->ntest ] = m_start;
+                this->nsize[ this->ntest ] = n_start;
+                this->ksize[ this->ntest ] = k_start;
+                this->ntest++;
             }
             else {
-                // didn't match above cases: invalid
-                magma_assert( false, "error: --range %s is invalid; expect --range m0:m1:mstep[,n0:n1:nstep[,k0:k1:kstep]].\n", argv[i] );
+                for( int m=m_start, n=n_start, k=k_start;
+                     (m_step >= 0 ? m <= m_end : m >= m_end) &&
+                     (n_step >= 0 ? n <= n_end : n >= n_end) &&
+                     (k_step >= 0 ? k <= k_end : k >= k_end);
+                     m += m_step, n += n_step, k += k_step )
+                {
+                    magma_assert( this->ntest < MAX_NTEST, "error: %s %s exceeded maximum number of tests (%d).\n",
+                                  argv[i-1], argv[i], MAX_NTEST );
+                    this->msize[ this->ntest ] = m;
+                    this->nsize[ this->ntest ] = n;
+                    this->ksize[ this->ntest ] = k;
+                    this->ntest++;
+                }
             }
-        }
-        // save m, n, k if -m, -n, -k is given; applied after loop
-        else if ( strcmp("-m", argv[i]) == 0 && i+1 < argc ) {
-            m = atoi( argv[++i] );
-            magma_assert( m >= 0, "error: -m %s is invalid; ensure m >= 0.\n", argv[i] );
-        }
-        else if ( strcmp("-n", argv[i]) == 0 && i+1 < argc ) {
-            n = atoi( argv[++i] );
-            magma_assert( n >= 0, "error: -n %s is invalid; ensure n >= 0.\n", argv[i] );
-        }
-        else if ( strcmp("-k", argv[i]) == 0 && i+1 < argc ) {
-            k = atoi( argv[++i] );
-            magma_assert( k >= 0, "error: -k %s is invalid; ensure k >= 0.\n", argv[i] );
         }
         
         // ----- scalar arguments
@@ -579,33 +562,6 @@ void magma_opts::parse_opts( int argc, char** argv )
     }
     assert( this->ntest <= MAX_NTEST );
     
-    // fill in msize[:], nsize[:], ksize[:] if -m, -n, -k were given
-    if ( m >= 0 ) {
-        for( int j = 0; j < this->ntest; ++j ) {
-            this->msize[j] = m;
-        }
-    }
-    if ( n >= 0 ) {
-        for( int j = 0; j < this->ntest; ++j ) {
-            this->nsize[j] = n;
-        }
-    }
-    if ( k >= 0 ) {
-        for( int j = 0; j < this->ntest; ++j ) {
-            this->ksize[j] = k;
-        }
-    }
-    
-    // find max dimensions
-    this->mmax = 0;
-    this->nmax = 0;
-    this->kmax = 0;
-    for( int i = 0; i < this->ntest; ++i ) {
-        this->mmax = max( this->mmax, this->msize[i] );
-        this->nmax = max( this->nmax, this->nsize[i] );
-        this->kmax = max( this->kmax, this->ksize[i] );
-    }
-
     // disallow jobu=O, jobvt=O
     if ( this->jobu == MagmaOverwriteVec && this->jobvt == MagmaOverwriteVec ) {
         printf( "jobu and jobvt cannot both be Overwrite.\n" );

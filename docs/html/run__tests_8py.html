@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>MAGMA: /mnt/scratch/mgates/magma-trunk/magma-2.0.0-beta3/testing/run_tests.py File Reference</title>
+<title>MAGMA: /mnt/scratch/mgates/magma-trunk/magma-2.0.0/testing/run_tests.py File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -118,7 +118,9 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
 <div class="contents">
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Mark Gates</dd></dl>
-<p>Script to run testers with various matrix sizes. Small sizes are chosen around block sizes (e.g., 30...34 around 32) to detect bugs that occur at the block size, and the switch over from LAPACK to MAGMA code. Tall and wide sizes are chosen to exercise different aspect ratios, e.g., nearly square, 2:1, 10:1, 1:2, 1:10. The -h or &ndash;help option provides a summary of the options.</p>
+<p>Script to run testers with various matrix sizes.</p>
+<p>See also the run_summarize.py script, which post-processes the output, sorting it into errors (segfaults, etc.), accuracy failures, and known failures. run_summarize.py can apply a different (larger) tolerance without re-running the tests.</p>
+<p>Small sizes are chosen around block sizes (e.g., 30...34 around 32) to detect bugs that occur at the block size, and the switch over from LAPACK to MAGMA code. Tall and wide sizes are chosen to exercise different aspect ratios, e.g., nearly square, 2:1, 10:1, 1:2, 1:10. The -h or &ndash;help option provides a summary of the options.</p>
 <h2>Non-interactive vs. interactive mode </h2>
 <p>When output is redirected to a file, it runs in non-interactive mode, printing a short summary to stderr on the console and all other output to the file. For example: </p><pre class="fragment">  ./run_tests.py --lu --precision s --small &gt; lu.txt
   testing_sgesv_gpu -c                      ok
@@ -186,8 +188,59 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
 </pre><p>Specific tests can be chosen using &ndash;itype, &ndash;version, -U/&ndash;upper, -L/&ndash;lower, -J/&ndash;jobz, -D/&ndash;diag, and &ndash;fraction. For instance: </p><pre class="fragment">   ./run_tests.py testing_ssygvdx_2stage -L -JN --itype 1 -s --no-mgpu
 </pre><h2>What is checked </h2>
 <p>The &ndash;memcheck option runs cuda-memcheck. This is very helpful for finding memory bugs (reading &amp; writing outside allocated memory). It is, however, slow.</p>
-<p>The &ndash;tol option sets the tolerance to verify accuracy. This is 30 by default, which may be too tight for some testers. Setting it somewhat higher (e.g., 50 or 100) filters out spurious accuracy failures. Also see the run_summarize.py script, which parses the testers output and can filter out tests using a higher tolerance after the fact &ndash; without re-running them.</p>
-<p>The &ndash;dev option sets which GPU device to use.</p>
+<p>The &ndash;tol option sets the tolerance to verify accuracy. This is 30 by default, which may be too tight for some testers. Setting it somewhat higher (e.g., 50 or 100) filters out spurious accuracy failures. Also see the run_summarize.py script, which parses the testers output and can filter out tests using a higher tolerance after the fact, without re-running them.</p>
+<p>Run with default tolerance tol=30. </p><pre class="fragment">  ./run_tests.py -s -m testing_sgemv &gt; run-gemv.txt
+  testing_sgemv -c                          ** 7 tests failed
+  testing_sgemv -T -c                       ok
+  testing_sgemv -C -c                       ok
+
+  ****************************************************************************************************
+  summary
+  ****************************************************************************************************
+    302 tests in 3 commands passed
+      7 tests failed accuracy test
+      0 errors detected (crashes, CUDA errors, etc.)
+  routines with failures:
+      testing_sgemv -c
+</pre><p>Post-process with tolerance tol2=100. Numbers in {braces} are ratio = error/epsilon, which should be &lt; tol. Here, the ratio is just slightly larger {31.2 to 37.4} than the default tol=30. </p><pre class="fragment">  ./run_summarize.py --tol2 100 run-gemv.txt 
+  single epsilon 5.96e-08,  tol2 100,  tol2*eps 5.96e-06,  30*eps 1.79e-06,  100*eps 5.96e-06,  1000*eps 5.96e-05
+  double epsilon 1.11e-16,  tol2 100,  tol2*eps 1.11e-14,  30*eps 3.33e-15,  100*eps 1.11e-14,  1000*eps 1.11e-13
+  ########################################################################################################################
+  okay tests:                                          3 commands,    302 tests
+
+
+  ########################################################################################################################
+  errors (segfault, etc.):                             0 commands,      0 tests
+
+
+  ########################################################################################################################
+  failed tests (error &gt; tol2*eps):                     0 commands,      0 tests
+
+
+  ########################################################################################################################
+  suspicious tests (tol2*eps &gt; error &gt; tol*eps):       1 commands,      7 tests
+  ./testing_sgemv
+     63 10000      0.19 (   6.73)       1.65 (   0.76)      8.58 (   0.15)   1.86e-06 {   31.2}    1.11e-06 {   18.6}   suspect
+     64 10000      0.19 (   6.73)       1.68 (   0.76)     14.36 (   0.09)   2.17e-06 {   36.4}    1.14e-06 {   19.1}   suspect
+     65 10000      0.19 (   6.72)       1.43 (   0.91)      8.73 (   0.15)   2.23e-06 {   37.4}    1.09e-06 {   18.3}   suspect
+     31 10000      0.09 (   6.70)       1.25 (   0.49)      6.33 (   0.10)   1.93e-06 {   32.4}    8.65e-07 {   14.5}   suspect
+     32 10000      0.10 (   6.68)       1.35 (   0.47)     11.00 (   0.06)   2.15e-06 {   36.1}    9.14e-07 {   15.3}   suspect
+     33 10000      0.10 (   6.72)       1.24 (   0.53)      9.85 (   0.07)   2.19e-06 {   36.7}    1.07e-06 {   18.0}   suspect
+     10 10000      0.03 (   6.58)       0.52 (   0.39)      5.71 (   0.04)   2.23e-06 {   37.4}    1.11e-06 {   18.6}   suspect
+
+
+
+  ########################################################################################################################
+  known failures:                                      0 commands,      0 tests
+
+
+  ########################################################################################################################
+  ignored errors (e.g., malloc failed):                0 commands,      0 tests
+
+
+  ########################################################################################################################
+  other (lines that did not get matched):              0 commands,      0 tests
+</pre><p>The &ndash;dev option sets which GPU device to use.</p>
 <p>By default, a wide range of sizes and shapes (square, tall, wide) are tested, as applicable. The -N and &ndash;range options override these.</p>
 <p>For multi-GPU codes, &ndash;ngpu specifies the number of GPUs, default 2. Most testers accept &ndash;ngpu -1 to test the multi-GPU code on a single GPU. (Using &ndash;ngpu 1 will usually invoke the single-GPU code.) </p>
 </div></div><!-- contents -->
@@ -196,7 +249,7 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_64f94c193e4d03baf6e89b1053934749.html">testing</a></li><li class="navelem"><a class="el" href="run__tests_8py.html">run_tests.py</a></li>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:10 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:34 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

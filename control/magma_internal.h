@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mathieu Faverge
        @author Mark Gates
@@ -50,6 +50,10 @@
     #include <pthread.h>
     #include <unistd.h>
     #include <inttypes.h>
+    
+    // our magma_winthread doesn't have pthread_key;
+    // assume other platforms (Linux, MacOS, etc.) do.
+    #define HAVE_PTHREAD_KEY
 
 #endif
 

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        @author Adrien REMY
 
-       @generated from src/zhesv_nopiv_gpu.cpp normal z -> c, Fri Jan 22 21:41:41 2016
+       @generated from src/zhesv_nopiv_gpu.cpp normal z -> c, Tue Feb  9 16:05:12 2016
 
 */
 #include "magma_internal.h"
@@ -16,7 +16,7 @@
     -------
     CHESV solves a system of linear equations
         A * X = B
-    where A is an n-by-n hermitian matrix and X and B are n-by-nrhs matrices.
+    where A is an n-by-n Hermitian matrix and X and B are n-by-nrhs matrices.
     The LU decomposition with no pivoting is
     used to factor A as
     The factorization has the form

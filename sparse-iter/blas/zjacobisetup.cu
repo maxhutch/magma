@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 512
 
@@ -597,7 +597,8 @@ magma_zjacobispmvupdateselect(
     for( magma_int_t i=0; i<maxiter; i++ ) {
         zjacobispmvupdateselect_kernel<<< grid, threads, 0, queue->cuda_stream()>>>
             ( t.num_rows, t.num_cols, num_updates, indices, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval, tmp.dval );
-        magma_device_sync();
+        magma_queue_sync( queue );
+        //magma_device_sync();
         //swp.dval = x->dval;
         //x->dval = tmp.dval;
         //tmp.dval = swp.dval;

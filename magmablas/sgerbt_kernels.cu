@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zgerbt_kernels.cu normal z -> s, Fri Jan 22 21:41:58 2016
+       @generated from magmablas/zgerbt_kernels.cu normal z -> s, Tue Feb  9 16:05:28 2016
 
 
        @author Adrien REMY
 */
 #include "magma_internal.h"
-
+#include "sgerbt.h"
 
 #define block_height  32
 #define block_width  4
@@ -41,10 +41,10 @@ magmablas_selementary_multiplication_devfunc(
         du += idx;
         dv += idy;
 
-        u1[threadIdx.x]=du[0];
-        u2[threadIdx.x]=du[n/2];
-        v1[threadIdx.y]=dv[0];
-        v2[threadIdx.y]=dv[n/2];
+        u1[threadIdx.x] = du[0];
+        u2[threadIdx.x] = du[n/2];
+        v1[threadIdx.y] = dv[0];
+        v2[threadIdx.y] = dv[n/2];
 
         __syncthreads();
 
@@ -74,7 +74,7 @@ magmablas_selementary_multiplication_kernel(
     float *du, magma_int_t offsetu, 
     float *dv, magma_int_t offsetv)
 {    
-    magmablas_selementary_multiplication_devfunc( n, dA+offsetA, ldda, du+offsetu, dv+offsetv);
+    magmablas_selementary_multiplication_devfunc( n, dA+offsetA, ldda, du+offsetu, dv+offsetv );
 }
 
 
@@ -87,7 +87,7 @@ magmablas_selementary_multiplication_kernel_batched(
     float *dv, magma_int_t offsetv)
 {    
     int batchid = blockIdx.z;
-    magmablas_selementary_multiplication_devfunc( n, dA_array[batchid]+offsetA, ldda, du+offsetu, dv+offsetv);
+    magmablas_selementary_multiplication_devfunc( n, dA_array[batchid]+offsetA, ldda, du+offsetu, dv+offsetv );
 }
 
 

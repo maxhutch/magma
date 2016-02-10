@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mark Gates
        @precisions normal z -> s d c
@@ -612,6 +612,10 @@ zlanhe_max(
     lwork   INTEGER
             The dimension of the array DWORK. LWORK >= max( 1, N ).
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" double

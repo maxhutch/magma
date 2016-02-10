@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zmergecg.cu normal z -> s, Fri Jan 22 21:42:14 2016
+       @generated from sparse-iter/blas/zmergecg.cu normal z -> s, Tue Feb  9 16:05:43 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 512
 
@@ -1044,9 +1044,6 @@ magma_scgmerge_spmv1(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -1198,12 +1195,11 @@ magma_scgmerge_spmv1(
     }
 
 
-    magma_scopyvector( 1, aux1, 1, skp+4, 1 );
+    magma_scopyvector( 1, aux1, 1, skp+4, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_scg_rhokernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -1375,9 +1371,6 @@ magma_scgmerge_xrbeta(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -1404,7 +1397,7 @@ magma_scgmerge_xrbeta(
     }
 
 
-    magma_scopyvector( 1, aux1, 1, skp+1, 1 );
+    magma_scopyvector( 1, aux1, 1, skp+1, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_scg_alphabetakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
@@ -1413,7 +1406,6 @@ magma_scgmerge_xrbeta(
     dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_scg_d_kernel<<< Gs3, Bs3, 0, queue->cuda_stream()>>>( n, skp, dr, dd );  
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -1581,9 +1573,6 @@ magma_spcgmerge_xrbeta1(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -1591,7 +1580,6 @@ magma_spcgmerge_xrbeta1(
     magma_spcgmerge_xrbeta_kernel<<< Gs, Bs, 0, queue->cuda_stream()>>>
                                     ( n, dx, dr, dd, dz, skp );  
                                     
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -1650,9 +1638,6 @@ magma_spcgmerge_xrbeta2(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -1678,8 +1663,8 @@ magma_spcgmerge_xrbeta2(
     }
 
 
-    magma_scopyvector( 1, aux1, 1, skp+1, 1 );
-    magma_scopyvector( 1, aux1+n, 1, skp+6, 1 );
+    magma_scopyvector( 1, aux1, 1, skp+1, 1, queue );
+    magma_scopyvector( 1, aux1+n, 1, skp+6, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_scg_alphabetakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
@@ -1688,7 +1673,6 @@ magma_spcgmerge_xrbeta2(
     dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_scg_d_kernel<<< Gs3, Bs3, 0, queue->cuda_stream()>>>( n, skp, dh, dd );  
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -1856,9 +1840,6 @@ magma_sjcgmerge_xrbeta(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -1884,8 +1865,8 @@ magma_sjcgmerge_xrbeta(
     }
 
 
-    magma_scopyvector( 1, aux1, 1, skp+1, 1 );
-    magma_scopyvector( 1, aux1+n, 1, skp+6, 1 );
+    magma_scopyvector( 1, aux1, 1, skp+1, 1, queue );
+    magma_scopyvector( 1, aux1+n, 1, skp+6, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_scg_alphabetakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
@@ -1894,7 +1875,6 @@ magma_sjcgmerge_xrbeta(
     dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_scg_d_kernel<<< Gs3, Bs3, 0, queue->cuda_stream()>>>( n, skp, dh, dd );  
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/control/magma_zmtransfer.cpp normal z -> d, Fri Jan 22 21:42:21 2016
+       @generated from sparse-iter/control/magma_zmtransfer.cpp normal z -> d, Tue Feb  9 16:05:49 2016
        @author Hartwig Anzt
 */
 #include "magmasparse_internal.h"
@@ -54,10 +54,6 @@ magma_dmtransfer(
 {
     magma_int_t info = 0;
     
-    // set queue for old dense routines
-    ////magma_queue_t orig_queue=NULL;
-    ////magmablasGetKernelStream( &orig_queue );
-
     B->val = NULL;
     B->diag = NULL;
     B->row = NULL;
@@ -987,6 +983,5 @@ cleanup:
     if( info != 0 ){
         magma_dmfree( B, queue );
     }
-    ////magmablasSetKernelStream( orig_queue );
     return info;
 }

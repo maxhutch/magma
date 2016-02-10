@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from include/magma_zbatched.h normal z -> d, Fri Jan 22 21:42:53 2016
+       @generated from include/magma_zbatched.h normal z -> d, Tue Feb  9 16:06:19 2016
 */
 
 #ifndef MAGMA_DBATCHED_H
@@ -664,46 +664,6 @@ magma_dgeqrf_panel_batched(
     double** W2_array,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_dgeqrf_panel_batched_v4(
-    magma_int_t m, magma_int_t n, magma_int_t nb,    
-    double** dA_array,    magma_int_t ldda,
-    double** tau_array, 
-    double** dT_array, magma_int_t ldt, 
-    double** dR_array, magma_int_t ldr,
-    double** dnorm_array,  
-    double** dW0_displ, 
-    double** dW1_displ,
-    double *dwork,  
-    double** W_array, 
-    double** W2_array,
-    magma_int_t *info_array,
-    magma_int_t batchCount, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_dormqr_batched(
-    magma_side_t side, magma_trans_t trans,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    double **dA_array, magma_int_t ldda,
-    double **tau_array,
-    double **dC_array, magma_int_t lddc,
-    double *hwork, magma_int_t lwork, 
-    double **dT_array, magma_int_t nb, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_dgeqrs_batched(
-    magma_int_t m, magma_int_t n, magma_int_t nrhs,
-    double **dA_array, magma_int_t ldda,
-    double **tau_array,
-    double **dR_array, magma_int_t lddr, 
-    double **dT_array, magma_int_t nb,  
-    double **dB_array, magma_int_t lddb,
-    double *hwork, magma_int_t lwork, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
 
 magma_int_t 
 magma_dgels_batched(

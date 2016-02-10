@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Stan Tomov
 
@@ -150,7 +150,7 @@ magma_zgeqr2x3_gpu(
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define BLOCK_SIZE 32
 
-    magma_int_t b, i, k;
+    magma_int_t b, i, min_mn;
 
     magmaDouble_ptr dnorm = dwork;
     magmaDoubleComplex_ptr dwork2 = (magmaDoubleComplex_ptr)(dwork + 2*n);
@@ -174,15 +174,15 @@ magma_zgeqr2x3_gpu(
     magma_queue_create( cdev, &queue );
 
     /* Compute the norms of the trailing columns */
-    k = min(m,n);
-    // magmablas_dznrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
+    min_mn = min(m,n);
+    // magmablas_dznrm2_cols( m, min_mn, dA(0,0), ldda, dnorm, queue );
 
-    for (b=0; b < k; b += BLOCK_SIZE) {
-        for (i = b; i < min(k, b+BLOCK_SIZE); ++i) {
+    for (b=0; b < min_mn; b += BLOCK_SIZE) {
+        for (i = b; i < min(min_mn, b+BLOCK_SIZE); ++i) {
             /*   Apply H' to A(:,i) from the left */
             if ( i-b > 0)
                 magma_zlarfbx_gpu( m-b, i-b, dA(b, b), ldda,
-                                  dT+b+b*k, k, dA(b, i), dwork2, queue );
+                                  dT+b+b*min_mn, min_mn, dA(b, i), dwork2, queue );
 
             /*   Adjust the dnorm[i] to hold the norm of A(i:m,i) */
             //if ( i > 0 )
@@ -196,15 +196,15 @@ magma_zgeqr2x3_gpu(
                 3. update T */
             magma_zlarfgtx_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i,
                                dnorm+i, ddA + i + i*(n), i,
-                               dA(i,0), ldda,  dT, k, dwork2, queue);
+                               dA(i,0), ldda,  dT, min_mn, dwork2, queue);
         }
         
         /* Apply the transformations to the trailing matrix. */
         //magma_zlarfb2_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
         magma_zlarfb2_gpu(
-                           m-b, k-i, BLOCK_SIZE,
-                           dA(b, b), ldda, dT+b+b*k, k,
-                           dA(b, i), ldda, dwork2, k-i, queue );
+                           m-b, min_mn-i, BLOCK_SIZE,
+                           dA(b, b), ldda, dT+b+b*min_mn, min_mn,
+                           dA(b, i), ldda, dwork2, min_mn-i, queue );
     }
 
     magma_queue_destroy( queue );

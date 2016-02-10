@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/ztrsm.cu normal z -> d, Fri Jan 22 21:42:05 2016
+       @generated from magmablas/ztrsm.cu normal z -> d, Tue Feb  9 16:05:34 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -133,6 +133,10 @@
     @param[in]
     dinvA_length   INTEGER.
             On entry, dinvA_length specifies the size of d_dinvA.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_dblas3
     ********************************************************************/

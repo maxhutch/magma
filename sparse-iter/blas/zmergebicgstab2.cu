@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 256
 
@@ -227,9 +227,6 @@ magma_zbicgmerge_spmv1(
     magmaDoubleComplex_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int n = A.num_rows;
     int local_block_size=256;
@@ -259,12 +256,11 @@ magma_zbicgmerge_spmv1(
     }
 
 
-    magma_zcopyvector( 1, aux1, 1, skp, 1 );
+    magma_zcopyvector( 1, aux1, 1, skp, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_zbicgstab_alphakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -523,9 +519,6 @@ magma_zbicgmerge_spmv2(
     magmaDoubleComplex_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int n = A.num_rows;
     int local_block_size=256;
@@ -554,13 +547,12 @@ magma_zbicgmerge_spmv2(
     }
 
 
-    magma_zcopyvector( 1, aux1, 1, skp+6, 1 );
-    magma_zcopyvector( 1, aux1+n, 1, skp+7, 1 );
+    magma_zcopyvector( 1, aux1, 1, skp+6, 1, queue );
+    magma_zcopyvector( 1, aux1+n, 1, skp+7, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_zbicgstab_omegakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -757,9 +749,6 @@ magma_zbicgmerge_xrbeta(
     magmaDoubleComplex_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -784,13 +773,12 @@ magma_zbicgmerge_xrbeta(
     }
 
 
-    magma_zcopyvector( 1, aux1, 1, skp+4, 1 );
-    magma_zcopyvector( 1, aux1+n, 1, skp+5, 1 );
+    magma_zcopyvector( 1, aux1, 1, skp+4, 1, queue );
+    magma_zcopyvector( 1, aux1+n, 1, skp+5, 1, queue );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_zbicgstab_betakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

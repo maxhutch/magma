@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.0-beta3) --
+#   -- MAGMA (version 2.0.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2016
+#      @date February 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Fermi, Kepler, or Maxwell,
@@ -49,6 +49,9 @@ RANLIB    = ranlib
 # can be commented out if making only static library.
 FPIC      = -fPIC
 
+# Apple's clang compiler doesn't have OpenMP
+# gcc/g++/gfortran with OpenMP is available from http://hpc.sourceforge.net/
+# Add -fopenmp to CFLAGS and LDFLAGS as in make.inc.mkl-gcc
 CFLAGS    = -m64 -O3 $(FPIC) -DADD_ -Wall -Wshadow -DMAGMA_NOAFFINITY
 FFLAGS    = -m64 -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument
 F90FLAGS  = -m64 -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
@@ -59,6 +62,8 @@ LDFLAGS   = -m64     $(FPIC)
 # it is safe to disable all these
 CFLAGS   += -pedantic -Wno-long-long
 #CFLAGS   += -Werror  # uncomment to ensure all warnings are dealt with
+
+# C++11 (gcc >= 4.7) is not required, but has benefits like atomic operations
 CXXFLAGS := $(CFLAGS) -std=c++11
 CFLAGS   += -std=c99
 

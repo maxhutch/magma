@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zgetf2.cu normal z -> c, Fri Jan 22 21:42:08 2016
+       @generated from magmablas/zgetf2.cu normal z -> c, Tue Feb  9 16:05:37 2016
 */
 #include "magma_internal.h"
 
@@ -59,6 +59,10 @@ void magma_cscal_cgeru(
     ipiv    INTEGER array, dimension (min(M,N))
             The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @param[out]
     info    INTEGER

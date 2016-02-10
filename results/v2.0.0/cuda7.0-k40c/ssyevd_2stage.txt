@@ -1,0 +1,98 @@
+
+Sun Feb  7 19:16:31 EST 2016
+numactl --interleave=all ../testing/testing_ssyevdx_2stage -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 19:16:33 2016
+% Usage: ../testing/testing_ssyevdx_2stage [options] [-h|--help]
+
+% jobz = No vectors, range = All, uplo = Lower, fraction = 1.0000, ngpu 1
+%   N     M  GPU Time (sec)   ||I-Q^H Q||/N   ||A-QDQ^H||/(||A||N)   |D-D_magma|/(|D| * N)
+%=========================================================================================
+  123   123     0.00      
+ 1234  1234     0.16      
+   10    10     0.00      
+   20    20     0.00      
+   30    30     0.00      
+   40    40     0.00      
+   50    50     0.00      
+   60    60     0.00      
+   70    70     0.00      
+   80    80     0.00      
+   90    90     0.00      
+  100   100     0.00      
+  200   200     0.00      
+  300   300     0.02      
+  400   400     0.03      
+  500   500     0.04      
+  600   600     0.05      
+  700   700     0.06      
+  800   800     0.08      
+  900   900     0.09      
+ 1000  1000     0.10      
+ 2000  2000     0.29      
+ 3000  3000     0.58      
+ 4000  4000     0.89      
+ 5000  5000     1.27      
+ 6000  6000     1.61      
+ 7000  7000     2.22      
+ 8000  8000     2.73      
+ 9000  9000     3.57      
+10000 10000     4.32      
+12000 12000     6.14      
+14000 14000     8.60      
+16000 16000    11.57      
+18000 18000    15.06      
+20000 20000    19.16      
+Sun Feb  7 19:18:28 EST 2016
+
+Sun Feb  7 19:18:29 EST 2016
+numactl --interleave=all ../testing/testing_ssyevdx_2stage -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 19:18:30 2016
+% Usage: ../testing/testing_ssyevdx_2stage [options] [-h|--help]
+
+% jobz = Vectors needed, range = All, uplo = Lower, fraction = 1.0000, ngpu 1
+%   N     M  GPU Time (sec)   ||I-Q^H Q||/N   ||A-QDQ^H||/(||A||N)   |D-D_magma|/(|D| * N)
+%=========================================================================================
+  123   123     0.00      
+ 1234  1234     0.20      
+   10    10     0.00      
+   20    20     0.00      
+   30    30     0.00      
+   40    40     0.00      
+   50    50     0.00      
+   60    60     0.00      
+   70    70     0.00      
+   80    80     0.00      
+   90    90     0.00      
+  100   100     0.00      
+  200   200     0.00      
+  300   300     0.02      
+  400   400     0.04      
+  500   500     0.05      
+  600   600     0.06      
+  700   700     0.08      
+  800   800     0.10      
+  900   900     0.11      
+ 1000  1000     0.13      
+ 2000  2000     0.38      
+ 3000  3000     0.75      
+ 4000  4000     1.30      
+ 5000  5000     1.99      
+ 6000  6000     2.72      
+ 7000  7000     3.83      
+ 8000  8000     5.36      
+ 9000  9000     6.90      
+10000 10000     8.89      
+12000 12000    14.34      
+14000 14000    20.46      
+16000 16000    29.42      
+18000 18000    40.68      
+20000 20000    54.31      
+Sun Feb  7 19:22:36 EST 2016

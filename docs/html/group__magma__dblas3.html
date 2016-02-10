@@ -440,8 +440,7 @@ op( X ) = X**H,
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE PRECISION array C of DIMENSION ( lddc, n ). Before entry, the leading m by n part of the array C must contain the matrix C, except when beta is zero, in which case C need not be set on entry. On exit, the array C is overwritten by the m by n matrix ( alpha*op( A )*op( B ) + beta*C ).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of each array C as declared in the calling (sub) program. lddc must be at least max( 1, m ).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -561,7 +560,8 @@ op( X ) = X**H,
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>Scalar \( \beta \)</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE PRECISION array on GPU device. The m-by-n matrix C of dimension (lddc,n), lddc &gt;= max(1,m).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -785,7 +785,8 @@ op( X ) = X**H,
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>Scalar \( \beta \)</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE PRECISION array on GPU device. The m-by-n matrix C of dimension (lddc,n), lddc &gt;= max(1,m).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1011,7 +1012,8 @@ op( X ) = X**H,
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>Scalar \( \beta \)</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE PRECISION array on GPU device. The n-by-n symmetric matrix C of dimension (lddc,n), lddc &gt;= max(1,n).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1331,7 +1333,8 @@ op( X ) = X**H,
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>Leading dimension of dA.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>Scalar \( \beta \)</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE PRECISION array on GPU device. The n-by-n symmetric matrix C of dimension (lddc,n), lddc &gt;= max(1,n).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>Leading dimension of dC.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1541,7 +1544,8 @@ op( X ) = X**H,
  otherwise, the m-by-m triangular matrix A of dimension (ldda,m), ldda &gt;= max(1,m).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>Leading dimension of dA.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>DOUBLE PRECISION array on GPU device. The m-by-n matrix B of dimension (lddb,n), lddb &gt;= max(1,m).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1875,7 +1879,8 @@ op( X ) = X**H,
  otherwise, the n-by-n triangular matrix A of dimension (ldda,n), ldda &gt;= max(1,n).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>Leading dimension of dA.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE PRECISION array on GPU device. On entry, m-by-n matrix B of dimension (lddb,n), lddb &gt;= max(1,m). On exit, overwritten with the solution matrix X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>Leading dimension of dB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2642,8 +2647,7 @@ op(A) = A^H.
  On exit, the solution matrix X</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of each array B. lddb &gt;= max( 1, m ).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2959,8 +2963,7 @@ op(A) = A^H.
     <tr><td class="paramdir"></td><td class="paramname">dinvA_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">resetozero</td><td>INTEGER Used internally by DTRTRI_DIAG routine</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -3277,8 +3280,7 @@ op(A) = A^H.
     <tr><td class="paramdir"></td><td class="paramname">dinvA_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">resetozero</td><td>INTEGER Used internally by DTRTRI_DIAG routine</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -3341,7 +3343,7 @@ op(A) = A^H.
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:12 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:37 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

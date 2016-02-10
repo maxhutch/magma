@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zhetrf.cpp normal z -> s, Fri Jan 22 21:41:40 2016
+       @generated from src/zhetrf.cpp normal z -> s, Tue Feb  9 16:05:11 2016
 */
 #include "magma_internal.h"
 #include "trace.h"

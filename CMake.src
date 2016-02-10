@@ -1191,10 +1191,10 @@ testing/magma_zutil.cpp
 
 # ----------------------------------------
 set( liblapacktest_allsrc
-
-
-
-
+testing/lin/magma_s_no_fortran.cpp
+testing/lin/magma_d_no_fortran.cpp
+testing/lin/magma_c_no_fortran.cpp
+testing/lin/magma_z_no_fortran.cpp
 testing/lin/zbdt01.f
 testing/lin/zget22.f
 testing/lin/zhet21.f

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zgels3_gpu.cpp normal z -> d, Fri Jan 22 21:41:33 2016
+       @generated from src/zgels3_gpu.cpp normal z -> d, Tue Feb  9 16:05:05 2016
 
 */
 #include "magma_internal.h"
@@ -88,7 +88,7 @@ magma_dgels3_gpu(
 {
     magmaDouble_ptr dT;
     double *tau;
-    magma_int_t k;
+    magma_int_t min_mn;
     magma_int_t nb     = magma_get_dgeqrf_nb( m, n );
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
@@ -119,8 +119,8 @@ magma_dgels3_gpu(
     else if (lquery)
         return *info;
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         hwork[0] = MAGMA_D_ONE;
         return *info;
     }
@@ -128,15 +128,15 @@ magma_dgels3_gpu(
     /*
      * Allocate temporary buffers
      */
-    magma_int_t ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nb;
+    magma_int_t ldtwork = ( 2*min_mn + magma_roundup( n, 32 ) )*nb;
     if (nb < nrhs)
-        ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nrhs;
+        ldtwork = ( 2*min_mn + magma_roundup( n, 32 ) )*nrhs;
     if (MAGMA_SUCCESS != magma_dmalloc( &dT, ldtwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
     
-    magma_dmalloc_cpu( &tau, k );
+    magma_dmalloc_cpu( &tau, min_mn );
     if ( tau == NULL ) {
         magma_free( dT );
         *info = MAGMA_ERR_HOST_ALLOC;

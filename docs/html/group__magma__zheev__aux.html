@@ -258,14 +258,15 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX_16 array, dimension (N-1) The scalar factors of the elementary reflectors, stored in TAU(n-nb:n-1) if UPLO = MagmaUpper, and in TAU(1:nb) if UPLO = MagmaLower. See Further Details.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">W</td><td>COMPLEX_16 array, dimension (LDW,NB) The n-by-nb matrix W required to update the unreduced part of A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldw</td><td>INTEGER The leading dimension of the array W. LDW &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dA</td><td></td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">ldda</td><td></td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dW</td><td></td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">lddw</td><td><h2>Further Details </h2>
-</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dA</td><td>TODO: dimension (ldda, n)?</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">ldda</td><td>TODO: ldda &gt;= n?</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW</td><td>TODO: dimension (lddw, ??)</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">lddw</td><td>TODO: lddw &gt;= n ??</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
+<h2>Further Details </h2>
 <p>If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(n) H(n-1) . . . H(n-nb+1).
 </pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v'
 </pre><p>where tau is a complex scalar, and v is a complex vector with v(i:n) = 0 and v(i-1) = 1; v(1:i-1) is stored on exit in A(1:i-1,i), and tau in TAU(i-1).</p>
@@ -431,6 +432,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir"></td><td class="paramname">lddw</td><td>TODO: lddw &gt;= n ??</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>TODO: dimension (ldwork) ??</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">ldwork</td><td>TODO: ldwork &gt;= ceil(n/64)*ldda ??</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
@@ -651,7 +653,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:12 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:37 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

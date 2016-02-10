@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -526,17 +526,20 @@ magma_zsolverinfo_free(
         magma_free_cpu( precond_par->UT.blockinfo );
         precond_par->UT.blockinfo = NULL;
     }
-    if ( precond_par->solver == Magma_ILU ||
-        precond_par->solver == Magma_AILU ||
-        precond_par->solver == Magma_ICC||
-        precond_par->solver == Magma_AICC ) {
+    if (  precond_par->cuinfoL != NULL ){
         cusparseDestroySolveAnalysisInfo( precond_par->cuinfoL ); 
-        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoU ); 
         precond_par->cuinfoL = NULL;
+    }
+    if (  precond_par->cuinfoU != NULL ){
+        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoU ); 
         precond_par->cuinfoU = NULL;
+    }
+    if (  precond_par->cuinfoLT != NULL ){
         cusparseDestroySolveAnalysisInfo( precond_par->cuinfoLT ); 
-        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoUT ); 
         precond_par->cuinfoLT = NULL;
+    }
+    if (  precond_par->cuinfoUT != NULL ){
+        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoUT ); 
         precond_par->cuinfoUT = NULL;
     }
     if ( precond_par->LD.val != NULL ) {
@@ -697,6 +700,8 @@ magma_zsolverinfo_init(
     
     precond_par->cuinfoL = NULL;
     precond_par->cuinfoU = NULL;
+    precond_par->cuinfoLT = NULL;
+    precond_par->cuinfoUT = NULL;
 
 cleanup:
     if( info != 0 ){

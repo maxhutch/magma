@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define NB 64
 
@@ -154,7 +154,7 @@ magma_zcompact(
     zcompact_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
-    magma_igetvector( 1, active+n, 1, cBlock, 1 );
+    magma_igetvector( 1, active+n, 1, cBlock, 1, queue );
     return info;
 }
 

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zheevdx_2stage.cpp normal z -> d, Fri Jan 22 21:41:47 2016
+       @generated from src/zheevdx_2stage.cpp normal z -> d, Tue Feb  9 16:05:17 2016
 
 */
 #include "magma_internal.h"
@@ -530,20 +530,20 @@ magma_dsyevdx_2stage(
 
         timer_start( time );
 
-        magma_queue_t queues[2];
+        magma_queue_t queue;
         magma_device_t cdev;
         magma_getdevice( &cdev );
-        magma_queue_create( cdev, &queues[0] );
+        magma_queue_create( cdev, &queue );
 
-        magma_dsetmatrix( n, n, A, lda, dA, ldda, queues[0] );
+        magma_dsetmatrix( n, n, A, lda, dA, ldda, queue );
 
         magma_dormqr_gpu_2stages(MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, dA+nb, ldda,
                                  dZ+nb, n, dT1, nb, info);
 
-        magma_dgetmatrix( n, *m, dZ, lddz, A, lda, queues[0] );
+        magma_dgetmatrix( n, *m, dZ, lddz, A, lda, queue );
 
-        magma_queue_sync( queues[0] );
-        magma_queue_destroy( queues[0] );
+        magma_queue_sync( queue );
+        magma_queue_destroy( queue );
 
         timer_stop( time );
         timer_printf( "  N= %10d  nb= %5d time dormqr + copy = %6.2f\n", (int)n, (int)nb, time );

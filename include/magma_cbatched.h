@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from include/magma_zbatched.h normal z -> c, Fri Jan 22 21:42:53 2016
+       @generated from include/magma_zbatched.h normal z -> c, Tue Feb  9 16:06:19 2016
 */
 
 #ifndef MAGMA_CBATCHED_H
@@ -664,46 +664,6 @@ magma_cgeqrf_panel_batched(
     magmaFloatComplex** W2_array,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_cgeqrf_panel_batched_v4(
-    magma_int_t m, magma_int_t n, magma_int_t nb,    
-    magmaFloatComplex** dA_array,    magma_int_t ldda,
-    magmaFloatComplex** tau_array, 
-    magmaFloatComplex** dT_array, magma_int_t ldt, 
-    magmaFloatComplex** dR_array, magma_int_t ldr,
-    float** dnorm_array,  
-    magmaFloatComplex** dW0_displ, 
-    magmaFloatComplex** dW1_displ,
-    magmaFloatComplex *dwork,  
-    magmaFloatComplex** W_array, 
-    magmaFloatComplex** W2_array,
-    magma_int_t *info_array,
-    magma_int_t batchCount, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_cunmqr_batched(
-    magma_side_t side, magma_trans_t trans,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex **dA_array, magma_int_t ldda,
-    magmaFloatComplex **tau_array,
-    magmaFloatComplex **dC_array, magma_int_t lddc,
-    magmaFloatComplex *hwork, magma_int_t lwork, 
-    magmaFloatComplex **dT_array, magma_int_t nb, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_cgeqrs_batched(
-    magma_int_t m, magma_int_t n, magma_int_t nrhs,
-    magmaFloatComplex **dA_array, magma_int_t ldda,
-    magmaFloatComplex **tau_array,
-    magmaFloatComplex **dR_array, magma_int_t lddr, 
-    magmaFloatComplex **dT_array, magma_int_t nb,  
-    magmaFloatComplex **dB_array, magma_int_t lddb,
-    magmaFloatComplex *hwork, magma_int_t lwork, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
 
 magma_int_t 
 magma_cgels_batched(

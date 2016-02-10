@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 2.0.0-beta3) --
+   -- MAGMA (version 2.0.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date January 2016
+   @date February 2016
 
    @author Azzam Haidar
    @author Ahmad Ahmad
@@ -62,7 +62,6 @@ __global__ void zpotf2_smlpout_anywidth_kernel_batched(int m, int n,
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /**
-    \n
     This is an internal routine.
     ********************************************************************/
 extern "C" magma_int_t
@@ -84,7 +83,7 @@ magma_zpotrf_lpout_batched(
         arginfo = -10;
     }
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        fprintf( stderr, "%s: uplo=upper is not yet implemented\n", __func__ );
         arginfo = -1;
     }
 

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mark Gates
-       @generated from magmablas/zlanhe.cu normal z -> s, Fri Jan 22 21:42:00 2016
+       @generated from magmablas/zlanhe.cu normal z -> s, Tue Feb  9 16:05:29 2016
 
 */
 #include "magma_internal.h"
@@ -612,6 +612,10 @@ slansy_max(
     lwork   INTEGER
             The dimension of the array DWORK. LWORK >= max( 1, N ).
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_saux2
     ********************************************************************/
 extern "C" float

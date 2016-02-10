@@ -6,7 +6,7 @@
  *
  * @version 1.0.0
  * @author Mathieu Faverge
- * @date January 2016
+ * @date February 2016
  *
  **/
 /*

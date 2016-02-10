@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/control/magma_zmconverter.cpp normal z -> s, Fri Jan 22 21:42:18 2016
+       @generated from sparse-iter/control/magma_zmconverter.cpp normal z -> s, Tue Feb  9 16:05:47 2016
        @author Hartwig Anzt
 */
 #include "magmasparse_internal.h"
@@ -1028,13 +1028,11 @@ magma_smconvert(
             
             else {
                 printf("error: format not supported.\n");
-                //magmablasSetKernelStream( queue );
                 info = MAGMA_ERR_NOT_SUPPORTED;
             }
         }
         else {
             printf("error: conversion not supported.\n");
-            //magmablasSetKernelStream( queue );
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
     } // end CPU case
@@ -1342,7 +1340,7 @@ magma_smconvert(
 #endif
         }
         else {
-            printf("warning: format not supported on GPU. "
+            printf("%% warning: format not supported on GPU. "
             "Conversion handled by CPU.\n");
             CHECK( magma_smtransfer( A, &hA, A.memory_location, Magma_CPU, queue ));
             CHECK( magma_smconvert( hA, &hB, old_format, new_format, queue ));

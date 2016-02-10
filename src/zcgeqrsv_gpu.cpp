@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions mixed zc -> ds
 
@@ -214,7 +214,7 @@ magma_zcgeqrsv_gpu(
     
     eps  = lapackf77_dlamch("Epsilon");
     Anrm = magmablas_zlange( MagmaInfNorm, m, n, dA, ldda, (double*)dworkd, ldworkd, queue );
-    cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
+    cte  = Anrm * eps * magma_dsqrt( n ) * BWDMAX;
 
     /*
      * Convert to single precision

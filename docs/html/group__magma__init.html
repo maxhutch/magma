@@ -121,11 +121,11 @@ $(document).ready(function(){initNavTree('group__magma__init.html','');});
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#ga7cc179c267eb6c5f154ffd40d4759ab3">magma_init</a> ()</td></tr>
-<tr class="memdesc:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Caches information about available CUDA devices.  <a href="#ga7cc179c267eb6c5f154ffd40d4759ab3">More...</a><br /></td></tr>
+<tr class="memdesc:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the MAGMA library.  <a href="#ga7cc179c267eb6c5f154ffd40d4759ab3">More...</a><br /></td></tr>
 <tr class="separator:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae7463bee75a4c738929f1169b930938b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gae7463bee75a4c738929f1169b930938b"></a>
 magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b">magma_finalize</a> ()</td></tr>
-<tr class="memdesc:gae7463bee75a4c738929f1169b930938b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees information about CUDA devices. <br /></td></tr>
+<tr class="memdesc:gae7463bee75a4c738929f1169b930938b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees information used by the MAGMA library. <br /></td></tr>
 <tr class="separator:gae7463bee75a4c738929f1169b930938b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad4ab03f6f03a9a3ee635187b21317008"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#gad4ab03f6f03a9a3ee635187b21317008">magma_print_environment</a> ()</td></tr>
 <tr class="memdesc:gad4ab03f6f03a9a3ee635187b21317008"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the available GPU devices.  <a href="#gad4ab03f6f03a9a3ee635187b21317008">More...</a><br /></td></tr>
@@ -147,9 +147,10 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
       </table>
 </div><div class="memdoc">
 
-<p>Caches information about available CUDA devices. </p>
-<p>When renumbering devices after calling magma_init, call magma_finalize, then cudaSetValidDevices, then magma_init again. Ideally magma_init is paired with magma_finalize, but this implementation ensures there isn't a memory leak if magma_init is called multiple times without calling magma_finalize.</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b" title="Frees information about CUDA devices. ">magma_finalize</a> </dd></dl>
+<p>Initializes the MAGMA library. </p>
+<p>Caches information about available CUDA devices. When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init.</p>
+<p>Every magma_init call must be paired with a magma_finalize call. Only one thread needs to call magma_init and magma_finalize, but every thread may call it. If n threads call magma_init, the n-th call to magma_finalize will release resources.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b" title="Frees information used by the MAGMA library. ">magma_finalize</a> </dd></dl>
 
 </div>
 </div>
@@ -176,7 +177,7 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:10 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:34 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

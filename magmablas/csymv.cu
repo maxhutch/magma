@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        csymv.cu is nearly identical to chemv.cu, just change names and drop MAGMA_C_CONJ.
        
@@ -11,7 +11,7 @@
        csymv_kernel_L (lower) in csymv.cu; diff the two files to compare.
        
        Note: [ds] precisions generated from chemv.cu
-       @generated from magmablas/zsymv.cu normal z -> c, Fri Jan 22 21:42:03 2016
+       @generated from magmablas/zsymv.cu normal z -> c, Tue Feb  9 16:05:32 2016
        
        @author Mark Gates
 */
@@ -739,6 +739,10 @@ magmablas_csymv_work(
     incy    INTEGER.
             On entry, INCY specifies the increment for the elements of
             Y. INCY must not be zero.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
     ********************************************************************/

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zgemm_batched.cpp normal z -> c, Fri Jan 22 21:42:09 2016
+       @generated from magmablas/zgemm_batched.cpp normal z -> c, Tue Feb  9 16:05:37 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -144,10 +144,6 @@
     queue   magma_queue_t
             Queue to execute in.
     
-    @param[in]
-    myhandle    cublasHandle_t
-              Handlde to use cuBLAS routines
-
     @ingroup magma_cblas3
     ********************************************************************/
 extern "C" void
@@ -159,7 +155,6 @@ magma_cgemm_batched( magma_trans_t transA, magma_trans_t transB,
                      magmaFloatComplex beta,
                      magmaFloatComplex **dC_array, magma_int_t lddc, 
                      magma_int_t batchCount, magma_queue_t queue )
-                     //magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle )
 {
     magma_int_t use_cublas = magma_crecommend_cublas_gemm_batched(transA, transB, m, n, k);
 

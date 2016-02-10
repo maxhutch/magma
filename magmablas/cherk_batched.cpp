@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zherk_batched.cpp normal z -> c, Fri Jan 22 21:42:10 2016
+       @generated from magmablas/zherk_batched.cpp normal z -> c, Tue Feb  9 16:05:39 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -33,7 +33,7 @@
 /**
     Purpose
     -------
-    CHERK performs one of the hermitian rank k operations
+    CHERK performs one of the Hermitian rank k operations
 
     C := alpha*A*A**H + beta*C,
 
@@ -41,7 +41,7 @@
 
     C := alpha*A**H*A + beta*C,
 
-    where alpha and beta are real scalars, C is an n by n hermitian
+    where alpha and beta are real scalars, C is an n by n Hermitian
     matrix and A is an n by k matrix in the first case and a k by n
     matrix in the second case.
     
@@ -111,13 +111,13 @@
              Each is a COMPLEX array C of DIMENSION ( lddc, n ).
              Before entry with uplo = MagmaUpper, the leading n by n
              upper triangular part of the array C must contain the upper
-             triangular part of the hermitian matrix and the strictly
+             triangular part of the Hermitian matrix and the strictly
              lower triangular part of C is not referenced. On exit, the
              upper triangular part of the array C is overwritten by the
              upper triangular part of the updated matrix.
              Before entry with uplo = MagmaLower, the leading n by n
              lower triangular part of the array C must contain the lower
-             triangular part of the hermitian matrix and the strictly
+             triangular part of the Hermitian matrix and the strictly
              upper triangular part of C is not referenced. On exit, the
              lower triangular part of the array C is overwritten by the
              lower triangular part of the updated matrix.

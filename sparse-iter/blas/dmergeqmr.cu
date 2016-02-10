@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zmergeqmr.cu normal z -> d, Fri Jan 22 21:42:14 2016
+       @generated from sparse-iter/blas/zmergeqmr.cu normal z -> d, Tue Feb  9 16:05:43 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 512
 
@@ -534,7 +534,7 @@ magma_dqmr_6_kernel(
         for( int j=0; j<num_cols; j++ ){
             
             double wttmp = wt[ i+j*num_rows ]
-                                - MAGMA_D_CNJG( beta ) * w[ i+j*num_rows ];
+                                - MAGMA_D_CONJ( beta ) * w[ i+j*num_rows ];
                                 
             wt[ i+j*num_rows ] = wttmp;
             

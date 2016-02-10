@@ -1,13 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
 */
+
+
 
 // includes, system
 #include <stdlib.h>
@@ -67,6 +69,16 @@ int main(  int argc, char** argv )
 
     magmaDoubleComplex c_one  = MAGMA_Z_MAKE(1.0, 0.0);
     magmaDoubleComplex c_zero = MAGMA_Z_MAKE(0.0, 0.0);
+    
+    double accuracy = 1e-10;
+    
+    #define PRECISION_z
+    #if defined(PRECISION_c)
+        accuracy = 1e-4;
+    #endif
+    #if defined(PRECISION_s)
+        accuracy = 1e-4;
+    #endif
     
     magma_int_t i, j;
     for( i = 1; i < argc; ++i ) {
@@ -217,7 +229,7 @@ int main(  int argc, char** argv )
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_Z_REAL(hcheck.val[k]) - MAGMA_Z_REAL(hrefvec.val[k]);
         printf("%% |x-y|_F = %8.2e\n", res);
-        if ( res < .000001 )
+        if ( res < accuracy )
             printf("%% tester spmm SELL-P:  ok\n");
         else
             printf("%% tester spmm SELL-P:  failed\n");
@@ -258,7 +270,7 @@ int main(  int argc, char** argv )
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_Z_REAL(hcheck.val[k]) - MAGMA_Z_REAL(hrefvec.val[k]);
         printf("%% |x-y|_F = %8.2e\n", res);
-        if ( res < .000001 )
+        if ( res < accuracy )
             printf("%% tester spmm cuSPARSE:  ok\n");
         else
             printf("%% tester spmm cuSPARSE:  failed\n");

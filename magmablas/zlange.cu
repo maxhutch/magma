@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -230,6 +230,10 @@ zlange_one_kernel(
             If NORM = MagmaOneNorm,                 LWORK >= max( 1, N ).
             Note this is different than LAPACK, which requires WORK only for
             NORM = MagmaInfNorm, and does not pass LWORK.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zaux2
     ********************************************************************/

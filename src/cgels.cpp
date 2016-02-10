@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zgels.cpp normal z -> c, Fri Jan 22 21:41:37 2016
+       @generated from src/zgels.cpp normal z -> c, Tue Feb  9 16:05:08 2016
 
 */
 #include "magma_internal.h"
@@ -91,7 +91,7 @@ magma_cgels(
     
     /* Local variables */
     magmaFloatComplex *tau;
-    magma_int_t k;
+    magma_int_t min_mn;
     magma_int_t nb     = magma_get_cgeqrf_nb( m, n );
     magma_int_t lwkopt = max( n*nb, 2*nb*nb ); // (m - n + nb)*(nrhs + nb) + nrhs*nb;
     bool lquery = (lwork == -1);
@@ -122,13 +122,13 @@ magma_cgels(
     else if (lquery)
         return *info;
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         hwork[0] = c_one;
         return *info;
     }
 
-    magma_cmalloc_cpu( &tau, k );
+    magma_cmalloc_cpu( &tau, min_mn );
     if ( tau == NULL ) {
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CONJ.
        
@@ -736,6 +736,10 @@ magmablas_zhemv_work(
     incy    INTEGER.
             On entry, INCY specifies the increment for the elements of
             Y. INCY must not be zero.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zblas2
     ********************************************************************/

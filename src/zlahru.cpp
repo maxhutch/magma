@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -93,6 +93,10 @@
 
     @param
     dwork   (workspace) COMPLEX_16 array on the GPU, dimension N*NB.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     Further Details
     ---------------

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
  
        @author Mark Gates
-       @generated from interface_cuda/blas_z_v2.cpp normal z -> c, Fri Jan 22 21:41:27 2016
+       @generated from interface_cuda/blas_z_v2.cpp normal z -> c, Tue Feb  9 16:04:59 2016
 */
 #include "magma_internal.h"
 #include "error.h"
@@ -32,6 +32,10 @@
     @param[in]
     incx    Stride between consecutive elements of dx. incx > 0.
             
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C" magma_int_t
@@ -58,6 +62,10 @@ magma_icamax_q(
     @param[in]
     incx    Stride between consecutive elements of dx. incx > 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C" magma_int_t
@@ -83,6 +91,10 @@ magma_icamin_q(
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx > 0.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas1
 */
@@ -120,6 +132,10 @@ magma_scasum_q(
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C" void
@@ -153,6 +169,10 @@ magma_caxpy_q(
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C" void
@@ -184,6 +204,10 @@ magma_ccopy_q(
 
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas1
 */
@@ -220,6 +244,10 @@ magmaFloatComplex magma_cdotc(
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C"
@@ -247,6 +275,10 @@ magmaFloatComplex magma_cdotu(
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx > 0.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas1
 */
@@ -291,6 +323,10 @@ magma_scnrm2_q(
             [ c         s ]  where c*c + s*conj(s) = 1.
             [ -conj(s)  c ]
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C" void
@@ -334,6 +370,10 @@ magma_crot_q(
     s       float. sine. c and s define a rotation
             [  c  s ]  where c*c + s*s = 1.
             [ -s  c ]
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas1
 */
@@ -398,6 +438,10 @@ magma_crotmg_q(
     @param[in]
     incx    Stride between consecutive elements of dx. incx > 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas1
 */
 extern "C" void
@@ -426,6 +470,10 @@ magma_cscal_q(
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx > 0.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas1
 */
@@ -459,6 +507,10 @@ magma_csscal_q(
 
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas1
 */
@@ -520,6 +572,10 @@ magma_cswap_q(
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas2
 */
 extern "C" void
@@ -575,6 +631,10 @@ magma_cgemv_q(
     @param[in]
     ldda    Leading dimension of dA.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas2
 */
 extern "C" void
@@ -627,6 +687,10 @@ magma_cgerc_q(
 
     @param[in]
     ldda    Leading dimension of dA.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
 */
@@ -684,6 +748,10 @@ magma_cgeru_q(
     @param[in]
     incy    Stride between consecutive elements of dy. incy != 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas2
 */
 extern "C" void
@@ -731,6 +799,10 @@ magma_chemv_q(
 
     @param[in]
     ldda    Leading dimension of dA.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
 */
@@ -783,6 +855,10 @@ magma_cher_q(
 
     @param[in]
     ldda    Leading dimension of dA.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
 */
@@ -837,6 +913,10 @@ magma_cher2_q(
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas2
 */
 extern "C" void
@@ -889,6 +969,10 @@ magma_ctrmv_q(
 
     @param[in]
     incx    Stride between consecutive elements of dx. incx != 0.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
 */
@@ -960,6 +1044,10 @@ magma_ctrsv_q(
     @param[in]
     lddc    Leading dimension of dC.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas3
 */
 extern "C" void
@@ -1029,6 +1117,10 @@ magma_cgemm_q(
     @param[in]
     lddc    Leading dimension of dC.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas3
 */
 extern "C" void
@@ -1090,6 +1182,10 @@ magma_csymm_q(
 
     @param[in]
     lddc    Leading dimension of dC.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas3
 */
@@ -1158,6 +1254,10 @@ magma_csyrk_q(
 
     @param[in]
     lddc    Leading dimension of dC.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas3
 */
@@ -1229,6 +1329,10 @@ magma_csyr2k_q(
     @param[in]
     lddc    Leading dimension of dC.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas3
 */
 extern "C" void
@@ -1290,6 +1394,10 @@ magma_chemm_q(
 
     @param[in]
     lddc    Leading dimension of dC.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas3
 */
@@ -1359,6 +1467,10 @@ magma_cherk_q(
     @param[in]
     lddc    Leading dimension of dC.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas3
 */
 extern "C" void
@@ -1425,6 +1537,10 @@ magma_cher2k_q(
     @param[in]
     lddb    Leading dimension of dB.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_cblas3
 */
 extern "C" void
@@ -1490,6 +1606,10 @@ magma_ctrmm_q(
 
     @param[in]
     lddb    Leading dimension of dB.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas3
 */

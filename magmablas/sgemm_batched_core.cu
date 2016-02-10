@@ -1,11 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
-
-       @precisions normal s
+       @date February 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -179,7 +177,7 @@ magmablas_sgemm_batched(
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
-        printf("arch < 200 not supported \n"); // TODO call cublas
+        fprintf( stderr, "%s: CUDA arch < 200 not supported\n", __func__ ); // TODO call cublas
         return;
     }
     

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from testing/testing_zpotrf_mgpu.cpp normal z -> d, Fri Jan 22 21:42:38 2016
+       @generated from testing/testing_zpotrf_mgpu.cpp normal z -> d, Tue Feb  9 16:06:06 2016
 */
 // includes, system
 #include <stdlib.h>

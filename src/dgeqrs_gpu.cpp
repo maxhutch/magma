@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zgeqrs_gpu.cpp normal z -> d, Fri Jan 22 21:41:35 2016
+       @generated from src/zgeqrs_gpu.cpp normal z -> d, Tue Feb  9 16:05:06 2016
 
 */
 #include "magma_internal.h"
@@ -107,7 +107,7 @@ magma_dgeqrs_gpu(
     
     /* Local variables */
     magmaDouble_ptr dwork;
-    magma_int_t i, k, lddwork, rows, ib;
+    magma_int_t i, min_mn, lddwork, rows, ib;
 
     magma_int_t nb     = magma_get_dgeqrf_nb( m, n );
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
@@ -136,8 +136,8 @@ magma_dgeqrs_gpu(
     else if (lquery)
         return *info;
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         hwork[0] = c_one;
         return *info;
     }
@@ -158,15 +158,15 @@ magma_dgeqrs_gpu(
     }
 
     /* Solve R*X = B(1:n,:) */
-    lddwork= k;
-    if (nb < k)
+    lddwork= min_mn;
+    if (nb < min_mn)
         dwork = dT+2*lddwork*nb;
     else
         dwork = dT;
     // To do: Why did we have this line originally; seems to be a bug (Stan)?
     // dwork = dT;
 
-    i    = (k-1)/nb * nb;
+    i    = (min_mn - 1)/nb * nb;
     ib   = n-i;
     rows = m-i;
 
@@ -191,22 +191,24 @@ magma_dgeqrs_gpu(
                       dwork+i,       lddwork, queue );
 
     // update c
-    if (nrhs == 1)
+    if (nrhs == 1) {
         magma_dgemv( MagmaNoTrans, i, ib,
                      c_neg_one, dA(0, i), ldda,
                                 dwork + i,   1,
                      c_one,     dB,           1, queue );
-    else
+    }
+    else {
         magma_dgemm( MagmaNoTrans, MagmaNoTrans, i, nrhs, ib,
                      c_neg_one, dA(0, i),  ldda,
                                 dwork + i, lddwork,
                      c_one,     dB,        lddb, queue );
+    }
 
     magma_int_t start = i-nb;
-    if (nb < k) {
+    if (nb < min_mn) {
         for (i = start; i >= 0; i -= nb) {
-            ib = min(k-i, nb);
-            rows = m -i;
+            ib = min(min_mn - i, nb);
+            rows = m - i;
 
             if (i + ib < n) {
                 if (nrhs == 1) {

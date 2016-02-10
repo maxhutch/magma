@@ -7,7 +7,7 @@
 */
 #include <stdio.h>
 
-#include "magma.h"
+#include "magma_v2.h"
 #include "magmasparse.h"
 
 #ifndef MM_IO_H

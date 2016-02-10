@@ -38,52 +38,51 @@ cdir      := testing/lin
 # ----------------------------------------------------------------------
 
 
-ifeq ($(FORT),no_fortran)
-	# sources for liblapacktest.a, if Fortran is NOT available -- dummy stub functions.
-	liblapacktest_zsrc := \
-		$(cdir)/magma_z_no_fortran.cpp
-else
-	liblapacktest_src := \
-		$(cdir)/zbdt01.f  \
-		$(cdir)/zget22.f  \
-		$(cdir)/zhet21.f  \
-		$(cdir)/zhst01.f  \
-		$(cdir)/zunt01.f  \
-		$(cdir)/zqpt01.f  \
-		$(cdir)/zqrt02.f  \
-		$(cdir)/zlarfy.f  \
-		$(cdir)/zstt21.f  \
-		\
-		$(cdir)/cbdt01.f  \
-		$(cdir)/cget22.f  \
-		$(cdir)/chet21.f  \
-		$(cdir)/chst01.f  \
-		$(cdir)/cunt01.f  \
-		$(cdir)/cqpt01.f  \
-		$(cdir)/cqrt02.f  \
-		$(cdir)/clarfy.f  \
-		$(cdir)/cstt21.f  \
-		\
-		$(cdir)/dbdt01.f  \
-		$(cdir)/dget22.f  \
-		$(cdir)/dsyt21.f  \
-		$(cdir)/dhst01.f  \
-		$(cdir)/dort01.f  \
-		$(cdir)/dqpt01.f  \
-		$(cdir)/dqrt02.f  \
-		$(cdir)/dlarfy.f  \
-		$(cdir)/dstt21.f  \
-		\
-		$(cdir)/sbdt01.f  \
-		$(cdir)/sget22.f  \
-		$(cdir)/ssyt21.f  \
-		$(cdir)/shst01.f  \
-		$(cdir)/sort01.f  \
-		$(cdir)/sqpt01.f  \
-		$(cdir)/sqrt02.f  \
-		$(cdir)/slarfy.f  \
-		$(cdir)/sstt21.f
-endif
+# sources for liblapacktest.a, if Fortran is NOT available -- dummy stub functions.
+liblapacktest_zsrc := \
+	$(cdir)/magma_z_no_fortran.cpp
+
+liblapacktest_src := \
+	$(cdir)/zbdt01.f  \
+	$(cdir)/zget22.f  \
+	$(cdir)/zhet21.f  \
+	$(cdir)/zhst01.f  \
+	$(cdir)/zunt01.f  \
+	$(cdir)/zqpt01.f  \
+	$(cdir)/zqrt02.f  \
+	$(cdir)/zlarfy.f  \
+	$(cdir)/zstt21.f  \
+	\
+	$(cdir)/cbdt01.f  \
+	$(cdir)/cget22.f  \
+	$(cdir)/chet21.f  \
+	$(cdir)/chst01.f  \
+	$(cdir)/cunt01.f  \
+	$(cdir)/cqpt01.f  \
+	$(cdir)/cqrt02.f  \
+	$(cdir)/clarfy.f  \
+	$(cdir)/cstt21.f  \
+	\
+	$(cdir)/dbdt01.f  \
+	$(cdir)/dget22.f  \
+	$(cdir)/dsyt21.f  \
+	$(cdir)/dhst01.f  \
+	$(cdir)/dort01.f  \
+	$(cdir)/dqpt01.f  \
+	$(cdir)/dqrt02.f  \
+	$(cdir)/dlarfy.f  \
+	$(cdir)/dstt21.f  \
+	\
+	$(cdir)/sbdt01.f  \
+	$(cdir)/sget22.f  \
+	$(cdir)/ssyt21.f  \
+	$(cdir)/shst01.f  \
+	$(cdir)/sort01.f  \
+	$(cdir)/sqpt01.f  \
+	$(cdir)/sqrt02.f  \
+	$(cdir)/slarfy.f  \
+	$(cdir)/sstt21.f
+
 
 
 #######################################################################

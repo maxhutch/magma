@@ -181,7 +181,7 @@ print 'from numpy import array, nan, inf'
 print
 
 if ( len(sys.argv) > 1 ):
-	m = re.search( 'v?(\d+\.\d+\.\d+|trunk)/cuda(\d+\.\d+)-(\w+)/', sys.argv[1] )
+	m = re.search( 'v?(\d+\.\d+\.\d+|trunk)/cuda(\d+\.\d+)-(.*)/', sys.argv[1] )
 	if ( m ):
 		print "version = '%s'" % (m.group(1))
 		print "cuda    = '%s'" % (m.group(2))

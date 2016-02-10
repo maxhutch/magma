@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zcgesv_gpu.cpp mixed zc -> ds, Fri Jan 22 21:41:30 2016
+       @generated from src/zcgesv_gpu.cpp mixed zc -> ds, Tue Feb  9 16:05:02 2016
 
 */
 #include "magma_internal.h"
@@ -206,7 +206,7 @@ magma_dsgesv_gpu(
     
     eps  = lapackf77_dlamch("Epsilon");
     Anrm = magmablas_dlange( MagmaInfNorm, n, n, dA, ldda, (double*)dworkd, n*nrhs, queue );
-    cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
+    cte  = Anrm * eps * magma_dsqrt( n ) * BWDMAX;
     
     /*
      * Convert to single precision

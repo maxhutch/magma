@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zlange.cu normal z -> s, Fri Jan 22 21:42:00 2016
+       @generated from magmablas/zlange.cu normal z -> s, Tue Feb  9 16:05:29 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -230,6 +230,10 @@ slange_one_kernel(
             If NORM = MagmaOneNorm,                 LWORK >= max( 1, N ).
             Note this is different than LAPACK, which requires WORK only for
             NORM = MagmaInfNorm, and does not pass LWORK.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_saux2
     ********************************************************************/

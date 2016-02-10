@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mark Gates
-       @generated from testing/testing_zunmql.cpp normal z -> s, Fri Jan 22 21:42:45 2016
+       @generated from testing/testing_zunmql.cpp normal z -> s, Tue Feb  9 16:06:12 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -156,7 +156,7 @@ int main( int argc, char** argv )
             size = ldc*n;
             blasf77_saxpy( &size, &c_neg_one, C, &ione, R, &ione );
             Cnorm = lapackf77_slange( "Fro", &m, &n, C, &ldc, work );
-            error = lapackf77_slange( "Fro", &m, &n, R, &ldc, work ) / (sqrt(m*n) * Cnorm);
+            error = lapackf77_slange( "Fro", &m, &n, R, &ldc, work ) / (magma_ssqrt(m*n) * Cnorm);
             
             printf( "%5d %5d %5d   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                     (int) m, (int) n, (int) k,

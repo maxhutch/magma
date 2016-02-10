@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgetf2_kernels.cu normal z -> c, Fri Jan 22 21:42:09 2016
+       @generated from magmablas/zgetf2_kernels.cu normal z -> c, Tue Feb  9 16:05:38 2016
 */
 
 #include "magma_internal.h"
@@ -223,8 +223,8 @@ magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_ar
 
     if ( num_blocks > zamax) 
     {
-        printf("length(=%d), num_blocks(=%d) is too big > zamax(=%d), the second layer reduction can not be launched, Plz incread zamax \n",
-               int(length), int(num_blocks), int(zamax));
+        fprintf( stderr, "%s: length(=%d), num_blocks(=%d) is too big > zamax(=%d), the second layer reduction can not be launched, Plz incread zamax\n",
+                 __func__, int(length), int(num_blocks), int(zamax));
     }
     else
     {
@@ -446,7 +446,7 @@ magma_int_t magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magm
     */
     if ( n  > MAX_NTHREADS) 
     {
-        printf("magma_cswap_batched nb=%d, > %d, not supported\n", int(n), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s nb=%d > %d, not supported\n", __func__, int(n), int(MAX_NTHREADS) );
         return -15;
     }
     dim3 grid(1,1, batchCount);
@@ -512,9 +512,9 @@ magma_int_t magma_cscal_cgeru_batched(magma_int_t m, magma_int_t n, magma_int_t 
        alpha := -1.0; x := A(1:M-1,0) and y:= A(0,1:N-1);
     */
     if ( n == 0) return 0;
-    if ( n  > MAX_NTHREADS) 
+    if ( n > MAX_NTHREADS ) 
     {
-        printf("magma_cscal_cgeru_batched nb=%d, > %d, not supported \n", int(n), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s nb=%d, > %d, not supported\n", __func__, int(n), int(MAX_NTHREADS) );
         return -15;
     }
 
@@ -645,9 +645,9 @@ magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_a
     size_t shared_size = sizeof(magmaFloatComplex)*(ib*(ib+n));
 
     // TODO TODO TODO
-    if ( shared_size >  (MAX_SHARED_ALLOWED*1024) ) // limit the shared memory to 46K leaving 2K for extra
+    if ( shared_size > (MAX_SHARED_ALLOWED*1024) ) // limit the shared memory to 46K leaving 2K for extra
     {
-        printf("kernel_cgetf2trsm error out of shared memory \n");
+        fprintf( stderr, "%s: error out of shared memory\n", __func__ );
         return;
     }
 
@@ -678,7 +678,7 @@ zupdate_device(int m, int step, magmaFloatComplex* x, int ldx,  magmaFloatComple
             indx = tid + s * MAX_NTHREADS;
             if ( indx > i  && indx < m ) {
                 A[indx] -=  A[i] * x[indx + i*ldx];
-                //printf("         @ step %d tid %d updating x[tid]*y[i]=A %5.3f %5.3f = %5.3f  at i %d \n", step, tid, x[tid + i*ldx], A[i], A[tid],i);
+                //printf("         @ step %d tid %d updating x[tid]*y[i]=A %5.3f %5.3f = %5.3f  at i %d\n", step, tid, x[tid + i*ldx], A[i], A[tid],i);
             }
         }
         __syncthreads();
@@ -750,7 +750,7 @@ zcomputecolumn_kernel_shared_batched(int m, int paneloffset, int step, magmaFloa
     if (tid == 0) {
         ipiv[gboff]  = shared_idx[0] + gboff + 1; // Fortran Indexing
         alpha = shared_A[shared_idx[0]+step];
-        //printf("@ step %d ipiv=%d where gboff=%d  shared_idx %d alpha %5.3f \n",step,ipiv[gboff],gboff,shared_idx[0],alpha);
+        //printf("@ step %d ipiv=%d where gboff=%d  shared_idx %d alpha %5.3f\n",step,ipiv[gboff],gboff,shared_idx[0],alpha);
         if (shared_x[0] == MAGMA_D_ZERO) {
             info_array[blockIdx.z] = shared_idx[0] + gboff + gbstep + 1;
         }
@@ -798,7 +798,7 @@ magma_int_t magma_ccomputecolumn_batched(magma_int_t m, magma_int_t paneloffset,
     size_t all_shmem_size = zamax*(sizeof(float)+sizeof(int)) + (m+2)*sizeof(magmaFloatComplex);
     if ( all_shmem_size >  (MAX_SHARED_ALLOWED*1024) ) // limit the shared memory to 44K leaving 4K for extra
     {
-        printf("magma_ccomputecolumn_batched error out of shared memory \n");
+        fprintf( stderr, "%s error out of shared memory\n", __func__ );
         return -20;
     }
 
@@ -1028,7 +1028,7 @@ magma_int_t  magma_cgetf2_sm_batched(
 
     if (shared_size > 47000)
     {
-        printf("Shared memory in cgetf2 = %d, exceeds 48K, kernel can not lauched succesfully\n", int(shared_size) );
+        fprintf( stderr, "%s: shared memory = %d, exceeds 48K, kernel cannot run\n", __func__, int(shared_size) );
         return 1;
     }
 

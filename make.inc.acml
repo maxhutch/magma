@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.0-beta3) --
+#   -- MAGMA (version 2.0.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2016
+#      @date February 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Fermi, Kepler, or Maxwell,
@@ -46,15 +46,19 @@ F90FLAGS  = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
 NVCCFLAGS = -O3         -DADD_       -Xcompiler "$(FPIC)"
 LDFLAGS   =     $(FPIC)              -fopenmp
 
+# C++11 (gcc >= 4.7) is not required, but has benefits like atomic operations
+CXXFLAGS := $(CFLAGS) -std=c++11
+CFLAGS   += -std=c99
+
 
 # --------------------
 # libraries
 
-# MAGMA no longer needs -lcblas
-# for ACML 4. Modify CFLAGS above, too.
+# MAGMA no longer needs -lcblas.
+# LIB for ACML 4. Modify CFLAGS above, too.
 #LIB      = -lacml_mp -lacml_mv -lstdc++ -lm
 
-# for ACML >= 5
+# LIB for ACML >= 5
 # requires gcc & gfortran >= 4.6
 LIB       = -lacml_mp           -lstdc++ -lm -lgfortran
 

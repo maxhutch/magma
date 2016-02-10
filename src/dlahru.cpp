@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zlahru.cpp normal z -> d, Fri Jan 22 21:41:51 2016
+       @generated from src/zlahru.cpp normal z -> d, Tue Feb  9 16:05:21 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -93,6 +93,10 @@
 
     @param
     dwork   (workspace) DOUBLE PRECISION array on the GPU, dimension N*NB.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     Further Details
     ---------------

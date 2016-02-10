@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> c d s
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 256
 
@@ -82,11 +82,11 @@ magma_zdiagcheck(
     CHECK( magma_imalloc( &dinfo, 1 ) );
     CHECK( magma_imalloc_cpu( &hinfo, 1 ) );
     hinfo[0] = 0;
-    magma_isetvector( 1, hinfo, 1, dinfo, 1 );
+    magma_isetvector( 1, hinfo, 1, dinfo, 1, queue );
     zdiagcheck_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
-    ( dA.num_rows, dA.num_cols, dA.dval, dA.drow, dA.dcol, dinfo );
+        ( dA.num_rows, dA.num_cols, dA.dval, dA.drow, dA.dcol, dinfo );
     info = hinfo[0];
-    magma_igetvector( 1, dinfo, 1, hinfo, 1 ); 
+    magma_igetvector( 1, dinfo, 1, hinfo, 1, queue ); 
     info = hinfo[0];
     
 cleanup:

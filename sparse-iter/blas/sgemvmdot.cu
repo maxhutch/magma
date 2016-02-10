@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zgemvmdot.cu normal z -> s, Fri Jan 22 21:42:13 2016
+       @generated from sparse-iter/blas/zgemvmdot.cu normal z -> s, Tue Feb  9 16:05:42 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 256
 
@@ -476,9 +476,6 @@ magma_smdotc(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -496,10 +493,10 @@ magma_smdotc(
     }
 /*
     // not necessary to zero GPU mem
-    magma_sgpumemzero<<<Gs, Bs, 0, queue->cuda_stream >>>( d1, n*k,1 );
-    magma_sgpumemzero<<<Gs, Bs, 0, queue->cuda_stream >>>( d2, n*k,1 );
-    //magmablas_slaset( MagmaFull, n, k, d1, n );
-    //magmablas_slaset( MagmaFull, n, k, d2, n );
+    magma_sgpumemzero<<< Gs, Bs, 0, queue->cuda_stream >>>( d1, n*k,1 );
+    magma_sgpumemzero<<< Gs, Bs, 0, queue->cuda_stream >>>( d2, n*k,1 );
+    //magmablas_slaset( MagmaFull, n, k, d1, n, UNKNOWN );
+    //magmablas_slaset( MagmaFull, n, k, d2, n, UNKNOWN );
     while( Gs.x > 1 ) {
         Gs_next.x = magma_ceildiv( Gs.x, Bs.x );
         magma_sblockreduce_kernel<<< Gs_next.x, Bs.x, Ms, queue->cuda_stream >>> 
@@ -510,7 +507,7 @@ magma_smdotc(
         else   { aux2 = d1; aux1 = d2; }
     }
     for( int j=0; j<k; j++) {
-            magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1 );
+            magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1, UNKNOWN );
     }
 */
    
@@ -543,7 +540,6 @@ magma_smdotc(
 
     magma_scopyvector_async( k, aux1, n, skp, 1, queue );
 
-   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

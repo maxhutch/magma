@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zjacobi.cpp normal z -> s, Fri Jan 22 21:42:26 2016
+       @generated from sparse-iter/src/zjacobi.cpp normal z -> s, Tue Feb  9 16:05:54 2016
 */
 
 #include "magmasparse_internal.h"
@@ -70,9 +70,9 @@ magma_sjacobi(
     //float nom0 = 0.0;
 
     magma_s_matrix r={Magma_CSR}, d={Magma_CSR}, ACSR={Magma_CSR};
-    
-    CHECK( magma_smconvert(A, &ACSR, A.storage_type, Magma_CSR, queue ) );
 
+    CHECK( magma_smconvert(A, &ACSR, A.storage_type, Magma_CSR, queue ) );
+    
     // prepare solver feedback
     solver_par->solver = Magma_JACOBI;
     solver_par->info = MAGMA_SUCCESS;
@@ -85,7 +85,7 @@ magma_sjacobi(
         solver_par->res_vec[0] = (real_Double_t) residual;
     }
     //nom0 = residual;
-
+    
     // Jacobi setup
     CHECK( magma_sjacobisetup_diagscal( ACSR, &d, queue ));
     magma_s_solver_par jacobiiter_par;
@@ -97,7 +97,6 @@ magma_sjacobi(
     }
 
 
-
     solver_par->numiter = 0;
     solver_par->spmv_count = 0;
     // Jacobi iterator
@@ -107,7 +106,7 @@ magma_sjacobi(
         solver_par->numiter = solver_par->numiter+jacobiiter_par.maxiter;
         //CHECK( magma_sjacobiiter_sys( A, b, d, r, x, &jacobiiter_par, queue ) );
         CHECK( magma_sjacobispmvupdate(jacobiiter_par.maxiter, ACSR, r, b, d, x, queue ));
-        solver_par->spmv_count++;
+        solver_par->spmv_count = solver_par->spmv_count+jacobiiter_par.maxiter;
         tempo2 = magma_sync_wtime( queue );
         runtime += tempo2 - tempo1;
         //CHECK( magma_sjacobispmvupdate_bw(jacobiiter_par.maxiter, A, r, b, d, x, queue ));

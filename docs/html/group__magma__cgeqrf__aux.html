@@ -200,6 +200,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dtau</td><td>COMPLEX array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) REAL array, dimension (N)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -515,7 +516,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:11 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:35 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

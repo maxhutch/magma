@@ -10,7 +10,7 @@ include make.inc
 CC         ?= gcc
 CXX        ?= g++
 NVCC       ?= nvcc
-FORT       ?= gfortran
+FORT       ?= no_fortran
 
 ARCH       ?= ar
 ARCHFLAGS  ?= cr
@@ -36,6 +36,8 @@ GPU_TARGET ?= Fermi Kepler
 
 # Extension for object files: o for unix, obj for Windows?
 o_ext      ?= o
+
+prefix     ?= /usr/local/magma
 
 
 
@@ -208,12 +210,16 @@ libtest_allsrc := \
 	$(libtest_zsrc)		\
 	$(libtest_src)		\
 
+ifeq ($(FORT),no_fortran)
 liblapacktest_allsrc := \
 	$(liblapacktest_ssrc)	\
 	$(liblapacktest_dsrc)	\
 	$(liblapacktest_csrc)	\
-	$(liblapacktest_zsrc)	\
-	$(liblapacktest_src)	\
+	$(liblapacktest_zsrc)
+else
+liblapacktest_allsrc := \
+	$(liblapacktest_src)
+endif
 
 testing_allsrc := \
 	$(testing_ssrc)		\
@@ -226,6 +232,11 @@ sparse_testing_allsrc := \
 	$(sparse_testing_dsrc)	\
 	$(sparse_testing_csrc)	\
 	$(sparse_testing_zsrc)	\
+
+ifeq ($(FORT),no_fortran)
+libmagma_allsrc := $(filter-out %.f %.f90 %.F90, $(libmagma_allsrc))
+testing_allsrc  := $(filter-out %.f %.f90 %.F90, $(testing_allsrc))
+endif
 
 libmagma_obj       := $(addsuffix .$(o_ext), $(basename $(libmagma_allsrc)))
 libsparse_obj      := $(addsuffix .$(o_ext), $(basename $(libsparse_allsrc)))
@@ -312,12 +323,6 @@ $(liblapacktest_a): $(liblapacktest_obj)
 # sparse requires libmagma
 $(libsparse_so): | $(libmagma_so)
 
-# if using blas_fix (e.g., on MacOS), libmagma requires libblas_fix
-ifeq ($(blas_fix),1)
-    $(libmagma_a):  | $(libblas_fix_a)
-    $(libmagma_so): | $(libblas_fix_a)
-endif
-
 
 # ----- testers
 testing_c_src := $(filter %.c %.cpp,       $(testing_allsrc))
@@ -329,9 +334,19 @@ sparse_testers := $(basename $(sparse_testing_allsrc))
 
 # depend on static libraries
 # see below for libmagma, which is either static or shared
-$(testers):        $(libtest_a) $(libblas_fix_a) $(liblapacktest_a)
-$(testers_f):      $(libtest_a) $(libblas_fix_a) $(liblapacktest_a)
-$(sparse_testers): $(libtest_a) $(libblas_fix_a)  # doesn't use liblapacktest
+$(testers):        $(libtest_a) $(liblapacktest_a)
+$(testers_f):      $(libtest_a) $(liblapacktest_a)
+$(sparse_testers): $(libtest_a)  # doesn't use liblapacktest
+
+# ----- blas_fix
+# if using blas_fix (e.g., on MacOS), libmagma requires libblas_fix
+ifeq ($(blas_fix),1)
+    $(libmagma_a):     | $(libblas_fix_a)
+    $(libmagma_so):    | $(libblas_fix_a)
+    $(testers):        | $(libblas_fix_a)
+    $(testers_f):      | $(libblas_fix_a)
+    $(sparse_testers): | $(libblas_fix_a)
+endif
 
 
 # ----------------------------------------
@@ -400,6 +415,8 @@ $(testers):        | $(libmagma_a) $(libmagma_so)
 $(testers_f):      | $(libmagma_a) $(libmagma_so)
 $(sparse_testers): | $(libmagma_a) $(libmagma_so) $(libsparse_a) $(libsparse_so)
 
+libs := $(libmagma_a) $(libmagma_so) $(libsparse_a) $(libsparse_so)
+
 else
 
 # --------------------
@@ -423,6 +440,12 @@ $(testers):        $(libmagma_a)
 $(testers_f):      $(libmagma_a)
 $(sparse_testers): $(libmagma_a) $(libsparse_a)
 
+libs := $(libmagma_a) $(libsparse_a)
+
+endif
+
+ifeq ($(blas_fix),1)
+    libs += $(libblas_fix_a)
 endif
 
 
@@ -614,6 +637,37 @@ $(sparse_testers): %: %.$(o_ext)
 
 
 # ----------------------------------------
+# filter out MAGMA-specific options for pkg-config
+INSTALL_FLAGS := $(filter-out \
+	-DMAGMA_NOAFFINITY -DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML -DMAGMA_WITH_MKL -DUSE_FLOCK \
+	-DMIN_CUDA_ARCH=100 -DMIN_CUDA_ARCH=200 -DMIN_CUDA_ARCH=300 \
+	-DHAVE_CUBLAS \
+	-fno-strict-aliasing -fPIC -O0 -O1 -O2 -O3 -pedantic -std=c99 -stdc++98 -stdc++11 \
+	-Wall -Wshadow -Wno-long-long, $(CFLAGS))
+
+INSTALL_LDFLAGS := $(filter-out -fPIC -Wall, $(LDFLAGS))
+
+install_dirs:
+	mkdir -p $(prefix)
+	mkdir -p $(prefix)/include
+	mkdir -p $(prefix)/lib
+	mkdir -p $(prefix)/lib/pkgconfig
+
+install: lib install_dirs
+	# MAGMA
+	cp include/*.h              $(prefix)/include
+	cp sparse-iter/include/*.h  $(prefix)/include
+	cp $(libs)                  $(prefix)/lib
+	# pkgconfig
+	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in      | \
+	sed -e s:@INSTALL_PREFIX@:"$(prefix)":          | \
+	sed -e s:@CFLAGS@:"$(INSTALL_FLAGS) $(INC)":    | \
+	sed -e s:@LIBS@:"$(INSTALL_LDFLAGS) $(LIBEXT)": | \
+	sed -e s:@MAGMA_REQUIRED@::                       \
+	    > $(prefix)/lib/pkgconfig/magma.pc
+
+
+# ----------------------------------------
 # files.txt is nearly all (active) files in SVN, excluding directories. Useful for rsync, etc.
 # files-doxygen.txt is all (active) source files in SVN, used by Doxyfile-fast
 
@@ -657,6 +711,7 @@ echo:
 	@echo "libmagma_zsrc   $(libmagma_zsrc)\n"
 	@echo "libmagma_src    $(libmagma_src)\n"
 	@echo "libmagma_allsrc $(libmagma_allsrc)\n"
+	@echo "libmagma_obj    $(libmagma_obj)\n"
 	@echo "libmagma_a      $(libmagma_a)"
 	@echo "libmagma_so     $(libmagma_so)"
 	@echo "====="
@@ -666,6 +721,7 @@ echo:
 	@echo "libsparse_zsrc   $(libsparse_zsrc)\n"
 	@echo "libsparse_src    $(libsparse_src)\n"
 	@echo "libsparse_allsrc $(libsparse_allsrc)\n"
+	@echo "libsparse_obj    $(libsparse_obj)\n"
 	@echo "libsparse_a      $(libsparse_a)"
 	@echo "libsparse_so     $(libsparse_so)"
 	@echo "====="
@@ -679,6 +735,7 @@ echo:
 	@echo "libtest_zsrc    $(libtest_zsrc)\n"
 	@echo "libtest_src     $(libtest_src)\n"
 	@echo "libtest_allsrc  $(libtest_allsrc)\n"
+	@echo "libtest_obj     $(libtest_obj)\n"
 	@echo "libtest_a       $(libtest_a)\n"
 	@echo "====="
 	@echo "liblapacktest_ssrc    $(liblapacktest_ssrc)\n"
@@ -687,6 +744,7 @@ echo:
 	@echo "liblapacktest_zsrc    $(liblapacktest_zsrc)\n"
 	@echo "liblapacktest_src     $(liblapacktest_src)\n"
 	@echo "liblapacktest_allsrc  $(liblapacktest_allsrc)\n"
+	@echo "liblapacktest_obj     $(liblapacktest_obj)\n"
 	@echo "liblapacktest_a       $(liblapacktest_a)\n"
 	@echo "====="
 	@echo "testing_ssrc    $(testing_ssrc)\n"
@@ -695,6 +753,7 @@ echo:
 	@echo "testing_zsrc    $(testing_zsrc)\n"
 	@echo "testing_src     $(testing_src)\n"
 	@echo "testing_allsrc  $(testing_allsrc)\n"
+	@echo "testing_obj     $(testing_obj)\n"
 	@echo "testers         $(testers)\n"
 	@echo "testers_f       $(testers_f)\n"
 	@echo "====="
@@ -704,11 +763,13 @@ echo:
 	@echo "sparse_testing_zsrc    $(sparse_testing_zsrc)\n"
 	@echo "sparse_testing_src     $(sparse_testing_src)\n"
 	@echo "sparse_testing_allsrc  $(sparse_testing_allsrc)\n"
+	@echo "sparse_testing_obj     $(sparse_testing_obj)\n"
 	@echo "sparse_testers         $(sparse_testers)\n"
 	@echo "====="
 	@echo "dep     $(dep)"
 	@echo "deps    $(deps)\n"
 	@echo "====="
+	@echo "libs    $(libs)"
 	@echo "libs_a  $(libs_a)"
 	@echo "libs_so $(libs_so)"
 	@echo "====="

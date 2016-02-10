@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mark Gates
 */
 
 #include <cuda.h>  // for CUDA_VERSION
 
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 /**
     Maps a cuSPARSE error to a MAGMA error.

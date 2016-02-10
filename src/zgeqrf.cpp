@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -116,7 +116,7 @@ magma_zgeqrf(
     
     /* Local variables */
     magmaDoubleComplex_ptr dA, dT, dwork;
-    magma_int_t i, ib, k, ldda, lddwork, old_i, old_ib;
+    magma_int_t i, ib, min_mn, ldda, lddwork, old_i, old_ib;
     
     /* Function Body */
     *info = 0;
@@ -142,8 +142,8 @@ magma_zgeqrf(
     else if (lquery)
         return *info;
     
-    k = min( m, n );
-    if (k == 0) {
+    min_mn = min( m, n );
+    if (min_mn == 0) {
         work[0] = c_one;
         return *info;
     }
@@ -173,7 +173,7 @@ magma_zgeqrf(
     magma_queue_create( cdev, &queues[0] );
     magma_queue_create( cdev, &queues[1] );
     
-    if ( (nb > 1) && (nb < k) ) {
+    if ( (nb > 1) && (nb < min_mn) ) {
         /* Use blocked code initially.
            Asynchronously send the matrix to the GPU except the first panel. */
         magma_zsetmatrix_async( m, n-nb,
@@ -182,8 +182,8 @@ magma_zgeqrf(
         
         old_i = 0;
         old_ib = nb;
-        for (i = 0; i < k-nb; i += nb) {
-            ib = min( k-i, nb );
+        for (i = 0; i < min_mn-nb; i += nb) {
+            ib = min( min_mn-i, nb );
             if (i > 0) {
                 /* get i-th panel from device */
                 magma_queue_sync( queues[1] );
@@ -222,7 +222,7 @@ magma_zgeqrf(
             magma_queue_sync( queues[0] );
             
             if (i + ib < n) {
-                if (i+ib < k-nb) {
+                if (i+ib < min_mn-nb) {
                     /* Apply H' to A(i:m,i+ib:i+2*ib) from the left (look-ahead) */
                     magma_zlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, ib, ib,
@@ -249,7 +249,7 @@ magma_zgeqrf(
     }
     
     /* Use unblocked code to factor the last or only block. */
-    if (i < k) {
+    if (i < min_mn) {
         ib = n-i;
         if (i != 0) {
             magma_zgetmatrix( m, ib, dA(0,i), ldda, A(0,i), lda, queues[1] );

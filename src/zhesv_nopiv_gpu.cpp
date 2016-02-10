@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        @author Adrien REMY
 
        @precisions normal z -> s d c
@@ -16,7 +16,7 @@
     -------
     ZHESV solves a system of linear equations
         A * X = B
-    where A is an n-by-n hermitian matrix and X and B are n-by-nrhs matrices.
+    where A is an n-by-n Hermitian matrix and X and B are n-by-nrhs matrices.
     The LU decomposition with no pivoting is
     used to factor A as
     The factorization has the form

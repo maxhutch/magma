@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @date January 2016
+       @date February 2016
             
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zlobpcg.cpp normal z -> c, Fri Jan 22 21:42:29 2016
+       @generated from sparse-iter/src/zlobpcg.cpp normal z -> c, Tue Feb  9 16:05:57 2016
 */
 #include "magmasparse_internal.h"
 
@@ -66,10 +66,6 @@ magma_clobpcg(
 {
     magma_int_t info = 0;
     
-    // set queue for old dense routines
-    //magma_queue_t orig_queue=NULL;
-    //magmablasGetKernelStream( &orig_queue );
-
 #define  residualNorms(i,iter)  ( residualNorms + (i) + (iter)*n )
 #define SWAP(x, y)    { pointer = x; x = y; y = pointer; }
 #define hresidualNorms(i,iter)  (hresidualNorms + (i) + (iter)*n )
@@ -664,6 +660,5 @@ cleanup:
     rwork = NULL;
     #endif
 
-    //magmablasSetKernelStream( orig_queue );
     return info; 
 }

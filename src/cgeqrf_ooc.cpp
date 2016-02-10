@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zgeqrf_ooc.cpp normal z -> c, Fri Jan 22 21:41:37 2016
+       @generated from src/zgeqrf_ooc.cpp normal z -> c, Tue Feb  9 16:05:09 2016
 
 */
 #include <cuda_runtime.h>
@@ -108,7 +108,7 @@ magma_cgeqrf_ooc(
     
     /* Local variables */
     magmaFloatComplex_ptr dA, dwork;
-    magma_int_t i, ib, IB, j, k, lddwork, ldda, rows;
+    magma_int_t i, ib, IB, j, min_mn, lddwork, ldda, rows;
 
     magma_int_t nb = magma_get_cgeqrf_nb( m, n );
 
@@ -144,8 +144,8 @@ magma_cgeqrf_ooc(
     if (NB >= n)
         return magma_cgeqrf(m, n, A, lda, tau, work, lwork, info);
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         work[0] = c_one;
         return *info;
     }
@@ -179,8 +179,8 @@ magma_cgeqrf_ooc(
         magma_queue_sync( queues[0] );
 
         /* 2. Update it with the previous transformations */
-        for (j=0; j < min(i,k); j += nb) {
-            ib = min( k-j, nb );
+        for (j=0; j < min(i,min_mn); j += nb) {
+            ib = min( min_mn-j, nb );
 
             /* Get a panel in ptr.                                           */
             //   1. Form the triangular factor of the block reflector
@@ -211,7 +211,7 @@ magma_cgeqrf_ooc(
         }
 
         /* 3. Do a QR on the current part */
-        if (i < k)
+        if (i < min_mn)
             magma_cgeqrf2_gpu( m-i, IB, dA(i,0), ldda, tau+i, info );
 
         /* 4. Copy the current part back to the CPU */

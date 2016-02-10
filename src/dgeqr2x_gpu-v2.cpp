@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Stan Tomov
 
-       @generated from src/zgeqr2x_gpu-v2.cpp normal z -> d, Fri Jan 22 21:41:34 2016
+       @generated from src/zgeqr2x_gpu-v2.cpp normal z -> d, Tue Feb  9 16:05:06 2016
 
 */
 #include "magma_internal.h"
@@ -104,7 +104,7 @@ magma_dgeqr2x2_gpu(
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     
-    magma_int_t i, k;
+    magma_int_t i, min_mn;
     
     magmaDouble_ptr dwork2 = (double *)dwork;
     magmaDouble_ptr dnorm = dwork + 4*n;
@@ -128,15 +128,15 @@ magma_dgeqr2x2_gpu(
     magma_queue_create( cdev, &queue );
 
     /* Compute the norms of the trailing columns */
-    k = min(m,n);
-    magmablas_dnrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
+    min_mn = min(m,n);
+    magmablas_dnrm2_cols( m, min_mn, dA(0,0), ldda, dnorm, queue );
 
-    for (i = 0; i < k; ++i) {
+    for (i = 0; i < min_mn; ++i) {
         /*   1. Apply H' to A(:,i) from the left
              2. Adjust the dnorm[i] to hold the norm of A(i:m,i) */
         if (i > 0) {
             magma_dlarfbx_gpu( m, i, dA(0, 0), ldda,
-                              dT, k, dA(0, i), dwork2, queue );
+                              dT, min_mn, dA(0, i), dwork2, queue );
             magmablas_dnrm2_adjust( i, dnorm+i, dA(0, i), queue );
         }
 
@@ -147,7 +147,7 @@ magma_dgeqr2x2_gpu(
             3. update T */
         magma_dlarfgtx_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i,
                             dnorm+i, ddA + i + i*(n), i,
-                            dA(i,0), ldda,  dT, k, dwork2, queue );
+                            dA(i,0), ldda,  dT, min_mn, dwork2, queue );
     }
 
     magma_queue_destroy( queue );

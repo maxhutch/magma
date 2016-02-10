@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
 
@@ -101,7 +101,7 @@ magma_zgeqrs3_gpu(
     #define dT(i_)    (dT + (lddwork + (i_))*nb)
 
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-    magma_int_t k, lddwork;
+    magma_int_t min_mn, lddwork;
 
     magma_int_t nb     = magma_get_zgeqrf_nb( m, n );
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
@@ -130,12 +130,12 @@ magma_zgeqrs3_gpu(
     else if (lquery)
         return *info;
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         hwork[0] = c_one;
         return *info;
     }
-    lddwork = k;
+    lddwork = min_mn;
 
     magma_queue_t queue;
     magma_device_t cdev;
@@ -153,11 +153,11 @@ magma_zgeqrs3_gpu(
     }
 
     /* Solve R*X = B(1:n,:)
-       1. Move the (k-1)/nb block diagonal submatrices from dT to R
+       1. Move the (min_mn - 1)/nb block diagonal submatrices from dT to R
        2. Solve
        3. Restore the data format moving data from R back to dT
     */
-    magmablas_zswapdblk( k-1, nb, dA(0,0), ldda, 1, dT(0), nb, 0, queue );
+    magmablas_zswapdblk( min_mn-1, nb, dA(0,0), ldda, 1, dT(0), nb, 0, queue );
     if ( nrhs == 1 ) {
         magma_ztrsv( MagmaUpper, MagmaNoTrans, MagmaNonUnit, n,
                      dA(0,0), ldda,
@@ -167,7 +167,7 @@ magma_zgeqrs3_gpu(
                      c_one, dA(0,0), ldda,
                             dB,      lddb, queue );
     }
-    magmablas_zswapdblk( k-1, nb, dT(0), nb, 0, dA(0,0), ldda, 1, queue );
+    magmablas_zswapdblk( min_mn-1, nb, dT(0), nb, 0, dA(0,0), ldda, 1, queue );
 
     magma_queue_destroy( queue );
     return *info;

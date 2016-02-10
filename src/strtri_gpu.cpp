@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Hatem Ltaief
        @author Mark Gates
 
-       @generated from src/ztrtri_gpu.cpp normal z -> s, Fri Jan 22 21:41:28 2016
+       @generated from src/ztrtri_gpu.cpp normal z -> s, Tue Feb  9 16:05:00 2016
 
 */
 #include "magma_internal.h"

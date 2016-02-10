@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zlobpcg_maxpy.cu normal z -> s, Fri Jan 22 21:42:13 2016
+       @generated from sparse-iter/blas/zlobpcg_maxpy.cu normal z -> s, Tue Feb  9 16:05:42 2016
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE  512

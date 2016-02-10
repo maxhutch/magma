@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Stan Tomov
 
@@ -108,7 +108,7 @@ magma_zgeqr2x_gpu(
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     
-    magma_int_t i, k;
+    magma_int_t i, min_mn;
 
     magmaDouble_ptr dnorm = dwork;
     magmaDoubleComplex_ptr dwork2 = (magmaDoubleComplex_ptr)(dwork + 2*n);
@@ -132,10 +132,10 @@ magma_zgeqr2x_gpu(
     }
 
     /* Compute the norms of the trailing columns */
-    k = min(m,n);
-    // magmablas_dznrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
+    min_mn = min(m,n);
+    // magmablas_dznrm2_cols( m, min_mn, dA(0,0), ldda, dnorm, queue );
 
-    for (i = 0; i < k; ++i) {
+    for (i = 0; i < min_mn; ++i) {
         /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
         magmablas_dznrm2_cols( m-i, 1, dA(i,i), ldda, dnorm+i, queue );
         magma_zlarfgx_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dnorm+i,

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zpotf2_kernels_old.cu normal z -> c, Fri Jan 22 21:42:09 2016
+       @generated from magmablas/zpotf2_kernels_old.cu normal z -> c, Tue Feb  9 16:05:38 2016
 */
 
 #include "magma_internal.h"
@@ -85,7 +85,7 @@ void magma_cpotf2_cdotc_batched(magma_int_t n, magmaFloatComplex **x_array, magm
     2) updates x[n] = sqrt(x[n]-sum);
     */
     if (n > MAX_NTHREADS) {
-        printf("n = %d > %d is not supported in cpotf2_cdotc\n", (int) n, (int) MAX_NTHREADS);
+        fprintf( stderr, "%s: n = %d > %d is not supported\n", __func__, (int) n, (int) MAX_NTHREADS );
     }
     int threadSize;
 
@@ -432,7 +432,7 @@ magma_cpotf2_tile_batched(
         arginfo = -10;
     }
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        fprintf( stderr, "%s: uplo=upper is not yet implemented\n", __func__ );
         arginfo = -1;
     }
 

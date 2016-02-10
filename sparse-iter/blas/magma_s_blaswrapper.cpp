@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/magma_z_blaswrapper.cpp normal z -> s, Fri Jan 22 21:42:11 2016
+       @generated from sparse-iter/blas/magma_z_blaswrapper.cpp normal z -> s, Tue Feb  9 16:05:40 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /**
@@ -57,9 +57,6 @@ magma_s_spmv(
     magma_queue_t queue )
 {
     magma_int_t info = 0;
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
 
     magma_s_matrix x2={Magma_CSR};
 
@@ -131,7 +128,7 @@ magma_s_spmv(
                  //printf("using DENSE kernel for SpMV: ");
                  magmablas_sgemv( MagmaNoTrans, A.num_rows, A.num_cols, alpha,
                                 A.dval, A.num_rows, x.dval, 1, beta,  y.dval,
-                                1 );
+                                1, queue );
                  //printf("done.\n");
              }
              else if ( A.storage_type == Magma_SPMVFUNCTION ) {
@@ -222,7 +219,6 @@ cleanup:
     descr = 0;
     magma_smfree(&x2, queue );
     
-    magmablasSetKernelStream( orig_queue );
     return info;
 }
 
@@ -396,10 +392,6 @@ magma_s_spmm(
 {
     magma_int_t info = 0;
     
-    // set queue for old dense routines
-    //magma_queue_t orig_queue=NULL;
-    //magmablasGetKernelStream( &orig_queue );
-
     if ( A.memory_location != B.memory_location ) {
         printf("error: linear algebra objects are not located in same memory!\n");
         printf("memory locations are: %d   %d\n",
@@ -419,7 +411,6 @@ magma_s_spmm(
             }
             else {
                 printf("error: format not supported.\n");
-                // magmablasSetKernelStream( orig_queue );
                 info = MAGMA_ERR_NOT_SUPPORTED;
             }
         }
@@ -427,11 +418,9 @@ magma_s_spmm(
     // CPU case missing!
     else {
         printf("error: CPU not yet supported.\n");
-        // magmablasSetKernelStream( orig_queue );
         info = MAGMA_ERR_NOT_SUPPORTED; // TODO change to goto cleanup?
     }
     
 cleanup:
-    // magmablasSetKernelStream( orig_queue );
     return info;
 }

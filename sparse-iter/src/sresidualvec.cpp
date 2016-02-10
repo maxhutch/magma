@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/src/zresidualvec.cpp normal z -> s, Fri Jan 22 21:42:31 2016
+       @generated from sparse-iter/src/zresidualvec.cpp normal z -> s, Tue Feb  9 16:05:59 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define  r(i_)  (r->dval)+i_*dofs
 #define  b(i_)  (b.dval)+i_*dofs
@@ -58,10 +58,6 @@ magma_sresidualvec(
     magma_queue_t queue )
 {
     magma_int_t info =0;
-    
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
 
     // some useful variables
     float zero = MAGMA_S_ZERO, one = MAGMA_S_ONE,
@@ -70,9 +66,9 @@ magma_sresidualvec(
     
     if ( A.num_rows == b.num_rows ) {
         CHECK( magma_s_spmv( mone, A, x, zero, *r, queue ));      // r = A x
-        magma_saxpy(dofs, one, b.dval, 1, r->dval, 1);          // r = r - b
-        *res =  magma_snrm2(dofs, r->dval, 1);            // res = ||r||
-        //               /magma_snrm2(dofs, b.dval, 1);               /||b||
+        magma_saxpy( dofs, one, b.dval, 1, r->dval, 1, queue );          // r = r - b
+        *res =  magma_snrm2( dofs, r->dval, 1, queue );            // res = ||r||
+        //               /magma_snrm2( dofs, b.dval, 1, queue );               /||b||
         //printf( "relative residual: %e\n", *res );
     } else if ((b.num_rows*b.num_cols)%A.num_rows== 0 ) {
         magma_int_t num_vecs = b.num_rows*b.num_cols/A.num_rows;
@@ -80,10 +76,10 @@ magma_sresidualvec(
         CHECK( magma_s_spmv( mone, A, x, zero, *r, queue ));           // r = A x
 
         for( magma_int_t i=0; i<num_vecs; i++) {
-            magma_saxpy(dofs, one, b(i), 1, r(i), 1);   // r = r - b
-            res[i] =  magma_snrm2(dofs, r(i), 1);        // res = ||r||
+            magma_saxpy( dofs, one, b(i), 1, r(i), 1, queue );   // r = r - b
+            res[i] =  magma_snrm2( dofs, r(i), 1, queue );        // res = ||r||
         }
-        //               /magma_snrm2(dofs, b.dval, 1);               /||b||
+        //               /magma_snrm2( dofs, b.dval, 1, queue );               /||b||
         //printf( "relative residual: %e\n", *res );
     } else {
         printf("%%error: dimensions do not match.\n");
@@ -91,6 +87,5 @@ magma_sresidualvec(
     }
 
 cleanup:
-    magmablasSetKernelStream( orig_queue );
     return info;
 }

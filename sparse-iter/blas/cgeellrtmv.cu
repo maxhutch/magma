@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zgeellrtmv.cu normal z -> c, Fri Jan 22 21:42:12 2016
+       @generated from sparse-iter/blas/zgeellrtmv.cu normal z -> c, Tue Feb  9 16:05:41 2016
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 //F. Vázquez, G. Ortega, J.J. Fernández, E.M. Garzón, Almeria University
 __global__ void 

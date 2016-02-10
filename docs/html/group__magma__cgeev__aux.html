@@ -255,6 +255,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldt</td><td>INTEGER The leading dimension of the array T. LDT &gt;= NB.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">Y</td><td>COMPLEX array, dimension (LDY,NB) The n-by-nb matrix Y.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldy</td><td>INTEGER The leading dimension of the array Y. LDY &gt;= N.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
@@ -519,6 +520,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
     <tr><td class="paramdir">[in]</td><td class="paramname">lddv</td><td>INTEGER The leading dimension of the array dV. LDDV &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dT</td><td>COMPLEX array on the GPU, dimension (NB, NB). On entry the NB-by-NB upper trinagular matrix defining the orthogonal Hessenberg reduction transformation matrix for the current panel. The lower triangular part are 0s.</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) COMPLEX array on the GPU, dimension N*NB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
@@ -766,7 +768,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:11 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:36 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

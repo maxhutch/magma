@@ -17,7 +17,7 @@
  * @ingroup magma_zaux3
  *
  *  magma_zlarfy applies an elementary reflector, or Householder matrix, H,
- *  to a n-by-n hermitian matrix C, from both the left and the right.
+ *  to a n-by-n Hermitian matrix C, from both the left and the right.
  *
  *  H is represented in the form
  *

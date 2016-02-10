@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 2.0.0-beta3) --
+# MAGMA (version 2.0.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date January 2016
+# @date February 2016
 
 ## @file run_tests.py
 #  @author Mark Gates
 #
 # Script to run testers with various matrix sizes.
+#
+# See also the run_summarize.py script, which post-processes the output,
+# sorting it into errors (segfaults, etc.), accuracy failures, and known failures.
+# run_summarize.py can apply a different (larger) tolerance without re-running
+# the tests.
+#
 # Small sizes are chosen around block sizes (e.g., 30...34 around 32) to
 # detect bugs that occur at the block size, and the switch over from
 # LAPACK to MAGMA code.
@@ -136,7 +142,65 @@
 # which may be too tight for some testers. Setting it somewhat higher
 # (e.g., 50 or 100) filters out spurious accuracy failures. Also see the
 # run_summarize.py script, which parses the testers output and can filter out
-# tests using a higher tolerance after the fact -- without re-running them.
+# tests using a higher tolerance after the fact, without re-running them.
+#
+# Run with default tolerance tol=30.
+#
+#       ./run_tests.py -s -m testing_sgemv > run-gemv.txt
+#       testing_sgemv -c                          ** 7 tests failed
+#       testing_sgemv -T -c                       ok
+#       testing_sgemv -C -c                       ok
+#       
+#       ****************************************************************************************************
+#       summary
+#       ****************************************************************************************************
+#         302 tests in 3 commands passed
+#           7 tests failed accuracy test
+#           0 errors detected (crashes, CUDA errors, etc.)
+#       routines with failures:
+#           testing_sgemv -c
+#
+# Post-process with tolerance tol2=100. Numbers in {braces} are ratio = error/epsilon, which should be < tol.
+# Here, the ratio is just slightly larger {31.2 to 37.4} than the default tol=30.
+#
+#       ./run_summarize.py --tol2 100 run-gemv.txt 
+#       single epsilon 5.96e-08,  tol2 100,  tol2*eps 5.96e-06,  30*eps 1.79e-06,  100*eps 5.96e-06,  1000*eps 5.96e-05
+#       double epsilon 1.11e-16,  tol2 100,  tol2*eps 1.11e-14,  30*eps 3.33e-15,  100*eps 1.11e-14,  1000*eps 1.11e-13
+#       ########################################################################################################################
+#       okay tests:                                          3 commands,    302 tests
+#       
+#       
+#       ########################################################################################################################
+#       errors (segfault, etc.):                             0 commands,      0 tests
+#       
+#       
+#       ########################################################################################################################
+#       failed tests (error > tol2*eps):                     0 commands,      0 tests
+#       
+#       
+#       ########################################################################################################################
+#       suspicious tests (tol2*eps > error > tol*eps):       1 commands,      7 tests
+#       ./testing_sgemv
+#          63 10000      0.19 (   6.73)       1.65 (   0.76)      8.58 (   0.15)   1.86e-06 {   31.2}    1.11e-06 {   18.6}   suspect
+#          64 10000      0.19 (   6.73)       1.68 (   0.76)     14.36 (   0.09)   2.17e-06 {   36.4}    1.14e-06 {   19.1}   suspect
+#          65 10000      0.19 (   6.72)       1.43 (   0.91)      8.73 (   0.15)   2.23e-06 {   37.4}    1.09e-06 {   18.3}   suspect
+#          31 10000      0.09 (   6.70)       1.25 (   0.49)      6.33 (   0.10)   1.93e-06 {   32.4}    8.65e-07 {   14.5}   suspect
+#          32 10000      0.10 (   6.68)       1.35 (   0.47)     11.00 (   0.06)   2.15e-06 {   36.1}    9.14e-07 {   15.3}   suspect
+#          33 10000      0.10 (   6.72)       1.24 (   0.53)      9.85 (   0.07)   2.19e-06 {   36.7}    1.07e-06 {   18.0}   suspect
+#          10 10000      0.03 (   6.58)       0.52 (   0.39)      5.71 (   0.04)   2.23e-06 {   37.4}    1.11e-06 {   18.6}   suspect
+#       
+#       
+#       
+#       ########################################################################################################################
+#       known failures:                                      0 commands,      0 tests
+#       
+#       
+#       ########################################################################################################################
+#       ignored errors (e.g., malloc failed):                0 commands,      0 tests
+#       
+#       
+#       ########################################################################################################################
+#       other (lines that did not get matched):              0 commands,      0 tests
 #
 # The --dev option sets which GPU device to use.
 #
@@ -302,6 +366,7 @@ batch = '--batch ' + opts.batch + ' '
 # wide is M < N
 # mn   is all of above
 # mnk  is all of above + combinations of M, N, K where K is unique
+# nk   is square       + combinations of M, N, K where K is unique (for zherk, zher2k; M is ignored)
 
 # ----------
 n = ''
@@ -357,7 +422,7 @@ if opts.mnk and opts.small:
 	mnk  += (' -N 1,2,3           -N 2,1,3           -N 1,3,2           -N 2,3,1           -N 3,1,2           -N 3,2,1'
 	     +   ' -N 10,20,30        -N 20,10,30        -N 10,30,20        -N 20,30,10        -N 30,10,20        -N 30,20,10'
 	     +   ' -N 100,200,300     -N 200,100,300     -N 100,300,200     -N 200,300,100     -N 300,100,200     -N 300,200,100'
-	)
+	)    
 if opts.mnk and opts.med:
 	mnk  +=  ' -N 100,300,600     -N 300,100,600     -N 100,600,300     -N 300,600,100     -N 600,100,300     -N 600,300,100'
 if opts.mnk and opts.large:
@@ -366,6 +431,7 @@ if opts.mnk and opts.large:
 
 # ----------
 mn     = n + tall + wide
+nk     = n + mnk  # nk does NOT include tall, wide
 mnk    = n + tall + wide + mnk
 
 # ----------
@@ -417,16 +483,16 @@ blas = (
 	('testing_zhemv',   '-U             -c',  n,    ''),
 	
 	# lower/upper, no-trans/conj-trans
-	('testing_zherk',   '-L             -c',  n,    'cublas only'),
-	('testing_zherk',   '-L -C          -c',  n,    'cublas only'),
-	('testing_zherk',   '-U             -c',  n,    'cublas only'),
-	('testing_zherk',   '-U -C          -c',  n,    'cublas only'),
+	('testing_zherk',   '-L             -c',  nk,   'cublas only'),
+	('testing_zherk',   '-L -C          -c',  nk,   'cublas only'),
+	('testing_zherk',   '-U             -c',  nk,   'cublas only'),
+	('testing_zherk',   '-U -C          -c',  nk,   'cublas only'),
 	
 	# lower/upper, no-trans/conj-trans
-	('testing_zher2k',  '-L             -c',  n,    'cublas only'),
-	('testing_zher2k',  '-L -C          -c',  n,    'cublas only'),
-	('testing_zher2k',  '-U             -c',  n,    'cublas only'),
-	('testing_zher2k',  '-U -C          -c',  n,    'cublas only'),
+	('testing_zher2k',  '-L             -c',  nk,   'cublas only'),
+	('testing_zher2k',  '-L -C          -c',  nk,   'cublas only'),
+	('testing_zher2k',  '-U             -c',  nk,   'cublas only'),
+	('testing_zher2k',  '-U -C          -c',  nk,   'cublas only'),
 	
 	# lower/upper
 	('testing_zsymv',   '-L             -c',  n,    ''),
@@ -519,10 +585,12 @@ blas = (
 	
 	('testing_zhemm_mgpu',   ngpu + '-L -c',  n,    ''),
 	('testing_zhemm_mgpu',   ngpu + '-U -c',  n,    ''),
+	
 	('testing_zhemv_mgpu',   ngpu + '-L -c',  n,    ''),
 	('testing_zhemv_mgpu',   ngpu + '-U -c',  n,    ''),
-	('testing_zher2k_mgpu',  ngpu + '-L -c',  n,    ''),
-	('testing_zher2k_mgpu',  ngpu + '-U -c',  n,    ''),
+	
+	('testing_zher2k_mgpu',  ngpu + '-L -c',  nk,   ''),
+	('testing_zher2k_mgpu',  ngpu + '-U -c',  nk,   ''),
 	
 	('#testing_blas_z',                '-c',  mnk,  'takes long time; cublas only'),
 	('testing_cblas_z',                '-c',  n,    ''),
@@ -1049,10 +1117,10 @@ batched = (
 	('testing_zgemv_batched',     batch + '-C             -c',  mn,   ''),
 	
 	# lower/upper, no-trans/conj-trans
-	('testing_zherk_batched',     batch + '         -L    -c',  mn,   ''),
-	('testing_zherk_batched',     batch + '         -L -C -c',  mn,   ''),
-	('testing_zherk_batched',     batch + '         -U    -c',  mn,   ''),
-	('testing_zherk_batched',     batch + '         -U -C -c',  mn,   ''),
+	('testing_zherk_batched',     batch + '         -L    -c',  nk,   ''),
+	('testing_zherk_batched',     batch + '         -L -C -c',  nk,   ''),
+	('testing_zherk_batched',     batch + '         -U    -c',  nk,   ''),
+	('testing_zherk_batched',     batch + '         -U -C -c',  nk,   ''),
 	
 	('testing_zlacpy_batched',    batch + '               -c',  mn,   ''),
 	

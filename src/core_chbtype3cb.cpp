@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
 
-       @generated from src/core_zhbtype3cb.cpp normal z -> c, Fri Jan 22 21:41:48 2016
+       @generated from src/core_zhbtype3cb.cpp normal z -> c, Tue Feb  9 16:05:19 2016
 
 */
 #include "magma_internal.h"
@@ -22,7 +22,7 @@
  * @ingroup magma_magmaFloatComplex
  *
  *  magma_chbtype3cb is a kernel that will operate on a region (triangle) of data
- *  bounded by st and ed. This kernel apply a left+right update on the hermitian
+ *  bounded by st and ed. This kernel apply a left+right update on the Hermitian
  *  triangle.  Note that this kernel is very similar to type1 but does not do an
  *  elimination.
  *

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from include/magma_zbatched.h normal z -> s, Fri Jan 22 21:42:53 2016
+       @generated from include/magma_zbatched.h normal z -> s, Tue Feb  9 16:06:19 2016
 */
 
 #ifndef MAGMA_SBATCHED_H
@@ -664,46 +664,6 @@ magma_sgeqrf_panel_batched(
     float** W2_array,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_sgeqrf_panel_batched_v4(
-    magma_int_t m, magma_int_t n, magma_int_t nb,    
-    float** dA_array,    magma_int_t ldda,
-    float** tau_array, 
-    float** dT_array, magma_int_t ldt, 
-    float** dR_array, magma_int_t ldr,
-    float** dnorm_array,  
-    float** dW0_displ, 
-    float** dW1_displ,
-    float *dwork,  
-    float** W_array, 
-    float** W2_array,
-    magma_int_t *info_array,
-    magma_int_t batchCount, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_sormqr_batched(
-    magma_side_t side, magma_trans_t trans,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    float **dA_array, magma_int_t ldda,
-    float **tau_array,
-    float **dC_array, magma_int_t lddc,
-    float *hwork, magma_int_t lwork, 
-    float **dT_array, magma_int_t nb, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
-
-magma_int_t 
-magma_sgeqrs_batched(
-    magma_int_t m, magma_int_t n, magma_int_t nrhs,
-    float **dA_array, magma_int_t ldda,
-    float **tau_array,
-    float **dR_array, magma_int_t lddr, 
-    float **dT_array, magma_int_t nb,  
-    float **dB_array, magma_int_t lddb,
-    float *hwork, magma_int_t lwork, 
-    magma_int_t *info,
-    magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle);
 
 magma_int_t 
 magma_sgels_batched(

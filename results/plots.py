@@ -10,9 +10,6 @@ from numpy import isnan, zeros, where, linspace
 
 import util
 
-pp.rcParams['axes.axisbelow'] = True
-pp.rcParams['figure.facecolor'] = 'white'
-
 
 # ----------------------------------------------------------------------
 # import versions
@@ -21,6 +18,7 @@ import v160_cuda70_k40c
 import v161_cuda70_k40c
 import v162_cuda70_k40c  # same as v161 except sy/heevd
 import v170_cuda70_k40c
+import v200_cuda70_k40c
 
 versions = [
 	v150_cuda70_k40c,
@@ -28,6 +26,8 @@ versions = [
 	v161_cuda70_k40c,
 	v162_cuda70_k40c,
 	v170_cuda70_k40c,
+	v200_cuda70_k40c_sm30,
+	v200_cuda70_k40c,
 ]
 
 # add local if it exists
@@ -70,10 +70,12 @@ for i in xrange( len(versions) ):
 
 # ----------------------------------------------------------------------
 # defaults
-pp.rcParams['font.size'] = 10
-pp.rcParams['legend.fontsize'] = 10
+pp.rcParams['axes.axisbelow']   = True
+pp.rcParams['figure.facecolor'] = 'white'
+pp.rcParams['font.size']        = 10
+pp.rcParams['legend.fontsize']  = 9
 
-g_figsize = [9, 7]
+g_figsize  = [9, 7]
 g_figsize2 = [6, 4]
 
 
@@ -258,9 +260,10 @@ def plot_getrf_data( data, style='.-', color='y', label=None, idx=getrf_gpu_flop
 		pp.plot(     data[:,getrf_m], data[:,idx], style, color=color, lw=1.5, label=label )
 # end
 
-def plot_getrf_labels( versions, title=None ):
+def plot_getrf_labels( versions, title=None, legend=True ):
 	set_title( versions, 'LU factorization ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	pp.ylabel( r'Gflop/s  $\frac{2}{3} n^3 / t$' )
 	set_xticks()
 # end
@@ -329,10 +332,18 @@ def plot_getrf( versions, cpu=True, gpu=True, lapack=True ):
 			break
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_getrf_labels( versions )
-	# end
+	subplot( 2, 2, 1 )
+	plot_getrf_labels( versions, 'sgetrf', legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_getrf_labels( versions, 'dgetrf', legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_getrf_labels( versions, 'cgetrf', legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_getrf_labels( versions, 'zgetrf', legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'getrf.pdf', 2, 2 )
 # end
@@ -346,9 +357,10 @@ def plot_potrf_data( data, style='.-', color='y', label=None, idx=potrf_gpu_flop
 		pp.plot(     data[:,potrf_n], data[:,idx], style, color=color, lw=1.5, label=label )
 # end
 
-def plot_potrf_labels( versions, title=None ):
+def plot_potrf_labels( versions, title=None, legend=True ):
 	set_title( versions, 'Cholesky factorization ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	pp.ylabel( r'Gflop/s  $\frac{1}{3} n^3 / t$' )
 	set_xticks()
 # end
@@ -417,10 +429,18 @@ def plot_potrf( versions, cpu=True, gpu=True, lapack=True ):
 			break
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_potrf_labels( versions )
-	# end
+	subplot( 2, 2, 1 )
+	plot_potrf_labels( versions, 'spotrf', legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_potrf_labels( versions, 'dpotrf', legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_potrf_labels( versions, 'cpotrf', legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_potrf_labels( versions, 'zpotrf', legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'potrf.pdf', 2, 2 )
 # end
@@ -434,9 +454,10 @@ def plot_geqrf_data( data, style='.-', color='y', label=None, idx=geqrf_gpu_flop
 		pp.plot(     data[:,geqrf_m], data[:,idx], style, color=color, lw=1.5, label=label )
 # end
 
-def plot_geqrf_labels( versions, title=None ):
+def plot_geqrf_labels( versions, title=None, legend=True ):
 	set_title( versions, 'QR factorization ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	pp.ylabel( r'Gflop/s  $\frac{4}{3} n^3 / t$' )
 	set_xticks()
 # end
@@ -505,10 +526,18 @@ def plot_geqrf( versions, cpu=True, gpu=True, lapack=True ):
 			break
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_geqrf_labels( versions )
-	# end
+	subplot( 2, 2, 1 )
+	plot_geqrf_labels( versions, 'sgeqrf', legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_geqrf_labels( versions, 'dgeqrf', legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_geqrf_labels( versions, 'cgeqrf', legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_geqrf_labels( versions, 'zgeqrf', legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'geqrf.pdf', 2, 2 )
 # end
@@ -530,9 +559,10 @@ def plot_geev_data( data, vec, style='.-', color='y', label=None, idx=geev_gpu_t
 		pp.plot(     n, gflop/t, style, color=color, lw=1.5, label=label )
 # end
 
-def plot_geev_labels( versions, title, vec ):
+def plot_geev_labels( versions, title, vec, legend=True ):
 	set_title( versions, 'Non-symmetric eigenvalues, ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	if ( vec ):
 		pp.ylabel( r'Gflop/s   $\frac{28}{3} n^3 / t$' )
 	else:
@@ -587,10 +617,18 @@ def plot_geev( versions, lapack=True ):
 			break
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_geev_labels( versions, 'no vectors', False )
-	# end
+	subplot( 2, 2, 1 )
+	plot_geev_labels( versions, 'sgeev, no vectors', vec=False, legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_geev_labels( versions, 'dgeev, no vectors', vec=False, legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_geev_labels( versions, 'cgeev, no vectors', vec=False, legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_geev_labels( versions, 'zgeev, no vectors', vec=False, legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'geev_rn.pdf', 2, 2 )
 	
@@ -638,10 +676,18 @@ def plot_geev( versions, lapack=True ):
 			break
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_geev_labels( versions, 'with right vectors', True )
-	# end
+	subplot( 2, 2, 1 )
+	plot_geev_labels( versions, 'sgeev, with right vectors', vec=True, legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_geev_labels( versions, 'dgeev, with right vectors', vec=True, legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_geev_labels( versions, 'cgeev, with right vectors', vec=True, legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_geev_labels( versions, 'zgeev, with right vectors', vec=True, legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'geev_rv.pdf', 2, 2 )
 # end
@@ -663,9 +709,10 @@ def plot_syev_data( data, vec, style='.-', color='y', label=None, idx=syev_gpu_t
 		pp.plot(     n, gflop/t, style, color=color, lw=1.5, label=label )
 # end
 
-def plot_syev_labels( versions, title, vec ):
+def plot_syev_labels( versions, title, vec, legend=True ):
 	set_title( versions, 'Symmetric eigenvalues, ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	if ( vec ):
 		pp.ylabel( r'Gflop/s   $\frac{14}{3} n^3 / t$' )
 	else:
@@ -755,10 +802,18 @@ def plot_syev( versions, cpu=True, gpu=True, bulge=True, lapack=True ):
 			break
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_syev_labels( versions, 'no vectors', False )
-	# end
+	subplot( 2, 2, 1 )
+	plot_syev_labels( versions, 'ssyevd, no vectors', vec=False, legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_syev_labels( versions, 'dsyevd, no vectors', vec=False, legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_syev_labels( versions, 'cheevd, no vectors', vec=False, legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_syev_labels( versions, 'zheevd, no vectors', vec=False, legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'syev_jn.pdf', 2, 2 )
 	
@@ -842,8 +897,17 @@ def plot_syev( versions, cpu=True, gpu=True, bulge=True, lapack=True ):
 	# end
 	
 	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_syev_labels( versions, 'with vectors', True )
+		subplot( 2, 2, 1 )
+		plot_syev_labels( versions, 'ssyevd, with vectors', vec=True, legend= True )
+		
+		subplot( 2, 2, 2 )
+		plot_syev_labels( versions, 'dsyevd, with vectors', vec=True, legend= not g_subplots )
+		
+		subplot( 2, 2, 3 )
+		plot_syev_labels( versions, 'cheevd, with vectors', vec=True, legend= not g_subplots )
+		
+		subplot( 2, 2, 4 )
+		plot_syev_labels( versions, 'zheevd, with vectors', vec=True, legend= not g_subplots )
 	# end
 	resize( g_figsize, 2, 2 )
 	savefig( 'syev_jv.pdf', 2, 2 )
@@ -872,9 +936,10 @@ def plot_gesvd_data( data, vec, style='.-', color='y', label=None, ratio=1, idx=
 		pp.plot(     N, gflop/t, style, color=color, lw=1.5, label=label )
 # end
 
-def plot_gesvd_labels( versions, title, vec, square ):
+def plot_gesvd_labels( versions, title, vec, square, legend=True ):
 	set_title( versions, 'SVD, ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	if ( vec ):
 		if ( square ):
 			pp.ylabel( r'Gflop/s   $9n^3/t$' )
@@ -956,10 +1021,18 @@ def plot_gesvd( versions, ratio=1, lapack=True, svd=True, sdd=True ):
 	
 	m = ratio if (ratio >= 1) else 1
 	n = 1     if (ratio >= 1) else 1/ratio
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_gesvd_labels( versions, 'no vectors, M:N ratio %.3g:%.3g' % (m,n), vec=False, square=(ratio == 1) )
-	# end
+	subplot( 2, 2, 1 )
+	plot_gesvd_labels( versions, 'sgesvd, no vectors, M:N ratio %.3g:%.3g' % (m,n), vec=False, square=(ratio == 1), legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_gesvd_labels( versions, 'dgesvd, no vectors, M:N ratio %.3g:%.3g' % (m,n), vec=False, square=(ratio == 1), legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_gesvd_labels( versions, 'cgesvd, no vectors, M:N ratio %.3g:%.3g' % (m,n), vec=False, square=(ratio == 1), legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_gesvd_labels( versions, 'zgesvd, no vectors, M:N ratio %.3g:%.3g' % (m,n), vec=False, square=(ratio == 1), legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'gesvd_jn.pdf', 2, 2 )
 	
@@ -1028,10 +1101,18 @@ def plot_gesvd( versions, ratio=1, lapack=True, svd=True, sdd=True ):
 	
 	m = ratio if (ratio >= 1) else 1
 	n = 1     if (ratio >= 1) else 1/ratio
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_gesvd_labels( versions, 'some vectors, M:N ratio %.3g:%.3g' % (m,n), vec=True, square=(ratio == 1) )
-	# end
+	subplot( 2, 2, 1 )
+	plot_gesvd_labels( versions, 'sgesvd, some vectors, M:N ratio %.3g:%.3g' % (m,n), vec=True, square=(ratio == 1), legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_gesvd_labels( versions, 'dgesvd, some vectors, M:N ratio %.3g:%.3g' % (m,n), vec=True, square=(ratio == 1), legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_gesvd_labels( versions, 'cgesvd, some vectors, M:N ratio %.3g:%.3g' % (m,n), vec=True, square=(ratio == 1), legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_gesvd_labels( versions, 'zgesvd, some vectors, M:N ratio %.3g:%.3g' % (m,n), vec=True, square=(ratio == 1), legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'gesvd_js.pdf', 2, 2 )
 # end
@@ -1055,9 +1136,10 @@ def plot_symv_data( data, uplo, style='.-', color='y', label=None, first=False )
 		pp.plot(     data[:,symv_n], data[:,symv_gpu_flops], style, markevery=10, color=color, lw=1.5, label=uplo + label )
 # end
 
-def plot_symv_labels( versions, title=None ):
+def plot_symv_labels( versions, title=None, legend=True ):
 	set_title( versions, 'Symmetric matrix-vector multiply (symv) ' + str_none(title) )
-	pp.legend( loc='upper left' )
+	if legend:
+		pp.legend( loc='upper left' )
 	pp.ylabel( r'Gflop/s  $2n^2 / t$' )
 	set_xticks()
 	#(ymin, ymax) = pp.ylim()
@@ -1098,10 +1180,18 @@ def plot_symv( versions ):
 		first = False
 	# end
 	
-	for i in xrange( 1, 5 ):
-		subplot( 2, 2, i )
-		plot_symv_labels( versions )
-	# end
+	subplot( 2, 2, 1 )
+	plot_symv_labels( versions, 'ssymv', legend= True )
+	
+	subplot( 2, 2, 2 )
+	plot_symv_labels( versions, 'dsymv', legend= not g_subplots )
+	
+	subplot( 2, 2, 3 )
+	plot_symv_labels( versions, 'chemv', legend= not g_subplots )
+	
+	subplot( 2, 2, 4 )
+	plot_symv_labels( versions, 'zhemv', legend= not g_subplots )
+	
 	resize( g_figsize, 2, 2 )
 	savefig( 'symv.pdf', 2, 2 )
 # end

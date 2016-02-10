@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zlatrd.cpp normal z -> d, Fri Jan 22 21:41:43 2016
+       @generated from src/zlatrd.cpp normal z -> d, Tue Feb  9 16:05:14 2016
 
 */
 #include "magma_internal.h"
@@ -97,16 +97,20 @@
             The leading dimension of the array W. LDW >= max(1,N).
     
     @param
-    dA
+    dA      TODO: dimension (ldda, n)?
     
     @param
-    ldda
+    ldda    TODO: ldda >= n?
     
     @param
-    dW
+    dW      TODO: dimension (lddw, ??)
     
     @param
-    lddw
+    lddw    TODO: lddw >= n ??
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     Further Details
     ---------------

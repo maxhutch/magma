@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
-       @generated from magmablas/zpotf2.cu normal z -> s, Fri Jan 22 21:42:08 2016
+       @generated from magmablas/zpotf2.cu normal z -> s, Tue Feb  9 16:05:37 2016
 */
 #include "magma_internal.h"
 
@@ -66,6 +66,10 @@ void magmablas_slacgv( magma_int_t n, float *x, magma_int_t incx, magma_queue_t 
     @param[in]
     ldda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,N).
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @param[out]
     info    INTEGER
@@ -302,6 +306,10 @@ __global__ void kernel_slacgv(int n, float *x, int incx)
     @param[in]
     incx    INTEGER
             The spacing between successive elements of X.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_saux1
     ********************************************************************/

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zgerfs_nopiv_gpu.cpp normal z -> c, Fri Jan 22 21:41:30 2016
+       @generated from src/zgerfs_nopiv_gpu.cpp normal z -> c, Tue Feb  9 16:05:02 2016
 
 */
 #include "magma_internal.h"
@@ -167,7 +167,7 @@ magma_cgerfs_nopiv_gpu(
     
     eps  = lapackf77_slamch("Epsilon");
     Anrm = magmablas_clange( MagmaInfNorm, n, n, dA, ldda, (magmaFloat_ptr)dworkd, n*nrhs, queue );
-    cte  = Anrm * eps * pow( (float)n, 0.5 ) * BWDMAX;
+    cte  = Anrm * eps * magma_ssqrt( n ) * BWDMAX;
     
     // residual dR = dB - dA*dX in real
     magmablas_clacpy( MagmaFull, n, nrhs, dB, lddb, dR, lddr, queue );

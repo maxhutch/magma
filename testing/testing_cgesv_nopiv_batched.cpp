@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> c, Fri Jan 22 21:42:50 2016
+       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> c, Tue Feb  9 16:06:17 2016
        @author Mark Gates
 */
 // includes, system

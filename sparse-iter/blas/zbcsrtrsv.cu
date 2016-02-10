@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> c d s
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 #define  blockinfo(i,j)  blockinfo[(i)*c_blocks   + (j)]
@@ -72,9 +72,6 @@ magma_zbcsrtrsv(
     magmaDoubleComplex_ptr x,
     magma_queue_t queue )
 {
-    // set queue for old dense routines
-    magma_queue_t orig_queue;
-    magmablasGetKernelStream( &orig_queue );
 
     // some useful variables
     magmaDoubleComplex one = MAGMA_Z_MAKE(1.0, 0.0);
@@ -85,8 +82,8 @@ magma_zbcsrtrsv(
         // forward solve
         for( k=0; k<r_blocks; k++) {
             // do the forward triangular solve for block M(k,k): L(k,k)y = b
-            magma_ztrsv(MagmaLower, MagmaNoTrans, MagmaUnit, size_b, A(k,k), 
-                                                             size_b, x(k), 1 );
+            magma_ztrsv( MagmaLower, MagmaNoTrans, MagmaUnit, size_b, A(k,k), 
+                                                             size_b, x(k), 1, queue );
 
              // update for all nonzero blocks below M(k,k) 
                     // the respective values of y
@@ -94,7 +91,7 @@ magma_zbcsrtrsv(
                 if ( (blockinfo(j,k)!=0) ) {
                     magmablas_zgemv( MagmaNoTrans, size_b, size_b, 
                                      mone, A(j,k), size_b,
-                                     x(k), 1, one,  x(j), 1 );
+                                     x(k), 1, one,  x(j), 1, queue );
                 }
             }
         }
@@ -103,8 +100,8 @@ magma_zbcsrtrsv(
         // backward solve
         for( k=r_blocks-1; k>=0; k--) {
             // do the backward triangular solve for block M(k,k): U(k,k)x = y
-            magma_ztrsv(MagmaUpper, MagmaNoTrans, MagmaNonUnit, size_b, A(k,k), 
-                                                             size_b, x(k), 1 );
+            magma_ztrsv( MagmaUpper, MagmaNoTrans, MagmaNonUnit, size_b, A(k,k), 
+                                                             size_b, x(k), 1, queue );
 
             // update for all nonzero blocks above M(k,k) 
                     // the respective values of y
@@ -112,12 +109,11 @@ magma_zbcsrtrsv(
                 if ( (blockinfo(j,k)!=0) ) {
                     magmablas_zgemv( MagmaNoTrans, size_b, size_b, 
                                      mone, A(j,k), size_b,
-                                     x(k), 1, one,  x(j), 1 );
+                                     x(k), 1, one,  x(j), 1, queue );
                 }
             }
         }
     }
 
-    magmablasSetKernelStream( orig_queue );
     return MAGMA_SUCCESS;
 }

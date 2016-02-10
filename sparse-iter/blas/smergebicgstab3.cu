@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/zmergebicgstab3.cu normal z -> s, Fri Jan 22 21:42:14 2016
+       @generated from sparse-iter/blas/zmergebicgstab3.cu normal z -> s, Tue Feb  9 16:05:43 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE 512
 
@@ -321,6 +321,10 @@ magma_sbicgmerge4_kernel_3(
     @param[in,out]
     skp         magmaFloat_ptr 
                 vector with parameters
+
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_sgegpuk
     ********************************************************************/

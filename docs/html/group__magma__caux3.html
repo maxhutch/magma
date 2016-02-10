@@ -126,7 +126,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga506c46254b10dbb68f8af57777f1f170"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLARFB applies a complex block reflector H or its transpose H^H to a COMPLEX m by n matrix C, from the left.  <a href="#ga506c46254b10dbb68f8af57777f1f170">More...</a><br /></td></tr>
 <tr class="separator:ga506c46254b10dbb68f8af57777f1f170"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0d615cceffdc5f15f010af09194849a3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux3.html#ga0d615cceffdc5f15f010af09194849a3">magma_clarfy</a> (magma_int_t n, magmaFloatComplex *A, magma_int_t lda, const magmaFloatComplex *V, const magmaFloatComplex *TAU, magmaFloatComplex *work)</td></tr>
-<tr class="memdesc:ga0d615cceffdc5f15f010af09194849a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">magma_clarfy applies an elementary reflector, or Householder matrix, H, to a n-by-n hermitian matrix C, from both the left and the right.  <a href="#ga0d615cceffdc5f15f010af09194849a3">More...</a><br /></td></tr>
+<tr class="memdesc:ga0d615cceffdc5f15f010af09194849a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">magma_clarfy applies an elementary reflector, or Householder matrix, H, to a n-by-n Hermitian matrix C, from both the left and the right.  <a href="#ga0d615cceffdc5f15f010af09194849a3">More...</a><br /></td></tr>
 <tr class="separator:ga0d615cceffdc5f15f010af09194849a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8fc6a1a6f1b34b5b2c0ae6b5e7d066f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux3.html#ga8fc6a1a6f1b34b5b2c0ae6b5e7d066f0">magma_clarfbx_gpu</a> (magma_int_t m, magma_int_t k, magmaFloatComplex_ptr V, magma_int_t ldv, magmaFloatComplex_ptr dT, magma_int_t ldt, magmaFloatComplex_ptr c, magmaFloatComplex_ptr dwork)</td></tr>
 <tr class="separator:ga8fc6a1a6f1b34b5b2c0ae6b5e7d066f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -779,7 +779,7 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
       </table>
 </div><div class="memdoc">
 
-<p>magma_clarfy applies an elementary reflector, or Householder matrix, H, to a n-by-n hermitian matrix C, from both the left and the right. </p>
+<p>magma_clarfy applies an elementary reflector, or Householder matrix, H, to a n-by-n Hermitian matrix C, from both the left and the right. </p>
 <p>H is represented in the form</p>
 <p>H = I - tau * v * v'</p>
 <p>where tau is a scalar and v is a vector.</p>
@@ -803,7 +803,7 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jan 22 2016 21:43:12 for MAGMA by
+    <li class="footer">Generated on Tue Feb 9 2016 16:06:37 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

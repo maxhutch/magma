@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -1028,13 +1028,11 @@ magma_zmconvert(
             
             else {
                 printf("error: format not supported.\n");
-                //magmablasSetKernelStream( queue );
                 info = MAGMA_ERR_NOT_SUPPORTED;
             }
         }
         else {
             printf("error: conversion not supported.\n");
-            //magmablasSetKernelStream( queue );
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
     } // end CPU case
@@ -1342,7 +1340,7 @@ magma_zmconvert(
 #endif
         }
         else {
-            printf("warning: format not supported on GPU. "
+            printf("%% warning: format not supported on GPU. "
             "Conversion handled by CPU.\n");
             CHECK( magma_zmtransfer( A, &hA, A.memory_location, Magma_CPU, queue ));
             CHECK( magma_zmconvert( hA, &hB, old_format, new_format, queue ));

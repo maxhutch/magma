@@ -5,7 +5,7 @@
 *
 *
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 #include "mmio.h"
 
 int mm_read_unsymmetric_sparse(

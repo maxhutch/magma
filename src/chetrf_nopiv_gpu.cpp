@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Ichitaro Yamazaki
        @author Stan Tomov
 
-       @generated from src/zhetrf_nopiv_gpu.cpp normal z -> c, Fri Jan 22 21:41:40 2016
+       @generated from src/zhetrf_nopiv_gpu.cpp normal z -> c, Tue Feb  9 16:05:12 2016
 */
 #include "magma_internal.h"
 #include "trace.h"

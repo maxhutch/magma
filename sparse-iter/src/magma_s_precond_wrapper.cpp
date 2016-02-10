@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/src/magma_z_precond_wrapper.cpp normal z -> s, Fri Jan 22 21:42:31 2016
+       @generated from sparse-iter/src/magma_z_precond_wrapper.cpp normal z -> s, Tue Feb  9 16:05:59 2016
        @author Hartwig Anzt
 
 */
@@ -280,7 +280,6 @@ magma_s_applyprecond(
     }
 cleanup:
     magma_smfree( &tmp, queue );
-    //magmablasSetKernelStream( orig_queue );
     return info;
 }
 

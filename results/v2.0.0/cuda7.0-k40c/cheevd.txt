@@ -1,0 +1,260 @@
+
+Sun Feb  7 20:13:20 EST 2016
+numactl --interleave=all ../testing/testing_cheevd -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 20:13:22 2016
+% Usage: ../testing/testing_cheevd [options] [-h|--help]
+
+% jobz = No vectors, range = All, uplo = Lower, fraction = 1.0000, ngpu = 1
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0023           ---           ---         ---      ok
+ 1234      ---              0.1416           ---           ---         ---      ok
+   10      ---              0.0000           ---           ---         ---      ok
+   20      ---              0.0001           ---           ---         ---      ok
+   30      ---              0.0001           ---           ---         ---      ok
+   40      ---              0.0001           ---           ---         ---      ok
+   50      ---              0.0002           ---           ---         ---      ok
+   60      ---              0.0003           ---           ---         ---      ok
+   70      ---              0.0005           ---           ---         ---      ok
+   80      ---              0.0007           ---           ---         ---      ok
+   90      ---              0.0009           ---           ---         ---      ok
+  100      ---              0.0012           ---           ---         ---      ok
+  200      ---              0.0048           ---           ---         ---      ok
+  300      ---              0.0094           ---           ---         ---      ok
+  400      ---              0.0156           ---           ---         ---      ok
+  500      ---              0.0229           ---           ---         ---      ok
+  600      ---              0.0324           ---           ---         ---      ok
+  700      ---              0.0442           ---           ---         ---      ok
+  800      ---              0.0572           ---           ---         ---      ok
+  900      ---              0.0739           ---           ---         ---      ok
+ 1000      ---              0.0906           ---           ---         ---      ok
+ 2000      ---              0.4168           ---           ---         ---      ok
+ 3000      ---              1.2620           ---           ---         ---      ok
+ 4000      ---              2.2903           ---           ---         ---      ok
+ 5000      ---              3.7342           ---           ---         ---      ok
+ 6000      ---              5.5810           ---           ---         ---      ok
+ 7000      ---              8.0046           ---           ---         ---      ok
+ 8000      ---             10.9571           ---           ---         ---      ok
+ 9000      ---             14.7192           ---           ---         ---      ok
+10000      ---             19.1044           ---           ---         ---      ok
+Sun Feb  7 20:14:44 EST 2016
+
+Sun Feb  7 20:14:44 EST 2016
+numactl --interleave=all ../testing/testing_cheevd -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 20:14:46 2016
+% Usage: ../testing/testing_cheevd [options] [-h|--help]
+
+% jobz = Vectors needed, range = All, uplo = Lower, fraction = 1.0000, ngpu = 1
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0045           ---           ---         ---      ok
+ 1234      ---              0.1641           ---           ---         ---      ok
+   10      ---              0.0001           ---           ---         ---      ok
+   20      ---              0.0002           ---           ---         ---      ok
+   30      ---              0.0002           ---           ---         ---      ok
+   40      ---              0.0004           ---           ---         ---      ok
+   50      ---              0.0005           ---           ---         ---      ok
+   60      ---              0.0006           ---           ---         ---      ok
+   70      ---              0.0009           ---           ---         ---      ok
+   80      ---              0.0011           ---           ---         ---      ok
+   90      ---              0.0014           ---           ---         ---      ok
+  100      ---              0.0017           ---           ---         ---      ok
+  200      ---              0.0092           ---           ---         ---      ok
+  300      ---              0.0148           ---           ---         ---      ok
+  400      ---              0.0242           ---           ---         ---      ok
+  500      ---              0.0347           ---           ---         ---      ok
+  600      ---              0.0421           ---           ---         ---      ok
+  700      ---              0.0556           ---           ---         ---      ok
+  800      ---              0.0705           ---           ---         ---      ok
+  900      ---              0.0886           ---           ---         ---      ok
+ 1000      ---              0.1098           ---           ---         ---      ok
+ 2000      ---              0.4374           ---           ---         ---      ok
+ 3000      ---              1.4212           ---           ---         ---      ok
+ 4000      ---              2.6029           ---           ---         ---      ok
+ 5000      ---              4.2259           ---           ---         ---      ok
+ 6000      ---              6.4208           ---           ---         ---      ok
+ 7000      ---              9.2599           ---           ---         ---      ok
+ 8000      ---             12.7538           ---           ---         ---      ok
+ 9000      ---             17.2134           ---           ---         ---      ok
+10000      ---             22.4110           ---           ---         ---      ok
+Sun Feb  7 20:16:21 EST 2016
+
+Sun Feb  7 20:16:22 EST 2016
+numactl --interleave=all ../testing/testing_cheevd_gpu -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 20:16:23 2016
+% Usage: ../testing/testing_cheevd_gpu [options] [-h|--help]
+
+% jobz = No vectors, range = All, uplo = Lower, fraction = 1.0000
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0027           ---           ---         ---      ok
+ 1234      ---              0.1297           ---           ---         ---      ok
+   10      ---              0.0002           ---           ---         ---      ok
+   20      ---              0.0002           ---           ---         ---      ok
+   30      ---              0.0002           ---           ---         ---      ok
+   40      ---              0.0003           ---           ---         ---      ok
+   50      ---              0.0003           ---           ---         ---      ok
+   60      ---              0.0004           ---           ---         ---      ok
+   70      ---              0.0007           ---           ---         ---      ok
+   80      ---              0.0009           ---           ---         ---      ok
+   90      ---              0.0011           ---           ---         ---      ok
+  100      ---              0.0014           ---           ---         ---      ok
+  200      ---              0.0049           ---           ---         ---      ok
+  300      ---              0.0095           ---           ---         ---      ok
+  400      ---              0.0159           ---           ---         ---      ok
+  500      ---              0.0230           ---           ---         ---      ok
+  600      ---              0.0317           ---           ---         ---      ok
+  700      ---              0.0431           ---           ---         ---      ok
+  800      ---              0.0546           ---           ---         ---      ok
+  900      ---              0.0697           ---           ---         ---      ok
+ 1000      ---              0.0843           ---           ---         ---      ok
+ 2000      ---              0.3551           ---           ---         ---      ok
+ 3000      ---              1.2662           ---           ---         ---      ok
+ 4000      ---              2.2914           ---           ---         ---      ok
+ 5000      ---              3.7343           ---           ---         ---      ok
+ 6000      ---              5.5809           ---           ---         ---      ok
+ 7000      ---              7.9963           ---           ---         ---      ok
+ 8000      ---             10.9362           ---           ---         ---      ok
+ 9000      ---             14.7066           ---           ---         ---      ok
+10000      ---             19.0569           ---           ---         ---      ok
+Sun Feb  7 20:17:46 EST 2016
+
+Sun Feb  7 20:17:47 EST 2016
+numactl --interleave=all ../testing/testing_cheevd_gpu -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 20:17:48 2016
+% Usage: ../testing/testing_cheevd_gpu [options] [-h|--help]
+
+% jobz = Vectors needed, range = All, uplo = Lower, fraction = 1.0000
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0050           ---           ---         ---      ok
+ 1234      ---              0.1945           ---           ---         ---      ok
+   10      ---              0.0004           ---           ---         ---      ok
+   20      ---              0.0004           ---           ---         ---      ok
+   30      ---              0.0005           ---           ---         ---      ok
+   40      ---              0.0007           ---           ---         ---      ok
+   50      ---              0.0008           ---           ---         ---      ok
+   60      ---              0.0010           ---           ---         ---      ok
+   70      ---              0.0013           ---           ---         ---      ok
+   80      ---              0.0015           ---           ---         ---      ok
+   90      ---              0.0019           ---           ---         ---      ok
+  100      ---              0.0023           ---           ---         ---      ok
+  200      ---              0.0104           ---           ---         ---      ok
+  300      ---              0.0174           ---           ---         ---      ok
+  400      ---              0.0289           ---           ---         ---      ok
+  500      ---              0.0409           ---           ---         ---      ok
+  600      ---              0.0516           ---           ---         ---      ok
+  700      ---              0.0696           ---           ---         ---      ok
+  800      ---              0.0879           ---           ---         ---      ok
+  900      ---              0.1108           ---           ---         ---      ok
+ 1000      ---              0.1354           ---           ---         ---      ok
+ 2000      ---              0.5875           ---           ---         ---      ok
+ 3000      ---              1.4799           ---           ---         ---      ok
+ 4000      ---              2.6911           ---           ---         ---      ok
+ 5000      ---              4.3855           ---           ---         ---      ok
+ 6000      ---              6.6081           ---           ---         ---      ok
+ 7000      ---              9.4027           ---           ---         ---      ok
+ 8000      ---             12.9168           ---           ---         ---      ok
+ 9000      ---             17.3143           ---           ---         ---      ok
+10000      ---             22.7453           ---           ---         ---      ok
+Sun Feb  7 20:19:27 EST 2016
+
+Sun Feb  7 21:15:10 EST 2016
+numactl --interleave=all ../testing/testing_cheevd -JN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 21:15:11 2016
+% Usage: ../testing/testing_cheevd [options] [-h|--help]
+
+% jobz = No vectors, range = All, uplo = Lower, fraction = 1.0000, ngpu = 1
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0022           ---           ---         ---      ok
+ 1234      ---              0.1239           ---           ---         ---      ok
+12000      ---             30.6692           ---           ---         ---      ok
+14000      ---             45.5317           ---           ---         ---      ok
+16000      ---             65.0317           ---           ---         ---      ok
+18000      ---             90.1935           ---           ---         ---      ok
+20000      ---            118.9253           ---           ---         ---      ok
+Sun Feb  7 21:21:55 EST 2016
+
+Sun Feb  7 21:21:55 EST 2016
+numactl --interleave=all ../testing/testing_cheevd -JV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 21:21:57 2016
+% Usage: ../testing/testing_cheevd [options] [-h|--help]
+
+% jobz = Vectors needed, range = All, uplo = Lower, fraction = 1.0000, ngpu = 1
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0047           ---           ---         ---      ok
+ 1234      ---              0.1835           ---           ---         ---      ok
+12000      ---             36.7797           ---           ---         ---      ok
+14000      ---             54.8882           ---           ---         ---      ok
+16000      ---             78.0173           ---           ---         ---      ok
+18000      ---            108.8207           ---           ---         ---      ok
+20000      ---            143.8242           ---           ---         ---      ok
+Sun Feb  7 21:30:01 EST 2016
+
+Sun Feb  7 21:30:01 EST 2016
+numactl --interleave=all ../testing/testing_cheevd_gpu -JN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 21:30:02 2016
+% Usage: ../testing/testing_cheevd_gpu [options] [-h|--help]
+
+% jobz = No vectors, range = All, uplo = Lower, fraction = 1.0000
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0028           ---           ---         ---      ok
+ 1234      ---              0.1276           ---           ---         ---      ok
+12000      ---             30.6401           ---           ---         ---      ok
+14000      ---             45.3730           ---           ---         ---      ok
+16000      ---             65.0345           ---           ---         ---      ok
+18000      ---             89.8408           ---           ---         ---      ok
+20000      ---            118.9498           ---           ---         ---      ok
+Sun Feb  7 21:36:50 EST 2016
+
+Sun Feb  7 21:36:50 EST 2016
+numactl --interleave=all ../testing/testing_cheevd_gpu -JV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 2.0.0 beta7 compiled for CUDA capability >= 3.5, 64-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7050. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Feb  7 21:36:51 2016
+% Usage: ../testing/testing_cheevd_gpu [options] [-h|--help]
+
+% jobz = Vectors needed, range = All, uplo = Lower, fraction = 1.0000
+%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|
+%============================================================================
+  123      ---              0.0058           ---           ---         ---      ok
+ 1234      ---              0.2079           ---           ---         ---      ok
+12000      ---             36.8039           ---           ---         ---      ok
+14000      ---             55.2819           ---           ---         ---      ok
+16000      ---             79.4427           ---           ---         ---      ok
+18000      ---            110.5094           ---           ---         ---      ok
+20000      ---            148.1804           ---           ---         ---      ok
+Sun Feb  7 21:45:08 EST 2016

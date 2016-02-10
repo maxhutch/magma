@@ -203,9 +203,6 @@ public:
     magma_int_t msize[ MAX_NTEST ];
     magma_int_t nsize[ MAX_NTEST ];
     magma_int_t ksize[ MAX_NTEST ];
-    magma_int_t mmax;
-    magma_int_t nmax;
-    magma_int_t kmax;
     magma_int_t batchcount;
     
     magma_int_t default_nstart;

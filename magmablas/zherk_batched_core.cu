@@ -1,11 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
-
-       @precisions normal z
+       @date February 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -26,11 +24,10 @@
 
 #define version(s,v) s ## _V_ ## v
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
     -------
-    ZHERK performs one of the hermitian rank k operations
+    ZHERK performs one of the Hermitian rank k operations
 
     C := alpha*A*A**H + beta*C,
 
@@ -38,7 +35,7 @@
 
     C := alpha*A**H*A + beta*C,
 
-    where alpha and beta are real scalars, C is an n by n hermitian
+    where alpha and beta are real scalars, C is an n by n Hermitian
     matrix and A is an n by k matrix in the first case and a k by n
     matrix in the second case.
     
@@ -65,6 +62,8 @@
             trans = MagmaNoTrans,   C := alpha*A*A**H + beta*C.
 
             trans = MagmaConjTrans, C := alpha*A**H*A + beta*C.
+            
+            trans = MagmaTrans is not valid in complex.
 
     @param[in]
     n       INTEGER.
@@ -108,13 +107,13 @@
              Each is a COMPLEX_16 array C of DIMENSION ( lddc, n ).
              Before entry with uplo = MagmaUpper, the leading n by n
              upper triangular part of the array C must contain the upper
-             triangular part of the hermitian matrix and the strictly
+             triangular part of the Hermitian matrix and the strictly
              lower triangular part of C is not referenced. On exit, the
              upper triangular part of the array C is overwritten by the
              upper triangular part of the updated matrix.
              Before entry with uplo = MagmaLower, the leading n by n
              lower triangular part of the array C must contain the lower
-             triangular part of the hermitian matrix and the strictly
+             triangular part of the Hermitian matrix and the strictly
              upper triangular part of C is not referenced. On exit, the
              lower triangular part of the array C is overwritten by the
              lower triangular part of the updated matrix.
@@ -154,7 +153,7 @@ magmablas_zherk_batched(
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    else if ( trans != MagmaNoTrans && trans != Magma_ConjTrans )
+    else if ( trans != MagmaNoTrans && trans != MagmaConjTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;
@@ -172,7 +171,7 @@ magmablas_zherk_batched(
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
-        printf("not supported \n"); // TODO call cublas
+        fprintf( stderr, "%s: CUDA arch < 200 not supported\n", __func__ ); // TODO call cublas
         return;
     }
     
@@ -181,11 +180,6 @@ magmablas_zherk_batched(
     if ( n <= 0 || k <= 0 )
         return;
 
-    // we have two shapes only (nc or cn)
-    magma_int_t shape = 0;
-    if      (trans == MagmaNoTrans)   { shape = 0; } // nc
-    else                              { shape = 1; } // cn
-        
     //TODO: probably the texture init code should be placed here
 
     size_t offsetA = 0;
@@ -193,32 +187,22 @@ magmablas_zherk_batched(
     offsetA = offsetA/sizeof(magmaDoubleComplex);
     offsetB = offsetB/sizeof(magmaDoubleComplex);
     
-    switch(shape)
-    {
-        case 0: // nc
-            {
-                if (k <= 8)
-                {
-                    // version 58
-                    herk_template_batched_nt<magmaDoubleComplex, version(NT,58), 0, 1>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-                }
-                else
-                {
-                    // version 29
-                    herk_template_batched_nt<magmaDoubleComplex, version(NT,29), 0, 1>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-                }
-            }
-            break;
-        case 1: // cn
-            {
-                // version 72
-                herk_template_batched_tn<magmaDoubleComplex, version(TN,72), 1, 0>
+    if (trans == MagmaNoTrans) {
+        if (k <= 8) {
+            // version 58
+            herk_template_batched_nt<magmaDoubleComplex, version(NT,58), 0, 1>
                 (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-            }
-            break;
-        default:; // propose something
+        }
+        else {
+            // version 29
+            herk_template_batched_nt<magmaDoubleComplex, version(NT,29), 0, 1>
+                (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
+        }
+    }
+    else {
+        // ConjTrans
+        // version 72
+        herk_template_batched_tn<magmaDoubleComplex, version(TN,72), 1, 0>
+            (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////

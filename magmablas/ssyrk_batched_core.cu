@@ -1,11 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
-
-       @precisions normal d
+       @date February 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -31,11 +29,11 @@
     -------
     SSYRK performs one of the symmetric rank k operations
 
-    C := alpha*A*A**H + beta*C,
+    C := alpha*A*A**T + beta*C,
 
     or
 
-    C := alpha*A**H*A + beta*C,
+    C := alpha*A**T*A + beta*C,
 
     where alpha and beta are real scalars, C is an n by n symmetric
     matrix and A is an n by k matrix in the first case and a k by n
@@ -61,9 +59,11 @@
             On entry, trans specifies the operation to be performed as
             follows:
 
-            trans = MagmaNoTrans C := alpha*A*A**H + beta*C.
+            trans = MagmaNoTrans,   C := alpha*A*A**T + beta*C.
+                                     
+            trans = MagmaTrans,     C := alpha*A**T*A + beta*C.
 
-            trans = MagmaTrans   C := alpha*A**H*A + beta*C.
+            trans = MagmaConjTrans, C := alpha*A**T*A + beta*C.
 
     @param[in]
     n       INTEGER.
@@ -153,7 +153,7 @@ magmablas_ssyrk_batched(
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    else if ( trans != MagmaNoTrans && trans != MagmaTrans )
+    else if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;
@@ -171,7 +171,7 @@ magmablas_ssyrk_batched(
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
-        printf("not supported \n"); // TODO call cublas
+        fprintf( stderr, "%s: CUDA arch < 200 not supported\n", __func__ ); // TODO call cublas
         return;
     }
     
@@ -179,11 +179,6 @@ magmablas_ssyrk_batched(
     // CUDA ARCH 2.x (Fermi) version
     if ( n <= 0 || k <= 0 )
         return;
-
-    // we have two shapes only (nt or tn)
-    magma_int_t shape = 0;
-    if      (trans == MagmaNoTrans)   { shape = 0; } // nt
-    else                              { shape = 1; } // tn
     
     //TODO: probably the texture init code should be placed here
 
@@ -192,29 +187,19 @@ magmablas_ssyrk_batched(
     offsetA = offsetA/sizeof(float);
     offsetB = offsetB/sizeof(float);
     
-    switch(shape)
-    {
-        case 0: // nt
-            {
-                herk_template_batched_nt<float, version(NT,734), 0, 0>
+    if (trans == MagmaNoTrans) {
+        herk_template_batched_nt<float, version(NT,734), 0, 0>
+            (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
+    }
+    else {
+        // Trans, ConjTrans
+        if (k < 64) {
+            herk_template_batched_tn<float, version(TN,654), 0, 0>
                 (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-            }
-            break;
-        case 1: // tn
-            {
-                if (k < 64)
-                {
-                    herk_template_batched_tn<float, version(TN,654), 0, 0>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-                }
-                else
-                {
-                    herk_template_batched_tn<float, version(TN,666), 0, 0>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-                }
-            }
-            break;
-        default:; // propose something
+        }
+        else {
+            herk_template_batched_tn<float, version(TN,666), 0, 0>
+                (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
+        }
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////

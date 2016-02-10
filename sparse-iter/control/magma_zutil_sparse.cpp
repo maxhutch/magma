@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> c d s
 
@@ -102,7 +102,7 @@ magma_zparse_opts(
     opts->input_format = Magma_CSR;
     opts->blocksize = 32;
     opts->alignment = 1;
-    opts->output_format = Magma_CSR;
+    opts->output_format = Magma_CUCSR;
     opts->input_location = Magma_CPU;
     opts->output_location = Magma_CPU;
     opts->scaling = Magma_NOSCALE;
@@ -143,7 +143,7 @@ magma_zparse_opts(
         if ( strcmp("--format", argv[i]) == 0 && i+1 < argc ) {
             i++;
             if ( strcmp("CSR", argv[i]) == 0 ) {
-                opts->output_format = Magma_CSR;
+                opts->output_format = Magma_CUCSR;
             } else if ( strcmp("ELL", argv[i]) == 0 ) {
                 opts->output_format = Magma_ELL;
             } else if ( strcmp("SELLP", argv[i]) == 0 ) {

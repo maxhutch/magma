@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -174,7 +174,7 @@ int main( int argc, char** argv )
             size = ldc*n;
             blasf77_zaxpy( &size, &c_neg_one, C, &ione, R, &ione );
             Cnorm = lapackf77_zlange( "Fro", &m, &n, C, &ldc, work );
-            error = lapackf77_zlange( "Fro", &m, &n, R, &ldc, work ) / (sqrt(m*n) * Cnorm);
+            error = lapackf77_zlange( "Fro", &m, &n, R, &ldc, work ) / (magma_dsqrt(m*n) * Cnorm);
             
             printf( "%5d %5d %5d   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                     (int) m, (int) n, (int) k,

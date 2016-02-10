@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from src/zgeqrf_m.cpp normal z -> d, Fri Jan 22 21:41:39 2016
+       @generated from src/zgeqrf_m.cpp normal z -> d, Tue Feb  9 16:05:10 2016
 
 */
 #include "magma_internal.h" 
@@ -103,7 +103,7 @@ magma_dgeqrf_m(
     double *da[MagmaMaxGPUs];
     double c_one = MAGMA_D_ONE;
 
-    magma_int_t i, k, ldda;
+    magma_int_t i, min_mn, ldda;
 
     *info = 0;
     magma_int_t nb = magma_get_dgeqrf_nb( m, n );
@@ -129,8 +129,8 @@ magma_dgeqrf_m(
     else if (lquery)
         return *info;
 
-    k = min(m,n);
-    if (k == 0) {
+    min_mn = min(m,n);
+    if (min_mn == 0) {
         work[0] = c_one;
         return *info;
     }

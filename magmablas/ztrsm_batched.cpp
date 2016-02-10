@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> c d s
 
@@ -163,10 +163,6 @@
     queue   magma_queue_t
             Queue to execute in.
     
-    @param[in]
-    myhandle    cublasHandle_t
-              Handlde to use cuBLAS routines
-
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C"
@@ -182,7 +178,6 @@ void magmablas_ztrsm_outofplace_batched(
     magmaDoubleComplex** dX_displ, magmaDoubleComplex** dinvA_displ,
     magma_int_t resetozero, 
     magma_int_t batchCount, magma_queue_t queue)
-    //magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)
 {
     /*
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
@@ -636,10 +631,6 @@ void magmablas_ztrsm_outofplace_batched(
     queue   magma_queue_t
             Queue to execute in.
     
-    @param[in]
-    myhandle    cublasHandle_t
-              Handlde to use cuBLAS routines
-
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C"
@@ -655,7 +646,6 @@ void magmablas_ztrsm_work_batched(
     magmaDoubleComplex** dX_displ, magmaDoubleComplex** dinvA_displ,
     magma_int_t resetozero, 
     magma_int_t batchCount, magma_queue_t queue)
-    //magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 
@@ -808,10 +798,6 @@ void magmablas_ztrsm_work_batched(
     queue   magma_queue_t
             Queue to execute in.
     
-    @param[in]
-    myhandle    cublasHandle_t
-              Handlde to use cuBLAS routines
-
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C"
@@ -822,7 +808,6 @@ void magmablas_ztrsm_batched(
     magmaDoubleComplex** dA_array,    magma_int_t ldda,
     magmaDoubleComplex** dB_array,    magma_int_t lddb,
     magma_int_t batchCount, magma_queue_t queue)
-    //magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from magmablas/zlaswp_batched.cu normal z -> s, Fri Jan 22 21:42:09 2016
+       @generated from magmablas/zlaswp_batched.cu normal z -> s, Tue Feb  9 16:05:38 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -104,7 +104,7 @@ magma_slaswp_rowparallel_batched( magma_int_t n,
     int height = k2-k1;
     if ( height  > 1024) 
     {
-        printf(" n=%d > 1024, not supported \n", int(n) );
+        fprintf( stderr, "%s: n=%d > 1024, not supported\n", __func__, int(n) );
     }
 
     int blocks = magma_ceildiv( n, SWP_WIDTH );
@@ -145,7 +145,7 @@ magma_slaswp_rowparallel(
     int height = k2-k1;
     if ( height  > MAX_NTHREADS) 
     {
-        printf(" height=%d > %d, magma_slaswp_rowparallel_q not supported \n", int(n), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s: height=%d > %d, magma_slaswp_rowparallel_q not supported\n", __func__, int(n), int(MAX_NTHREADS) );
     }
 
     int blocks = magma_ceildiv( n, SWP_WIDTH );

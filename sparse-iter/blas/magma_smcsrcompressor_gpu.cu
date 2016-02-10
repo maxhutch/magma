@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
-       @generated from sparse-iter/blas/magma_zmcsrcompressor_gpu.cu normal z -> s, Fri Jan 22 21:42:16 2016
+       @generated from sparse-iter/blas/magma_zmcsrcompressor_gpu.cu normal z -> s, Tue Feb  9 16:05:45 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define BLOCK_SIZE1 256
 #define BLOCK_SIZE2 1
@@ -133,7 +133,7 @@ magma_smcsrcompressor_gpu(
         CHECK( magma_index_malloc( &B.drow, A->num_rows + 1 ));
         CHECK( magma_index_malloc( &B2.drow, A->num_rows + 1 ));
         
-        magma_index_copyvector( (A->num_rows+1), A->drow, 1, B2.drow, 1 );
+        magma_index_copyvector( (A->num_rows+1), A->drow, 1, B2.drow, 1, queue );
 
         dim3 grid1( magma_ceildiv( A->num_rows, BLOCK_SIZE1 ) );
 
@@ -149,7 +149,7 @@ magma_smcsrcompressor_gpu(
 
         CHECK( magma_index_malloc_cpu( &cputmp, 1 ));
 
-        magma_index_getvector( 1, A->row+(A->num_rows), 1, cputmp, 1 );
+        magma_index_getvector( 1, A->row+(A->num_rows), 1, cputmp, 1, queue );
         A->nnz = (magma_int_t) cputmp[0];
 
         // reallocate with right size

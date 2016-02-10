@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -58,6 +58,16 @@ int main(  int argc, char** argv )
 
     magmaDoubleComplex c_one  = MAGMA_Z_MAKE(1.0, 0.0);
     magmaDoubleComplex c_zero = MAGMA_Z_MAKE(0.0, 0.0);
+    
+    double accuracy = 1e-10;
+    
+    #define PRECISION_z
+    #if defined(PRECISION_c)
+        accuracy = 1e-4;
+    #endif
+    #if defined(PRECISION_s)
+        accuracy = 1e-4;
+    #endif
     
     cusparseMatDescr_t descrA=NULL;
     cusparseHandle_t cusparseHandle = NULL;
@@ -185,7 +195,7 @@ int main(  int argc, char** argv )
             res = res + MAGMA_Z_ABS(hcheck.val[k] - hrefvec.val[k]);
         }
         res /= ref;
-        if ( res < .000001 ) {
+        if ( res < accuracy ) {
             printf( " > MAGMA: %.2e seconds %.2e GFLOP/s    (standard ELL).\n",
                 (end-start)/10, FLOPS*10/(end-start) );
             printf("%% |x-y|_F/|y| = %8.2e.  Tester spmv ELL:  ok\n", res);
@@ -213,7 +223,7 @@ int main(  int argc, char** argv )
             res = res + MAGMA_Z_ABS(hcheck.val[k] - hrefvec.val[k]);
         }
         res /= ref;
-        if ( res < .000001 ) {
+        if ( res < accuracy ) {
             printf( " > MAGMA: %.2e seconds %.2e GFLOP/s    (SELLP).\n",
                 (end-start)/10, FLOPS*10/(end-start) );
             printf("%% |x-y|_F/|y| = %8.2e Tester spmv SELL-P:  ok\n", res);
@@ -260,7 +270,7 @@ int main(  int argc, char** argv )
             res = res + MAGMA_Z_ABS(hcheck.val[k] - hrefvec.val[k]);
         }
         res /= ref;
-        if ( res < .000001 ) {
+        if ( res < accuracy ) {
             printf( " > cuSPARSE: %.2e seconds %.2e GFLOP/s    (CSR).\n",
                 (end-start)/10, FLOPS*10/(end-start) );
             printf("%% |x-y|_F/|y| = %8.2e Tester spmv cuSPARSE CSR:  ok\n", res);
@@ -290,7 +300,7 @@ int main(  int argc, char** argv )
             res = res + MAGMA_Z_ABS(hcheck.val[k] - hrefvec.val[k]);
         }
         res /= ref;
-        if ( res < .000001 ) {
+        if ( res < accuracy ) {
             printf( " > cuSPARSE: %.2e seconds %.2e GFLOP/s    (HYB).\n",
                 (end-start)/10, FLOPS*10/(end-start) );
             printf("%% |x-y|_F/|y| = %8.2e Tester spmv cuSPARSE HYB:  ok\n", res);

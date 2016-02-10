@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
        
        @author Stan Tomov
 
-       @generated from src/zgeqr2x_gpu.cpp normal z -> s, Fri Jan 22 21:41:34 2016
+       @generated from src/zgeqr2x_gpu.cpp normal z -> s, Tue Feb  9 16:05:06 2016
 
 */
 #include "magma_internal.h"
@@ -108,7 +108,7 @@ magma_sgeqr2x_gpu(
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     
-    magma_int_t i, k;
+    magma_int_t i, min_mn;
 
     magmaFloat_ptr dnorm = dwork;
     magmaFloat_ptr dwork2 = (magmaFloat_ptr)(dwork + 2*n);
@@ -132,10 +132,10 @@ magma_sgeqr2x_gpu(
     }
 
     /* Compute the norms of the trailing columns */
-    k = min(m,n);
-    // magmablas_snrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
+    min_mn = min(m,n);
+    // magmablas_snrm2_cols( m, min_mn, dA(0,0), ldda, dnorm, queue );
 
-    for (i = 0; i < k; ++i) {
+    for (i = 0; i < min_mn; ++i) {
         /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
         magmablas_snrm2_cols( m-i, 1, dA(i,i), ldda, dnorm+i, queue );
         magma_slarfgx_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dnorm+i,

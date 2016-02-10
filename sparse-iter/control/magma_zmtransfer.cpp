@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0-beta3) --
+    -- MAGMA (version 2.0.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2016
+       @date February 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -54,10 +54,6 @@ magma_zmtransfer(
 {
     magma_int_t info = 0;
     
-    // set queue for old dense routines
-    ////magma_queue_t orig_queue=NULL;
-    ////magmablasGetKernelStream( &orig_queue );
-
     B->val = NULL;
     B->diag = NULL;
     B->row = NULL;
@@ -987,6 +983,5 @@ cleanup:
     if( info != 0 ){
         magma_zmfree( B, queue );
     }
-    ////magmablasSetKernelStream( orig_queue );
     return info;
 }
