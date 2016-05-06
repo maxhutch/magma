@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -16,10 +16,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -95,12 +95,11 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_zsetmatrix( Ak, Ak, h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M,  N,  h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( Ak, Ak, h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( M,  N,  h_B, ldb, d_B, lddb, opts.queue );
             
             // note cublas does trmm out-of-place (i.e., adds output matrix C),
             // but allows C=B to do in-place.
-            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
             cublas_time = magma_sync_wtime( opts.queue );
             #ifdef HAVE_CUBLAS
                 cublasZtrmm( opts.handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
@@ -119,9 +118,9 @@ int main( int argc, char** argv)
             cublas_perf = gflops / cublas_time;
             
             #ifdef HAVE_CUBLAS
-                magma_zgetmatrix( M, N, d_C,    lddc, h_Bcublas, ldb );
+                magma_zgetmatrix( M, N, d_C,    lddc, h_Bcublas, ldb, opts.queue );
             #else
-                magma_zgetmatrix( M, N, d_B, 0, lddb, h_Bcublas, ldb, opts.queue );
+                magma_zgetmatrix( M, N, d_B, 0, lddb, h_Bcublas, ldb, opts.queue, opts.queue );
             #endif
             
             /* =====================================================================

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -18,10 +18,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -126,9 +126,9 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_zsetmatrix( Am, An*batchCount, h_A, lda, d_A, ldda );
-            magma_zsetmatrix( Bm, Bn*batchCount, h_B, ldb, d_B, lddb );
-            magma_zsetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc );
+            magma_zsetmatrix( Am, An*batchCount, h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( Bm, Bn*batchCount, h_B, ldb, d_B, lddb, opts.queue );
+            magma_zsetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc, opts.queue );
             
             magma_zset_pointer( A_array, d_A, ldda, 0, 0, ldda*An, batchCount, opts.queue );
             magma_zset_pointer( B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount, opts.queue );
@@ -141,13 +141,13 @@ int main( int argc, char** argv)
                              beta,  C_array, lddc, batchCount, opts.queue);
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
-            magma_zgetmatrix( M, N*batchCount, d_C, lddc, h_Cmagma, ldc );
+            magma_zgetmatrix( M, N*batchCount, d_C, lddc, h_Cmagma, ldc, opts.queue );
             
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
 
-            magma_zsetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc );
+            magma_zsetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc, opts.queue );
 
             cublas_time = magma_sync_wtime( opts.queue );
 
@@ -159,7 +159,7 @@ int main( int argc, char** argv)
             cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
-            magma_zgetmatrix( M, N*batchCount, d_C, lddc, h_Ccublas, ldc );
+            magma_zgetmatrix( M, N*batchCount, d_C, lddc, h_Ccublas, ldc, opts.queue );
           
             /* =====================================================================
                Performs operation using CPU BLAS

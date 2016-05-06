@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
-       @generated from testing/testing_zunmbr.cpp normal z -> s, Tue Feb  9 16:06:15 2016
+       @generated from testing/testing_zunmbr.cpp normal z -> s, Mon May  2 23:31:21 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"

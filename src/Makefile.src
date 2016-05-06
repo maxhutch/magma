@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.0) --
+#   -- MAGMA (version 2.0.2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date February 2016
+#      @date May 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -204,7 +204,6 @@ libmagma_zsrc += \
 # symmetric eigenvalues 2-stage
 libmagma_zsrc += \
 	$(cdir)/dbulge_aux.cpp		\
-	$(cdir)/zbulge_applyQ.cpp	\
 	$(cdir)/zbulge_applyQ_v2.cpp	\
 	$(cdir)/zbulge_aux.cpp		\
 	$(cdir)/zbulge_kernel.cpp	\

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zungqr_gpu.cpp normal z -> d, Tue Feb  9 16:06:10 2016
+       @generated from testing/testing_zungqr_gpu.cpp normal z -> d, Mon May  2 23:31:15 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -21,7 +21,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -87,13 +87,13 @@ int main( int argc, char** argv)
                =================================================================== */
             // first, get QR factors in both hA and dA
             // okay that magma_dgeqrf_gpu has special structure for R; R isn't used here.
-            magma_dsetmatrix(  m, n, hA, lda, dA, ldda );
+            magma_dsetmatrix(  m, n, hA, lda, dA, ldda, opts.queue );
             magma_dgeqrf_gpu( m, n, dA, ldda, tau, dT, &info );
             if (info != 0) {
                 printf("magma_dgeqrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             }
-            magma_dgetmatrix( m, n, dA, ldda, hA, lda );
+            magma_dgetmatrix( m, n, dA, ldda, hA, lda, opts.queue );
             
             gpu_time = magma_wtime();
             magma_dorgqr_gpu( m, n, k, dA, ldda, tau, dT, nb, &info );
@@ -105,7 +105,7 @@ int main( int argc, char** argv)
             }
             
             // Get dA back to the CPU to compare with the CPU result.
-            magma_dgetmatrix( m, n, dA, ldda, hR, lda );
+            magma_dgetmatrix( m, n, dA, ldda, hR, lda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from sparse-iter/testing/testing_zmatrixinfo.cpp normal z -> d, Tue Feb  9 16:06:18 2016
+       @generated from sparse-iter/testing/testing_zmatrixinfo.cpp normal z -> d, Mon May  2 23:31:24 2016
        @author Hartwig Anzt
 */
 
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -34,7 +34,7 @@ int main(  int argc, char** argv )
 
     magma_dopts zopts;
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
+    magma_queue_create( 0, &queue );
     
     magma_d_matrix Z={Magma_CSR};
     
@@ -42,8 +42,7 @@ int main(  int argc, char** argv )
     CHECK( magma_dparse_opts( argc, argv, &zopts, &i, queue ));
     printf("matrixinfo = [ \n");
     printf("%%   size (n)   ||   nonzeros (nnz)   ||   nnz/n \n");
-    printf("%%======================================================="
-                        "======%%\n");
+    printf("%%=============================================================%%\n");
     while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
@@ -60,8 +59,7 @@ int main(  int argc, char** argv )
 
         i++;
     }
-    printf("%%======================================================="
-    "======%%\n");
+    printf("%%=============================================================%%\n");
     printf("];\n");
         
 cleanup:

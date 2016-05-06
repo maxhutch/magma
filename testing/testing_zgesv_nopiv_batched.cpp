@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -92,8 +92,8 @@ int main(int argc, char **argv)
                 }
             }
             columns = N * batchCount;
-            magma_zsetmatrix( N, columns,    h_A, lda, d_A, ldda );
-            magma_zsetmatrix( N, nrhs*batchCount, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( N, columns,    h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( N, nrhs*batchCount, h_B, ldb, d_B, lddb, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1);
+            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1, opts.queue );
             for (int i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
             // Residual
             //=====================================================================
             error = 0;
-            magma_zgetmatrix( N, nrhs*batchCount, d_B, lddb, h_X, ldb );
+            magma_zgetmatrix( N, nrhs*batchCount, d_B, lddb, h_X, ldb, opts.queue );
             for (magma_int_t s = 0; s < batchCount; s++)
             {
                 Anorm = lapackf77_zlange("I", &N, &N,    h_A+s*lda*N, &lda, work);

@@ -25,6 +25,16 @@ Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
 
+ 2.0.2 - May  2, 2016
+    * Add MAGMA_NO_V1 option, to disable MAGMA v1.x compatability. See README.
+    * Update testers to use MAGMA v2.0 interfaces.
+    * Fixed magma_{set,get}matrix_1D_{row,col}_bcyclic to by synchronous,
+      to match old behavior.
+    * Fixed use of NULL stream in multi-threaded code in MAGMA v1.x compatability mode.
+
+ 2.0.1 - Feb 26, 2016
+    * Fixed bug with 'make install'
+
  2.0.0 - final:  Feb  8, 2016
        - beta 3: Jan 22, 2016
        - beta 2: Jan  6, 2016

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zhetrf.cpp normal z -> d, Tue Feb  9 16:06:07 2016
+       @generated from testing/testing_zhetrf.cpp normal z -> d, Mon May  2 23:31:12 2016
        @author Ichitaro Yamazaki
 */
 // includes, system
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"  // for MAGMA_D_DIV
 #include "testings.h"
@@ -687,11 +687,11 @@ int main( int argc, char** argv)
                 magma_int_t ldda = magma_roundup( N, opts.align );
                 magmaDouble_ptr d_A;
                 TESTING_MALLOC_DEV( d_A, double, N*ldda );
-                magma_dsetmatrix(N, N, h_A, lda, d_A, ldda);
+                magma_dsetmatrix(N, N, h_A, lda, d_A, ldda, opts.queue );
                 gpu_time = magma_wtime();
                 magma_dsytrf_nopiv_gpu( opts.uplo, N, d_A, ldda, &info);
                 gpu_time = magma_wtime() - gpu_time;
-                magma_dgetmatrix(N, N, d_A, ldda, h_A, lda);
+                magma_dgetmatrix(N, N, d_A, ldda, h_A, lda, opts.queue );
                 TESTING_FREE_DEV( d_A );
             } else if (aasen) {
                 // CPU-interface to Aasen's LTLt

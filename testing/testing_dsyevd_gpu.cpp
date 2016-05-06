@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zheevd_gpu.cpp normal z -> d, Tue Feb  9 16:06:12 2016
+       @generated from testing/testing_zheevd_gpu.cpp normal z -> d, Mon May  2 23:31:18 2016
 
 */
 
@@ -21,7 +21,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -193,7 +193,7 @@ int main( int argc, char** argv)
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             magma_dmake_symmetric( N, h_A, lda );
             
-            magma_dsetmatrix( N, N, h_A, lda, d_R, ldda );
+            magma_dsetmatrix( N, N, h_A, lda, d_R, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -240,7 +240,7 @@ int main( int argc, char** argv)
                                   #endif
                                   iwork, liwork,
                                   &info );
-                magmablas_dlacpy( MagmaFull, N, N, d_Z, ldda, d_R, ldda );
+                magmablas_dlacpy( MagmaFull, N, N, d_Z, ldda, d_R, ldda, opts.queue );
                 #endif
             }
             else if ( opts.version == 4 ) {  // version 3: dsyevx (QR iteration), computes selected eigenvalues/vectors
@@ -260,7 +260,7 @@ int main( int argc, char** argv)
                                   iwork, /*liwork,*/
                                   ifail,
                                   &info );
-                magmablas_dlacpy( MagmaFull, N, N, d_Z, ldda, d_R, ldda );
+                magmablas_dlacpy( MagmaFull, N, N, d_Z, ldda, d_R, ldda, opts.queue );
                 #endif
             }
             gpu_time = magma_wtime() - gpu_time;
@@ -278,7 +278,7 @@ int main( int argc, char** argv)
                    (2)    | I - U^H U   | / ( N )
                    (3)    | S(with U) - S(w/o U) | / | S |    // currently disabled, but compares to LAPACK
                    =================================================================== */
-                magma_dgetmatrix( N, N, d_R, ldda, h_R, lda );
+                magma_dgetmatrix( N, N, d_R, ldda, h_R, lda, opts.queue );
                 
                 double *work;
                 TESTING_MALLOC_CPU( work, double, 2*N*N );
@@ -303,7 +303,7 @@ int main( int argc, char** argv)
                 // it obscures whether error occurs in first call above or in this call.
                 // But see comparison to LAPACK below.
                 //
-                //magma_dsetmatrix( N, N, h_A, lda, d_R, ldda );
+                //magma_dsetmatrix( N, N, h_A, lda, d_R, ldda, opts.queue );
                 //magma_dsyevd_gpu( MagmaNoVec, opts.uplo,
                 //                  N, d_R, ldda, w2,
                 //                  h_R, lda,

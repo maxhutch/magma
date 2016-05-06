@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgeqr2_gpu.cpp normal z -> c, Tue Feb  9 16:06:10 2016
+       @generated from testing/testing_zgeqr2_gpu.cpp normal z -> c, Mon May  2 23:31:15 2016
        @author Stan Tomov
 
 */
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -82,12 +82,12 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
             lapackf77_clacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
-            magma_csetmatrix( M, N, h_R, lda, d_A, ldda );
+            magma_csetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             
             // warmup
             if ( opts.warmup ) {
                 magma_cgeqr2_gpu( M, N, d_A, ldda, dtau, dwork, opts.queue, &info );
-                magma_csetmatrix( M, N, h_R, lda, d_A, ldda );
+                magma_csetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             }
             
             /* ====================================================================
@@ -109,8 +109,8 @@ int main( int argc, char** argv)
                This works for any M,N (square, tall, wide).
                =================================================================== */
             if ( opts.check ) {
-                magma_cgetmatrix( M, N, d_A, ldda, h_R, lda );
-                magma_cgetvector( min_mn, dtau, 1, tau, 1 );
+                magma_cgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
+                magma_cgetvector( min_mn, dtau, 1, tau, 1, opts.queue );
                 
                 magma_int_t ldq = M;
                 magma_int_t ldr = min_mn;

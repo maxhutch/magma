@@ -1,15 +1,19 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from include/magmablas_zc_v1.h mixed zc -> ds, Tue Feb  9 16:06:19 2016
+       @generated from include/magmablas_zc_v1.h mixed zc -> ds, Mon May  2 23:31:25 2016
 */
 
 #ifndef MAGMABLAS_DS_V1_H
 #define MAGMABLAS_DS_V1_H
+
+#ifdef MAGMA_NO_V1
+#error "Since MAGMA_NO_V1 is defined, magma.h is invalid; use magma_v2.h"
+#endif
 
 #include "magma_types.h"
 

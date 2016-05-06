@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zherk.cpp normal z -> c, Tue Feb  9 16:06:00 2016
+       @generated from testing/testing_zherk.cpp normal z -> c, Mon May  2 23:31:05 2016
        @author Chongxiao Cao
 */
 // includes, system
@@ -15,10 +15,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 #define COMPLEX
 
@@ -101,10 +101,9 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_csetmatrix( An, Ak, h_A, lda, d_A, ldda );
-            magma_csetmatrix( N, N, h_C, ldc, d_C, lddc );
+            magma_csetmatrix( An, Ak, h_A, lda, d_A, ldda, opts.queue );
+            magma_csetmatrix( N, N, h_C, ldc, d_C, lddc, opts.queue );
 
-            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
             cublas_time = magma_sync_wtime( opts.queue );
             #ifdef HAVE_CUBLAS
                 cublasCherk( opts.handle, cublas_uplo_const(opts.uplo), cublas_trans_const(opts.transA), N, K,
@@ -118,7 +117,7 @@ int main( int argc, char** argv)
             cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
-            magma_cgetmatrix( N, N, d_C, lddc, h_Ccublas, ldc );
+            magma_cgetmatrix( N, N, d_C, lddc, h_Ccublas, ldc, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

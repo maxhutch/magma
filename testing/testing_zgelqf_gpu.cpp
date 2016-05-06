@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> s d c
 
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -83,7 +83,7 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             gpu_time = magma_wtime();
             magma_zgelqf_gpu( M, N, d_A, ldda, tau, h_work, lwork, &info);
             gpu_time = magma_wtime() - gpu_time;
@@ -98,7 +98,7 @@ int main( int argc, char** argv)
                This works for any M,N (square, tall, wide).
                =================================================================== */
             if ( opts.check ) {
-                magma_zgetmatrix( M, N, d_A, ldda, h_R, lda );
+                magma_zgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
                 
                 magma_int_t ldq = min_mn;
                 magma_int_t ldl = M;

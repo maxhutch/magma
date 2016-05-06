@@ -3,15 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
-#ifdef HAVE_CUBLAS
-#include <cublas_v2.h>  // before magma.h
-#endif
-
-#if ! defined(MAGMA_H) && ! defined(MAGMA_V2_H)
-#include "magma.h"
-#endif
+#include "magma_v2.h"
 
 
 /***************************************************************************//**
@@ -20,7 +13,7 @@
 #if defined( _WIN32 ) || defined( _WIN64 )
     // functions where Microsoft fails to provide C99 or POSIX standard
     // (only with Microsoft, not with nvcc on Windows)
-    // in both common_magma.h and testings.h
+    // in both magma_internal.h and testings.h
     #ifndef __NVCC__
     
         #include <float.h>
@@ -44,7 +37,7 @@ void flops_init();
 
 /***************************************************************************//**
  *  Global utilities
- *  in both common_magma.h and testings.h
+ *  in both magma_internal.h and testings.h
  **/
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -248,7 +241,6 @@ public:
     // queue for default device
     magma_queue_t   queue;
     magma_queue_t   queues2[3];  // 2 queues + 1 extra NULL entry to catch errors
-    magma_queue_t   default_queue;
     
     #ifdef HAVE_CUBLAS
     // handle for directly calling cublas

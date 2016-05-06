@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/ztfqmr_unrolled.cpp normal z -> s, Tue Feb  9 16:05:52 2016
+       @generated from sparse-iter/src/ztfqmr_unrolled.cpp normal z -> s, Mon May  2 23:30:57 2016
 */
 
 #include "magmasparse_internal.h"

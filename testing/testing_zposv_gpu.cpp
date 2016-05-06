@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -70,8 +70,8 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &sizeB, h_B );
             magma_zmake_hpd( N, h_A, lda );
             
-            magma_zsetmatrix( N, N,         h_A, lda, d_A, ldda );
-            magma_zsetmatrix( N, opts.nrhs, h_B, lda, d_B, lddb );
+            magma_zsetmatrix( N, N,         h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( N, opts.nrhs, h_B, lda, d_B, lddb, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -88,7 +88,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Residual
                =================================================================== */
-            magma_zgetmatrix( N, opts.nrhs, d_B, lddb, h_X, ldb );
+            magma_zgetmatrix( N, opts.nrhs, d_B, lddb, h_X, ldb, opts.queue );
             
             Anorm = lapackf77_zlange("I", &N, &N,         h_A, &lda, work);
             Xnorm = lapackf77_zlange("I", &N, &opts.nrhs, h_X, &ldb, work);

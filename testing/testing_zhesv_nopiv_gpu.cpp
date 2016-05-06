@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -82,13 +82,12 @@ int main(int argc, char **argv)
                 magma_zmake_hermitian( N, h_A, lda );  // symmetric/Hermitian generally requires pivoting
             }
             
-            magma_zsetmatrix( N, N,    h_A, lda, d_A, ldda );
-            magma_zsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( N, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( N, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             magma_zhesv_nopiv_gpu( opts.uplo, N, nrhs, d_A, ldda, d_B, lddb, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
@@ -101,7 +100,7 @@ int main(int argc, char **argv)
             //=====================================================================
             // Residual
             //=====================================================================
-            magma_zgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
+            magma_zgetmatrix( N, nrhs, d_B, lddb, h_X, ldb, opts.queue );
             
             Anorm = lapackf77_zlange("I", &N, &N,    h_A, &lda, work);
             Xnorm = lapackf77_zlange("I", &N, &nrhs, h_X, &ldb, work);

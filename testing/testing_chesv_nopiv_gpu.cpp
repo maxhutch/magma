@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zhesv_nopiv_gpu.cpp normal z -> c, Tue Feb  9 16:06:06 2016
+       @generated from testing/testing_zhesv_nopiv_gpu.cpp normal z -> c, Mon May  2 23:31:12 2016
        
        @author Mark Gates
        @author Adrien Remy
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -82,13 +82,12 @@ int main(int argc, char **argv)
                 magma_cmake_hermitian( N, h_A, lda );  // symmetric/Hermitian generally requires pivoting
             }
             
-            magma_csetmatrix( N, N,    h_A, lda, d_A, ldda );
-            magma_csetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+            magma_csetmatrix( N, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_csetmatrix( N, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             magma_chesv_nopiv_gpu( opts.uplo, N, nrhs, d_A, ldda, d_B, lddb, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
@@ -101,7 +100,7 @@ int main(int argc, char **argv)
             //=====================================================================
             // Residual
             //=====================================================================
-            magma_cgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
+            magma_cgetmatrix( N, nrhs, d_B, lddb, h_X, ldb, opts.queue );
             
             Anorm = lapackf77_clange("I", &N, &N,    h_A, &lda, work);
             Xnorm = lapackf77_clange("I", &N, &nrhs, h_X, &ldb, work);

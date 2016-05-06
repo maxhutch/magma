@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from sparse-iter/testing/testing_zspmv_check.cpp normal z -> c, Tue Feb  9 16:06:19 2016
+       @generated from sparse-iter/testing/testing_zspmv_check.cpp normal z -> c, Mon May  2 23:31:24 2016
        @author Hartwig Anzt
 */
 
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -32,7 +32,7 @@ int main(  int argc, char** argv )
     magma_int_t info = 0;
     TESTING_INIT();
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
+    magma_queue_create( 0, &queue );
     
     magmaFloatComplex one = MAGMA_C_MAKE(1.0, 0.0);
     magmaFloatComplex zero = MAGMA_C_MAKE(0.0, 0.0);
@@ -66,7 +66,7 @@ int main(  int argc, char** argv )
             CHECK( magma_cprint_matrix( B_d, queue ));
         
         float res;
-        res = magma_scnrm2(n, b.dval, 1 );
+        res = magma_scnrm2(n, b.dval, 1, queue );
         printf("norm0: %f\n", res);
         
         CHECK( magma_c_spmv( one, B_d, x, zero, b, queue ));         //  b = A x
@@ -74,7 +74,7 @@ int main(  int argc, char** argv )
         CHECK( magma_cprint_vector( b, 0, 100, queue ));
         CHECK( magma_cprint_vector( b, b.num_rows-10, 10, queue ));
 
-        res = magma_scnrm2(n, b.dval, 1 );
+        res = magma_scnrm2( n, b.dval, 1, queue );
         printf("norm: %f\n", res);
 
         

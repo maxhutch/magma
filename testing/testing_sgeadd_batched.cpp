@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgeadd_batched.cpp normal z -> s, Tue Feb  9 16:06:15 2016
+       @generated from testing/testing_zgeadd_batched.cpp normal z -> s, Mon May  2 23:31:21 2016
        @author Mark Gates
 
 */
@@ -16,7 +16,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -85,8 +85,8 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_ssetmatrix( M, N, h_A, lda, d_A, ldda );
-            magma_ssetmatrix( M, N, h_B, lda, d_B, ldda );
+            magma_ssetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetmatrix( M, N, h_B, lda, d_B, ldda, opts.queue );
             
             // setup pointers
             for( tile = 0; tile < ntile; ++tile ) {
@@ -94,8 +94,8 @@ int main( int argc, char** argv)
                 hAarray[tile] = &d_A[offset];
                 hBarray[tile] = &d_B[offset];
             }
-            magma_setvector( ntile, sizeof(float*), hAarray, 1, dAarray, 1 );
-            magma_setvector( ntile, sizeof(float*), hBarray, 1, dBarray, 1 );
+            magma_setvector( ntile, sizeof(float*), hAarray, 1, dAarray, 1, opts.queue );
+            magma_setvector( ntile, sizeof(float*), hBarray, 1, dBarray, 1, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue );
             magmablas_sgeadd_batched( mb, nb, alpha, dAarray, ldda, dBarray, ldda, ntile, opts.queue );
@@ -120,7 +120,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            magma_sgetmatrix( M, N, d_B, ldda, h_A, lda );
+            magma_sgetmatrix( M, N, d_B, ldda, h_A, lda, opts.queue );
             
             norm  = lapackf77_slange( "F", &M, &N, h_B, &lda, work );
             blasf77_saxpy(&size, &c_neg_one, h_A, &ione, h_B, &ione);

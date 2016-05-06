@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from testing/testing_zgeqrf_batched.cpp normal z -> s, Tue Feb  9 16:06:16 2016
+       @generated from testing/testing_zgeqrf_batched.cpp normal z -> s, Mon May  2 23:31:22 2016
 
 */
 
@@ -22,10 +22,9 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "batched_kernel_param.h"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -162,7 +161,7 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_ssetmatrix( M, column, h_R, lda,  d_A, ldda );
+            magma_ssetmatrix( M, column, h_R, lda,  d_A, ldda, opts.queue );
             magma_sset_pointer( dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue );
             magma_sset_pointer( dtau_array, dtau_magma, 1, 0, 0, min_mn, batchCount, opts.queue );
     
@@ -173,7 +172,7 @@ int main( int argc, char** argv)
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
 
-            magma_sgetmatrix( M, column, d_A, ldda, h_Amagma, lda);
+            magma_sgetmatrix( M, column, d_A, ldda, h_Amagma, lda, opts.queue );
 
             if (info != 0) {
                 printf("magma_sgeqrf_batched returned error %d: %s.\n",
@@ -186,7 +185,7 @@ int main( int argc, char** argv)
 
             /* cublasSgeqrfBatched is only available from CUBLAS v6.5 */
             #if CUDA_VERSION >= 6050
-            magma_ssetmatrix( M, column, h_R, lda,  d_A, ldda );
+            magma_ssetmatrix( M, column, h_R, lda,  d_A, ldda, opts.queue );
             magma_sset_pointer( dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue );
             magma_sset_pointer( dtau_array, dtau_cublas, 1, 0, 0, min_mn, batchCount, opts.queue );
 
@@ -252,7 +251,7 @@ int main( int argc, char** argv)
                 /* check magma result */
                 magma_error  = 0;
                 magma_error2 = 0;
-                magma_sgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1);
+                magma_sgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1, opts.queue );
                 for (int i=0; i < batchCount; i++)
                 {
                     float err, err2;
@@ -273,8 +272,8 @@ int main( int argc, char** argv)
                 cublas_error  = 0;
                 cublas_error2 = 0;
                 #if CUDA_VERSION >= 6050
-                magma_sgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1);
-                magma_sgetmatrix( M, column, d_A, ldda, h_A, lda);
+                magma_sgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1, opts.queue );
+                magma_sgetmatrix( M, column, d_A, ldda, h_A, lda, opts.queue );
                 for (int i=0; i < batchCount; i++)
                 {
                     float err, err2;

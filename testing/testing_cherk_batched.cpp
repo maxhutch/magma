@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zherk_batched.cpp normal z -> c, Tue Feb  9 16:06:16 2016
+       @generated from testing/testing_zherk_batched.cpp normal z -> c, Mon May  2 23:31:21 2016
        @author Chongxiao Cao
        @author Tingxing Dong
 */
@@ -19,7 +19,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -120,8 +120,8 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_csetmatrix( An, Ak*batchCount, h_A, lda, d_A, ldda );
-            magma_csetmatrix( N, N*batchCount, h_C, ldc, d_C, lddc );
+            magma_csetmatrix( An, Ak*batchCount, h_A, lda, d_A, ldda, opts.queue );
+            magma_csetmatrix( N, N*batchCount, h_C, ldc, d_C, lddc, opts.queue );
             
             magma_cset_pointer( A_array, d_A, lda, 0, 0, ldda*Ak, batchCount, opts.queue );
             magma_cset_pointer( C_array, d_C, ldc, 0, 0, lddc*N,  batchCount, opts.queue );
@@ -134,7 +134,7 @@ int main( int argc, char** argv)
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             
-            magma_cgetmatrix( N, NN, d_C, lddc, h_Cmagma, ldc );
+            magma_cgetmatrix( N, NN, d_C, lddc, h_Cmagma, ldc, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

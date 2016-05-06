@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlag2c.cpp mixed zc -> ds, Tue Feb  9 16:06:02 2016
+       @generated from testing/testing_zlag2c.cpp mixed zc -> ds, Mon May  2 23:31:07 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 #include <assert.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -67,8 +67,8 @@ int main( int argc, char** argv )
             lapackf77_dlarnv( &ione, ISEED, &size,  A );
             lapackf77_slarnv( &ione, ISEED, &size, SA );
             
-            magma_dsetmatrix( m, n, A,  lda, dA,  ldda );
-            magma_ssetmatrix( m, n, SA, lda, dSA, ldda );
+            magma_dsetmatrix( m, n, A,  lda, dA,  ldda, opts.queue );
+            magma_ssetmatrix( m, n, SA, lda, dSA, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK dlag2s
@@ -85,9 +85,8 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA dlag2s
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_dlag2s( m, n, dA, ldda, dSA, ldda, &info );
+            magmablas_dlag2s( m, n, dA, ldda, dSA, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -95,7 +94,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_sgetmatrix( m, n, dSA, ldda, SR, lda );
+            magma_sgetmatrix( m, n, dSA, ldda, SR, lda, opts.queue );
             
             /* =====================================================================
                compute error |SA_magma - SA_lapack|
@@ -116,8 +115,8 @@ int main( int argc, char** argv )
             lapackf77_dlarnv( &ione, ISEED, &size,  A );
             lapackf77_slarnv( &ione, ISEED, &size, SA );
             
-            magma_dsetmatrix( m, n, A,  lda, dA,  ldda );
-            magma_ssetmatrix( m, n, SA, lda, dSA, ldda );
+            magma_dsetmatrix( m, n, A,  lda, dA,  ldda, opts.queue );
+            magma_ssetmatrix( m, n, SA, lda, dSA, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK slag2d
@@ -134,10 +133,10 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA slag2d
                =================================================================== */
-            magma_ssetmatrix( m, n, SA, lda, dSA, ldda );
+            magma_ssetmatrix( m, n, SA, lda, dSA, ldda, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_slag2d( m, n, dSA, ldda, dA, ldda, &info );
+            magmablas_slag2d( m, n, dSA, ldda, dA, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -145,7 +144,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_dgetmatrix( m, n, dA, ldda, R, lda );
+            magma_dgetmatrix( m, n, dA, ldda, R, lda, opts.queue );
             
             /* =====================================================================
                compute error |A_magma - A_lapack|

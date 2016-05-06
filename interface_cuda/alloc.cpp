@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
  
        @author Mark Gates
 */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <cuda_runtime.h>
 
 #include <map>
 
@@ -17,7 +18,7 @@
 #include <mutex>  // requires C++11
 #endif
 
-#include "magma.h"
+#include "magma_v2.h"
 #include "error.h"
 
 #ifdef HAVE_CUBLAS

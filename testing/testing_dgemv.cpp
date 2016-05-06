@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgemv.cpp normal z -> d, Tue Feb  9 16:06:00 2016
+       @generated from testing/testing_zgemv.cpp normal z -> d, Mon May  2 23:31:05 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -14,10 +14,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 
 int main(int argc, char **argv)
@@ -90,11 +90,10 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_dsetmatrix( M, N, A, lda, dA, ldda );
-            magma_dsetvector( Xm, X, incx, dX, incx );
-            magma_dsetvector( Ym, Y, incy, dY, incy );
+            magma_dsetmatrix( M, N, A, lda, dA, ldda, opts.queue );
+            magma_dsetvector( Xm, X, incx, dX, incx, opts.queue );
+            magma_dsetvector( Ym, Y, incy, dY, incy, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
             dev_time = magma_sync_wtime( opts.queue );
             #ifdef HAVE_CUBLAS
                 cublasDgemv( opts.handle, cublas_trans_const(opts.transA),
@@ -108,20 +107,20 @@ int main(int argc, char **argv)
             dev_time = magma_sync_wtime( opts.queue ) - dev_time;
             dev_perf = gflops / dev_time;
             
-            magma_dgetvector( Ym, dY, incy, Ydev, incy );
+            magma_dgetvector( Ym, dY, incy, Ydev, incy, opts.queue );
             
             /* =====================================================================
                Performs operation using MAGMABLAS (currently only with CUDA)
                =================================================================== */
             #ifdef HAVE_CUBLAS
-                magma_dsetvector( Ym, Y, incy, dY, incy );
+                magma_dsetvector( Ym, Y, incy, dY, incy, opts.queue );
                 
                 magma_time = magma_sync_wtime( opts.queue );
-                magmablas_dgemv( opts.transA, M, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+                magmablas_dgemv( opts.transA, M, N, alpha, dA, ldda, dX, incx, beta, dY, incy, opts.queue );
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
-                magma_dgetvector( Ym, dY, incy, Ymagma, incy );
+                magma_dgetvector( Ym, dY, incy, Ymagma, incy, opts.queue );
             #endif
             
             /* =====================================================================

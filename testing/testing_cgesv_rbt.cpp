@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgesv_rbt.cpp normal z -> c, Tue Feb  9 16:06:08 2016
+       @generated from testing/testing_zgesv_rbt.cpp normal z -> c, Mon May  2 23:31:13 2016
        @author Mark Gates
 */
 // includes, system
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 

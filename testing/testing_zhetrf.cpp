@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Ichitaro Yamazaki
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"  // for MAGMA_Z_DIV
 #include "testings.h"
@@ -687,11 +687,11 @@ int main( int argc, char** argv)
                 magma_int_t ldda = magma_roundup( N, opts.align );
                 magmaDoubleComplex_ptr d_A;
                 TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, N*ldda );
-                magma_zsetmatrix(N, N, h_A, lda, d_A, ldda);
+                magma_zsetmatrix(N, N, h_A, lda, d_A, ldda, opts.queue );
                 gpu_time = magma_wtime();
                 magma_zhetrf_nopiv_gpu( opts.uplo, N, d_A, ldda, &info);
                 gpu_time = magma_wtime() - gpu_time;
-                magma_zgetmatrix(N, N, d_A, ldda, h_A, lda);
+                magma_zgetmatrix(N, N, d_A, ldda, h_A, lda, opts.queue );
                 TESTING_FREE_DEV( d_A );
             } else if (aasen) {
                 // CPU-interface to Aasen's LTLt

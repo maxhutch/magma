@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -22,7 +22,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -94,7 +94,7 @@ int main( int argc, char** argv)
                =================================================================== */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             magma_zmake_hermitian( N, h_A, lda );
-            magma_zsetmatrix( N, N, h_A, lda, d_R, ldda );
+            magma_zsetmatrix( N, N, h_A, lda, d_R, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -125,8 +125,8 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_CPU( rwork, double, N );
                 #endif
                 
-                magma_zgetmatrix( N, N, d_R, ldda, h_R, lda );
-                magma_zgetmatrix( N, N, d_R, ldda, h_Q, lda );
+                magma_zgetmatrix( N, N, d_R, ldda, h_R, lda, opts.queue );
+                magma_zgetmatrix( N, N, d_R, ldda, h_Q, lda, opts.queue );
                 lapackf77_zungtr( lapack_uplo_const(opts.uplo), &N, h_Q, &lda, tau, h_work, &lwork, &info );
                 
                 lapackf77_zhet21( &itwo, lapack_uplo_const(opts.uplo), &N, &ione,

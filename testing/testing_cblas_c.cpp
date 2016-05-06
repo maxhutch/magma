@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @generated from testing/testing_cblas_z.cpp normal z -> c, Tue Feb  9 16:06:02 2016
+       @generated from testing/testing_cblas_z.cpp normal z -> c, Mon May  2 23:31:07 2016
        @author Mark Gates
        
        These tests ensure that the MAGMA implementations of CBLAS routines
@@ -24,7 +24,7 @@
 #include <assert.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"

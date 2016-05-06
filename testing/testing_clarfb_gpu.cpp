@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlarfb_gpu.cpp normal z -> c, Tue Feb  9 16:06:10 2016
+       @generated from testing/testing_zlarfb_gpu.cpp normal z -> c, Mon May  2 23:31:15 2016
 */
 // includes, system
 #include <stdlib.h>

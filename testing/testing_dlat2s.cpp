@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlat2c.cpp mixed zc -> ds, Tue Feb  9 16:06:03 2016
+       @generated from testing/testing_zlat2c.cpp mixed zc -> ds, Mon May  2 23:31:08 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 #include <assert.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -73,8 +73,8 @@ int main( int argc, char** argv )
             lapackf77_dlarnv( &ione, ISEED, &size,  A );
             lapackf77_slarnv( &ione, ISEED, &size, SA );
             
-            magma_dsetmatrix( n, n, A,  lda, dA,  ldda );
-            magma_ssetmatrix( n, n, SA, lda, dSA, ldda );
+            magma_dsetmatrix( n, n, A,  lda, dA,  ldda, opts.queue );
+            magma_ssetmatrix( n, n, SA, lda, dSA, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK dlat2s
@@ -92,9 +92,8 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA dlat2s
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_dlat2s( uplo[iuplo], n, dA, ldda, dSA, ldda, &info );
+            magmablas_dlat2s( uplo[iuplo], n, dA, ldda, dSA, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -102,7 +101,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_sgetmatrix( n, n, dSA, ldda, SR, lda );
+            magma_sgetmatrix( n, n, dSA, ldda, SR, lda, opts.queue );
             
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_dprint( n, n, A,  lda );
@@ -130,8 +129,8 @@ int main( int argc, char** argv )
             lapackf77_dlarnv( &ione, ISEED, &size,  A );
             lapackf77_slarnv( &ione, ISEED, &size, SA );
             
-            magma_dsetmatrix( n, n, A,  lda, dA,  ldda );
-            magma_ssetmatrix( n, n, SA, lda, dSA, ldda );
+            magma_dsetmatrix( n, n, A,  lda, dA,  ldda, opts.queue );
+            magma_ssetmatrix( n, n, SA, lda, dSA, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK slat2d
@@ -162,10 +161,10 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA slat2d
                =================================================================== */
-            magma_ssetmatrix( n, n, SA, lda, dSA, ldda );
+            magma_ssetmatrix( n, n, SA, lda, dSA, ldda, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_slat2d( uplo[iuplo], n, dSA, ldda, dA, ldda, &info );
+            magmablas_slat2d( uplo[iuplo], n, dSA, ldda, dA, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -173,7 +172,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_dgetmatrix( n, n, dA, ldda, R, lda );
+            magma_dgetmatrix( n, n, dA, ldda, R, lda, opts.queue );
             
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_dprint( n, n, A,  lda );

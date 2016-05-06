@@ -1,13 +1,17 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 */
 
 #ifndef MAGMA_H
 #define MAGMA_H
+
+#ifdef MAGMA_NO_V1
+#error "Since MAGMA_NO_V1 is defined, magma.h is invalid; use magma_v2.h"
+#endif
 
 // magma v1 includes cublas.h by default, unless cublas_v2.h has already been included
 #ifndef CUBLAS_V2_H_

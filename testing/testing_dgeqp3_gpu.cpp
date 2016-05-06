@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgeqp3_gpu.cpp normal z -> d, Tue Feb  9 16:06:09 2016
+       @generated from testing/testing_zgeqp3_gpu.cpp normal z -> d, Mon May  2 23:31:15 2016
 
 */
 
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -127,7 +127,7 @@ int main( int argc, char** argv)
                 jpvt[j] = 0;
             
             /* copy A to gpu */
-            magma_dsetmatrix( M, N, h_R, lda, d_A, lda );
+            magma_dsetmatrix( M, N, h_R, lda, d_A, lda, opts.queue );
 
             /* call gpu-interface */
             gpu_time = magma_wtime();
@@ -139,8 +139,8 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime() - gpu_time;
             
             /* copy outputs to cpu */
-            magma_dgetmatrix( M, N, d_A, lda, h_R, lda );
-            magma_dgetvector( min_mn, dtau, 1, tau, 1 );
+            magma_dgetmatrix( M, N, d_A, lda, h_R, lda, opts.queue );
+            magma_dgetvector( min_mn, dtau, 1, tau, 1, opts.queue );
             
             gpu_perf = gflops / gpu_time;
             if (info != 0) {

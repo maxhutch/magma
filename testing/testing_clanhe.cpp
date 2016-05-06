@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zlanhe.cpp normal z -> c, Tue Feb  9 16:06:03 2016
+       @generated from testing/testing_zlanhe.cpp normal z -> c, Mon May  2 23:31:08 2016
        @author Mark Gates
 */
 // includes, system
@@ -19,7 +19,7 @@
 #endif
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -72,7 +72,7 @@ int main( int argc, char** argv)
             printf( "Testing that magmablas_clanhe( %s, %s, ... ) returns -1 error...\n",
                     lapack_norm_const( norm[inorm] ),
                     lapack_uplo_const( uplo[iuplo] ));
-            norm_magma = magmablas_clanhe( norm[inorm], uplo[iuplo], 1, NULL, 1, NULL, 1 );
+            norm_magma = magmablas_clanhe( norm[inorm], uplo[iuplo], 1, NULL, 1, NULL, 1, opts.queue );
             if ( norm_magma != -1 ) {
                 printf( "expected magmablas_clanhe to return -1 error, but got %f\n", norm_magma );
                 status = 1;
@@ -118,13 +118,13 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_clarnv( &idist, ISEED, &n2, h_A );
             
-            magma_csetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_csetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            norm_magma = magmablas_clanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work, N );
+            norm_magma = magmablas_clanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work, N, opts.queue );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (norm_magma == -1) {
@@ -198,8 +198,8 @@ int main( int argc, char** argv)
             }
             
             *h_A(i,j) = MAGMA_C_NAN;
-            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
-            norm_magma  = magmablas_clanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work, N );
+            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1, opts.queue );
+            norm_magma  = magmablas_clanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work, N, opts.queue );
             norm_lapack = lapackf77_clanhe( lapack_norm_const( norm[inorm] ),
                                             lapack_uplo_const( uplo[iuplo] ),
                                             &N, h_A, &lda, h_work );
@@ -209,8 +209,8 @@ int main( int argc, char** argv)
             status          += !    nan_okay;
             
             *h_A(i,j) = MAGMA_C_INF;
-            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
-            norm_magma  = magmablas_clanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work, N );
+            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1, opts.queue );
+            norm_magma  = magmablas_clanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work, N, opts.queue );
             norm_lapack = lapackf77_clanhe( lapack_norm_const( norm[inorm] ),
                                             lapack_uplo_const( uplo[iuplo] ),
                                             &N, h_A, &lda, h_work );

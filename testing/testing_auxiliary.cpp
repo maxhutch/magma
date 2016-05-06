@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
 */
@@ -12,8 +12,8 @@
 #include <cuda_runtime.h>
 
 // tests internal routines: magma_{set,get}_lapack_numthreads, magma_get_parallel_numthreads
-// so include common_magma.h instead of magma.h
-#include "common_magma.h"
+// so include magma_internal.h instead of magma_v2.h
+#include "magma_internal.h"
 
 
 ////////////////////////////////////////////////////////////////////////////

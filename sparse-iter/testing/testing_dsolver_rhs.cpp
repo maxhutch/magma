@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from sparse-iter/testing/testing_zsolver_rhs.cpp normal z -> d, Tue Feb  9 16:06:19 2016
+       @generated from sparse-iter/testing/testing_zsolver_rhs.cpp normal z -> d, Mon May  2 23:31:25 2016
        @author Hartwig Anzt
 */
 
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -34,7 +34,7 @@ int main(  int argc, char** argv )
 
     magma_dopts zopts;
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
+    magma_queue_create( 0, &queue );
     //Chronometry
     real_Double_t tempo1, tempo2, t_transfer = 0.0;
     

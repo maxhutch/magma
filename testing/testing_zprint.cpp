@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
   
        @precisions normal z -> c d s
        @author Mark Gates
@@ -15,7 +15,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
                     hA[i + j*lda] = MAGMA_Z_MAKE( i + j*0.01, 0. );
                 }
             }
-            magma_zsetmatrix( M, N, hA, lda, dA, ldda );
+            magma_zsetmatrix( M, N, hA, lda, dA, ldda, opts.queue );
             
             printf( "A=" );
             magma_zprint( M, N, hA, lda );

@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">2.0.2</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -130,6 +130,10 @@ Functions</h2></td></tr>
 <tr class="separator:gaea8cceeefeea11fef84db50caa9c920b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga94d9027179add67dd93e4a54b03fbfa9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__daux3.html#ga94d9027179add67dd93e4a54b03fbfa9">magma_dlarfbx_gpu</a> (magma_int_t m, magma_int_t k, magmaDouble_ptr V, magma_int_t ldv, magmaDouble_ptr dT, magma_int_t ldt, magmaDouble_ptr c, magmaDouble_ptr dwork)</td></tr>
 <tr class="separator:ga94d9027179add67dd93e4a54b03fbfa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6a49fe1bdeaf4d87b4b861f5ea570952"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__daux3.html#ga6a49fe1bdeaf4d87b4b861f5ea570952">magma_dlarfb_gpu</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaDouble_const_ptr dV, magma_int_t lddv, magmaDouble_const_ptr dT, magma_int_t lddt, magmaDouble_ptr dC, magma_int_t lddc, magmaDouble_ptr dwork, magma_int_t ldwork)</td></tr>
+<tr class="separator:ga6a49fe1bdeaf4d87b4b861f5ea570952"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5730203c341568f54cff58f1325c2486"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__daux3.html#ga5730203c341568f54cff58f1325c2486">magma_dlarfb_gpu_gemm</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaDouble_const_ptr dV, magma_int_t lddv, magmaDouble_const_ptr dT, magma_int_t lddt, magmaDouble_ptr dC, magma_int_t lddc, magmaDouble_ptr dwork, magma_int_t ldwork, magmaDouble_ptr dworkvt, magma_int_t ldworkvt)</td></tr>
+<tr class="separator:ga5730203c341568f54cff58f1325c2486"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -319,6 +323,228 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
              (  1 v2 v3 )                     ( v3 v3 v3 v3  1 )
              (  0  1 v3 )
              (  0  0  1 )</pre> 
+</div>
+</div>
+<a class="anchor" id="ga6a49fe1bdeaf4d87b4b861f5ea570952"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dlarfb_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_side_t&#160;</td>
+          <td class="paramname"><em>side</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_direct_t&#160;</td>
+          <td class="paramname"><em>direct</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_storev_t&#160;</td>
+          <td class="paramname"><em>storev</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dV</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dC</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldwork</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__daux3.html#ga2c589f5116b8d526305ab2f676277fa2" title="DLARFB applies a real block reflector H or its transpose H^H to a DOUBLE PRECISION m by n matrix C...">magma_dlarfb_gpu_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5730203c341568f54cff58f1325c2486"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dlarfb_gpu_gemm </td>
+          <td>(</td>
+          <td class="paramtype">magma_side_t&#160;</td>
+          <td class="paramname"><em>side</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_direct_t&#160;</td>
+          <td class="paramname"><em>direct</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_storev_t&#160;</td>
+          <td class="paramname"><em>storev</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dV</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dC</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dworkvt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldworkvt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__daux3.html#gaea8cceeefeea11fef84db50caa9c920b" title="DLARFB applies a real block reflector H or its transpose H^H to a DOUBLE PRECISION m by n matrix C...">magma_dlarfb_gpu_gemm_q</a> </dd></dl>
+
 </div>
 </div>
 <a class="anchor" id="gaea8cceeefeea11fef84db50caa9c920b"></a>
@@ -803,7 +1029,7 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Feb 9 2016 16:06:37 for MAGMA by
+    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

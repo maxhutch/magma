@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">2.0.2</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -167,6 +167,14 @@ Functions</h2></td></tr>
 <tr class="separator:ga3c5b33b63effe20aa490ab47add6c3ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga04710cf7b290f85ace7bd58b6d91bc03"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sblas3.html#ga04710cf7b290f85ace7bd58b6d91bc03">magmablas_strtri_diag</a> (magma_uplo_t uplo, magma_diag_t diag, magma_int_t n, magmaFloat_const_ptr dA, magma_int_t ldda, magmaFloat_ptr d_dinvA)</td></tr>
 <tr class="separator:ga04710cf7b290f85ace7bd58b6d91bc03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga978bd75990f070a22193ac9d909e6d16"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sblas3.html#ga978bd75990f070a22193ac9d909e6d16">magma_sgetmatrix_1D_row_bcyclic</a> (magma_int_t m, magma_int_t n, magmaFloat_const_ptr const *dA, magma_int_t ldda, float *hA, magma_int_t lda, magma_int_t ngpu, magma_int_t nb)</td></tr>
+<tr class="separator:ga978bd75990f070a22193ac9d909e6d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa8fa1ce2138c0ee3bf220045074bf350"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sblas3.html#gaa8fa1ce2138c0ee3bf220045074bf350">magma_sgetmatrix_1D_col_bcyclic</a> (magma_int_t m, magma_int_t n, magmaFloat_const_ptr const *dA, magma_int_t ldda, float *hA, magma_int_t lda, magma_int_t ngpu, magma_int_t nb)</td></tr>
+<tr class="separator:gaa8fa1ce2138c0ee3bf220045074bf350"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabdb2e7d0b4d3d960be5bc1f233c8fcc5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sblas3.html#gabdb2e7d0b4d3d960be5bc1f233c8fcc5">magma_ssetmatrix_1D_row_bcyclic</a> (magma_int_t m, magma_int_t n, const float *hA, magma_int_t lda, magmaFloat_ptr *dA, magma_int_t ldda, magma_int_t ngpu, magma_int_t nb)</td></tr>
+<tr class="separator:gabdb2e7d0b4d3d960be5bc1f233c8fcc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa03cfbf410c2c4dc643e28ca04e610e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sblas3.html#gaa03cfbf410c2c4dc643e28ca04e610e9">magma_ssetmatrix_1D_col_bcyclic</a> (magma_int_t m, magma_int_t n, const float *hA, magma_int_t lda, magmaFloat_ptr *dA, magma_int_t ldda, magma_int_t ngpu, magma_int_t nb)</td></tr>
+<tr class="separator:gaa03cfbf410c2c4dc643e28ca04e610e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4cef0d84f7867320b8cd6d0425074946"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sblas3.html#ga4cef0d84f7867320b8cd6d0425074946">magma_sgemm_batched</a> (magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k, float alpha, float const *const *dA_array, magma_int_t ldda, float const *const *dB_array, magma_int_t lddb, float beta, float **dC_array, magma_int_t lddc, magma_int_t batchCount, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga4cef0d84f7867320b8cd6d0425074946"><td class="mdescLeft">&#160;</td><td class="mdescRight">SGEMM performs one of the matrix-matrix operations.  <a href="#ga4cef0d84f7867320b8cd6d0425074946">More...</a><br /></td></tr>
 <tr class="separator:ga4cef0d84f7867320b8cd6d0425074946"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -565,6 +573,258 @@ op( X ) = X**H,
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa8fa1ce2138c0ee3bf220045074bf350"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_sgetmatrix_1D_col_bcyclic </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_const_ptr const *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>hA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ngpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nb</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd>magma_sgetmatrix_1D_col_bcyclic_q </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga978bd75990f070a22193ac9d909e6d16"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_sgetmatrix_1D_row_bcyclic </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_const_ptr const *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>hA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ngpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nb</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd>magma_sgetmatrix_1D_row_bcyclic_q </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa03cfbf410c2c4dc643e28ca04e610e9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_ssetmatrix_1D_col_bcyclic </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float *&#160;</td>
+          <td class="paramname"><em>hA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ngpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nb</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd>magma_ssetmatrix_1D_col_bcyclic_q </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gabdb2e7d0b4d3d960be5bc1f233c8fcc5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_ssetmatrix_1D_row_bcyclic </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float *&#160;</td>
+          <td class="paramname"><em>hA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ngpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nb</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd>magma_ssetmatrix_1D_row_bcyclic_q </dd></dl>
 
 </div>
 </div>
@@ -3343,7 +3603,7 @@ op(A) = A^H.
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Feb 9 2016 16:06:37 for MAGMA by
+    <li class="footer">Generated on Mon May 2 2016 23:31:43 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

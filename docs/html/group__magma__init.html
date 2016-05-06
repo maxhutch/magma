@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.0</span>
+   &#160;<span id="projectnumber">2.0.2</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -148,7 +148,7 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 
 <p>Initializes the MAGMA library. </p>
-<p>Caches information about available CUDA devices. When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init.</p>
+<p>Caches information about available CUDA devices. When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init. When setting CUDA device flags, call cudaSetDeviceFlags before calling magma_init.</p>
 <p>Every magma_init call must be paired with a magma_finalize call. Only one thread needs to call magma_init and magma_finalize, but every thread may call it. If n threads call magma_init, the n-th call to magma_finalize will release resources.</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b" title="Frees information used by the MAGMA library. ">magma_finalize</a> </dd></dl>
 
@@ -177,7 +177,7 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Feb 9 2016 16:06:34 for MAGMA by
+    <li class="footer">Generated on Mon May 2 2016 23:31:40 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
-       @generated from control/zprint.cpp normal z -> s, Tue Feb  9 16:04:59 2016
+       @generated from control/zprint.cpp normal z -> s, Mon May  2 23:29:59 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define REAL
 
@@ -145,7 +145,15 @@ void magma_sprint_gpu(
     magma_int_t lda = m;
     float* A;
     magma_smalloc_cpu( &A, lda*n );
-    magma_sgetmatrix( m, n, dA, ldda, A, lda );
+
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
+    magma_sgetmatrix( m, n, dA, ldda, A, lda, queue );
+    
+    magma_queue_destroy( queue );
     
     magma_sprint( m, n, A, lda );
     

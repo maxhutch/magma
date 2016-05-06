@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -29,10 +29,8 @@
 int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
-    // set queue for old dense routines
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
-    magmablasGetKernelStream( &queue );
+    magma_queue_create( 0, &queue );
 
     const magmaDoubleComplex one  = MAGMA_Z_MAKE(1.0, 0.0);
     const magmaDoubleComplex zero = MAGMA_Z_MAKE(0.0, 0.0);
@@ -75,8 +73,9 @@ int main(  int argc, char** argv )
             cudot1 = magma_sync_wtime( queue );
             #endif
             for( int h=0; h<iters; h++) {
-                for( int l=0; l<num_vecs/2; l++)
-                    alpha = magma_zdotc(n, a.dval, 1, b.dval, 1);
+                for( int l=0; l<num_vecs/2; l++) {
+                    alpha = magma_zdotc( n, a.dval, 1, b.dval, 1, queue );
+                }
             }
             #ifdef ENABLE_TIMER
             cudot2 = magma_sync_wtime( queue );

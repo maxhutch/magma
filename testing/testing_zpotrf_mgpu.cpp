@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -43,6 +43,11 @@ int main( int argc, char** argv )
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
+    
+    magma_queue_t queues[ MagmaMaxAccelerators ] = { NULL };
+    for( int dev=0; dev < opts.ngpu; ++dev ) {
+        magma_queue_create( dev, &queues[dev] );
+    }
     
     printf("%% ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
     printf("%%   N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R||_F / ||A||_F\n");
@@ -99,11 +104,11 @@ int main( int argc, char** argv )
                =================================================================== */
             if ( opts.uplo == MagmaUpper ) {
                 ldda = magma_roundup( N, nb );
-                magma_zsetmatrix_1D_col_bcyclic( N, N, h_R, lda, d_lA, ldda, ngpu, nb );
+                magma_zsetmatrix_1D_col_bcyclic( N, N, h_R, lda, d_lA, ldda, ngpu, nb, queues );
             }
             else {
                 ldda = (1+N/(nb*ngpu))*nb;
-                magma_zsetmatrix_1D_row_bcyclic( N, N, h_R, lda, d_lA, ldda, ngpu, nb );
+                magma_zsetmatrix_1D_row_bcyclic( N, N, h_R, lda, d_lA, ldda, ngpu, nb, queues );
             }
 
             gpu_time = magma_wtime();
@@ -116,10 +121,10 @@ int main( int argc, char** argv )
             }
             
             if ( opts.uplo == MagmaUpper ) {
-                magma_zgetmatrix_1D_col_bcyclic( N, N, d_lA, ldda, h_R, lda, ngpu, nb );
+                magma_zgetmatrix_1D_col_bcyclic( N, N, d_lA, ldda, h_R, lda, ngpu, nb, queues );
             }
             else {
-                magma_zgetmatrix_1D_row_bcyclic( N, N, d_lA, ldda, h_R, lda, ngpu, nb );
+                magma_zgetmatrix_1D_row_bcyclic( N, N, d_lA, ldda, h_R, lda, ngpu, nb, queues );
             }
             
             /* =====================================================================
@@ -153,6 +158,10 @@ int main( int argc, char** argv )
         }
     }
 
+    for( int dev=0; dev < opts.ngpu; ++dev ) {
+        magma_queue_destroy( queues[dev] );
+    }
+    
     opts.cleanup();
     TESTING_FINALIZE();
     return status;

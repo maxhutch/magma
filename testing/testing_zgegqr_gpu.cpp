@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -107,18 +107,17 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
 
             lapackf77_zlacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
-            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             
             // warmup
             if ( opts.warmup ) {
                 magma_zgegqr_gpu( 1, M, N, d_A, ldda, dwork, h_work, &info );
-                magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+                magma_zsetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             }
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             magma_zgegqr_gpu( opts.version, M, N, d_A, ldda, dwork, h_rwork, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
@@ -128,7 +127,7 @@ int main( int argc, char** argv)
                        (int) info, magma_strerror( info ));
             }
 
-            magma_zgetmatrix( M, N, d_A, ldda, h_R, lda );
+            magma_zgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
 
             // Regenerate R
             // blasf77_zgemm("t", "n", &N, &N, &M, &c_one, h_R, &lda, h_A, &lda, &c_zero, h_rwork, &N);
@@ -138,7 +137,7 @@ int main( int argc, char** argv)
             blasf77_zaxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
             e5 = lapackf77_zlange("i", &M, &N, h_R, &lda, work) /
                  lapackf77_zlange("i", &M, &N, h_A, &lda, work);
-            magma_zgetmatrix( M, N, d_A, ldda, h_R, lda );
+            magma_zgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
  
             if ( opts.lapack ) {
                 /* =====================================================================

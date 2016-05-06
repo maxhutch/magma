@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zlascl.cpp normal z -> d, Tue Feb  9 16:06:03 2016
+       @generated from testing/testing_zlascl.cpp normal z -> d, Mon May  2 23:31:08 2016
        @author Mark Gates
 */
 
@@ -16,7 +16,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -109,12 +109,11 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_dsetmatrix( M, N, h_A, lda, d_A, ldda );
+            magma_dsetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            //magmablas_dlascl( uplo[iuplo], 1, 1, cfrom, cto, M-2, N-2, d_A+1+ldda, ldda, &info );  // inset by 1 row & col
-            magmablas_dlascl( uplo[iuplo], 1, 1, cfrom, cto, M, N, d_A, ldda, &info );
+            //magmablas_dlascl( uplo[iuplo], 1, 1, cfrom, cto, M-2, N-2, d_A+1+ldda, ldda, opts.queue, &info );  // inset by 1 row & col
+            magmablas_dlascl( uplo[iuplo], 1, 1, cfrom, cto, M, N, d_A, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -140,7 +139,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            magma_dgetmatrix( M, N, d_A, ldda, h_R, lda );
+            magma_dgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
             //magma_dprint( M, N, h_R, lda );
             
             blasf77_daxpy(&size, &c_neg_one, h_A, &ione, h_R, &ione);

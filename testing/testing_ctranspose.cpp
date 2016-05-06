@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_ztranspose.cpp normal z -> c, Tue Feb  9 16:06:04 2016
+       @generated from testing/testing_ztranspose.cpp normal z -> c, Mon May  2 23:31:10 2016
        @author Mark Gates
 
 */
@@ -17,7 +17,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"  // conj
 #include "testings.h"
@@ -95,7 +95,7 @@ int main( int argc, char** argv)
                     h_B[i + j*ldb] = MAGMA_C_MAKE( i + j/10000., j );
                 }
             }
-            magma_csetmatrix( N, M, h_B, ldb, d_B(0,0), lddb );
+            magma_csetmatrix( N, M, h_B, ldb, d_B(0,0), lddb, opts.queue );
             
             /* =====================================================================
                Performs operation using naive out-of-place algorithm
@@ -124,19 +124,18 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA, out-of-place
                =================================================================== */
-            magma_csetmatrix( M, N, h_A, lda, d_A(0,0), ldda );
-            magma_csetmatrix( N, M, h_B, ldb, d_B(0,0), lddb );
+            magma_csetmatrix( M, N, h_A, lda, d_A(0,0), ldda, opts.queue );
+            magma_csetmatrix( N, M, h_B, ldb, d_B(0,0), lddb, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             if ( trans[itran] == MagmaTrans ) {
-                //magmablas_ctranspose( M-2, N-2, d_A(1,1), ldda, d_B(1,1), lddb );  // inset by 1 row & col
-                magmablas_ctranspose( M, N, d_A(0,0), ldda, d_B(0,0), lddb );
+                //magmablas_ctranspose( M-2, N-2, d_A(1,1), ldda, d_B(1,1), lddb, opts.queue );  // inset by 1 row & col
+                magmablas_ctranspose( M, N, d_A(0,0), ldda, d_B(0,0), lddb, opts.queue );
             }
             #ifdef HAVE_CUBLAS
             else {
-                //magmablas_ctranspose_conj( M-2, N-2, d_A(1,1), ldda, d_B(1,1), lddb );  // inset by 1 row & col
-                magmablas_ctranspose_conj( M, N, d_A(0,0), ldda, d_B(0,0), lddb );
+                //magmablas_ctranspose_conj( M-2, N-2, d_A(1,1), ldda, d_B(1,1), lddb, opts.queue );  // inset by 1 row & col
+                magmablas_ctranspose_conj( M, N, d_A(0,0), ldda, d_B(0,0), lddb, opts.queue );
             }
             #endif
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
@@ -146,17 +145,17 @@ int main( int argc, char** argv)
                Performs operation using MAGMA, in-place
                =================================================================== */
             if ( M == N ) {
-                magma_csetmatrix( M, N, h_A, lda, d_A(0,0), ldda );
+                magma_csetmatrix( M, N, h_A, lda, d_A(0,0), ldda, opts.queue );
                 
                 gpu_time2 = magma_sync_wtime( opts.queue );
                 if ( trans[itran] == MagmaTrans ) {
-                    //magmablas_ctranspose_inplace( N-2, d_A(1,1), ldda );  // inset by 1 row & col
-                    magmablas_ctranspose_inplace( N, d_A(0,0), ldda );
+                    //magmablas_ctranspose_inplace( N-2, d_A(1,1), ldda, opts.queue );  // inset by 1 row & col
+                    magmablas_ctranspose_inplace( N, d_A(0,0), ldda, opts.queue );
                 }
                 #ifdef HAVE_CUBLAS
                 else {
-                    //magmablas_ctranspose_conj_inplace( N-2, d_A(1,1), ldda );  // inset by 1 row & col
-                    magmablas_ctranspose_conj_inplace( N, d_A(0,0), ldda );
+                    //magmablas_ctranspose_conj_inplace( N-2, d_A(1,1), ldda, opts.queue );  // inset by 1 row & col
+                    magmablas_ctranspose_conj_inplace( N, d_A(0,0), ldda, opts.queue );
                 }
                 #endif
                 gpu_time2 = magma_sync_wtime( opts.queue ) - gpu_time2;
@@ -168,13 +167,13 @@ int main( int argc, char** argv)
                =================================================================== */
             // check out-of-place transpose (d_B)
             size = ldb*M;
-            magma_cgetmatrix( N, M, d_B(0,0), lddb, h_R, ldb );
+            magma_cgetmatrix( N, M, d_B(0,0), lddb, h_R, ldb, opts.queue );
             blasf77_caxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
             error = lapackf77_clange("f", &N, &M, h_R, &ldb, work );
             
             if ( M == N ) {
                 // also check in-place tranpose (d_A)
-                magma_cgetmatrix( N, M, d_A(0,0), ldda, h_R, ldb );
+                magma_cgetmatrix( N, M, d_A(0,0), ldda, h_R, ldb, opts.queue );
                 blasf77_caxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
                 error2 = lapackf77_clange("f", &N, &M, h_R, &ldb, work );
     

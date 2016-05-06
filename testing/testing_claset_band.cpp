@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zlaset_band.cpp normal z -> c, Tue Feb  9 16:06:03 2016
+       @generated from testing/testing_zlaset_band.cpp normal z -> c, Mon May  2 23:31:08 2016
        @author Mark Gates
 */
 
@@ -16,7 +16,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -76,7 +76,7 @@ int main( int argc, char** argv)
                     h_A[i + j*lda] = MAGMA_C_MAKE( i + j/10000., j );
                 }
             }
-            magma_csetmatrix( M, N, h_A, lda, d_A, ldda );
+            magma_csetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation on CPU
@@ -110,12 +110,11 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             
             magma_int_t mm = M - 2*inset;
             magma_int_t nn = N - 2*inset;
-            magmablas_claset_band( uplo[iuplo], mm, nn, nb, offdiag, diag, d_A(inset,inset), ldda );
+            magmablas_claset_band( uplo[iuplo], mm, nn, nb, offdiag, diag, d_A(inset,inset), ldda, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
@@ -123,7 +122,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            magma_cgetmatrix( M, N, d_A, ldda, h_R, lda );
+            magma_cgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
             
             //printf( "h_R=" );  magma_cprint( M, N, h_R, lda );
             //printf( "h_A=" );  magma_cprint( M, N, h_A, lda );

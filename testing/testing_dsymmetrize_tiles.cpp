@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zsymmetrize_tiles.cpp normal z -> d, Tue Feb  9 16:06:04 2016
+       @generated from testing/testing_zsymmetrize_tiles.cpp normal z -> d, Mon May  2 23:31:09 2016
 
 */
 
@@ -16,7 +16,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -79,11 +79,10 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_dsymmetrize_tiles( opts.uplo, nb, d_A, ldda, ntile, mstride, nstride );
+            magmablas_dsymmetrize_tiles( opts.uplo, nb, d_A, ldda, ntile, mstride, nstride, opts.queue );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
@@ -111,7 +110,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            magma_dgetmatrix( N, N, d_A, ldda, h_R, lda );
+            magma_dgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
             
             blasf77_daxpy(&size, &c_neg_one, h_A, &ione, h_R, &ione);
             error = lapackf77_dlange("f", &N, &N, h_R, &lda, work);

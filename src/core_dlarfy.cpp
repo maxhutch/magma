@@ -6,7 +6,7 @@
  *
  *     @author Azzam Haidar
  *
- *     @generated from src/core_zlarfy.cpp normal z -> d, Tue Feb  9 16:05:18 2016
+ *     @generated from src/core_zlarfy.cpp normal z -> d, Mon May  2 23:30:20 2016
  *
  */
 #include "magma_internal.h"

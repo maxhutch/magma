@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.0.0) --
+   -- MAGMA (version 2.0.2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date February 2016
+   @date May 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from src/zgetf2_batched.cpp normal z -> d, Tue Feb  9 16:05:23 2016
+   @generated from src/zgetf2_batched.cpp normal z -> d, Mon May  2 23:30:25 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"

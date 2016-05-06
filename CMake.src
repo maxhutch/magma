@@ -114,7 +114,6 @@ src/slaex3_m.cpp
 src/sstedx_m.cpp
 src/sormtr_m.cpp
 src/sbulge_aux.cpp
-src/sbulge_applyQ.cpp
 src/sbulge_applyQ_v2.cpp
 src/sbulge_kernel.cpp
 src/sbulge_kernel_v2.cpp
@@ -363,7 +362,6 @@ src/dormtr.cpp
 src/dsytrd_mgpu.cpp
 src/dlatrd_mgpu.cpp
 src/dormtr_m.cpp
-src/dbulge_applyQ.cpp
 src/dbulge_applyQ_v2.cpp
 src/dbulge_kernel.cpp
 src/dbulge_kernel_v2.cpp
@@ -619,7 +617,6 @@ src/cheevd_m.cpp
 src/cheevdx_m.cpp
 src/cstedx_m.cpp
 src/cunmtr_m.cpp
-src/cbulge_applyQ.cpp
 src/cbulge_applyQ_v2.cpp
 src/cbulge_aux.cpp
 src/cbulge_kernel.cpp
@@ -918,7 +915,6 @@ src/dstedx_m.cpp
 src/zstedx_m.cpp
 src/zunmtr_m.cpp
 src/dbulge_aux.cpp
-src/zbulge_applyQ.cpp
 src/zbulge_applyQ_v2.cpp
 src/zbulge_aux.cpp
 src/zbulge_kernel.cpp

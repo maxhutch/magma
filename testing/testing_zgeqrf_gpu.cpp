@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -92,13 +92,13 @@ int main( int argc, char** argv)
             if ( opts.version == 1 || opts.version == 3 ) {
                 size = (2*min(M, N) + magma_roundup( N, 32 ) )*nb;
                 TESTING_MALLOC_DEV( dT, magmaDoubleComplex, size );
-                magmablas_zlaset( MagmaFull, size, 1, c_zero, c_zero, dT, size );
+                magmablas_zlaset( MagmaFull, size, 1, c_zero, c_zero, dT, size, opts.queue );
             }
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             lapackf77_zlacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
-            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -136,7 +136,7 @@ int main( int argc, char** argv)
                     // copy diagonal blocks of R back to A
                     for( int i=0; i < min_mn-nb; i += nb ) {
                         magma_int_t ib = min( min_mn-i, nb );
-                        magmablas_zlacpy( MagmaUpper, ib, ib, &dT[min_mn*nb + i*nb], nb, &d_A[ i + i*ldda ], ldda );
+                        magmablas_zlacpy( MagmaUpper, ib, ib, &dT[min_mn*nb + i*nb], nb, &d_A[ i + i*ldda ], ldda, opts.queue );
                     }
                 }
                 
@@ -146,7 +146,7 @@ int main( int argc, char** argv)
                    Only for version 2, which has LAPACK complaint output.
                    Or   for version 3, after restoring diagonal blocks of A above.
                    =================================================================== */
-                magma_zgetmatrix( M, N, d_A, ldda, h_R, lda );
+                magma_zgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
                 
                 magma_int_t ldq = M;
                 magma_int_t ldr = min_mn;
@@ -201,7 +201,7 @@ int main( int argc, char** argv)
                 blasf77_zgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_zero, b, &ione );
                 // copy to GPU
                 TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, M );
-                magma_zsetvector( M, b, 1, d_B, 1 );
+                magma_zsetvector( M, b, 1, d_B, 1, opts.queue );
 
                 if ( opts.version == 1 ) {
                     // allocate hwork
@@ -245,7 +245,7 @@ int main( int argc, char** argv)
                     printf( "Unknown version %d\n", (int) opts.version );
                     return -1;
                 }
-                magma_zgetvector( N, d_B, 1, x, 1 );
+                magma_zgetvector( N, d_B, 1, x, 1, opts.queue );
 
                 // compute r = Ax - b, saved in b
                 blasf77_zgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_neg_one, b, &ione );

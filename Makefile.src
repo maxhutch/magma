@@ -173,7 +173,6 @@ libmagma_ssrc := \
 	src/sstedx_m.cpp \
 	src/sormtr_m.cpp \
 	src/sbulge_aux.cpp \
-	src/sbulge_applyQ.cpp \
 	src/sbulge_applyQ_v2.cpp \
 	src/sbulge_kernel.cpp \
 	src/sbulge_kernel_v2.cpp \
@@ -424,7 +423,6 @@ libmagma_dsrc := \
 	src/dsytrd_mgpu.cpp \
 	src/dlatrd_mgpu.cpp \
 	src/dormtr_m.cpp \
-	src/dbulge_applyQ.cpp \
 	src/dbulge_applyQ_v2.cpp \
 	src/dbulge_kernel.cpp \
 	src/dbulge_kernel_v2.cpp \
@@ -682,7 +680,6 @@ libmagma_csrc := \
 	src/cheevdx_m.cpp \
 	src/cstedx_m.cpp \
 	src/cunmtr_m.cpp \
-	src/cbulge_applyQ.cpp \
 	src/cbulge_applyQ_v2.cpp \
 	src/cbulge_aux.cpp \
 	src/cbulge_kernel.cpp \

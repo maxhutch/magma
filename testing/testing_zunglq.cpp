@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> s d c
 
@@ -21,7 +21,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -89,13 +89,13 @@ int main( int argc, char** argv )
                Performs operation using MAGMA
                =================================================================== */
             // first, get LQ factors in both hA and hR
-            magma_zsetmatrix( m, n, hA, lda, dA, ldda );
+            magma_zsetmatrix( m, n, hA, lda, dA, ldda, opts.queue );
             magma_zgelqf_gpu( m, n, dA, ldda, tau, h_work, lwork, &info );
             if (info != 0) {
                 printf("magma_zgelqf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             }
-            magma_zgetmatrix( m, n, dA, ldda, hA, lda );
+            magma_zgetmatrix( m, n, dA, ldda, hA, lda, opts.queue );
             lapackf77_zlacpy( MagmaFullStr, &m, &n, hA, &lda, hR, &lda );
             
             gpu_time = magma_wtime();

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 */
 
 #ifndef MAGMA_TYPES_H
@@ -285,7 +285,7 @@ typedef struct magma_queue* magma_queue_t;
 // ----------------------------------------
 #define MAGMA_VERSION_MAJOR 2
 #define MAGMA_VERSION_MINOR 0
-#define MAGMA_VERSION_MICRO 0
+#define MAGMA_VERSION_MICRO 2
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
 #define MAGMA_VERSION_STAGE ""

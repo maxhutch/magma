@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgetri_gpu.cpp normal z -> c, Tue Feb  9 16:06:08 2016
+       @generated from testing/testing_zgetri_gpu.cpp normal z -> c, Mon May  2 23:31:13 2016
        @author Mark Gates
 */
 // includes, system
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -81,9 +81,9 @@ int main( int argc, char** argv )
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
             
             /* Factor the matrix. Both MAGMA and LAPACK will use this factor. */
-            magma_csetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_csetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             magma_cgetrf_gpu( N, N, d_A, ldda, ipiv, &info );
-            magma_cgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
+            magma_cgetmatrix( N, N, d_A, ldda, h_Ainv, lda, opts.queue );
             if (info != 0) {
                 printf("magma_cgetrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
@@ -91,7 +91,7 @@ int main( int argc, char** argv )
             
             // check for exact singularity
             //h_Ainv[ 10 + 10*lda ] = MAGMA_C_MAKE( 0.0, 0.0 );
-            //magma_csetmatrix( N, N, h_Ainv, lda, d_A, ldda );
+            //magma_csetmatrix( N, N, h_Ainv, lda, d_A, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -129,7 +129,7 @@ int main( int argc, char** argv )
                Check the result
                =================================================================== */
             if ( opts.check ) {
-                magma_cgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
+                magma_cgetmatrix( N, N, d_A, ldda, h_Ainv, lda, opts.queue );
                 
                 // compute 1-norm condition number estimate, following LAPACK's zget03
                 float normA, normAinv, rcond;

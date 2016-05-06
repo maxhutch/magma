@@ -1,20 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from src/zlarfb_gpu_gemm.cpp normal z -> c, Tue Feb  9 16:05:07 2016
+       @generated from src/zlarfb_gpu_gemm.cpp normal z -> c, Mon May  2 23:30:07 2016
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 
 /**
@@ -277,25 +272,3 @@ magma_clarfb_gpu_gemm_q(
 
     return info;
 } /* magma_clarfb */
-
-
-// ------------------------------------------------------------
-// define v1 interface
-#undef magma_clarfb_gpu_gemm
-
-extern "C" magma_int_t
-magma_clarfb_gpu_gemm(
-    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex_const_ptr dV,    magma_int_t lddv,
-    magmaFloatComplex_const_ptr dT,    magma_int_t lddt,
-    magmaFloatComplex_ptr dC,          magma_int_t lddc,
-    magmaFloatComplex_ptr dwork,       magma_int_t ldwork,
-    magmaFloatComplex_ptr dworkvt,     magma_int_t ldworkvt )
-{
-    return magma_clarfb_gpu_gemm_q( side, trans, direct, storev,
-                                    m, n, k,
-                                    dV, lddv, dT, lddt, dC, lddc,
-                                    dwork, ldwork, dworkvt, ldworkvt,
-                                    magmablasGetQueue() );
-}

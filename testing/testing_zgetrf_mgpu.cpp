@@ -1,9 +1,9 @@
 /*
-    -- clMAGMA (version 2.0.0) --
+    -- clMAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -168,6 +168,11 @@ int main( int argc, char** argv )
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_queue_create( dev, &queues[dev] );
+    }
+    
     printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 2 ) {
         printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
@@ -229,7 +234,7 @@ int main( int argc, char** argv )
                Performs operation using MAGMA
                =================================================================== */
             init_matrix( M, N, h_A, lda );
-            magma_zsetmatrix_1D_col_bcyclic( M, N, h_A, lda, d_lA, ldda, ngpu, nb );
+            magma_zsetmatrix_1D_col_bcyclic( M, N, h_A, lda, d_lA, ldda, ngpu, nb, queues );
 
             gpu_time = magma_wtime();
             magma_zgetrf_mgpu( ngpu, M, N, d_lA, ldda, ipiv, &info );
@@ -240,7 +245,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
                        
-            magma_zgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_A, lda, ngpu, nb );
+            magma_zgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_A, lda, ngpu, nb, queues );
     
             /* =====================================================================
                Check the factorization
@@ -280,6 +285,10 @@ int main( int argc, char** argv )
         }
     }
 
+    for( int dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_queue_destroy( queues[dev] );
+    }
+    
     opts.cleanup();
     TESTING_FINALIZE();
     return status;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        
@@ -17,7 +17,7 @@
 #include <math.h>
 
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -73,8 +73,8 @@ int main(int argc, char **argv)
             ldwork = ldda*blocks;
             TESTING_MALLOC_DEV( dwork, magmaDoubleComplex, ldwork );
             
-            magmablas_zlaset( MagmaFull, ldwork, 1, MAGMA_Z_NAN, MAGMA_Z_NAN, dwork, ldwork );
-            magmablas_zlaset( MagmaFull, ldda,   N, MAGMA_Z_NAN, MAGMA_Z_NAN, dA,    ldda   );
+            magmablas_zlaset( MagmaFull, ldwork, 1, MAGMA_Z_NAN, MAGMA_Z_NAN, dwork, ldwork, opts.queue );
+            magmablas_zlaset( MagmaFull, ldda,   N, MAGMA_Z_NAN, MAGMA_Z_NAN, dA,    ldda,   opts.queue );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, A );
@@ -98,23 +98,22 @@ int main(int argc, char **argv)
                Performs operation using MAGMABLAS
                =================================================================== */
             #ifdef HAVE_CUBLAS
-                magma_zsetmatrix( N, N, A, lda, dA, ldda );
-                magma_zsetvector( N, X, incx, dX, incx );
-                magma_zsetvector( N, Y, incy, dY, incy );
+                magma_zsetmatrix( N, N, A, lda, dA, ldda, opts.queue );
+                magma_zsetvector( N, X, incx, dX, incx, opts.queue );
+                magma_zsetvector( N, Y, incy, dY, incy, opts.queue );
                 
-                magmablasSetKernelStream( opts.queue );
                 magma_time = magma_sync_wtime( opts.queue );
                 if ( opts.version == 1 ) {
                     magmablas_zsymv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork, opts.queue );
                 }
                 else {
                     // non-work interface (has added overhead)
-                    magmablas_zsymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+                    magmablas_zsymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, opts.queue );
                 }
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
-                magma_zgetvector( N, dY, incy, Ymagma, incy );
+                magma_zgetvector( N, dY, incy, Ymagma, incy, opts.queue );
             #endif
             
             /* =====================================================================

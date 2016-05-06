@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_ztrsm_batched.cpp normal z -> s, Tue Feb  9 16:06:16 2016
+       @generated from testing/testing_ztrsm_batched.cpp normal z -> s, Mon May  2 23:31:22 2016
        @author Chongxiao Cao
        @author Tingxing Dong
        @author Azzam Haidar
@@ -19,11 +19,11 @@
 #include <cuda.h>  // for CUDA_VERSION
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
-#include "batched_kernel_param.h"
+#include "batched_kernel_param.h"  // for TRI_NB; TODO: in control
+#include "testings.h"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -138,8 +138,8 @@ int main( int argc, char** argv)
             magma_sset_pointer( dwork_array, dwork, lddb, 0, 0, dwork_batchSize, batchCount, opts.queue );
             magma_sset_pointer( dinvA_array, dinvA, magma_roundup( Ak, TRI_NB ), 0, 0, dinvA_batchSize, batchCount, opts.queue );
 
-            memset(h_Bmagma, 0, batchCount*ldb*N*sizeof(float));
-            magmablas_slaset( MagmaFull, lddb, N*batchCount, c_zero, c_zero, dwork, lddb);
+            memset( h_Bmagma, 0, batchCount*ldb*N*sizeof(float) );
+            magmablas_slaset( MagmaFull, lddb, N*batchCount, c_zero, c_zero, dwork, lddb, opts.queue );
 
             /* Initialize the matrices */
             /* Factor A into LU to get well-conditioned triangular matrix.
@@ -162,8 +162,8 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_ssetmatrix( Ak, Ak*batchCount, h_A, lda, d_A, ldda );
-            magma_ssetmatrix( M,  N*batchCount, h_B, ldb, d_B, lddb );
+            magma_ssetmatrix( Ak, Ak*batchCount, h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetmatrix( M,  N*batchCount, h_B, ldb, d_B, lddb, opts.queue );
 
             magma_sset_pointer( d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue );
             magma_sset_pointer( d_B_array, d_B, lddb, 0, 0, lddb*N, batchCount, opts.queue );
@@ -183,7 +183,7 @@ int main( int argc, char** argv)
                     1, batchCount, opts.queue);
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
-                magma_sgetmatrix( M, N*batchCount, dwork, lddb, h_Bmagma, ldb );
+                magma_sgetmatrix( M, N*batchCount, dwork, lddb, h_Bmagma, ldb, opts.queue );
             #else
                 magmablas_strsm_batched(
                     opts.side, opts.uplo, opts.transA, opts.diag,
@@ -193,13 +193,13 @@ int main( int argc, char** argv)
                     batchCount, opts.queue );
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
-                magma_sgetmatrix( M, N*batchCount, d_B, lddb, h_Bmagma, ldb );
+                magma_sgetmatrix( M, N*batchCount, d_B, lddb, h_Bmagma, ldb, opts.queue );
             #endif
        
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_ssetmatrix( M, N*batchCount, h_B, ldb, d_B, lddb );
+            magma_ssetmatrix( M, N*batchCount, h_B, ldb, d_B, lddb, opts.queue );
             magma_sset_pointer( d_B_array, d_B, lddb, 0, 0, lddb*N, batchCount, opts.queue );
 
             // CUBLAS version <= 6.0 has float **            dA_array, no cast needed.
@@ -217,7 +217,7 @@ int main( int argc, char** argv)
                 cublas_perf = gflops / cublas_time;
             #endif
 
-            magma_sgetmatrix( M, N*batchCount, d_B, lddb, h_Bcublas, ldb );
+            magma_sgetmatrix( M, N*batchCount, d_B, lddb, h_Bcublas, ldb, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

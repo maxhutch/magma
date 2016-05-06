@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> s d c
        
@@ -19,7 +19,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -46,7 +46,7 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
 
-    magma_queue_t queues[MagmaMaxGPUs][20];
+    magma_queue_t queues[MagmaMaxGPUs][20], queues0[MagmaMaxGPUs];
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -84,15 +84,16 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_CPU( hR2, magmaDoubleComplex, lda*n   );
                 TESTING_MALLOC_CPU( hV,  magmaDoubleComplex, lda*k*2 );
                 //TESTING_MALLOC_CPU( hW,  magmaDoubleComplex, lda*k   );
-                for( int d = 0; d < ngpu; ++d ) {
+                for( int dev = 0; dev < ngpu; ++dev ) {
                     magma_int_t nlocal = ((n / nb) / ngpu + 1) * nb;
-                    magma_setdevice( d );
-                    TESTING_MALLOC_DEV( dA[d], magmaDoubleComplex, ldda*nlocal );
-                    TESTING_MALLOC_DEV( dV[d], magmaDoubleComplex, ldda*k*2    );
-                    //TESTING_MALLOC_DEV( dW[d], magmaDoubleComplex, ldda*k      );
+                    magma_setdevice( dev );
+                    TESTING_MALLOC_DEV( dA[dev], magmaDoubleComplex, ldda*nlocal );
+                    TESTING_MALLOC_DEV( dV[dev], magmaDoubleComplex, ldda*k*2    );
+                    //TESTING_MALLOC_DEV( dW[dev], magmaDoubleComplex, ldda*k      );
                     for( int i = 0; i < nqueue; ++i ) {
-                        magma_queue_create( &queues[d][i] );
+                        magma_queue_create( dev, &queues[dev][i] );
                     }
+                    queues0[dev] = queues[dev][0];
                 }
                 
                 size = lda*n;
@@ -105,12 +106,12 @@ int main( int argc, char** argv)
                 /* ====================================================================
                    Performs operation using MAGMA
                    =================================================================== */
-                magma_zsetmatrix_1D_col_bcyclic( n, n, hA, lda, dA, ldda, ngpu, nb );
-                for( int d = 0; d < ngpu; ++d ) {
-                    magma_setdevice( d );
-                    dW[d] = dV[d] + ldda*k;
-                    magma_zsetmatrix( n, k, hV, lda, dV[d], ldda );
-                    magma_zsetmatrix( n, k, hW, lda, dW[d], ldda );
+                magma_zsetmatrix_1D_col_bcyclic( n, n, hA, lda, dA, ldda, ngpu, nb, queues0 );
+                for( int dev = 0; dev < ngpu; ++dev ) {
+                    magma_setdevice( dev );
+                    dW[dev] = dV[dev] + ldda*k;
+                    magma_zsetmatrix( n, k, hV, lda, dV[dev], ldda, opts.queue );
+                    magma_zsetmatrix( n, k, hW, lda, dW[dev], ldda, opts.queue );
                 }
                 
                 gpu_time = magma_sync_wtime(0);
@@ -148,7 +149,7 @@ int main( int argc, char** argv)
                 gpu_perf = gflops / gpu_time;
                 
                 // Get dA back to the CPU to compare with the CPU result.
-                magma_zgetmatrix_1D_col_bcyclic( n, n, dA, ldda, hR, lda, ngpu, nb );
+                magma_zgetmatrix_1D_col_bcyclic( n, n, dA, ldda, hR, lda, ngpu, nb, queues0 );
                 
                 /* =====================================================================
                    Performs operation using LAPACK
@@ -192,13 +193,13 @@ int main( int argc, char** argv)
                 TESTING_FREE_CPU( hR2 );
                 TESTING_FREE_CPU( hV  );
                 //TESTING_FREE_CPU( hW );
-                for( int d = 0; d < ngpu; ++d ) {
-                    magma_setdevice( d );
-                    TESTING_FREE_DEV( dA[d] );
-                    TESTING_FREE_DEV( dV[d] );
-                    //TESTING_FREE_DEV( dW[d] );
+                for( int dev = 0; dev < ngpu; ++dev ) {
+                    magma_setdevice( dev );
+                    TESTING_FREE_DEV( dA[dev] );
+                    TESTING_FREE_DEV( dV[dev] );
+                    //TESTING_FREE_DEV( dW[dev] );
                     for( int i = 0; i < nqueue; ++i ) {
-                        magma_queue_destroy( queues[d][i] );
+                        magma_queue_destroy( queues[dev][i] );
                     }
                 }
                 fflush( stdout );

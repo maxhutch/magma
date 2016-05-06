@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -108,16 +108,16 @@ int main( int argc, char** argv )
             // C is full, m x n
             size = ldc*n;
             lapackf77_zlarnv( &ione, ISEED, &size, C );
-            magma_zsetmatrix( m, n, C, ldc, dC, ldc );
+            magma_zsetmatrix( m, n, C, ldc, dC, ldc, opts.queue );
             
             // A is m x k (left) or n x k (right)
             size = lda*k;
             lapackf77_zlarnv( &ione, ISEED, &size, A );
             
             // compute QR factorization to get Householder vectors in dA, tau, dT
-            magma_zsetmatrix( mm, k, A,  lda, dA, lda );
+            magma_zsetmatrix( mm, k, A,  lda, dA, lda, opts.queue );
             magma_zgeqrf_gpu( mm, k, dA, lda, tau, dT, &info );
-            magma_zgetmatrix( mm, k, dA, lda, A,  lda );
+            magma_zgetmatrix( mm, k, dA, lda, A,  lda, opts.queue );
             if (info != 0) {
                 printf("magma_zgeqrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
@@ -157,10 +157,10 @@ int main( int argc, char** argv )
             
             // zunmqr2 takes a copy of dA in CPU memory
             if ( opts.version == 2 ) {
-                magma_zgetmatrix( mm, k, dA, lda, A, lda );
+                magma_zgetmatrix( mm, k, dA, lda, A, lda, opts.queue );
             }
             
-            magmablasSetKernelStream( opts.queue );
+            // TODO: sync still needed? on what queue?
             gpu_time = magma_sync_wtime( opts.queue );  // sync needed for L,N and R,T cases
             if ( opts.version == 1 ) {
                 magma_zunmqr_gpu( side[iside], trans[itran],
@@ -179,7 +179,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_zgetmatrix( m, n, dC, ldc, R, ldc );
+            magma_zgetmatrix( m, n, dC, ldc, R, ldc, opts.queue );
             
             /* =====================================================================
                compute relative error |QC_magma - QC_lapack| / |QC_lapack|

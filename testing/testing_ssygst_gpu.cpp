@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
 
-       @generated from testing/testing_zhegst_gpu.cpp normal z -> s, Tue Feb  9 16:06:14 2016
+       @generated from testing/testing_zhegst_gpu.cpp normal z -> s, Mon May  2 23:31:19 2016
 
 */
 
@@ -19,7 +19,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -82,8 +82,8 @@ int main( int argc, char** argv)
                        (int) info, magma_strerror( info ));
             }
             
-            magma_ssetmatrix( N, N, h_A, lda, d_A, ldda );
-            magma_ssetmatrix( N, N, h_B, lda, d_B, ldda );
+            magma_ssetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetmatrix( N, N, h_B, lda, d_B, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -109,7 +109,7 @@ int main( int argc, char** argv)
                            (int) info, magma_strerror( info ));
                 }
                 
-                magma_sgetmatrix( N, N, d_A, ldda, h_R, lda );
+                magma_sgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
                 
                 blasf77_saxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
                 Anorm = safe_lapackf77_slansy("f", lapack_uplo_const(opts.uplo), &N, h_A, &lda, work );

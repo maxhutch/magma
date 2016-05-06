@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
   
-       @generated from testing/testing_znan_inf.cpp normal z -> d, Tue Feb  9 16:06:04 2016
+       @generated from testing/testing_znan_inf.cpp normal z -> d, Mon May  2 23:31:09 2016
        @author Mark Gates
 */
 // includes, system
@@ -15,7 +15,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -197,7 +197,7 @@ int main( int argc, char** argv)
             //printf( "inf %g + %gi\n", MAGMA_D_REAL( MAGMA_D_INF ), MAGMA_D_REAL( MAGMA_D_INF ) );
             //magma_dprint( M, N, hA, lda );
             
-            magma_dsetmatrix( M, N, hA, lda, dA, ldda );
+            magma_dsetmatrix( M, N, hA, lda, dA, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA

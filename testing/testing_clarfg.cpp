@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zlarfg.cpp normal z -> c, Tue Feb  9 16:06:03 2016
+       @generated from testing/testing_zlarfg.cpp normal z -> c, Mon May  2 23:31:08 2016
        @author Mark Gates
 */
 
@@ -15,7 +15,7 @@
 #include <math.h>
 
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -65,18 +65,17 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_csetmatrix( N, nb, h_x, N, d_x, ldda );
+            magma_csetmatrix( N, nb, h_x, N, d_x, ldda, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             for( int j = 0; j < nb; ++j ) {
-                magmablas_clarfg( N, &d_x[0+j*ldda], &d_x[1+j*ldda], ione, &d_tau[j] );
+                magmablas_clarfg( N, &d_x[0+j*ldda], &d_x[1+j*ldda], ione, &d_tau[j], opts.queue );
             }
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             
-            magma_cgetmatrix( N, nb, d_x, ldda, h_x2, N );
-            magma_cgetvector( nb, d_tau, 1, h_tau2, 1 );
+            magma_cgetmatrix( N, nb, d_x, ldda, h_x2, N, opts.queue );
+            magma_cgetvector( nb, d_tau, 1, h_tau2, 1, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK

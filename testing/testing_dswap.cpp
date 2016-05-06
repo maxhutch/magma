@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zswap.cpp normal z -> d, Tue Feb  9 16:06:04 2016
+       @generated from testing/testing_zswap.cpp normal z -> d, Mon May  2 23:31:09 2016
        @author Mark Gates
 */
 // includes, system
@@ -16,7 +16,7 @@
 #include <assert.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -142,10 +142,9 @@ int main( int argc, char** argv)
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
-            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
+            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
             time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
@@ -164,8 +163,8 @@ int main( int argc, char** argv)
                     blasf77_dswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
-            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
+            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda, opts.queue );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -173,8 +172,8 @@ int main( int argc, char** argv)
             /* Column Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
-            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
+            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
@@ -194,8 +193,8 @@ int main( int argc, char** argv)
                     blasf77_dswap( &N, h_A1+j, &lda, h_A2+(ipiv[j]-1), &lda);
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
-            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
+            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda, opts.queue );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -207,13 +206,13 @@ int main( int argc, char** argv)
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
-            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
+            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    magmablas_dswap( N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1);
+                    magmablas_dswap( N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1, opts.queue );
                 }
             }
             time = magma_sync_wtime( opts.queue ) - time;
@@ -224,8 +223,8 @@ int main( int argc, char** argv)
                     blasf77_dswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
-            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
+            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda, opts.queue );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -233,13 +232,13 @@ int main( int argc, char** argv)
             /* Column Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
-            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
+            magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    magmablas_dswap( N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda );
+                    magmablas_dswap( N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda, opts.queue );
                 }
             }
             time = magma_sync_wtime( opts.queue ) - time;
@@ -250,8 +249,8 @@ int main( int argc, char** argv)
                     blasf77_dswap( &N, h_A1+j, &lda, h_A2+(ipiv[j]-1), &lda);
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
-            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
+            magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda, opts.queue );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -264,21 +263,21 @@ int main( int argc, char** argv)
                 /* Row Major */
                 init_matrix( N, N, h_A1, lda, 0 );
                 init_matrix( N, N, h_A2, lda, 100 );
-                magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
-                magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+                magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
+                magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda, opts.queue );
                 
                 time = magma_sync_wtime( opts.queue );
-                magmablas_dswapblk( MagmaRowMajor, N, d_A1(0,0), ldda, d_A2(0,0), ldda, 1, nb, ipiv, 1, 0);
+                magmablas_dswapblk( MagmaRowMajor, N, d_A1(0,0), ldda, d_A2(0,0), ldda, 1, nb, ipiv, 1, 0, opts.queue );
                 time = magma_sync_wtime( opts.queue ) - time;
                 row_perf2 = gbytes / time;
                 
                 for( j=0; j < nb; j++) {
                     if ( j != (ipiv[j]-1)) {
-                        blasf77_dswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione);
+                        blasf77_dswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione );
                     }
                 }
-                magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
-                magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+                magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
+                magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda, opts.queue );
                 check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                           diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
                 shift *= 2;
@@ -286,21 +285,21 @@ int main( int argc, char** argv)
                 /* Column Major */
                 init_matrix( N, N, h_A1, lda, 0 );
                 init_matrix( N, N, h_A2, lda, 100 );
-                magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
-                magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+                magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
+                magma_dsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda, opts.queue );
                 
                 time = magma_sync_wtime( opts.queue );
-                magmablas_dswapblk( MagmaColMajor, N, d_A1(0,0), ldda, d_A2(0,0), ldda, 1, nb, ipiv, 1, 0);
+                magmablas_dswapblk( MagmaColMajor, N, d_A1(0,0), ldda, d_A2(0,0), ldda, 1, nb, ipiv, 1, 0, opts.queue );
                 time = magma_sync_wtime( opts.queue ) - time;
                 col_perf2 = gbytes / time;
                 
                 for( j=0; j < nb; j++) {
                     if ( j != (ipiv[j]-1)) {
-                        blasf77_dswap( &N, h_A1(j,0), &lda, h_A2(ipiv[j]-1,0), &lda);
+                        blasf77_dswap( &N, h_A1(j,0), &lda, h_A2(ipiv[j]-1,0), &lda );
                     }
                 }
-                magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
-                magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+                magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
+                magma_dgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda, opts.queue );
                 check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                           diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
                 shift *= 2;
@@ -312,19 +311,19 @@ int main( int argc, char** argv)
             
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
-            magmablas_dlaswp( N, d_A1(0,0), ldda, 1, nb, ipiv, 1);
+            magmablas_dlaswp( N, d_A1(0,0), ldda, 1, nb, ipiv, 1, opts.queue );
             time = magma_sync_wtime( opts.queue ) - time;
             row_perf4 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_dswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione);
+                    blasf77_dswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione );
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
 
@@ -334,20 +333,20 @@ int main( int argc, char** argv)
             
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
-            magma_setvector( nb, sizeof(magma_int_t), ipiv, 1, d_ipiv(0), 1 );
-            magmablas_dlaswp2( N, d_A1(0,0), ldda, 1, nb, d_ipiv(0), 1 );
+            magma_isetvector( nb, ipiv, 1, d_ipiv(0), 1, opts.queue );
+            magmablas_dlaswp2( N, d_A1(0,0), ldda, 1, nb, d_ipiv(0), 1, opts.queue );
             time = magma_sync_wtime( opts.queue ) - time;
             row_perf7 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_dswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione);
+                    blasf77_dswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione );
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
 
@@ -357,38 +356,38 @@ int main( int argc, char** argv)
             
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
-            magmablas_dlaswpx( N, d_A1(0,0), ldda, 1, 1, nb, ipiv, 1);
+            magmablas_dlaswpx( N, d_A1(0,0), ldda, 1, 1, nb, ipiv, 1, opts.queue );
             time = magma_sync_wtime( opts.queue ) - time;
             row_perf5 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_dswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione);
+                    blasf77_dswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione );
                 }
             }
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
             
             /* Col Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_dsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda, opts.queue );
             
             time = magma_sync_wtime( opts.queue );
-            magmablas_dlaswpx( N, d_A1(0,0), 1, ldda, 1, nb, ipiv, 1);
+            magmablas_dlaswpx( N, d_A1(0,0), 1, ldda, 1, nb, ipiv, 1, opts.queue );
             time = magma_sync_wtime( opts.queue ) - time;
             col_perf5 = gbytes / time;
             
             /* LAPACK swap on CPU for comparison */
             time = magma_wtime();
-            lapackf77_dlaswp( &N, h_A1, &lda, &ione, &nb, ipiv, &ione);
+            lapackf77_dlaswp( &N, h_A1, &lda, &ione, &nb, ipiv, &ione );
             time = magma_wtime() - time;
             cpu_perf = gbytes / time;
             
-            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_dgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda, opts.queue );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
 
@@ -397,13 +396,13 @@ int main( int argc, char** argv)
              */
             
             time = magma_sync_wtime( opts.queue );
-            magma_dcopymatrix( N, nb, d_A1(0,0), ldda, d_A2(0,0), ldda );
+            magma_dcopymatrix( N, nb, d_A1(0,0), ldda, d_A2(0,0), ldda, opts.queue );
             time = magma_sync_wtime( opts.queue ) - time;
             // copy reads 1 matrix and writes 1 matrix, so has half gbytes of swap
             col_perf6 = 0.5 * gbytes / time;
             
             time = magma_sync_wtime( opts.queue );
-            magma_dcopymatrix( nb, N, d_A1(0,0), ldda, d_A2(0,0), ldda );
+            magma_dcopymatrix( nb, N, d_A1(0,0), ldda, d_A2(0,0), ldda, opts.queue );
             time = magma_sync_wtime( opts.queue ) - time;
             // copy reads 1 matrix and writes 1 matrix, so has half gbytes of swap
             row_perf6 = 0.5 * gbytes / time;

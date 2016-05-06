@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> s d c
 
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -110,8 +110,8 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             gpu_time = magma_wtime();
             magma_zgels_gpu( MagmaNoTrans, M, N, nrhs, d_A, ldda,
@@ -124,7 +124,7 @@ int main( int argc, char** argv )
             }
             
             // compute the residual
-            magma_zgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
+            magma_zgetmatrix( N, nrhs, d_B, lddb, h_X, ldb, opts.queue );
             blasf77_zgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
                            &c_neg_one, h_A, &lda,
                                        h_X, &ldb,

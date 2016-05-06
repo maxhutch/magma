@@ -1,4 +1,4 @@
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_mangling.h"
 
 #ifdef __cplusplus
@@ -6,11 +6,11 @@ extern "C" {
 #endif
 
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 */
 
 #define magmaf_init FORTRAN_NAME( magmaf_init, MAGMAF_INIT )

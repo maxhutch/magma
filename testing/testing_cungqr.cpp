@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zungqr.cpp normal z -> c, Tue Feb  9 16:06:12 2016
+       @generated from testing/testing_zungqr.cpp normal z -> c, Mon May  2 23:31:17 2016
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -21,7 +21,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -98,15 +98,15 @@ int main( int argc, char** argv )
                =================================================================== */
             // first, get QR factors in both hA and hR
             // okay that magma_cgeqrf_gpu has special structure for R; R isn't used here.
-            magma_csetmatrix( m, n, hA, lda, dA, ldda );
+            magma_csetmatrix( m, n, hA, lda, dA, ldda, opts.queue );
             magma_cgeqrf_gpu( m, n, dA, ldda, tau, dT, &info );
             if (info != 0) {
                 printf("magma_cgeqrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             }
-            magma_cgetmatrix( m, n, dA, ldda, hA, lda );
+            magma_cgetmatrix( m, n, dA, ldda, hA, lda, opts.queue );
             lapackf77_clacpy( MagmaFullStr, &m, &n, hA, &lda, hR, &lda );
-            magma_cgetmatrix( nb, min_mn, dT, nb, hT, nb );  // for multi GPU
+            magma_cgetmatrix( nb, min_mn, dT, nb, hT, nb, opts.queue );  // for multi GPU
             
             gpu_time = magma_wtime();
             if (opts.version == 1) {

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions mixed zc -> ds
 
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -111,8 +111,8 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &size, h_B );
             lapackf77_zlacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
-            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             //=====================================================================
             //              Mixed Precision Iterative Refinement - GPU
@@ -129,7 +129,7 @@ int main( int argc, char** argv)
             }
             
             // compute the residual
-            magma_zgetmatrix( N, nrhs, d_X, lddx, h_X, ldb );
+            magma_zgetmatrix( N, nrhs, d_X, lddx, h_X, ldb, opts.queue );
             blasf77_zgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
                            &c_neg_one, h_A, &lda,
                                        h_X, &ldb,
@@ -139,8 +139,8 @@ int main( int argc, char** argv)
             //=====================================================================
             //                 Double Precision Solve
             //=====================================================================
-            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             gpu_time = magma_wtime();
             magma_zgels_gpu( MagmaNoTrans, M, N, nrhs, d_A, ldda,
@@ -151,15 +151,15 @@ int main( int argc, char** argv)
             //=====================================================================
             //                 Single Precision Solve
             //=====================================================================
-            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             /* The allocation of d_SA and d_SB is done here to avoid
              * to double the memory used on GPU with zcgeqrsv */
             TESTING_MALLOC_DEV( d_SA, magmaFloatComplex, ldda*N    );
             TESTING_MALLOC_DEV( d_SB, magmaFloatComplex, lddb*nrhs );
-            magmablas_zlag2c( M, N,    d_A, ldda, d_SA, ldda, &info );
-            magmablas_zlag2c( N, nrhs, d_B, lddb, d_SB, lddb, &info );
+            magmablas_zlag2c( M, N,    d_A, ldda, d_SA, ldda, opts.queue, &info );
+            magmablas_zlag2c( N, nrhs, d_B, lddb, d_SB, lddb, opts.queue, &info );
             
             gpu_time = magma_wtime();
             magma_cgels_gpu( MagmaNoTrans, M, N, nrhs, d_SA, ldda,

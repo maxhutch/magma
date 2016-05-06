@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd2_gpu.cpp normal z -> d, Tue Feb  9 16:05:13 2016
+       @generated from src/zhetrd2_gpu.cpp normal z -> d, Mon May  2 23:30:14 2016
 
 */
 #include "magma_internal.h"

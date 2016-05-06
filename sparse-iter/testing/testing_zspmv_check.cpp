@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -32,7 +32,7 @@ int main(  int argc, char** argv )
     magma_int_t info = 0;
     TESTING_INIT();
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
+    magma_queue_create( 0, &queue );
     
     magmaDoubleComplex one = MAGMA_Z_MAKE(1.0, 0.0);
     magmaDoubleComplex zero = MAGMA_Z_MAKE(0.0, 0.0);
@@ -66,7 +66,7 @@ int main(  int argc, char** argv )
             CHECK( magma_zprint_matrix( B_d, queue ));
         
         double res;
-        res = magma_dznrm2(n, b.dval, 1 );
+        res = magma_dznrm2(n, b.dval, 1, queue );
         printf("norm0: %f\n", res);
         
         CHECK( magma_z_spmv( one, B_d, x, zero, b, queue ));         //  b = A x
@@ -74,7 +74,7 @@ int main(  int argc, char** argv )
         CHECK( magma_zprint_vector( b, 0, 100, queue ));
         CHECK( magma_zprint_vector( b, b.num_rows-10, 10, queue ));
 
-        res = magma_dznrm2(n, b.dval, 1 );
+        res = magma_dznrm2( n, b.dval, 1, queue );
         printf("norm: %f\n", res);
 
         

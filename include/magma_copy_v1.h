@@ -1,6 +1,10 @@
 #ifndef MAGMA_COPY_V1_H
 #define MAGMA_COPY_V1_H
 
+#ifdef MAGMA_NO_V1
+#error "Since MAGMA_NO_V1 is defined, magma.h is invalid; use magma_v2.h"
+#endif
+
 #include "magma_types.h"
 
 #ifdef __cplusplus

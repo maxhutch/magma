@@ -1,20 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zlarfb_gpu.cpp normal z -> s, Tue Feb  9 16:05:07 2016
+       @generated from src/zlarfb_gpu.cpp normal z -> s, Mon May  2 23:30:07 2016
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 
 /**
@@ -263,22 +258,3 @@ magma_slarfb_gpu_q(
 
     return info;
 } /* magma_slarfb */
-
-
-// ------------------------------------------------------------
-// define v1 interface
-#undef magma_slarfb_gpu
-
-extern "C" magma_int_t
-magma_slarfb_gpu(
-    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloat_const_ptr dV,    magma_int_t lddv,
-    magmaFloat_const_ptr dT,    magma_int_t lddt,
-    magmaFloat_ptr dC,          magma_int_t lddc,
-    magmaFloat_ptr dwork,       magma_int_t ldwork )
-{
-    return magma_slarfb_gpu_q( side, trans, direct, storev,
-                               m, n, k,
-                               dV, lddv, dT, lddt, dC, lddc, dwork, ldwork, magmablasGetQueue() );
-}

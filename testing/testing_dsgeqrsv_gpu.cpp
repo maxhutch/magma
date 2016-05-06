@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zcgeqrsv_gpu.cpp mixed zc -> ds, Tue Feb  9 16:06:09 2016
+       @generated from testing/testing_zcgeqrsv_gpu.cpp mixed zc -> ds, Mon May  2 23:31:14 2016
 
 */
 
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -111,8 +111,8 @@ int main( int argc, char** argv)
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
             lapackf77_dlacpy( MagmaFullStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
-            magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             //=====================================================================
             //              Mixed Precision Iterative Refinement - GPU
@@ -129,7 +129,7 @@ int main( int argc, char** argv)
             }
             
             // compute the residual
-            magma_dgetmatrix( N, nrhs, d_X, lddx, h_X, ldb );
+            magma_dgetmatrix( N, nrhs, d_X, lddx, h_X, ldb, opts.queue );
             blasf77_dgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
                            &c_neg_one, h_A, &lda,
                                        h_X, &ldb,
@@ -139,8 +139,8 @@ int main( int argc, char** argv)
             //=====================================================================
             //                 Double Precision Solve
             //=====================================================================
-            magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             gpu_time = magma_wtime();
             magma_dgels_gpu( MagmaNoTrans, M, N, nrhs, d_A, ldda,
@@ -151,15 +151,15 @@ int main( int argc, char** argv)
             //=====================================================================
             //                 Single Precision Solve
             //=====================================================================
-            magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_dsetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_dsetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             /* The allocation of d_SA and d_SB is done here to avoid
              * to double the memory used on GPU with dsgeqrsv */
             TESTING_MALLOC_DEV( d_SA, float, ldda*N    );
             TESTING_MALLOC_DEV( d_SB, float, lddb*nrhs );
-            magmablas_dlag2s( M, N,    d_A, ldda, d_SA, ldda, &info );
-            magmablas_dlag2s( N, nrhs, d_B, lddb, d_SB, lddb, &info );
+            magmablas_dlag2s( M, N,    d_A, ldda, d_SA, ldda, opts.queue, &info );
+            magmablas_dlag2s( N, nrhs, d_B, lddb, d_SB, lddb, opts.queue, &info );
             
             gpu_time = magma_wtime();
             magma_sgels_gpu( MagmaNoTrans, M, N, nrhs, d_SA, ldda,

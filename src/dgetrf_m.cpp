@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from src/zgetrf_m.cpp normal z -> d, Tue Feb  9 16:05:04 2016
+       @generated from src/zgetrf_m.cpp normal z -> d, Mon May  2 23:30:05 2016
 
 */
 #include <cuda_runtime.h>

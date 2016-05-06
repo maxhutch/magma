@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
   
-       @generated from testing/testing_zprint.cpp normal z -> d, Tue Feb  9 16:06:04 2016
+       @generated from testing/testing_zprint.cpp normal z -> d, Mon May  2 23:31:09 2016
        @author Mark Gates
 */
 // includes, system
@@ -15,7 +15,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
                     hA[i + j*lda] = MAGMA_D_MAKE( i + j*0.01, 0. );
                 }
             }
-            magma_dsetmatrix( M, N, hA, lda, dA, ldda );
+            magma_dsetmatrix( M, N, hA, lda, dA, ldda, opts.queue );
             
             printf( "A=" );
             magma_dprint( M, N, hA, lda );

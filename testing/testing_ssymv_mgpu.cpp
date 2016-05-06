@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zhemv_mgpu.cpp normal z -> s, Tue Feb  9 16:06:02 2016
+       @generated from testing/testing_zhemv_mgpu.cpp normal z -> s, Mon May  2 23:31:07 2016
        
        @author Mark Gates
 */
@@ -17,10 +17,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 #include "magma_operators.h"
 
@@ -59,8 +59,7 @@ int main(int argc, char **argv)
     magma_int_t nb = 64;  // required by magmablas_ssymv_mgpu implementation
 
     for( dev=0; dev < opts.ngpu; ++dev ) {
-        magma_setdevice( dev );
-        magma_queue_create( &queues[dev] );
+        magma_queue_create( dev, &queues[dev] );
     }
     
     // currently, tests all offsets in the offsets array;
@@ -134,9 +133,9 @@ int main(int argc, char **argv)
                Performs operation using CUBLAS
                =================================================================== */
             magma_setdevice( opts.device );
-            magma_ssetmatrix( Noffset, Noffset, A, lda, dA, ldda );
-            magma_ssetvector( Noffset, X, incx, dX, incx );
-            magma_ssetvector( Noffset, Y, incx, dY, incx );
+            magma_ssetmatrix( Noffset, Noffset, A, lda, dA, ldda, opts.queue );
+            magma_ssetvector( Noffset, X, incx, dX, incx, opts.queue );
+            magma_ssetvector( Noffset, Y, incx, dY, incx, opts.queue );
             
             cuda_time = magma_sync_wtime(0);
             cublasSsymv( opts.handle, cublas_uplo_const(opts.uplo), N,
@@ -146,13 +145,13 @@ int main(int argc, char **argv)
             cuda_time = magma_sync_wtime(0) - cuda_time;
             cuda_perf = gflops / cuda_time;
             
-            magma_sgetvector( Noffset, dY, incx, Ycublas, incx );
+            magma_sgetvector( Noffset, dY, incx, Ycublas, incx, opts.queue );
             
             /* =====================================================================
                Performs operation using MAGMABLAS (1 GPU)
                =================================================================== */
             magma_setdevice( opts.device );
-            magma_ssetvector( Noffset, Y, incx, dY, incx );
+            magma_ssetvector( Noffset, Y, incx, dY, incx, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue );
             
@@ -164,18 +163,18 @@ int main(int argc, char **argv)
             
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
-            magma_sgetvector( Noffset, dY, incx, Ymagma1, incx );
+            magma_sgetvector( Noffset, dY, incx, Ymagma1, incx, opts.queue );
             
             /* =====================================================================
                Performs operation using MAGMABLAS (multi-GPU)
                =================================================================== */
-            magma_ssetmatrix_1D_col_bcyclic( Noffset, Noffset, A, lda, d_lA, ldda, opts.ngpu, nb );
+            magma_ssetmatrix_1D_col_bcyclic( Noffset, Noffset, A, lda, d_lA, ldda, opts.ngpu, nb, queues );
             blasf77_scopy( &Noffset, Y, &incx, Ymagma, &incx );
             
             // workspaces do NOT need to be zero -- set to NAN to prove
             for( dev=0; dev < opts.ngpu; ++dev ) {
                 magma_setdevice( dev );
-                magmablas_slaset( MagmaFull, ldwork, 1, MAGMA_S_NAN, MAGMA_S_NAN, dwork[dev], ldwork );
+                magmablas_slaset( MagmaFull, ldwork, 1, MAGMA_S_NAN, MAGMA_S_NAN, dwork[dev], ldwork, opts.queue );
             }
             lapackf77_slaset( "Full", &lhwork, &ione, &MAGMA_S_NAN, &MAGMA_S_NAN, hwork, &lhwork );
             
@@ -297,7 +296,6 @@ int main(int argc, char **argv)
     }
     
     for( dev=0; dev < opts.ngpu; ++dev ) {
-        magma_setdevice( dev );
         magma_queue_destroy( queues[dev] );
     }
     

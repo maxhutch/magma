@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
        
        @author Stan Tomov
        @author Mark Gates
        @author Azzam Haidar
 */
 
-#include "magma.h"
 #include "magma_internal.h"
 
 #ifdef __cplusplus

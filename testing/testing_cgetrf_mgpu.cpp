@@ -1,11 +1,11 @@
 /*
-    -- clMAGMA (version 2.0.0) --
+    -- clMAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgetrf_mgpu.cpp normal z -> c, Tue Feb  9 16:06:08 2016
+       @generated from testing/testing_zgetrf_mgpu.cpp normal z -> c, Mon May  2 23:31:13 2016
        @author Mark Gates
 */
 // includes, system
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -168,6 +168,11 @@ int main( int argc, char** argv )
     
     float tol = opts.tolerance * lapackf77_slamch("E");
 
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_queue_create( dev, &queues[dev] );
+    }
+    
     printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 2 ) {
         printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
@@ -229,7 +234,7 @@ int main( int argc, char** argv )
                Performs operation using MAGMA
                =================================================================== */
             init_matrix( M, N, h_A, lda );
-            magma_csetmatrix_1D_col_bcyclic( M, N, h_A, lda, d_lA, ldda, ngpu, nb );
+            magma_csetmatrix_1D_col_bcyclic( M, N, h_A, lda, d_lA, ldda, ngpu, nb, queues );
 
             gpu_time = magma_wtime();
             magma_cgetrf_mgpu( ngpu, M, N, d_lA, ldda, ipiv, &info );
@@ -240,7 +245,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
                        
-            magma_cgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_A, lda, ngpu, nb );
+            magma_cgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_A, lda, ngpu, nb, queues );
     
             /* =====================================================================
                Check the factorization
@@ -280,6 +285,10 @@ int main( int argc, char** argv )
         }
     }
 
+    for( int dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_queue_destroy( queues[dev] );
+    }
+    
     opts.cleanup();
     TESTING_FINALIZE();
     return status;

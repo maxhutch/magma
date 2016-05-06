@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
   
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -66,13 +66,13 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             /* factorize matrix */
-            magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_zsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             magma_zpotrf_gpu( opts.uplo, N, d_A, ldda, &info );
             
             // check for exact singularity
-            //magma_zgetmatrix( N, N, d_A, ldda, h_R, lda );
+            //magma_zgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
             //h_R[ 10 + 10*lda ] = MAGMA_Z_MAKE( 0.0, 0.0 );
-            //magma_zsetmatrix( N, N, h_R, lda, d_A, ldda );
+            //magma_zsetmatrix( N, N, h_R, lda, d_A, ldda, opts.queue );
             
             gpu_time = magma_wtime();
             magma_zpotri_gpu( opts.uplo, N, d_A, ldda, &info );
@@ -101,7 +101,7 @@ int main( int argc, char** argv)
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                magma_zgetmatrix( N, N, d_A, ldda, h_R, lda );
+                magma_zgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
                 blasf77_zaxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 Anorm = lapackf77_zlange("f", &N, &N, h_A, &lda, work);
                 error = lapackf77_zlange("f", &N, &N, h_R, &lda, work) / Anorm;

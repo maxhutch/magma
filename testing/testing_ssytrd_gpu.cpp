@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zhetrd_gpu.cpp normal z -> s, Tue Feb  9 16:06:13 2016
+       @generated from testing/testing_zhetrd_gpu.cpp normal z -> s, Mon May  2 23:31:18 2016
 
 */
 
@@ -22,7 +22,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -94,7 +94,7 @@ int main( int argc, char** argv)
                =================================================================== */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
             magma_smake_symmetric( N, h_A, lda );
-            magma_ssetmatrix( N, N, h_A, lda, d_R, ldda );
+            magma_ssetmatrix( N, N, h_A, lda, d_R, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -125,8 +125,8 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_CPU( rwork, float, N );
                 #endif
                 
-                magma_sgetmatrix( N, N, d_R, ldda, h_R, lda );
-                magma_sgetmatrix( N, N, d_R, ldda, h_Q, lda );
+                magma_sgetmatrix( N, N, d_R, ldda, h_R, lda, opts.queue );
+                magma_sgetmatrix( N, N, d_R, ldda, h_Q, lda, opts.queue );
                 lapackf77_sorgtr( lapack_uplo_const(opts.uplo), &N, h_Q, &lda, tau, h_work, &lwork, &info );
                 
                 lapackf77_ssyt21( &itwo, lapack_uplo_const(opts.uplo), &N, &ione,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgels_gpu.cpp normal z -> s, Tue Feb  9 16:06:09 2016
+       @generated from testing/testing_zgels_gpu.cpp normal z -> s, Mon May  2 23:31:14 2016
 
 */
 
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -110,8 +110,8 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_ssetmatrix( M, N,    h_A, lda, d_A, ldda );
-            magma_ssetmatrix( M, nrhs, h_B, ldb, d_B, lddb );
+            magma_ssetmatrix( M, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetmatrix( M, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             gpu_time = magma_wtime();
             magma_sgels_gpu( MagmaNoTrans, M, N, nrhs, d_A, ldda,
@@ -124,7 +124,7 @@ int main( int argc, char** argv )
             }
             
             // compute the residual
-            magma_sgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
+            magma_sgetmatrix( N, nrhs, d_B, lddb, h_X, ldb, opts.queue );
             blasf77_sgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
                            &c_neg_one, h_A, &lda,
                                        h_X, &ldb,

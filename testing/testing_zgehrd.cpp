@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
 
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -125,7 +125,7 @@ int main( int argc, char** argv)
                 
                 if ( opts.version == 1 ) {
                     if ( opts.ngpu != 1 ) {
-                        magma_zsetmatrix( nb, N, T, nb, dT, nb );
+                        magma_zsetmatrix( nb, N, T, nb, dT, nb, opts.queue );
                     }
                     magma_zunghr( N, ione, N, h_Q, lda, tau, dT, nb, &info );
                 }

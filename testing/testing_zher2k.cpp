@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -15,10 +15,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 #define COMPLEX
 
@@ -110,11 +110,10 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_zsetmatrix( An, Ak, h_A, lda, d_A, ldda );
-            magma_zsetmatrix( Bn, Bk, h_B, ldb, d_B, lddb );
-            magma_zsetmatrix( N, N, h_C, ldc, d_C, lddc );
+            magma_zsetmatrix( An, Ak, h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( Bn, Bk, h_B, ldb, d_B, lddb, opts.queue );
+            magma_zsetmatrix( N, N, h_C, ldc, d_C, lddc, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
             cublas_time = magma_sync_wtime( opts.queue );
             #ifdef HAVE_CUBLAS
                 cublasZher2k( opts.handle, cublas_uplo_const(opts.uplo), cublas_trans_const(opts.transA), N, K,
@@ -130,7 +129,7 @@ int main( int argc, char** argv)
             cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
-            magma_zgetmatrix( N, N, d_C, lddc, h_Ccublas, ldc );
+            magma_zgetmatrix( N, N, d_C, lddc, h_Ccublas, ldc, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

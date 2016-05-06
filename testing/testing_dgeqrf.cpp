@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgeqrf.cpp normal z -> d, Tue Feb  9 16:06:11 2016
+       @generated from testing/testing_zgeqrf.cpp normal z -> d, Mon May  2 23:31:17 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 

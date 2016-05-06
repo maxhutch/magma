@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.0.0) --
+   -- MAGMA (version 2.0.2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date February 2016
+   @date May 2016
 
    @author Azzam Haidar
    @author Mark Gates
 
-   @generated from testing/testing_zgetri_batched.cpp normal z -> c, Tue Feb  9 16:06:17 2016
+   @generated from testing/testing_zgetri_batched.cpp normal z -> c, Mon May  2 23:31:23 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -106,7 +106,7 @@ int main( int argc, char** argv)
             columns = N * batchCount;
             lapackf77_clacpy( MagmaFullStr, &N, &columns, h_A, &lda, h_R,  &lda );
             lapackf77_clacpy( MagmaFullStr, &N, &columns, h_A, &lda, h_Ainv, &lda );
-            magma_csetmatrix( N, columns, h_R, lda, d_A, ldda );
+            magma_csetmatrix( N, columns, h_R, lda, d_A, ldda, opts.queue );
 
             /* ====================================================================
                Performs operation using MAGMA
@@ -122,7 +122,7 @@ int main( int argc, char** argv)
             gpu_perf = gflops / gpu_time;
 
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
+            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1, opts.queue );
             for (magma_int_t i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
@@ -175,8 +175,8 @@ int main( int argc, char** argv)
                Check the result
                =================================================================== */
             if ( opts.check ) {
-                magma_igetvector( N*batchCount, d_ipiv, 1, ipiv, 1 );
-                magma_cgetmatrix( N, N*batchCount, d_invA, ldda, h_Ainv, lda );
+                magma_igetvector( N*batchCount, d_ipiv, 1, ipiv, 1, opts.queue );
+                magma_cgetmatrix( N, N*batchCount, d_invA, ldda, h_Ainv, lda, opts.queue );
                 error = 0;
                 for (magma_int_t i=0; i < batchCount; i++)
                 {

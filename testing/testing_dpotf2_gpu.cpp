@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zpotf2_gpu.cpp normal z -> d, Tue Feb  9 16:06:05 2016
+       @generated from testing/testing_zpotf2_gpu.cpp normal z -> d, Mon May  2 23:31:10 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -66,7 +66,7 @@ int main( int argc, char** argv)
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             magma_dmake_hpd( N, h_A, lda );
             lapackf77_dlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
-            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -96,7 +96,7 @@ int main( int argc, char** argv)
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                magma_dgetmatrix( N, N, d_A, ldda, h_R, lda );
+                magma_dgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
                 blasf77_daxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 Anorm = lapackf77_dlange("f", &N, &N, h_A, &lda, work);
                 error = lapackf77_dlange("f", &N, &N, h_R, &lda, work) / Anorm;

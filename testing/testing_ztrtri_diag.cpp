@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -110,15 +110,14 @@ int main( int argc, char** argv )
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_zsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             magma_time = magma_sync_wtime( opts.queue );
-            magmablas_ztrtri_diag( opts.uplo, opts.diag, N, d_A, ldda, d_dinvA );
+            magmablas_ztrtri_diag( opts.uplo, opts.diag, N, d_A, ldda, d_dinvA, opts.queue );
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             
-            magma_zgetvector( size_inv, d_dinvA, 1, h_dinvA, 1 );
+            magma_zgetvector( size_inv, d_dinvA, 1, h_dinvA, 1, opts.queue );
             
             if ( opts.verbose ) {
                 printf( "A%d=", (int) N );

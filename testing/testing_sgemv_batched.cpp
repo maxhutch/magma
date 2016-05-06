@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgemv_batched.cpp normal z -> s, Tue Feb  9 16:06:16 2016
+       @generated from testing/testing_zgemv_batched.cpp normal z -> s, Mon May  2 23:31:21 2016
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
@@ -18,10 +18,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -106,9 +106,9 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_ssetmatrix( M, N*batchCount, h_A, lda, d_A, ldda );
-            magma_ssetvector( Xm*batchCount, h_X, incx, d_X, incx );
-            magma_ssetvector( Ym*batchCount, h_Y, incy, d_Y, incy );
+            magma_ssetmatrix( M, N*batchCount, h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetvector( Xm*batchCount, h_X, incx, d_X, incx, opts.queue );
+            magma_ssetvector( Ym*batchCount, h_Y, incy, d_Y, incy, opts.queue );
             
             magma_sset_pointer( A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
             magma_sset_pointer( X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue );
@@ -121,7 +121,7 @@ int main( int argc, char** argv)
                              beta,  Y_array, incy, batchCount, opts.queue);
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
-            magma_sgetvector( Ym*batchCount, d_Y, incy, h_Ymagma, incy );
+            magma_sgetvector( Ym*batchCount, d_Y, incy, h_Ymagma, incy, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

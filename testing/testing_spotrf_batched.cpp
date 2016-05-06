@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.0.0) --
+   -- MAGMA (version 2.0.2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date February 2016
+   @date May 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zpotrf_batched.cpp normal z -> s, Tue Feb  9 16:06:17 2016
+   @generated from testing/testing_zpotrf_batched.cpp normal z -> s, Mon May  2 23:31:23 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -16,9 +16,11 @@
 #include <string.h>
 #include <math.h>
 
+#include <cuda_runtime.h>  // cudaMemset
+
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -88,19 +90,19 @@ int main( int argc, char** argv)
             magma_int_t columns = N * batchCount;
             lapackf77_slacpy( MagmaFullStr, &N, &(columns), h_A, &lda, h_R, &lda );
 
-            magma_ssetmatrix( N, columns, h_A, lda, d_A, ldda );
+            magma_ssetmatrix( N, columns, h_A, lda, d_A, ldda, opts.queue );
 
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            cudaMemset(dinfo_magma, 0, batchCount * sizeof(magma_int_t));
+            cudaMemset( dinfo_magma, 0, batchCount * sizeof(magma_int_t) );
 
             magma_sset_pointer( d_A_array, d_A, ldda, 0, 0, ldda * N, batchCount, queue );
             gpu_time = magma_sync_wtime( opts.queue );
             info = magma_spotrf_batched( opts.uplo, N, d_A_array, ldda, dinfo_magma, batchCount, queue);
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
-            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1);
+            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1, opts.queue );
             for (int i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
@@ -154,7 +156,7 @@ int main( int argc, char** argv)
                 magma_set_lapack_numthreads( 1 );
                 #endif
                 
-                magma_sgetmatrix( N, columns, d_A, ldda, h_R, lda );
+                magma_sgetmatrix( N, columns, d_A, ldda, h_R, lda, opts.queue );
                 magma_int_t NN = lda*N;
                 const char* uplo = lapack_uplo_const(opts.uplo);
                 error = 0;

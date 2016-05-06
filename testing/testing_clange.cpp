@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zlange.cpp normal z -> c, Tue Feb  9 16:06:03 2016
+       @generated from testing/testing_zlange.cpp normal z -> c, Mon May  2 23:31:08 2016
        @author Mark Gates
 */
 // includes, system
@@ -15,7 +15,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -84,13 +84,13 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_clarnv( &idist, ISEED, &n2, h_A );
-            magma_csetmatrix( M, N, h_A, lda, d_A, ldda );
+            magma_csetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            norm_magma = magmablas_clange( norm[inorm], M, N, d_A, ldda, d_work, lwork );
+            norm_magma = magmablas_clange( norm[inorm], M, N, d_A, ldda, d_work, lwork, opts.queue );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (norm_magma == -1) {
@@ -139,8 +139,8 @@ int main( int argc, char** argv)
             i = rand() % M;
             j = rand() % N;
             *h_A(i,j) = MAGMA_C_NAN;
-            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
-            norm_magma  = magmablas_clange( norm[inorm], M, N, d_A, ldda, d_work, lwork );
+            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1, opts.queue );
+            norm_magma  = magmablas_clange( norm[inorm], M, N, d_A, ldda, d_work, lwork, opts.queue );
             norm_lapack = lapackf77_clange( lapack_norm_const( norm[inorm] ),
                                             &M, &N, h_A, &lda, h_work );
             bool nan_okay;    nan_okay    = isnan(norm_magma);
@@ -149,8 +149,8 @@ int main( int argc, char** argv)
             status          += !    nan_okay;
             
             *h_A(i,j) = MAGMA_C_INF;
-            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
-            norm_magma  = magmablas_clange( norm[inorm], M, N, d_A, ldda, d_work, lwork );
+            magma_csetvector( 1, h_A(i,j), 1, d_A(i,j), 1, opts.queue );
+            norm_magma  = magmablas_clange( norm[inorm], M, N, d_A, ldda, d_work, lwork, opts.queue );
             norm_lapack = lapackf77_clange( lapack_norm_const( norm[inorm] ),
                                             &M, &N, h_A, &lda, h_work );
             bool inf_okay;    inf_okay    = isinf(norm_magma);

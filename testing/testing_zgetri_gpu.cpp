@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -81,9 +81,9 @@ int main( int argc, char** argv )
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             
             /* Factor the matrix. Both MAGMA and LAPACK will use this factor. */
-            magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_zsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             magma_zgetrf_gpu( N, N, d_A, ldda, ipiv, &info );
-            magma_zgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
+            magma_zgetmatrix( N, N, d_A, ldda, h_Ainv, lda, opts.queue );
             if (info != 0) {
                 printf("magma_zgetrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
@@ -91,7 +91,7 @@ int main( int argc, char** argv )
             
             // check for exact singularity
             //h_Ainv[ 10 + 10*lda ] = MAGMA_Z_MAKE( 0.0, 0.0 );
-            //magma_zsetmatrix( N, N, h_Ainv, lda, d_A, ldda );
+            //magma_zsetmatrix( N, N, h_Ainv, lda, d_A, ldda, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -129,7 +129,7 @@ int main( int argc, char** argv )
                Check the result
                =================================================================== */
             if ( opts.check ) {
-                magma_zgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
+                magma_zgetmatrix( N, N, d_A, ldda, h_Ainv, lda, opts.queue );
                 
                 // compute 1-norm condition number estimate, following LAPACK's zget03
                 double normA, normAinv, rcond;

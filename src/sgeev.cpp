@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from src/dgeev.cpp normal d -> s, Tue Feb  9 16:05:20 2016
+       @generated from src/dgeev.cpp normal d -> s, Mon May  2 23:30:22 2016
        @author Stan Tomov
        @author Mark Gates
 */

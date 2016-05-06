@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgetrf_gpu.cpp normal z -> s, Tue Feb  9 16:06:07 2016
+       @generated from testing/testing_zgetrf_gpu.cpp normal z -> s, Mon May  2 23:31:13 2016
        @author Mark Gates
 */
 // includes, system
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -225,7 +225,7 @@ int main( int argc, char** argv)
                     ipiv[i] = i+1;
                 }
             }
-            magma_ssetmatrix( M, N, h_A, lda, d_A, ldda );
+            magma_ssetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
             
             gpu_time = magma_wtime();
             if ( opts.version == 1 ) {
@@ -253,13 +253,13 @@ int main( int argc, char** argv)
                        (int) M, (int) N, gpu_perf, gpu_time );
             }
             if ( opts.check == 2 ) {
-                magma_sgetmatrix( M, N, d_A, ldda, h_A, lda );
+                magma_sgetmatrix( M, N, d_A, ldda, h_A, lda, opts.queue );
                 error = get_residual( opts, M, N, h_A, lda, ipiv );
                 printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);
             }
             else if ( opts.check ) {
-                magma_sgetmatrix( M, N, d_A, ldda, h_A, lda );
+                magma_sgetmatrix( M, N, d_A, ldda, h_A, lda, opts.queue );
                 error = get_LU_error( opts, M, N, h_A, lda, ipiv );
                 printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);

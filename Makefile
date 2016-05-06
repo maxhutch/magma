@@ -653,13 +653,13 @@ install_dirs:
 	mkdir -p $(prefix)/lib
 	mkdir -p $(prefix)/lib/pkgconfig
 
-install: lib install_dirs
+install: lib sparse-lib install_dirs
 	# MAGMA
 	cp include/*.h              $(prefix)/include
 	cp sparse-iter/include/*.h  $(prefix)/include
 	cp $(libs)                  $(prefix)/lib
 	# pkgconfig
-	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in      | \
+	cat lib/pkgconfig/magma.pc.in                   | \
 	sed -e s:@INSTALL_PREFIX@:"$(prefix)":          | \
 	sed -e s:@CFLAGS@:"$(INSTALL_FLAGS) $(INC)":    | \
 	sed -e s:@LIBS@:"$(INSTALL_LDFLAGS) $(LIBEXT)": | \

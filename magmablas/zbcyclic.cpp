@@ -1,20 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
        
        @author Stan Tomov
        @author Mark Gates
        
        @precisions normal z -> s d c
 */
-
-// include v1 header first; the v2 header will redefine non-q names,
-// but we can undef them to get back to the v1 versions.
-#include "magmablas_v1.h"
-
 #include "magma_internal.h"
 
 #ifdef HAVE_clBLAS
@@ -72,32 +67,12 @@ magma_zsetmatrix_1D_col_bcyclic_q(
                                 queues[dev] );
     }
     
-    magma_setdevice( cdevice );
-}
-
-
-#undef magma_zsetmatrix_1D_col_bcyclic
-
-extern "C" void
-magma_zsetmatrix_1D_col_bcyclic(
-    magma_int_t m, magma_int_t n,
-    const magmaDoubleComplex *hA, magma_int_t lda,
-    magmaDoubleComplex_ptr   *dA, magma_int_t ldda,
-    magma_int_t ngpu, magma_int_t nb )
-{
-    // uses NULL queue -> NULL stream in setmatrix_async
-    //magma_queue_t queues[ MagmaMaxGPUs ] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs];
-    for( int dev=0; dev < ngpu; dev++ ) {
-        magma_setdevice( dev );
-        magma_queue_create( dev, &queues[dev] );
-    }
-    magma_zsetmatrix_1D_col_bcyclic_q( m, n, hA, lda, dA, ldda, ngpu, nb, queues );
-    for( int dev=0; dev < ngpu; dev++ ) {
+    for( dev=0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
-        magma_queue_destroy( queues[dev] );
     }
+    
+    magma_setdevice( cdevice );
 }
 
 
@@ -147,32 +122,12 @@ magma_zgetmatrix_1D_col_bcyclic_q(
                                 queues[dev] );
     }
     
-    magma_setdevice( cdevice );
-}
-
-
-#undef magma_zgetmatrix_1D_col_bcyclic
-
-extern "C" void
-magma_zgetmatrix_1D_col_bcyclic(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex_const_ptr const *dA, magma_int_t ldda,
-    magmaDoubleComplex                 *hA, magma_int_t lda,
-    magma_int_t ngpu, magma_int_t nb )
-{
-    // uses NULL queue -> NULL stream in setmatrix_async
-    //magma_queue_t queues[ MagmaMaxGPUs ] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs];
-    for( int dev=0; dev < ngpu; dev++ ) {
-        magma_setdevice( dev );
-        magma_queue_create( dev, &queues[dev] );
-    }
-    magma_zgetmatrix_1D_col_bcyclic_q( m, n, dA, ldda, hA, lda, ngpu, nb, queues );
-    for( int dev=0; dev < ngpu; dev++ ) {
+    for( dev=0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
-        magma_queue_destroy( queues[dev] );
     }
+    
+    magma_setdevice( cdevice );
 }
 
 
@@ -222,32 +177,12 @@ magma_zsetmatrix_1D_row_bcyclic_q(
                                 queues[dev] );
     }
     
-    magma_setdevice( cdevice );
-}
-
-
-#undef magma_zsetmatrix_1D_row_bcyclic
-
-extern "C" void
-magma_zsetmatrix_1D_row_bcyclic(
-    magma_int_t m, magma_int_t n,
-    const magmaDoubleComplex    *hA, magma_int_t lda,
-    magmaDoubleComplex_ptr      *dA, magma_int_t ldda,
-    magma_int_t ngpu, magma_int_t nb )
-{
-    // uses NULL queue -> NULL stream in setmatrix_async
-    //magma_queue_t queues[ MagmaMaxGPUs ] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs];
-    for( int dev=0; dev < ngpu; dev++ ) {
-        magma_setdevice( dev );
-        magma_queue_create( dev, &queues[dev] );
-    }
-    magma_zsetmatrix_1D_row_bcyclic_q( m, n, hA, lda, dA, ldda, ngpu, nb, queues );
-    for( int dev=0; dev < ngpu; dev++ ) {
+    for( dev=0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
-        magma_queue_destroy( queues[dev] );
     }
+    
+    magma_setdevice( cdevice );
 }
 
 
@@ -297,30 +232,10 @@ magma_zgetmatrix_1D_row_bcyclic_q(
                                 queues[dev] );
     }
     
-    magma_setdevice( cdevice );
-}
-
-
-#undef magma_zgetmatrix_1D_row_bcyclic
-
-extern "C" void
-magma_zgetmatrix_1D_row_bcyclic(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex_const_ptr const *dA, magma_int_t ldda,
-    magmaDoubleComplex                 *hA, magma_int_t lda,
-    magma_int_t ngpu, magma_int_t nb )
-{
-    // uses NULL queue -> NULL stream in setmatrix_async
-    //magma_queue_t queues[ MagmaMaxGPUs ] = { NULL };
-    magma_queue_t queues[MagmaMaxGPUs];
-    for( int dev=0; dev < ngpu; dev++ ) {
-        magma_setdevice( dev );
-        magma_queue_create( dev, &queues[dev] );
-    }
-    magma_zgetmatrix_1D_row_bcyclic_q( m, n, dA, ldda, hA, lda, ngpu, nb, queues );
-    for( int dev=0; dev < ngpu; dev++ ) {
+    for( dev=0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
-        magma_queue_destroy( queues[dev] );
     }
+    
+    magma_setdevice( cdevice );
 }

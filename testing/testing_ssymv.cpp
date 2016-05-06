@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zhemv.cpp normal z -> s, Tue Feb  9 16:06:00 2016
+       @generated from testing/testing_zhemv.cpp normal z -> s, Mon May  2 23:31:05 2016
        
        @author Mark Gates
 */
@@ -16,10 +16,10 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
+#include "testings.h"
 
 
 int main(int argc, char **argv)
@@ -76,8 +76,8 @@ int main(int argc, char **argv)
             ldwork = ldda*blocks;
             TESTING_MALLOC_DEV( dwork, float, ldwork );
             
-            magmablas_slaset( MagmaFull, ldwork, 1, MAGMA_S_NAN, MAGMA_S_NAN, dwork, ldwork );
-            magmablas_slaset( MagmaFull, ldda,   N, MAGMA_S_NAN, MAGMA_S_NAN, dA,    ldda   );
+            magmablas_slaset( MagmaFull, ldwork, 1, MAGMA_S_NAN, MAGMA_S_NAN, dwork, ldwork, opts.queue );
+            magmablas_slaset( MagmaFull, ldda,   N, MAGMA_S_NAN, MAGMA_S_NAN, dA,    ldda,   opts.queue );
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &sizeA, A );
@@ -98,11 +98,10 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_ssetmatrix( N, N, A, lda, dA, ldda );
-            magma_ssetvector( N, X, incx, dX, incx );
-            magma_ssetvector( N, Y, incy, dY, incy );
+            magma_ssetmatrix( N, N, A, lda, dA, ldda, opts.queue );
+            magma_ssetvector( N, X, incx, dX, incx, opts.queue );
+            magma_ssetvector( N, Y, incy, dY, incy, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
             cublas_time = magma_sync_wtime( opts.queue );
             #ifdef HAVE_CUBLAS
                 cublasSsymv( opts.handle, cublas_uplo_const(opts.uplo),
@@ -113,14 +112,14 @@ int main(int argc, char **argv)
             cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
-            magma_sgetvector( N, dY, incy, Ycublas, incy );
+            magma_sgetvector( N, dY, incy, Ycublas, incy, opts.queue );
             
             /* =====================================================================
                Performs operation using CUBLAS - using atomics
                =================================================================== */
             #ifdef HAVE_CUBLAS
                 cublasSetAtomicsMode( opts.handle, CUBLAS_ATOMICS_ALLOWED );
-                magma_ssetvector( N, Y, incy, dY, incy );
+                magma_ssetvector( N, Y, incy, dY, incy, opts.queue );
                 
                 // sync on queue doesn't work -- need device sync or use NULL stream -- bug in CUBLAS?
                 atomics_time = magma_sync_wtime( NULL /*opts.queue*/ );
@@ -129,7 +128,7 @@ int main(int argc, char **argv)
                 atomics_time = magma_sync_wtime( NULL /*opts.queue*/ ) - atomics_time;
                 atomics_perf = gflops / atomics_time;
                 
-                magma_sgetvector( N, dY, incy, Yatomics, incy );
+                magma_sgetvector( N, dY, incy, Yatomics, incy, opts.queue );
                 cublasSetAtomicsMode( opts.handle, CUBLAS_ATOMICS_NOT_ALLOWED );
             #endif
             
@@ -137,7 +136,7 @@ int main(int argc, char **argv)
                Performs operation using MAGMABLAS
                =================================================================== */
             #ifdef HAVE_CUBLAS
-                magma_ssetvector( N, Y, incy, dY, incy );
+                magma_ssetvector( N, Y, incy, dY, incy, opts.queue );
                 
                 magma_time = magma_sync_wtime( opts.queue );
                 if ( opts.version == 1 ) {
@@ -145,12 +144,12 @@ int main(int argc, char **argv)
                 }
                 else {
                     // non-work interface (has added overhead)
-                    magmablas_ssymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+                    magmablas_ssymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, opts.queue );
                 }
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
-                magma_sgetvector( N, dY, incy, Ymagma, incy );
+                magma_sgetvector( N, dY, incy, Ymagma, incy, opts.queue );
             #endif
             
             /* =====================================================================

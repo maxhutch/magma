@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zcgesv_gpu.cpp mixed zc -> ds, Tue Feb  9 16:06:07 2016
+       @generated from testing/testing_zcgesv_gpu.cpp mixed zc -> ds, Mon May  2 23:31:12 2016
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@
 #include <math.h>
 
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -84,8 +84,8 @@ int main(int argc, char **argv)
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
             lapackf77_dlacpy( MagmaFullStr, &N, &nrhs, h_B, &ldb, h_X, &ldx);
             
-            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             //=====================================================================
             //              MIXED - GPU
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
             //=====================================================================
             //              ERROR DP vs MIXED  - GPU
             //=====================================================================
-            magma_dgetmatrix( N, nrhs, d_X, lddx, h_X, ldx );
+            magma_dgetmatrix( N, nrhs, d_X, lddx, h_X, ldx, opts.queue );
             
             Anorm = lapackf77_dlange("I", &N, &N, h_A, &lda, h_workd);
             blasf77_dgemm( lapack_trans_const(opts.transA), MagmaNoTransStr,
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
             //=====================================================================
             //                 Double Precision Factor
             //=====================================================================
-            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             
             gpu_time = magma_wtime();
             magma_dgetrf_gpu(N, N, d_A, ldda, h_ipiv, &info);
@@ -133,8 +133,8 @@ int main(int argc, char **argv)
             //=====================================================================
             //                 Double Precision Solve
             //=====================================================================
-            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda, opts.queue );
+            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb, opts.queue );
             
             gpu_time = magma_wtime();
             magma_dgetrf_gpu(N, N, d_A, ldda, h_ipiv, &info);
@@ -151,10 +151,10 @@ int main(int argc, char **argv)
             //=====================================================================
             d_As = d_WORKS;
             d_Bs = d_WORKS + ldda*N;
-            magma_dsetmatrix( N, N,    h_A, lda,  d_A,  ldda );
-            magma_dsetmatrix( N, nrhs, h_B, ldb,  d_B,  lddb );
-            magmablas_dlag2s( N, N,    d_A, ldda, d_As, ldda, &info );
-            magmablas_dlag2s( N, nrhs, d_B, lddb, d_Bs, lddb, &info );
+            magma_dsetmatrix( N, N,    h_A, lda,  d_A,  ldda, opts.queue );
+            magma_dsetmatrix( N, nrhs, h_B, ldb,  d_B,  lddb, opts.queue );
+            magmablas_dlag2s( N, N,    d_A, ldda, d_As, ldda, opts.queue, &info );
+            magmablas_dlag2s( N, nrhs, d_B, lddb, d_Bs, lddb, opts.queue, &info );
             
             gpu_time = magma_wtime();
             magma_sgetrf_gpu(N, N, d_As, ldda, h_ipiv, &info);
@@ -168,8 +168,8 @@ int main(int argc, char **argv)
             //=====================================================================
             //                 Single Precision Solve
             //=====================================================================
-            magmablas_dlag2s(N, N,    d_A, ldda, d_As, ldda, &info );
-            magmablas_dlag2s(N, nrhs, d_B, lddb, d_Bs, lddb, &info );
+            magmablas_dlag2s(N, N,    d_A, ldda, d_As, ldda, opts.queue, &info );
+            magmablas_dlag2s(N, nrhs, d_B, lddb, d_Bs, lddb, opts.queue, &info );
             
             gpu_time = magma_wtime();
             magma_sgetrf_gpu( N, N,    d_As, ldda, h_ipiv, &info);

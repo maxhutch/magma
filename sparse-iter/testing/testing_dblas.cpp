@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from sparse-iter/testing/testing_zblas.cpp normal z -> d, Tue Feb  9 16:06:18 2016
+       @generated from sparse-iter/testing/testing_zblas.cpp normal z -> d, Mon May  2 23:31:23 2016
        @author Hartwig Anzt
 */
 
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -33,8 +33,7 @@ int main(  int argc, char** argv )
     /* Initialize */
     TESTING_INIT();
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
-    magmablasSetKernelStream( queue );
+    magma_queue_create( 0, &queue );
 
     magma_int_t j, n=1000000, FLOPS;
     magma_int_t count = 100;
@@ -54,7 +53,7 @@ int main(  int argc, char** argv )
     FLOPS = 2*n;
     start = magma_sync_wtime( queue );
     for (j=0; j < count; j++) {
-        res = magma_dnrm2(n, ad.dval, 1);
+        res = magma_dnrm2( n, ad.dval, 1, queue );
     }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA nrm2: %.2e seconds %.2e GFLOP/s\n",
@@ -62,7 +61,7 @@ int main(  int argc, char** argv )
     FLOPS = n;
     start = magma_sync_wtime( queue );
     for (j=0; j < count; j++) {
-        magma_dscal( n, two, ad.dval, 1 );
+        magma_dscal( n, two, ad.dval, 1, queue );
     }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA scal: %.2e seconds %.2e GFLOP/s\n",
@@ -70,7 +69,7 @@ int main(  int argc, char** argv )
     FLOPS = 2*n;
     start = magma_sync_wtime( queue );
     for (j=0; j < count; j++) {
-        magma_daxpy( n, one, ad.dval, 1, bd.dval, 1 );
+        magma_daxpy( n, one, ad.dval, 1, bd.dval, 1, queue );
     }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA axpy: %.2e seconds %.2e GFLOP/s\n",
@@ -78,7 +77,7 @@ int main(  int argc, char** argv )
     FLOPS = n;
     start = magma_sync_wtime( queue );
     for (j=0; j < count; j++) {
-        magma_dcopy( n, bd.dval, 1, ad.dval, 1 );
+        magma_dcopy( n, bd.dval, 1, ad.dval, 1, queue );
     }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA copy: %.2e seconds %.2e GFLOP/s\n",
@@ -86,7 +85,7 @@ int main(  int argc, char** argv )
     FLOPS = 2*n;
     start = magma_sync_wtime( queue );
     for (j=0; j < count; j++) {
-        res = MAGMA_D_REAL( magma_ddot(n, ad.dval, 1, bd.dval, 1) );
+        res = MAGMA_D_REAL( magma_ddot( n, ad.dval, 1, bd.dval, 1, queue ));
     }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA dotc: %.2e seconds %.2e GFLOP/s\n",
@@ -99,17 +98,11 @@ int main(  int argc, char** argv )
         info = -1;
     }
 
-    magma_dmfree( &a, queue);
-    magma_dmfree(&ad, queue);
-    magma_dmfree(&bd, queue);
-    magma_dmfree(&cd, queue);
-    
 cleanup:
     magma_dmfree( &a, queue);
     magma_dmfree(&ad, queue);
     magma_dmfree(&bd, queue);
     magma_dmfree(&cd, queue);
-    magmablasSetKernelStream( NULL );
     magma_queue_destroy( queue );
     magma_finalize();
     return info;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -15,7 +15,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -50,10 +50,10 @@ int main( int argc, char** argv)
     
     /* Uncomment these lines to check parameters.
      * magma_xerbla calls lapack's xerbla to print out error. */
-    //magmablas_zgeadd( -1,  N, alpha, d_A, ldda, d_B, ldda );
-    //magmablas_zgeadd(  M, -1, alpha, d_A, ldda, d_B, ldda );
-    //magmablas_zgeadd(  M,  N, alpha, d_A, M-1,  d_B, ldda );
-    //magmablas_zgeadd(  M,  N, alpha, d_A, ldda, d_B, N-1  );
+    //magmablas_zgeadd( -1,  N, alpha, d_A, ldda, d_B, ldda, opts.queue );
+    //magmablas_zgeadd(  M, -1, alpha, d_A, ldda, d_B, ldda, opts.queue );
+    //magmablas_zgeadd(  M,  N, alpha, d_A, M-1,  d_B, ldda, opts.queue );
+    //magmablas_zgeadd(  M,  N, alpha, d_A, ldda, d_B, N-1,  opts.queue );
 
     printf("%%   M     N   CPU Gflop/s (ms)    GPU Gflop/s (ms)    |Bl-Bm|/|Bl|\n");
     printf("%%========================================================================\n");
@@ -78,16 +78,15 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_zsetmatrix( M, N, h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M, N, h_B, lda, d_B, ldda );
+            magma_zsetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
+            magma_zsetmatrix( M, N, h_B, lda, d_B, ldda, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             if ( opts.version == 1 ) {
-                magmablas_zgeadd( M, N, alpha, d_A, ldda, d_B, ldda );
+                magmablas_zgeadd( M, N, alpha, d_A, ldda, d_B, ldda, opts.queue );
             }
             else {
-                magmablas_zgeadd2( M, N, alpha, d_A, ldda, beta, d_B, ldda );
+                magmablas_zgeadd2( M, N, alpha, d_A, ldda, beta, d_B, ldda, opts.queue );
             }
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
@@ -115,7 +114,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check result
                =================================================================== */
-            magma_zgetmatrix( M, N, d_B, ldda, h_A, lda );
+            magma_zgetmatrix( M, N, d_B, ldda, h_A, lda, opts.queue );
             
             blasf77_zaxpy( &size, &c_neg_one, h_B, &ione, h_A, &ione );
             Bnorm = lapackf77_zlange( "F", &M, &N, h_B, &lda, work );

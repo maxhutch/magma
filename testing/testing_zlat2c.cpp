@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        @precisions mixed zc -> ds
@@ -16,7 +16,7 @@
 #include <assert.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -73,8 +73,8 @@ int main( int argc, char** argv )
             lapackf77_zlarnv( &ione, ISEED, &size,  A );
             lapackf77_clarnv( &ione, ISEED, &size, SA );
             
-            magma_zsetmatrix( n, n, A,  lda, dA,  ldda );
-            magma_csetmatrix( n, n, SA, lda, dSA, ldda );
+            magma_zsetmatrix( n, n, A,  lda, dA,  ldda, opts.queue );
+            magma_csetmatrix( n, n, SA, lda, dSA, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK zlat2c
@@ -92,9 +92,8 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA zlat2c
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_zlat2c( uplo[iuplo], n, dA, ldda, dSA, ldda, &info );
+            magmablas_zlat2c( uplo[iuplo], n, dA, ldda, dSA, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -102,7 +101,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_cgetmatrix( n, n, dSA, ldda, SR, lda );
+            magma_cgetmatrix( n, n, dSA, ldda, SR, lda, opts.queue );
             
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_zprint( n, n, A,  lda );
@@ -130,8 +129,8 @@ int main( int argc, char** argv )
             lapackf77_zlarnv( &ione, ISEED, &size,  A );
             lapackf77_clarnv( &ione, ISEED, &size, SA );
             
-            magma_zsetmatrix( n, n, A,  lda, dA,  ldda );
-            magma_csetmatrix( n, n, SA, lda, dSA, ldda );
+            magma_zsetmatrix( n, n, A,  lda, dA,  ldda, opts.queue );
+            magma_csetmatrix( n, n, SA, lda, dSA, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using LAPACK clat2z
@@ -162,10 +161,10 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA clat2z
                =================================================================== */
-            magma_csetmatrix( n, n, SA, lda, dSA, ldda );
+            magma_csetmatrix( n, n, SA, lda, dSA, ldda, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_clat2z( uplo[iuplo], n, dSA, ldda, dA, ldda, &info );
+            magmablas_clat2z( uplo[iuplo], n, dSA, ldda, dA, ldda, opts.queue, &info );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
@@ -173,7 +172,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_zgetmatrix( n, n, dA, ldda, R, lda );
+            magma_zgetmatrix( n, n, dA, ldda, R, lda, opts.queue );
             
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_zprint( n, n, A,  lda );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from sparse-iter/testing/testing_zsort.cpp normal z -> s, Tue Feb  9 16:06:18 2016
+       @generated from sparse-iter/testing/testing_zsort.cpp normal z -> s, Mon May  2 23:31:24 2016
        @author Hartwig Anzt
 */
 
@@ -19,10 +19,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -35,8 +35,7 @@ int main(  int argc, char** argv )
     /* Initialize */
     TESTING_INIT();
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
-    magmablasSetKernelStream( queue );
+    magma_queue_create( 0, &queue );
 
     magma_int_t i, n=100;
     magma_index_t *x=NULL;
@@ -121,7 +120,6 @@ int main(  int argc, char** argv )
 
 cleanup:
     magma_smfree(&A, queue );
-    magmablasSetKernelStream( NULL );
     magma_queue_destroy( queue );
     magma_finalize();
     return info;

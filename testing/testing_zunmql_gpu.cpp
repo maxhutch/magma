@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
             // C is full, m x n
             size = ldc*n;
             lapackf77_zlarnv( &ione, ISEED, &size, C );
-            magma_zsetmatrix( m, n, C, ldc, dC, ldc );
+            magma_zsetmatrix( m, n, C, ldc, dC, ldc, opts.queue );
             
             // A is m x k (left) or n x k (right)
             size = lda*k;
@@ -107,7 +107,7 @@ int main( int argc, char** argv )
             
             // compute QL factorization to get Householder vectors in A, tau
             magma_zgeqlf( mm, k, A, lda, tau, hwork, lwork_max, &info );
-            magma_zsetmatrix( mm, k, A, lda, dA, lda );
+            magma_zsetmatrix( mm, k, A, lda, dA, lda, opts.queue );
             if (info != 0)
                 printf("magma_zgeqlf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
@@ -145,10 +145,9 @@ int main( int argc, char** argv )
             
             // zunmql2 takes a copy of dA in CPU memory
             if ( opts.version == 2 ) {
-                magma_zgetmatrix( mm, k, dA, lda, A, lda );
+                magma_zgetmatrix( mm, k, dA, lda, A, lda, opts.queue );
             }
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
             //if ( opts.version == 1 ) {
             //    magma_zunmqr_gpu( side[iside], trans[itran],
@@ -166,7 +165,7 @@ int main( int argc, char** argv )
                 printf("magma_zunmql returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
-            magma_zgetmatrix( m, n, dC, ldc, R, ldc );
+            magma_zgetmatrix( m, n, dC, ldc, R, ldc, opts.queue );
             
             /* =====================================================================
                compute relative error |QC_magma - QC_lapack| / |QC_lapack|

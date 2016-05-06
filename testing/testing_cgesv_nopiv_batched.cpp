@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> c, Tue Feb  9 16:06:17 2016
+       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> c, Mon May  2 23:31:22 2016
        @author Mark Gates
 */
 // includes, system
@@ -16,7 +16,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -92,8 +92,8 @@ int main(int argc, char **argv)
                 }
             }
             columns = N * batchCount;
-            magma_csetmatrix( N, columns,    h_A, lda, d_A, ldda );
-            magma_csetmatrix( N, nrhs*batchCount, h_B, ldb, d_B, lddb );
+            magma_csetmatrix( N, columns,    h_A, lda, d_A, ldda, opts.queue );
+            magma_csetmatrix( N, nrhs*batchCount, h_B, ldb, d_B, lddb, opts.queue );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1);
+            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1, opts.queue );
             for (int i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
             // Residual
             //=====================================================================
             error = 0;
-            magma_cgetmatrix( N, nrhs*batchCount, d_B, lddb, h_X, ldb );
+            magma_cgetmatrix( N, nrhs*batchCount, d_B, lddb, h_X, ldb, opts.queue );
             for (magma_int_t s = 0; s < batchCount; s++)
             {
                 Anorm = lapackf77_clange("I", &N, &N,    h_A+s*lda*N, &lda, work);

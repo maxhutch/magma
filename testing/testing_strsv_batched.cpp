@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_ztrsv_batched.cpp normal z -> s, Tue Feb  9 16:06:16 2016
+       @generated from testing/testing_ztrsv_batched.cpp normal z -> s, Mon May  2 23:31:22 2016
        @author Tingxing Dong
 
 */
@@ -18,11 +18,10 @@
 #include <cuda.h>  // for CUDA_VERSION
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
-#include "batched_kernel_param.h"
+#include "testings.h"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -112,8 +111,8 @@ int main( int argc, char** argv)
     
             magma_sset_pointer( dwork_array, dwork, N, 0, 0, dwork_batchSize, batchCount, opts.queue );
 
-            memset(h_bmagma, 0, batchCount*N*sizeof(float));
-            magmablas_slaset( MagmaFull, N, batchCount, c_zero, c_zero, dwork, N);
+            memset( h_bmagma, 0, batchCount*N*sizeof(float) );
+            magmablas_slaset( MagmaFull, N, batchCount, c_zero, c_zero, dwork, N, opts.queue );
 
             /* Initialize the matrices */
             /* Factor A into LU to get well-conditioned triangular matrix.
@@ -136,8 +135,8 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_ssetmatrix( Ak, Ak*batchCount, h_A, lda, d_A, ldda );
-            magma_ssetmatrix( N,  batchCount, h_b, N, d_b, N );
+            magma_ssetmatrix( Ak, Ak*batchCount, h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetmatrix( N,  batchCount, h_b, N, d_b, N, opts.queue );
 
             magma_sset_pointer( d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue );
             magma_sset_pointer( d_b_array, d_b, N, 0, 0, N, batchCount, opts.queue );
@@ -151,13 +150,13 @@ int main( int argc, char** argv)
 
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
-            magma_sgetmatrix( N, batchCount, dwork, N, h_bmagma, N );
+            magma_sgetmatrix( N, batchCount, dwork, N, h_bmagma, N, opts.queue );
 
 
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_ssetmatrix( N, batchCount, h_b, N, d_b, N );
+            magma_ssetmatrix( N, batchCount, h_b, N, d_b, N, opts.queue );
             magma_sset_pointer( d_b_array, d_b, N, 0, 0, N, batchCount, opts.queue );
 
             // CUBLAS version <= 6.0 has float **            dA_array, no cast needed.
@@ -177,7 +176,7 @@ int main( int argc, char** argv)
                 MAGMA_UNUSED( alpha );
             #endif
 
-            magma_sgetmatrix( N, batchCount, d_b, N, h_bcublas, N );
+            magma_sgetmatrix( N, batchCount, d_b, N, h_bcublas, N, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

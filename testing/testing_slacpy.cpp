@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zlacpy.cpp normal z -> s, Tue Feb  9 16:06:02 2016
+       @generated from testing/testing_zlacpy.cpp normal z -> s, Mon May  2 23:31:07 2016
        @author Mark Gates
 */
 
@@ -16,7 +16,7 @@
 #include <math.h>
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -92,13 +92,12 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_ssetmatrix( M, N, h_A, lda, d_A, ldda );
-            magma_ssetmatrix( M, N, h_B, ldb, d_B, lddb );
+            magma_ssetmatrix( M, N, h_A, lda, d_A, ldda, opts.queue );
+            magma_ssetmatrix( M, N, h_B, ldb, d_B, lddb, opts.queue );
             
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            //magmablas_slacpy( uplo[iuplo], M-2, N-2, d_A+1+ldda, ldda, d_B+1+lddb, lddb );  // inset by 1 row & col
-            magmablas_slacpy( uplo[iuplo], M, N, d_A, ldda, d_B, lddb );
+            //magmablas_slacpy( uplo[iuplo], M-2, N-2, d_A+1+ldda, ldda, d_B+1+lddb, lddb, opts.queue );  // inset by 1 row & col
+            magmablas_slacpy( uplo[iuplo], M, N, d_A, ldda, d_B, lddb, opts.queue );
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
@@ -123,7 +122,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            magma_sgetmatrix( M, N, d_B, lddb, h_R, lda );
+            magma_sgetmatrix( M, N, d_B, lddb, h_R, lda, opts.queue );
             
             blasf77_saxpy(&size, &c_neg_one, h_B, &ione, h_R, &ione);
             error = lapackf77_slange("f", &M, &N, h_R, &lda, work);

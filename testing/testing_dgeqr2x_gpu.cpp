@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
        
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zgeqr2x_gpu.cpp normal z -> d, Tue Feb  9 16:06:10 2016
+       @generated from testing/testing_zgeqr2x_gpu.cpp normal z -> d, Mon May  2 23:31:15 2016
 */
 
 // includes, system
@@ -19,7 +19,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
 #include "testings.h"
@@ -57,10 +57,6 @@ int main( int argc, char** argv)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    magma_queue_t queues[2];
-    magma_queue_create( &queues[0] );
-    magma_queue_create( &queues[1] );
-
     printf("%% version %d\n", (int) opts.version );
     printf("%% It's okay if |Q - Q_lapack| is large; MAGMA and LAPACK\n"
            "%% just chose different Householder reflectors, both valid.\n\n");
@@ -109,19 +105,18 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_DEV( dwork,  double, max(5*min_mn, (BLOCK_SIZE*2+2)*min_mn) );
             
-            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, ddA, N );
-            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, d_T, N );
+            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, ddA, N, opts.queue );
+            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, d_T, N, opts.queue );
             
             /* Initialize the matrix */
             size = lda*N;
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
             lapackf77_dlacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
-            magma_dsetmatrix( M, N, h_R, lda, d_A, ldda );
+            magma_dsetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
     
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
     
             if (opts.version == 1) {
@@ -154,9 +149,9 @@ int main( int argc, char** argv)
                    Check the result, following zqrt01 except using the reduced Q.
                    This works for any M,N (square, tall, wide).
                    =================================================================== */
-                magma_dgetmatrix( M, N, d_A, ldda, h_R, lda );
-                magma_dgetmatrix( N, N, ddA, N,    h_T, N );
-                magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn );
+                magma_dgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
+                magma_dgetmatrix( N, N, ddA, N,    h_T, N, opts.queue );
+                magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn, opts.queue );
                 // Restore the upper triangular part of A before the check
                 lapackf77_dlacpy( "Upper", &N, &N, h_T, &N, h_R, &lda );
 
@@ -227,12 +222,12 @@ int main( int argc, char** argv)
                    Check if T is correct
                    =================================================================== */
                 // Recompute T in h_work for d_A (magma), in case it is different than h_A (lapack)
-                magma_dgetmatrix( M, N, d_A, ldda, h_R, lda );
-                magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn );
+                magma_dgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
+                magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn, opts.queue );
                 lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
                                   &M, &N, h_R, &lda, tau, h_work, &N );
                 
-                magma_dgetmatrix( N, N, d_T, N, h_T, N );
+                magma_dgetmatrix( N, N, d_T, N, h_T, N, opts.queue );
                 size = N*N;
                 blasf77_daxpy( &size, &c_neg_one, h_work, &ione, h_T, &ione );
                 Anorm = lapackf77_dlantr( "F", "U", "N", &N, &N, h_work, &N, rwork );
@@ -273,9 +268,6 @@ int main( int argc, char** argv)
         }
     }
     
-    magma_queue_destroy( queues[0] );
-    magma_queue_destroy( queues[1] );
-
     opts.cleanup();
     TESTING_FINALIZE();
     return status;

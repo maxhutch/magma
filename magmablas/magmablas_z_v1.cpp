@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 
@@ -12,6 +12,7 @@
        Implements all the wrappers for v1 backwards compatability.
        Separating the wrappers allows the new functions to use magma_internal.h
 */
+#ifndef MAGMA_NO_V1
 
 #include "common_magma.h"
 
@@ -847,3 +848,149 @@ magmablas_ztrtri_diag(
 {
     magmablas_ztrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magmablasGetQueue() );
 }
+
+
+/**
+    @see magma_zgetmatrix_1D_row_bcyclic_q
+    @ingroup magma_zblas3
+    ********************************************************************/
+extern "C" void
+magma_zgetmatrix_1D_row_bcyclic(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_const_ptr const *dA, magma_int_t ldda,
+    magmaDoubleComplex                 *hA, magma_int_t lda,
+    magma_int_t ngpu, magma_int_t nb )
+{
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_create( &queues[dev] );
+    }
+    magma_zgetmatrix_1D_row_bcyclic_q( m, n, dA, ldda, hA, lda, ngpu, nb, queues );
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_sync( queues[dev] );
+        magma_queue_destroy( queues[dev] );
+    }
+}
+
+
+/**
+    @see magma_zgetmatrix_1D_col_bcyclic_q
+    @ingroup magma_zblas3
+    ********************************************************************/
+extern "C" void
+magma_zgetmatrix_1D_col_bcyclic(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_const_ptr const *dA, magma_int_t ldda,
+    magmaDoubleComplex                 *hA, magma_int_t lda,
+    magma_int_t ngpu, magma_int_t nb )
+{
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_create( &queues[dev] );
+    }
+    magma_zgetmatrix_1D_col_bcyclic_q( m, n, dA, ldda, hA, lda, ngpu, nb, queues );
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_sync( queues[dev] );
+        magma_queue_destroy( queues[dev] );
+    }
+}
+
+
+/**
+    @see magma_zsetmatrix_1D_row_bcyclic_q
+    @ingroup magma_zblas3
+    ********************************************************************/
+extern "C" void
+magma_zsetmatrix_1D_row_bcyclic(
+    magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex    *hA, magma_int_t lda,
+    magmaDoubleComplex_ptr      *dA, magma_int_t ldda,
+    magma_int_t ngpu, magma_int_t nb )
+{
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_create( &queues[dev] );
+    }
+    magma_zsetmatrix_1D_row_bcyclic_q( m, n, hA, lda, dA, ldda, ngpu, nb, queues );
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_sync( queues[dev] );
+        magma_queue_destroy( queues[dev] );
+    }
+}
+
+
+/**
+    @see magma_zsetmatrix_1D_col_bcyclic_q
+    @ingroup magma_zblas3
+    ********************************************************************/
+extern "C" void
+magma_zsetmatrix_1D_col_bcyclic(
+    magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex *hA, magma_int_t lda,
+    magmaDoubleComplex_ptr   *dA, magma_int_t ldda,
+    magma_int_t ngpu, magma_int_t nb )
+{
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_create( &queues[dev] );
+    }
+    magma_zsetmatrix_1D_col_bcyclic_q( m, n, hA, lda, dA, ldda, ngpu, nb, queues );
+    for( int dev=0; dev < ngpu; dev++ ) {
+        magma_setdevice( dev );
+        magma_queue_sync( queues[dev] );
+        magma_queue_destroy( queues[dev] );
+    }
+}
+
+
+// in src/zlarfb_gpu.cpp
+/**
+    @see magma_zlarfb_gpu_q
+    @ingroup magma_zaux3
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zlarfb_gpu(
+    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex_const_ptr dV,    magma_int_t lddv,
+    magmaDoubleComplex_const_ptr dT,    magma_int_t lddt,
+    magmaDoubleComplex_ptr dC,          magma_int_t lddc,
+    magmaDoubleComplex_ptr dwork,       magma_int_t ldwork )
+{
+    return magma_zlarfb_gpu_q( side, trans, direct, storev,
+                               m, n, k,
+                               dV, lddv, dT, lddt, dC, lddc, dwork, ldwork,
+                               magmablasGetQueue() );
+}
+
+
+// in src/zlarfb_gpu_gemm.cpp
+/**
+    @see magma_zlarfb_gpu_gemm_q
+    @ingroup magma_zaux3
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zlarfb_gpu_gemm(
+    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex_const_ptr dV,    magma_int_t lddv,
+    magmaDoubleComplex_const_ptr dT,    magma_int_t lddt,
+    magmaDoubleComplex_ptr dC,          magma_int_t lddc,
+    magmaDoubleComplex_ptr dwork,       magma_int_t ldwork,
+    magmaDoubleComplex_ptr dworkvt,     magma_int_t ldworkvt )
+{
+    return magma_zlarfb_gpu_gemm_q( side, trans, direct, storev,
+                                    m, n, k,
+                                    dV, lddv, dT, lddt, dC, lddc,
+                                    dwork, ldwork, dworkvt, ldworkvt,
+                                    magmablasGetQueue() );
+}
+
+#endif // MAGMA_NO_V1

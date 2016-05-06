@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.0.0) --
+   -- MAGMA (version 2.0.2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date February 2016
+   @date May 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zgetrf_batched.cpp normal z -> s, Tue Feb  9 16:06:17 2016
+   @generated from testing/testing_zgetrf_batched.cpp normal z -> s, Mon May  2 23:31:22 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -136,7 +136,7 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_ssetmatrix( M, columns, h_R, lda, dA, ldda );
+            magma_ssetmatrix( M, columns, h_R, lda, dA, ldda, opts.queue );
             magma_sset_pointer( dA_array, dA, ldda, 0, 0, ldda*N, batchCount, opts.queue );
             magma_iset_pointer( dipiv_array, dipiv_magma, 1, 0, 0, min_mn, batchCount, opts.queue );
             
@@ -145,10 +145,10 @@ int main( int argc, char** argv)
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             
-            magma_sgetmatrix( M, N*batchCount, dA, ldda, h_Amagma, lda );
+            magma_sgetmatrix( M, N*batchCount, dA, ldda, h_Amagma, lda, opts.queue );
             
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1);
+            magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1, opts.queue );
             
             for (int i=0; i < batchCount; i++)
             {
@@ -166,7 +166,7 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_ssetmatrix( M, columns, h_R, lda, dA,  ldda );
+            magma_ssetmatrix( M, columns, h_R, lda, dA,  ldda, opts.queue );
             magma_sset_pointer( dA_array, dA, ldda, 0, 0, ldda * N, batchCount, opts.queue );
 
             cublas_time = magma_sync_wtime( opts.queue );
@@ -226,7 +226,7 @@ int main( int argc, char** argv)
             }
 
             if ( opts.check ) {
-                magma_getvector( min_mn * batchCount, sizeof(magma_int_t), dipiv_magma, 1, ipiv, 1 );
+                magma_getvector( min_mn * batchCount, sizeof(magma_int_t), dipiv_magma, 1, ipiv, 1, opts.queue );
                 error = 0;
                 for (int i=0; i < batchCount; i++) {
                     for (int k=0; k < min_mn; k++) {

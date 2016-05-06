@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from magmablas/magmablas_zc_v1.cpp mixed zc -> ds, Tue Feb  9 16:05:35 2016
+       @generated from magmablas/magmablas_zc_v1.cpp mixed zc -> ds, Mon May  2 23:30:37 2016
 
        @author Mark Gates
        
        Implements all the wrappers for v1 backwards compatability.
        Separating the wrappers allows the new functions to use magma_internal.h
 */
+#ifndef MAGMA_NO_V1
 
 #include "common_magma.h"
 
@@ -107,3 +108,5 @@ magmablas_dslaswp(
 {
     magmablas_dslaswp_q( n, A, lda, SA, lda, m, ipiv, incx, magmablasGetQueue() );
 }
+
+#endif // MAGMA_NO_V1

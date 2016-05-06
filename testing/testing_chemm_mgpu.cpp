@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_zhemm_mgpu.cpp normal z -> c, Tue Feb  9 16:06:02 2016
+       @generated from testing/testing_zhemm_mgpu.cpp normal z -> c, Mon May  2 23:31:06 2016
        
        @author Mark Gates
        @author Azzam Haidar
@@ -18,9 +18,11 @@
 #include <math.h>
 #include <assert.h>
 
+#include <cuda_runtime.h>  // for cudaEventCreateWithFlags; TODO replace
+
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -43,7 +45,7 @@ int main( int argc, char** argv)
     magmaFloatComplex *hA, *hB, *hC, *hR;
     magmaFloatComplex_ptr dA[MagmaMaxGPUs], dB[MagmaMaxGPUs], dC[MagmaMaxGPUs], dwork[MagmaMaxGPUs];
     magmaFloatComplex_ptr dA2;
-    magma_int_t i, j, d, M, N, size, lda, ldb, ldc, ldda, lddb, lddc, msize, nb;
+    magma_int_t i, j, dev, M, N, size, lda, ldb, ldc, ldda, lddb, lddc, msize, nb;
     magma_int_t ione     = 1;
     magma_int_t iseed[4] = {0,0,0,1};
     magma_int_t status = 0;
@@ -78,15 +80,16 @@ int main( int argc, char** argv)
     magma_int_t nqueue  = opts.ngpu;
     // number of events per GPU. Require ngpu*ngpu.
     magma_int_t nevents = opts.ngpu*opts.ngpu;
-    magma_queue_t queues[MagmaMaxGPUs][20];
+    magma_queue_t queues[MagmaMaxGPUs][20], queues0[MagmaMaxGPUs];
     magma_event_t events[MagmaMaxGPUs][MagmaMaxGPUs*MagmaMaxGPUs + 10];
-    for( d = 0; d < opts.ngpu; ++d ) {
-        magma_setdevice( d );
+    for( dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_setdevice( dev );
         for( i = 0; i < nqueue; ++i ) {
-            magma_queue_create( &queues[d][i] );
+            magma_queue_create( dev, &queues[dev][i] );
         }
+        queues0[dev] = queues[dev][0];
         for( i = 0; i < nevents; ++i ) {
-            cudaEventCreateWithFlags( &events[d][i], cudaEventDisableTiming );
+            cudaEventCreateWithFlags( &events[dev][i], cudaEventDisableTiming );
         }
     }
 
@@ -115,13 +118,13 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_PIN( hR, magmaFloatComplex, ldc*N );
 
-            for( d = 0; d < opts.ngpu; ++d ) {
+            for( dev = 0; dev < opts.ngpu; ++dev ) {
                 magma_int_t mlocal = ((M / nb) / opts.ngpu + 1) * nb;
-                magma_setdevice( d );
-                TESTING_MALLOC_DEV( dA[d],    magmaFloatComplex, ldda*mlocal );
-                TESTING_MALLOC_DEV( dB[d],    magmaFloatComplex, lddb*N      );
-                TESTING_MALLOC_DEV( dC[d],    magmaFloatComplex, lddc*N      );
-                TESTING_MALLOC_DEV( dwork[d], magmaFloatComplex, dworksiz    );
+                magma_setdevice( dev );
+                TESTING_MALLOC_DEV( dA[dev],    magmaFloatComplex, ldda*mlocal );
+                TESTING_MALLOC_DEV( dB[dev],    magmaFloatComplex, lddb*N      );
+                TESTING_MALLOC_DEV( dC[dev],    magmaFloatComplex, lddc*N      );
+                TESTING_MALLOC_DEV( dwork[dev], magmaFloatComplex, dworksiz    );
             }
             
             if ( opts.check ) {
@@ -142,13 +145,13 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_csetmatrix_1D_col_bcyclic( M, M, hA, lda, dA, ldda, opts.ngpu, nb );
-            for( d = 0; d < opts.ngpu; ++d ) {
-                magma_setdevice( d );
-                magma_csetmatrix( M, N, hB, lda, dB[d], ldda );
+            magma_csetmatrix_1D_col_bcyclic( M, M, hA, lda, dA, ldda, opts.ngpu, nb, queues0 );
+            for( dev = 0; dev < opts.ngpu; ++dev ) {
+                magma_setdevice( dev );
+                magma_csetmatrix( M, N, hB, lda, dB[dev], ldda, opts.queue );
                 // since when offset != 0, the GPU that does beta*C may not be 0,
                 // send initial hC to all GPUs.
-                magma_csetmatrix( M, N, hC, lda, dC[d], ldda );
+                magma_csetmatrix( M, N, hC, lda, dC[dev], ldda, opts.queue );
             }
             
             trace_init( 1, opts.ngpu, nqueue, (magma_queue_t*) queues );
@@ -177,17 +180,16 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.check && iter == 0 ) {
                 magma_setdevice( 0 );
-                magmablasSetKernelStream( opts.queue );
-                magma_csetmatrix( M, M, hA, lda, dA2, ldda );
-                magma_csetmatrix( M, N, hB, lda, dB[0], ldda );
-                magma_csetmatrix( M, N, hC, lda, dwork[0], ldda );
+                magma_csetmatrix( M, M, hA, lda, dA2, ldda, opts.queue );
+                magma_csetmatrix( M, N, hB, lda, dB[0], ldda, opts.queue );
+                magma_csetmatrix( M, N, hC, lda, dwork[0], ldda, opts.queue );
                 
                 gpu_time2 = magma_sync_wtime(0);
                 magma_chemm(
                     MagmaLeft, MagmaLower, msize, N,
                     alpha, dA2 + offset + offset*ldda, ldda,
                            dB[0],    ldda,
-                    beta,  dwork[0], ldda );
+                    beta,  dwork[0], ldda, opts.queue );
                 gpu_time2 = magma_sync_wtime(0) - gpu_time2;
                 gpu_perf2 = gflops / gpu_time2;
             }
@@ -212,9 +214,9 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 
-                for (magma_int_t dev=0; dev < opts.ngpu; ++dev) {
+                for (dev=0; dev < opts.ngpu; ++dev) {
                     magma_setdevice( dev );
-                    magma_cgetmatrix( M, N, dC[dev], ldda, hR, lda );
+                    magma_cgetmatrix( M, N, dC[dev], ldda, hR, lda, opts.queue );
                     
                     // compute relative error ||R||/||A||*||B||, where R := C_magma - C_lapack = R - C
                     size = ldc*N;
@@ -249,12 +251,12 @@ int main( int argc, char** argv)
             
             TESTING_FREE_PIN( hR );
             
-            for( d = 0; d < opts.ngpu; ++d ) {
-                magma_setdevice( d );
-                TESTING_FREE_DEV( dA[d]    );
-                TESTING_FREE_DEV( dB[d]    );
-                TESTING_FREE_DEV( dC[d]    );
-                TESTING_FREE_DEV( dwork[d] );
+            for( dev = 0; dev < opts.ngpu; ++dev ) {
+                magma_setdevice( dev );
+                TESTING_FREE_DEV( dA[dev]    );
+                TESTING_FREE_DEV( dB[dev]    );
+                TESTING_FREE_DEV( dC[dev]    );
+                TESTING_FREE_DEV( dwork[dev] );
             }
             
             if ( opts.check ) {
@@ -270,13 +272,13 @@ int main( int argc, char** argv)
       printf( "\n" );
     }
 
-    for( d = 0; d < opts.ngpu; ++d ) {
-        magma_setdevice( d );
+    for( dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_setdevice( dev );
         for( i = 0; i < nqueue; ++i ) {
-            magma_queue_destroy( queues[d][i] );
+            magma_queue_destroy( queues[dev][i] );
         }
         for( i = 0; i < nevents; ++i ) {
-            magma_event_destroy( events[d][i] );
+            magma_event_destroy( events[dev][i] );
         }
     }
     

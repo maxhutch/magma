@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -46,6 +46,11 @@ int main( int argc, char** argv )
     double eps = lapackf77_dlamch("E");
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
+    magma_queue_t queues[MagmaMaxGPUs];
+    for( int dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_queue_create( dev, &queues[dev] );
+    }
+    
     printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 1 ) {
         printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
@@ -121,7 +126,7 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_zsetmatrix_1D_col_bcyclic( M, N, h_R, lda, d_lA, ldda, ngpu, nb );
+            magma_zsetmatrix_1D_col_bcyclic( M, N, h_R, lda, d_lA, ldda, ngpu, nb, queues );
 
             gpu_time = magma_wtime();
             magma_zgeqrf2_mgpu( ngpu, M, N, d_lA, ldda, tau, &info );
@@ -132,7 +137,7 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             }
             
-            magma_zgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_R, lda, ngpu, nb );
+            magma_zgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_R, lda, ngpu, nb, queues );
             
             if ( opts.check == 1 && M >= N ) {
                 /* =====================================================================
@@ -207,6 +212,10 @@ int main( int argc, char** argv )
         if ( opts.niter > 1 ) {
             printf( "\n" );
         }
+    }
+
+    for( int dev = 0; dev < opts.ngpu; ++dev ) {
+        magma_queue_destroy( queues[dev] );
     }
  
     opts.cleanup();

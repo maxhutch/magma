@@ -1,11 +1,11 @@
 /*
-    -- clMAGMA (version 2.0.0) --
+    -- clMAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
   
-       @generated from testing/testing_ztrtri_gpu.cpp normal z -> d, Tue Feb  9 16:06:05 2016
+       @generated from testing/testing_ztrtri_gpu.cpp normal z -> d, Mon May  2 23:31:11 2016
        
        @author Mark Gates
 */
@@ -17,7 +17,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -69,13 +69,13 @@ int main( int argc, char** argv)
                =================================================================== */
             /* factorize matrix */
             lapackf77_dpotrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, &info );
-            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
+            magma_dsetmatrix( N, N, h_A, lda, d_A, ldda, opts.queue );
             //magma_dpotrf_gpu( opts.uplo, N, d_A, ldda, &info );
             
             // check for exact singularity
-            //magma_dgetmatrix( N, N, d_A, ldda, h_R, lda );
+            //magma_dgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
             //h_R[ 10 + 10*lda ] = MAGMA_D_MAKE( 0.0, 0.0 );
-            //magma_dsetmatrix( N, N, h_R, lda, d_A, ldda );
+            //magma_dsetmatrix( N, N, h_R, lda, d_A, ldda, opts.queue );
             
             gpu_time = magma_wtime();
             magma_dtrtri_gpu( opts.uplo, opts.diag, N, d_A, ldda, &info );
@@ -105,7 +105,7 @@ int main( int argc, char** argv)
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                magma_dgetmatrix( N, N, d_A, ldda, h_R, lda );
+                magma_dgetmatrix( N, N, d_A, ldda, h_R, lda, opts.queue );
                 if ( opts.verbose ) {
                     printf( "A=" );  magma_dprint( N, N, h_A, lda );
                     printf( "R=" );  magma_dprint( N, N, h_R, lda );

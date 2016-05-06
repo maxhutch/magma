@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @precisions normal z -> c d s
 */
@@ -15,7 +15,7 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -111,7 +111,7 @@ int main( int argc, char** argv)
             lapackf77_zlacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
 
             real_Double_t set_time = magma_wtime();
-            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda, opts.queue );
             set_time =  magma_wtime() - set_time;
 
             /* =====================================================================
@@ -141,7 +141,7 @@ int main( int argc, char** argv)
             }
             
             real_Double_t get_time = magma_wtime();
-            magma_zgetmatrix( M, N, d_A, ldda, h_A, lda );
+            magma_zgetmatrix( M, N, d_A, ldda, h_A, lda, opts.queue );
             get_time =  magma_wtime() - get_time;
 
             /* =====================================================================
@@ -157,7 +157,7 @@ int main( int argc, char** argv)
                        (int) M, (int) N, gpu_perf, gpu_time*1000., set_time*1000.+get_time*1000. );
             }
             if ( opts.check ) {
-                magma_zgetmatrix( M, N, d_A, ldda, h_A, lda );
+                magma_zgetmatrix( M, N, d_A, ldda, h_A, lda, opts.queue );
                 error = get_LU_error( M, N, h_R, lda, h_A, ipiv );
                 printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed") );
                 status += ! (error < tol);

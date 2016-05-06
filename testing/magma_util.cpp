@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        
        Utilities for testing.
 */
-
+#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -25,7 +25,7 @@
 #endif
 
 #include "testings.h"
-#include "magma.h"
+#include "magma_v2.h"
 
 // --------------------
 // global variable
@@ -154,8 +154,6 @@ const char *usage =
 "  --dev x          GPU device to use, default 0.\n"
 "  --align n        Round up LDDA on GPU to multiple of align, default 32.\n"
 "  --verbose        Verbose output.\n"
-"  --null-stream    Use NULL CUDA stream; mainly to test old codes that relied\n"
-"                   on extra synchronization provided by the NULL stream.\n"
 "  -x  --exclusive  Lock file for exclusive use (internal ICL functionality).\n"
 "\n"
 "The following options apply to only some routines.\n"
@@ -305,8 +303,6 @@ void magma_opts::parse_opts( int argc, char** argv )
     
     int ndevices;  // not magma_int_t
     cudaGetDeviceCount( &ndevices );
-    
-    bool null_stream = false;
     
     this->ntest = 0;
     for( int i = 1; i < argc; ++i ) {
@@ -483,7 +479,6 @@ void magma_opts::parse_opts( int argc, char** argv )
         else if ( strcmp("--all",      argv[i]) == 0 ) { this->all    = true;  }
         else if ( strcmp("--notall",   argv[i]) == 0 ) { this->all    = false; }
         else if ( strcmp("--verbose",  argv[i]) == 0 ) { this->verbose= true;  }
-        else if ( strcmp("--null-stream", argv[i]) == 0 ) { null_stream = true; }
         
         // ----- lapack flag arguments
         else if ( strcmp("-L",  argv[i]) == 0 ) { this->uplo = MagmaLower; }
@@ -583,19 +578,11 @@ void magma_opts::parse_opts( int argc, char** argv )
     magma_getdevices( devices, MagmaMaxGPUs, &num );
     
     // 2 queues + 1 extra NULL entry to catch errors
-    magma_queue_create( &this->queues2[ 0 ] );
-    magma_queue_create( &this->queues2[ 1 ] );
+    magma_queue_create( this->device, &this->queues2[ 0 ] );
+    magma_queue_create( this->device, &this->queues2[ 1 ] );
     this->queues2[ 2 ] = NULL;
     
     this->queue = this->queues2[ 0 ];
-    
-    if ( ! null_stream ) {
-        magma_queue_create( &this->default_queue );
-    }
-    else {
-        this->default_queue = NULL;
-    }
-    magmablasSetKernelStream( this->default_queue );
     
     #ifdef HAVE_CUBLAS
     // handle for directly calling cublas
@@ -613,9 +600,6 @@ void magma_opts::cleanup()
     magma_queue_destroy( this->queues2[1] );
     this->queues2[0] = NULL;
     this->queues2[1] = NULL;
-    
-    magma_queue_destroy( this->default_queue );
-    this->default_queue = NULL;
     
     #ifdef HAVE_CUBLAS
     this->handle = NULL;

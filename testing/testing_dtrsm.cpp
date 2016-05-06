@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from testing/testing_ztrsm.cpp normal z -> d, Tue Feb  9 16:06:01 2016
+       @generated from testing/testing_ztrsm.cpp normal z -> d, Mon May  2 23:31:06 2016
        @author Chongxiao Cao
 */
 // includes, system
@@ -15,11 +15,11 @@
 #include <math.h>
 
 // includes, project
-#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"  // for MAGMA_D_DIV
+#include "testings.h"
 
 #define h_A(i,j) (h_A + (i) + (j)*lda)
 
@@ -108,21 +108,20 @@ int main( int argc, char** argv)
             
             lapackf77_dlarnv( &ione, ISEED, &sizeB, h_B );
             memcpy( h_Blapack, h_B, sizeB*sizeof(double) );
-            magma_dsetmatrix( Ak, Ak, h_A, lda, d_A, ldda );
+            magma_dsetmatrix( Ak, Ak, h_A, lda, d_A, ldda, opts.queue );
             
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
             #if defined(HAVE_CUBLAS)
-                magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb );
+                magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb, opts.queue );
                 
-                magmablasSetKernelStream( opts.queue );
                 magma_time = magma_sync_wtime( opts.queue );
                 if (opts.ngpu == 1) {
                     magmablas_dtrsm( opts.side, opts.uplo, opts.transA, opts.diag,
                                      M, N,
                                      alpha, d_A, ldda,
-                                            d_B, lddb );
+                                            d_B, lddb, opts.queue );
                 }
                 else {
                     magma_dtrsm_m( abs_ngpu, opts.side, opts.uplo, opts.transA, opts.diag,
@@ -133,13 +132,13 @@ int main( int argc, char** argv)
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
-                magma_dgetmatrix( M, N, d_B, lddb, h_Bmagma, ldb );
+                magma_dgetmatrix( M, N, d_B, lddb, h_Bmagma, ldb, opts.queue );
             #endif
             
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb );
+            magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb, opts.queue );
             
             cublas_time = magma_sync_wtime( opts.queue );
             #if defined(HAVE_CUBLAS)
@@ -162,7 +161,7 @@ int main( int argc, char** argv)
             cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
-            magma_dgetmatrix( M, N, d_B, lddb, h_Bcublas, ldb );
+            magma_dgetmatrix( M, N, d_B, lddb, h_Bcublas, ldb, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS

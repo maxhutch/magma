@@ -79,7 +79,7 @@ MAGMA README FILE
 
     Several compiler defines, below, affect how MAGMA is compiled and
     might have a large performance impact. These are set in make.inc files
-    using the -D compiler flag, e.g., -DMAGMA_WITH_MKL in CFLAGS.
+    using the -D compiler flag, e.g., -DMAGMA_WITH_MKL in CFLAGS, NVCCFLAGS, etc.
 
     MAGMA_WITH_MKL
         If linked with MKL, allows MAGMA to get MKL's version and
@@ -89,23 +89,27 @@ MAGMA README FILE
         If linked with ACML 5 or later, allows MAGMA to get ACML's version.
         ACML's number of threads are set via OpenMP.
 
+    MAGMA_NO_V1
+        Disables MAGMA v1.x compatability. Skips compiling non-queue versions
+        of MAGMA BLAS routines, and simplifies magma_init().
+
     MAGMA_NOAFFINITY
         Disables thread affinity, available in glibc 2.6 and later.
 
     BATCH_DISABLE_CHECKING
-        For batched routines it disables the info_array that contains errors.
-        In other term, for example, for Cholesky factorization if you are sure
-        your matrix is SPD and want better performance you can compile with this flag.
+        For batched routines, disables the info_array that contains errors.
+        For example, for Cholesky factorization if you are sure your matrix is
+        SPD and want better performance, you can compile with this flag.
 
     BATCH_DISABLE_CLEANUP
-        For batched routines it disables the cleanup code.
+        For batched routines, disables the cleanup code.
         For example the {sy|he}rk called with "lower" will write data on
         the upper triangular portion of the matrix.
 
     BATCHED_DISABLE_PARCPU
-        In the testing directory, it disable the parallel implementation of the
-        batched computation on CPU. Can be used to compare a naive versus a parallelized
-        CPU batched computation.
+        In the testing directory, disables the parallel implementation of the
+        batched computation on CPU. Can be used to compare a naive versus a
+        parallelized CPU batched computation.
 
 ----------------------------------------------------------------------------
 * Building without Fortran

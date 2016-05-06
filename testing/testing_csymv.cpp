@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
        @author Mark Gates
        
        Note: [ds] precisions generated from testing_chemv.cu
        
-       @generated from testing/testing_zsymv.cpp normal z -> c, Tue Feb  9 16:06:01 2016
+       @generated from testing/testing_zsymv.cpp normal z -> c, Mon May  2 23:31:05 2016
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -17,7 +17,7 @@
 #include <math.h>
 
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -73,8 +73,8 @@ int main(int argc, char **argv)
             ldwork = ldda*blocks;
             TESTING_MALLOC_DEV( dwork, magmaFloatComplex, ldwork );
             
-            magmablas_claset( MagmaFull, ldwork, 1, MAGMA_C_NAN, MAGMA_C_NAN, dwork, ldwork );
-            magmablas_claset( MagmaFull, ldda,   N, MAGMA_C_NAN, MAGMA_C_NAN, dA,    ldda   );
+            magmablas_claset( MagmaFull, ldwork, 1, MAGMA_C_NAN, MAGMA_C_NAN, dwork, ldwork, opts.queue );
+            magmablas_claset( MagmaFull, ldda,   N, MAGMA_C_NAN, MAGMA_C_NAN, dA,    ldda,   opts.queue );
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &sizeA, A );
@@ -98,23 +98,22 @@ int main(int argc, char **argv)
                Performs operation using MAGMABLAS
                =================================================================== */
             #ifdef HAVE_CUBLAS
-                magma_csetmatrix( N, N, A, lda, dA, ldda );
-                magma_csetvector( N, X, incx, dX, incx );
-                magma_csetvector( N, Y, incy, dY, incy );
+                magma_csetmatrix( N, N, A, lda, dA, ldda, opts.queue );
+                magma_csetvector( N, X, incx, dX, incx, opts.queue );
+                magma_csetvector( N, Y, incy, dY, incy, opts.queue );
                 
-                magmablasSetKernelStream( opts.queue );
                 magma_time = magma_sync_wtime( opts.queue );
                 if ( opts.version == 1 ) {
                     magmablas_csymv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork, opts.queue );
                 }
                 else {
                     // non-work interface (has added overhead)
-                    magmablas_csymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+                    magmablas_csymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, opts.queue );
                 }
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
-                magma_cgetvector( N, dY, incy, Ymagma, incy );
+                magma_cgetvector( N, dY, incy, Ymagma, incy, opts.queue );
             #endif
             
             /* =====================================================================

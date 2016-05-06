@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.0) --
+    -- MAGMA (version 2.0.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date February 2016
+       @date May 2016
 
-       @generated from sparse-iter/testing/testing_zdot.cpp normal z -> c, Tue Feb  9 16:06:18 2016
+       @generated from sparse-iter/testing/testing_zdot.cpp normal z -> c, Mon May  2 23:31:24 2016
        @author Hartwig Anzt
 */
 
@@ -17,10 +17,10 @@
 
 // includes, project
 #include "flops.h"
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -29,10 +29,8 @@
 int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
-    // set queue for old dense routines
     magma_queue_t queue=NULL;
-    magma_queue_create( &queue );
-    magmablasGetKernelStream( &queue );
+    magma_queue_create( 0, &queue );
 
     const magmaFloatComplex one  = MAGMA_C_MAKE(1.0, 0.0);
     const magmaFloatComplex zero = MAGMA_C_MAKE(0.0, 0.0);
@@ -73,12 +71,12 @@ int main(  int argc, char** argv )
             #ifdef ENABLE_TIMER
             cudot1 = magma_sync_wtime( queue );
             #endif
-            for( int h=0; h<iters; h++) {
+            for( int h=0; h < iters; h++) {
                 for( int l=0; l<num_vecs; l++){
-                    alpha = magma_cdotc(n, a.dval+l*a.num_rows, 1, b.dval, 1);
-                cudaDeviceSynchronize();    
+                    alpha = magma_cdotc( n, a.dval+l*a.num_rows, 1, b.dval, 1, queue );
+                    //cudaDeviceSynchronize();    
                 }
-                cudaDeviceSynchronize();   
+                //cudaDeviceSynchronize();   
             }
             #ifdef ENABLE_TIMER
             cudot2 = magma_sync_wtime( queue );
@@ -88,9 +86,8 @@ int main(  int argc, char** argv )
             #ifdef ENABLE_TIMER
             cugemv1 = magma_sync_wtime( queue );
             #endif
-            for( int h=0; h<iters; h++) {
-                magma_cgemv(MagmaTrans, n, num_vecs, one, a.dval, n, b.dval, 1, zero, skp.dval, 1);
-                //h++;
+            for( int h=0; h < iters; h++) {
+                magma_cgemv( MagmaTrans, n, num_vecs, one, a.dval, n, b.dval, 1, zero, skp.dval, 1, queue );
             }
             #ifdef ENABLE_TIMER
             cugemv2 = magma_sync_wtime( queue );
@@ -100,9 +97,8 @@ int main(  int argc, char** argv )
             #ifdef ENABLE_TIMER
             magmagemv1 = magma_sync_wtime( queue );
             #endif
-            for( int h=0; h<iters; h++) {
-                magmablas_cgemv(MagmaTrans, n, num_vecs, one, a.dval, n, b.dval, 1, zero, skp.dval, 1);
-                //h++;
+            for( int h=0; h < iters; h++) {
+                magmablas_cgemv( MagmaTrans, n, num_vecs, one, a.dval, n, b.dval, 1, zero, skp.dval, 1, queue );
             }
             #ifdef ENABLE_TIMER
             magmagemv2 = magma_sync_wtime( queue );
@@ -112,7 +108,7 @@ int main(  int argc, char** argv )
             #ifdef ENABLE_TIMER
             mdot1 = magma_sync_wtime( queue );
             #endif
-            for( int h=0; h<iters; h++) {
+            for( int h=0; h < iters; h++) {
                 for( int c = 0; c<num_vecs/2; c++ ){
                     CHECK( magma_cmdotc( n, 2, a.dval, b.dval, x.dval, y.dval, skp.dval, queue ));
                 }
@@ -129,7 +125,7 @@ int main(  int argc, char** argv )
             #ifdef ENABLE_TIMER
             mdgm1 = magma_sync_wtime( queue );
             #endif
-            for( int h=0; h<iters; h++) {
+            for( int h=0; h < iters; h++) {
                 CHECK( magma_cgemvmdot( n, num_vecs, a.dval, b.dval, x.dval, y.dval, skp.dval, queue ));
                 //h++;
             }
@@ -142,7 +138,7 @@ int main(  int argc, char** argv )
             #ifdef ENABLE_TIMER
             mdgm1 = magma_sync_wtime( queue );
             #endif
-            for( int h=0; h<iters; h++) {
+            for( int h=0; h < iters; h++) {
                 CHECK( magma_cgemvmdot_shfl( n, num_vecs, a.dval, b.dval, x.dval, y.dval, skp.dval, queue ));
             }
             #ifdef ENABLE_TIMER
