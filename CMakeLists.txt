@@ -392,4 +392,4 @@ message( "   LIBS_SPARSE  ${LIBS_SPARSE}" )
 # installation
 set(CMAKE_INSTALL_PREFIX /usr/local)
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN "*.h")
-install(TARGETS lapacktest testing magma magma_sparse ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(TARGETS lapacktest testing magma magma_sparse ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
