@@ -186,7 +186,7 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY lib )
 
 # ----------------------------------------
 # list of sources
-include( ${CMAKE_SOURCE_DIR}/CMake.src )
+include( ${CMAKE_CURRENT_SOURCE_DIR}/CMake.src )
 
 
 # ----------------------------------------
@@ -387,3 +387,8 @@ message( "   NFLAGS       ${CUDA_NVCC_FLAGS}" )
 message( "   FFLAGS       ${CMAKE_Fortran_FLAGS}" )
 message( "   LIBS         ${LIBS}" )
 message( "   LIBS_SPARSE  ${LIBS_SPARSE}" )
+
+# ----------------------------------------
+# installation
+install(DIRECTORY include DESTINATION /usr/local/include FILES_MATCHING PATTERN "*.h")
+install(TARGETS lapacktest testing magma magma_sparse ARCHIVE DESTINATION /usr/local/lib)
