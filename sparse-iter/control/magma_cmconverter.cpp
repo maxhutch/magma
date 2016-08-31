@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/control/magma_zmconverter.cpp normal z -> c, Mon May  2 23:30:51 2016
+       @generated from sparse-iter/control/magma_zmconverter.cpp, normal z -> c, Tue Aug 30 09:38:48 2016
        @author Hartwig Anzt
 */
 #include "magmasparse_internal.h"
@@ -276,7 +276,12 @@ magma_cmconvert(
             // CSR to CSRU
             else if (  new_format == Magma_CSRU ) {
                 // fill in information for B
-                *B = A;
+                B->storage_type = Magma_CSR;
+                B->memory_location = A.memory_location;
+                B->fill_mode = MagmaLower;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
+                B->num_cols = A.num_cols;
+                B->diameter = A.diameter;
                 B->fill_mode = MagmaUpper;
                 magma_int_t numzeros=0;
                 for( magma_int_t i=0; i < A.num_rows; i++) {
@@ -372,9 +377,18 @@ magma_cmconvert(
             else if ( new_format == Magma_CSRLIST ) {
                 CHECK( magma_cmconvert( A, B, Magma_CSR, Magma_CSR, queue ));
                 B->storage_type = Magma_CSRLIST;
-    
-                CHECK( magma_index_malloc_cpu( &B->rowidx, A.nnz ));
-                CHECK( magma_index_malloc_cpu( &B->list, A.nnz ));
+                magma_free_cpu( B->val );
+                magma_free_cpu( B->col );
+                
+                CHECK( magma_cmalloc_cpu( &B->val, A.nnz+A.num_rows*2 ));
+                CHECK( magma_index_malloc_cpu( &B->col, A.nnz+A.num_rows*2 ));
+                CHECK( magma_index_malloc_cpu( &B->rowidx, A.nnz+A.num_rows*2 ));
+                CHECK( magma_index_malloc_cpu( &B->list, A.nnz+A.num_rows*2 ));
+                
+                for(magma_int_t i=0; i < A.nnz; i++) {
+                    B->col[i] = A.col[i];
+                    B->val[i] = A.val[i];
+                }
                 
                 for(magma_int_t i=0; i < A.num_rows; i++) {
                     for(magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
@@ -385,6 +399,10 @@ magma_cmconvert(
                     }
                     B->list[A.row[i+1]-1] = 0;
                 }
+                for(magma_int_t i=A.nnz; i < A.nnz+A.num_rows*2; i++) {
+                    B->list[i] = -1;
+                }
+                B->true_nnz = A.nnz+A.num_rows*2;
             }
    
             // CSR to ELLPACKT (using row-major storage)
@@ -718,7 +736,6 @@ magma_cmconvert(
                     B->row[i+1]-1,
                     queue );
                 }
-            
             }
             
             // CSRCOO to CSR
@@ -1028,11 +1045,13 @@ magma_cmconvert(
             
             else {
                 printf("error: format not supported.\n");
+                //magmablasSetKernelStream( queue );
                 info = MAGMA_ERR_NOT_SUPPORTED;
             }
         }
         else {
             printf("error: conversion not supported.\n");
+            //magmablasSetKernelStream( queue );
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
     } // end CPU case

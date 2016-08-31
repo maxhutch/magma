@@ -1,17 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zcaxpycp.cu mixed zc -> ds, Mon May  2 23:30:29 2016
+       @generated from magmablas/zcaxpycp.cu, mixed zc -> ds, Tue Aug 30 09:38:27 2016
 
 */
 #include "magma_internal.h"
 
 #define NB 64
 
+
+/******************************************************************************/
 // adds   x += r (including conversion to double)  --and--
 // copies w = b
 // each thread does one index, x[i] and w[i]
@@ -32,9 +34,10 @@ dsaxpycp_kernel(
 }
 
 
-// ----------------------------------------------------------------------
-// adds   x += r (including conversion to double)  --and--
-// copies w = b
+/***************************************************************************//**
+    adds   x += r (including conversion to double)  --and--
+    copies w = b
+*******************************************************************************/
 extern "C" void
 magmablas_dsaxpycp_q(
     magma_int_t m,

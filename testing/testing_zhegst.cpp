@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
@@ -30,7 +30,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     // Constants
     const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
@@ -42,7 +43,7 @@ int main( int argc, char** argv)
     double      Anorm, error, work[1];
     magma_int_t N, n2, lda, info;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -59,10 +60,10 @@ int main( int argc, char** argv)
             lda    = N;
             n2     = N*lda;
             
-            TESTING_MALLOC_CPU( h_A,     magmaDoubleComplex, lda*N );
-            TESTING_MALLOC_CPU( h_B,     magmaDoubleComplex, lda*N );
+            TESTING_CHECK( magma_zmalloc_cpu( &h_A,     lda*N ));
+            TESTING_CHECK( magma_zmalloc_cpu( &h_B,     lda*N ));
             
-            TESTING_MALLOC_PIN( h_R,     magmaDoubleComplex, lda*N );
+            TESTING_CHECK( magma_zmalloc_pinned( &h_R,     lda*N ));
             
             /* ====================================================================
                Initialize the matrix
@@ -73,8 +74,8 @@ int main( int argc, char** argv)
             magma_zmake_hpd(       N, h_B, lda );
             magma_zpotrf( opts.uplo, N, h_B, lda, &info );
             if (info != 0) {
-                printf("magma_zpotrf returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_zpotrf returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
@@ -86,8 +87,8 @@ int main( int argc, char** argv)
             magma_zhegst( opts.itype, opts.uplo, N, h_R, lda, h_B, lda, &info );
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0) {
-                printf("magma_zhegst returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_zhegst returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             /* =====================================================================
@@ -99,8 +100,8 @@ int main( int argc, char** argv)
                                   &N, h_A, &lda, h_B, &lda, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_zhegst returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_zhegst returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 blasf77_zaxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
@@ -110,19 +111,19 @@ int main( int argc, char** argv)
                 
                 bool okay = (error < tol);
                 status += ! okay;
-                printf("%3d   %5d   %7.2f          %7.2f          %8.2e   %s\n",
-                       (int) opts.itype, (int) N, cpu_time, gpu_time,
+                printf("%3lld   %5lld   %7.2f          %7.2f          %8.2e   %s\n",
+                       (long long) opts.itype, (long long) N, cpu_time, gpu_time,
                        error, (okay ? "ok" : "failed"));
             }
             else {
-                printf("%3d   %5d     ---            %7.2f\n",
-                       (int) opts.itype, (int) N, gpu_time );
+                printf("%3lld   %5lld     ---            %7.2f\n",
+                       (long long) opts.itype, (long long) N, gpu_time );
             }
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_B );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_B );
             
-            TESTING_FREE_PIN( h_R );
+            magma_free_pinned( h_R );
             
             fflush( stdout );
         }
@@ -132,6 +133,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

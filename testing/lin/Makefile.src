@@ -39,10 +39,11 @@ cdir      := testing/lin
 
 
 # sources for liblapacktest.a, if Fortran is NOT available -- dummy stub functions.
-liblapacktest_zsrc := \
+liblapacktest_src := \
 	$(cdir)/magma_z_no_fortran.cpp
 
-liblapacktest_src := \
+# sources for liblapacktest.a, if Fortran IS available.
+liblapacktest_src += \
 	$(cdir)/zbdt01.f  \
 	$(cdir)/zget22.f  \
 	$(cdir)/zhet21.f  \

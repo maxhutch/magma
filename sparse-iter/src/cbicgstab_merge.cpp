@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/src/zbicgstab_merge.cpp normal z -> c, Mon May  2 23:30:56 2016
+       @generated from sparse-iter/src/zbicgstab_merge.cpp, normal z -> c, Tue Aug 30 09:38:52 2016
        @author Hartwig Anzt
 
 */
@@ -83,15 +83,16 @@ magma_cbicgstab_merge(
     
     // solver variables
     magmaFloatComplex alpha, beta, omega, rho_old, rho_new;
-    float nom, betanom, nom0, r0, res, nomb;
+    float betanom, nom0, r0, res, nomb;
     res=0;
+    //float nom;
     //float den;
 
     // solver setup
     CHECK(  magma_cresidualvec( A, b, *x, &r, &nom0, queue));
     magma_ccopy( dofs, r.dval, 1, rr.dval, 1, queue );                  // rr = r
     betanom = nom0;
-    nom = nom0*nom0;
+    //nom = nom0*nom0;
     rho_new = magma_cdotc( dofs, r.dval, 1, r.dval, 1, queue );             // rho=<rr,r>
     rho_old = omega = alpha = MAGMA_C_MAKE( 1.0, 0. );
     solver_par->init_res = nom0;
@@ -113,7 +114,7 @@ magma_cbicgstab_merge(
         solver_par->res_vec[0] = nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }
@@ -188,7 +189,7 @@ magma_cbicgstab_merge(
 
         res = betanom = magma_scnrm2( dofs, r.dval, 1, queue );
 
-        nom = betanom*betanom;
+        //nom = betanom*betanom;
 
         if ( solver_par->verbose > 0 ) {
             tempo2 = magma_sync_wtime( queue );

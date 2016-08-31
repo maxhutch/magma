@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from include/magma_zbatched.h normal z -> s, Mon May  2 23:31:25 2016
+       @generated from include/magma_zbatched.h, normal z -> s, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMA_SBATCHED_H
@@ -73,6 +73,18 @@ magmablas_sswapdblk_batched(
    *  BLAS batched routines
    */
 void
+magmablas_sgemm_batched_core(
+    magma_trans_t transA, magma_trans_t transB, 
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    float alpha,
+    float const * const * dA_array, magma_int_t ldda,
+    float const * const * dB_array, magma_int_t lddb,
+    float beta,
+    float **dC_array, magma_int_t lddc, 
+    magma_int_t roffA, magma_int_t coffA, magma_int_t roffB, magma_int_t coffB, magma_int_t roffC, magma_int_t coffC, 
+    magma_int_t batchCount, magma_queue_t queue );
+
+void
 magma_sgemm_batched(
     magma_trans_t transA, magma_trans_t transB, 
     magma_int_t m, magma_int_t n, magma_int_t k,
@@ -81,18 +93,6 @@ magma_sgemm_batched(
     float const * const * dB_array, magma_int_t lddb,
     float beta,
     float **dC_array, magma_int_t lddc, 
-    magma_int_t batchCount, magma_queue_t queue );
-
-void
-magmablas_sgemm_vbatched(
-    magma_trans_t transA, magma_trans_t transB, 
-    magma_int_t* m, magma_int_t* n, magma_int_t* k,
-    float alpha,
-    float const * const * dA_array, magma_int_t* ldda,
-    float const * const * dB_array, magma_int_t* lddb,
-    float beta,
-    float **dC_array, magma_int_t* lddc, 
-    magma_int_t max_m, magma_int_t max_n, magma_int_t max_k, 
     magma_int_t batchCount, magma_queue_t queue );
 
 void
@@ -106,6 +106,38 @@ magmablas_sgemm_batched(
     float **dC_array, magma_int_t lddc, 
     magma_int_t batchCount, magma_queue_t queue );
 
+void 
+magmablas_ssyrk_internal_batched(
+    magma_uplo_t uplo, magma_trans_t trans, 
+    magma_int_t n, magma_int_t k,
+    float alpha,
+    float const * const * dA_array, magma_int_t ldda,
+    float const * const * dB_array, magma_int_t lddb,
+    float beta,
+    float **dC_array, magma_int_t lddc, 
+    magma_int_t batchCount, magma_queue_t queue );
+
+void
+magmablas_ssyrk_internal_batched(
+    magma_uplo_t uplo, magma_trans_t trans, 
+    magma_int_t n, magma_int_t k,
+    float alpha,
+    float const * const * dA_array, magma_int_t ldda,
+    float const * const * dB_array, magma_int_t lddb,
+    float beta,
+    float **dC_array, magma_int_t lddc, 
+    magma_int_t batchCount, magma_queue_t queue );
+
+void
+magmablas_ssyrk_batched(
+    magma_uplo_t uplo, magma_trans_t trans, 
+    magma_int_t n, magma_int_t k,
+    float alpha,
+    float const * const * dA_array, magma_int_t ldda,
+    float beta,
+    float **dC_array, magma_int_t lddc, 
+    magma_int_t batchCount, magma_queue_t queue );
+    
 void
 magma_ssyrk_batched(
     magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
@@ -125,13 +157,21 @@ magmablas_ssyrk_batched(
     magma_int_t batchCount, magma_queue_t queue );
 
 void
-magmablas_ssyrk_vbatched(
-    magma_uplo_t uplo, magma_trans_t trans, magma_int_t* n, magma_int_t* k,
+magmablas_ssyr2k_batched(
+    magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
     float alpha,
-    float const * const * dA_array, magma_int_t* ldda,
-    float beta,
-    float **dC_array, magma_int_t* lddc, 
-    magma_int_t max_n, magma_int_t max_k,
+    float const * const * dA_array, magma_int_t ldda,
+    float const * const * dB_array, magma_int_t lddb, 
+    float beta, float **dC_array, magma_int_t lddc, 
+    magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_ssyr2k_batched(
+    magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
+    float alpha,
+    float const * const * dA_array, magma_int_t ldda,
+    float const * const * dB_array, magma_int_t lddb, 
+    float beta, float **dC_array, magma_int_t lddc, 
     magma_int_t batchCount, magma_queue_t queue );
 
 magma_int_t 

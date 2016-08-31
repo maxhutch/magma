@@ -1,44 +1,61 @@
     /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Ichitaro Yamazaki
 */
 #include "magma_internal.h"
 
-//
-//    m, n - dimensions in the output (hA) matrix.
-//             This routine copies the dAT matrix from the GPU
-//             to hA on the CPU. In addition, the output matrix
-//             is transposed. The routine uses a buffer of size
-//             2*lddw*nb pointed to by dwork (lddw > m) on the GPU. 
-//             Note that lda >= m and lddat >= n.
-//
-extern "C" void 
+/***************************************************************************//**
+    Copy and transpose matrix dAT, which is distributed row block cyclic
+    over multiple GPUs, to hA on CPU host.
+
+    @param[in]  ngpu    Number of GPUs over which dAT is distributed.
+    @param[in]  m       Number of rows    of output matrix hA. m >= 0.
+    @param[in]  n       Number of columns of output matrix hA. n >= 0.
+    @param[in]  nb      Block size. nb >= 0.
+    @param[in]  dAT     Array of ngpu pointers, one per GPU, that store the
+                        disributed n-by-m matrix A^T on the GPUs, each of dimension (ldda,m).
+    @param[in]  ldda    Leading dimension of each matrix dAT on each GPU. ngpu*ldda >= n.
+    @param[out] hA      The m-by-n matrix A on the CPU, of dimension (lda,n).
+    @param[in]  lda     Leading dimension of matrix hA. lda >= m.
+    @param[out] dwork   Array of ngpu pointers, one per GPU, that store the
+                        workspaces on each GPU, each of dimension (2*lddw*nb).
+    @param[in]  lddw    Leading dimension of dwork. lddw >= m.
+    @param[in]  queues  2D array of dimension (ngpu,2), with two queues per GPU.
+
+    @ingroup magma_getmatrix_transpose
+*******************************************************************************/
+extern "C" void
 magmablas_zgetmatrix_transpose_mgpu(
-    magma_int_t ngpu, magma_queue_t queues[][2],
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaDoubleComplex_const_ptr const dAT[],   magma_int_t ldda,
     magmaDoubleComplex                *hA,      magma_int_t lda,
     magmaDoubleComplex_ptr             dwork[], magma_int_t lddw,
-    magma_int_t m, magma_int_t n, magma_int_t nb)
+    magma_queue_t queues[][2] )
 {
 #define hA(j)       (hA         + (j)*lda)
 #define dwork(d, j) (dwork[(d)] + (j)*nb*lddw)
 #define dAT(d, j)   (dAT[(d)]   + (j)*nb)
 
-    magma_int_t nstreams = 2, d, j, j_local, id, ib;
+    magma_int_t nqueues = 2, d, j, j_local, id, ib;
 
     /* Quick return */
     if ( (m == 0) || (n == 0) )
         return;
 
+    // TODO standard argument checking (xerbla)
     if (lda < m || ngpu*ldda < n || lddw < m) {
-        fprintf( stderr, "%s: wrong arguments (%d<%d), (%d*%d<%d), or (%d<%d).\n",
-                 __func__, (int) lda, (int) m, (int) ngpu, (int) ldda, (int) n, (int) lddw, (int) m );
+        fprintf( stderr, "%s: wrong arguments (%lld < %lld), (%lld*%lld < %lld), or (%lld < %lld).\n",
+                 __func__,
+                 (long long) lda, (long long) m,
+                 (long long) ngpu, (long long) ldda, (long long) n,
+                 (long long) lddw, (long long) m );
         return;
     }
     
@@ -46,14 +63,14 @@ magmablas_zgetmatrix_transpose_mgpu(
     for (j=0; j < n; j += nb) {
         d       = (j/nb)%ngpu;
         j_local = (j/nb)/ngpu;
-        id      = j_local%nstreams;
+        id      = j_local%nqueues;
         magma_setdevice(d);
         
         ib = min(n-j, nb);
         magmablas_ztranspose_q( ib, m, dAT(d,j_local), ldda, dwork(d,id), lddw, queues[d][id] );
         magma_zgetmatrix_async( m, ib,
                                 dwork(d, id), lddw,
-                                hA(j),        lda, 
+                                hA(j),        lda,
                                 queues[d][id] );
     }
 }

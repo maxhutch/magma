@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zpotf2_kernels_old.cu normal z -> c, Mon May  2 23:30:41 2016
+       @generated from magmablas/zpotf2_kernels_old.cu, normal z -> c, Tue Aug 30 09:38:39 2016
 */
 
 #include "magma_internal.h"
@@ -31,8 +31,10 @@ extern __shared__ magmaFloatComplex shared_data[];
 extern __shared__ float dble_shared_data[];
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-__global__ void cdotc_kernel_batched(int n, magmaFloatComplex **x_array, int incx, int offset, magma_int_t *info_array, int gbstep)
+/******************************************************************************/
+__global__ void cdotc_kernel_batched(
+    int n, magmaFloatComplex **x_array, int incx, int offset,
+    magma_int_t *info_array, int gbstep)
 {
     int tx = threadIdx.x;
 
@@ -77,6 +79,7 @@ __global__ void cdotc_kernel_batched(int n, magmaFloatComplex **x_array, int inc
 }
 
 
+/******************************************************************************/
 void magma_cpotf2_cdotc_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, magma_int_t offset, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 {
     /*
@@ -85,7 +88,8 @@ void magma_cpotf2_cdotc_batched(magma_int_t n, magmaFloatComplex **x_array, magm
     2) updates x[n] = sqrt(x[n]-sum);
     */
     if (n > MAX_NTHREADS) {
-        fprintf( stderr, "%s: n = %d > %d is not supported\n", __func__, (int) n, (int) MAX_NTHREADS );
+        fprintf( stderr, "%s: n = %lld > %lld is not supported\n",
+                 __func__, (long long) n, (long long) MAX_NTHREADS );
     }
     int threadSize;
 
@@ -113,8 +117,10 @@ void magma_cpotf2_cdotc_batched(magma_int_t n, magmaFloatComplex **x_array, magm
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-__global__ void csscal_kernel_batched(int n, magmaFloatComplex **x_array, int incx, int offset, magma_int_t *info_array)
+/******************************************************************************/
+__global__ void csscal_kernel_batched(
+    int n, magmaFloatComplex **x_array, int incx, int offset,
+    magma_int_t *info_array)
 {
     // checkinfo to avoid computation of the singular matrix
     if (info_array[blockIdx.z] != 0 ) return;
@@ -137,7 +143,11 @@ __global__ void csscal_kernel_batched(int n, magmaFloatComplex **x_array, int in
 }
 
 
-void magma_cpotf2_csscal_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, magma_int_t offset, magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
+/******************************************************************************/
+void magma_cpotf2_csscal_batched(
+    magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx,
+    magma_int_t offset, magma_int_t *info_array,
+    magma_int_t batchCount, magma_queue_t queue)
 {
     /*
     Specialized Csscal perform x[1:n-1]/x[0]
@@ -151,7 +161,7 @@ void magma_cpotf2_csscal_batched(magma_int_t n, magmaFloatComplex **x_array, mag
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void clacgv_kernel_batched(int n, magmaFloatComplex **x_array, int incx, int offset)
 {
     int id = threadIdx.x;
@@ -164,17 +174,13 @@ __global__ void clacgv_kernel_batched(int n, magmaFloatComplex **x_array, int in
 }
 
 
-void magma_clacgv_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, magma_int_t offset, magma_int_t batchCount, magma_queue_t queue)
-{
-    /*
+/***************************************************************************//**
     Purpose
-    =======
-
+    -------
     CLACGV conjugates a complex vector of length N.
 
     Arguments
-    =========
-
+    ---------
     N       (input) INTEGER
             The length of the vector X.  N >= 0.
 
@@ -186,8 +192,12 @@ void magma_clacgv_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_
     INCX    (input) INTEGER
             The spacing between successive elements of X.
 
-    ===================================================================== */
-
+    @ingroup magma_lacgv_batched
+*******************************************************************************/
+void magma_clacgv_batched(
+    magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx,
+    magma_int_t offset, magma_int_t batchCount, magma_queue_t queue)
+{
     dim3 grid(1, 1, batchCount);
     dim3 threads(n, 1, 1);
    
@@ -197,7 +207,7 @@ void magma_clacgv_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 static __device__ void cpotf2_device(int m, int n, 
                               magmaFloatComplex *A, int lda, 
                               magmaFloatComplex alpha, 
@@ -312,7 +322,7 @@ static __device__ void cpotf2_device(int m, int n,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void cpotf2_kernel_batched(int m, int n, 
                               magmaFloatComplex **dA_array, int lda, 
                               magmaFloatComplex alpha, 
@@ -329,7 +339,7 @@ __global__ void cpotf2_kernel_batched(int m, int n,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void cpotf2_kernel(int m, int n, 
                               magmaFloatComplex *dA, int lda, 
                               magmaFloatComplex alpha, 
@@ -340,8 +350,7 @@ __global__ void cpotf2_kernel(int m, int n,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
 
@@ -412,8 +421,8 @@ __global__ void cpotf2_kernel(int m, int n,
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cposv_aux
-    ********************************************************************/
+    @ingroup magma_potf2_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cpotf2_tile_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,

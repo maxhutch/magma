@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgesv_gpu.cpp normal z -> c, Mon May  2 23:30:02 2016
+       @generated from src/zgesv_gpu.cpp, normal z -> c, Tue Aug 30 09:38:04 2016
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGESV solves a system of linear equations
@@ -62,8 +62,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_cgesv_driver
-    ********************************************************************/
+    @ingroup magma_gesv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgesv_gpu(
     magma_int_t n, magma_int_t nrhs,

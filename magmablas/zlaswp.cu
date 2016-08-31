@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        
@@ -55,7 +55,7 @@ __global__ void zlaswp_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     ZLASWP performs a series of row interchanges on the matrix A.
@@ -108,9 +108,9 @@ __global__ void zlaswp_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
-// It is used in zgessm, zgetrf_incpiv.
+    @ingroup magma_laswp
+*******************************************************************************/
+// used in zgessm, zgetrf_incpiv.
 extern "C" void
 magmablas_zlaswp_q(
     magma_int_t n,
@@ -161,7 +161,7 @@ magmablas_zlaswp_q(
 
 
 
-// ------------------------------------------------------------
+/******************************************************************************/
 // Extended version has stride in both directions (ldx, ldy)
 // to handle both row-wise and column-wise storage.
 
@@ -192,7 +192,7 @@ __global__ void zlaswpx_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     ZLASWPX performs a series of row interchanges on the matrix A.
@@ -250,8 +250,8 @@ __global__ void zlaswpx_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_laswp
+*******************************************************************************/
 extern "C" void
 magmablas_zlaswpx_q(
     magma_int_t n,
@@ -300,7 +300,7 @@ magmablas_zlaswpx_q(
 
 
 
-// ------------------------------------------------------------
+/******************************************************************************/
 // This version takes d_ipiv on the GPU. Thus it does not pass pivots
 // as an argument using a structure, avoiding all the argument size
 // limitations of CUDA and OpenCL. It also needs just one kernel launch
@@ -331,7 +331,7 @@ __global__ void zlaswp2_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     ZLASWP2 performs a series of row interchanges on the matrix A.
@@ -385,8 +385,8 @@ __global__ void zlaswp2_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_laswp
+*******************************************************************************/
 extern "C" void
 magmablas_zlaswp2_q(
     magma_int_t n,

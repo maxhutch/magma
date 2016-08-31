@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zungqr_m.cpp normal z -> d, Mon May  2 23:30:11 2016
+       @generated from src/zungqr_m.cpp, normal z -> d, Tue Aug 30 09:38:12 2016
 
        @author Mark Gates
 */
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DORGQR generates an M-by-N DOUBLE PRECISION matrix Q with orthonormal columns,
@@ -72,8 +72,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_ungqr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dorgqr_m(
     magma_int_t m, magma_int_t n, magma_int_t k,
@@ -285,13 +285,13 @@ magma_dorgqr_m(
         
         // copy result back to CPU
         trace_cpu_start( 0, "get", "get A" );
-        magma_dgetmatrix_1D_col_bcyclic( m, n, dA, ldda, A, lda, ngpu, nb, queues );
+        magma_dgetmatrix_1D_col_bcyclic( ngpu, m, n, nb, dA, ldda, A, lda, queues );
         trace_cpu_end( 0 );
     }
     
     #ifdef TRACING
     char name[80];
-    snprintf( name, sizeof(name), "dorgqr-n%d-ngpu%d.svg", m, ngpu );
+    snprintf( name, sizeof(name), "dorgqr-n%lld-ngpu%lld.svg", (long long) m, (long long) ngpu );
     trace_finalize( name, "trace.css" );
     #endif
     

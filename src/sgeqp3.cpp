@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
   
-       @generated from src/zgeqp3.cpp normal z -> s, Mon May  2 23:30:11 2016
+       @generated from src/zgeqp3.cpp, normal z -> s, Tue Aug 30 09:38:11 2016
 
        @author Stan Tomov
        @author Ichitaro Yamazaki
@@ -17,7 +17,7 @@
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGEQP3 computes a QR factorization with column pivoting of a
@@ -74,8 +74,16 @@
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
+*/
+#ifdef COMPLEX
+/**
+
     @param
     rwork   (workspace, for [cz]geqp3 only) REAL array, dimension (2*N)
+
+*/
+#endif
+/**
 
     @param[out]
     info    INTEGER
@@ -96,8 +104,8 @@
     with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in
     A(i+1:m,i), and tau in TAU(i).
 
-    @ingroup magma_sgeqp3_comp
-    ********************************************************************/
+    @ingroup magma_geqp3
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgeqp3(
     magma_int_t m, magma_int_t n,

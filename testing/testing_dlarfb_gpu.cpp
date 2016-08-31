@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlarfb_gpu.cpp normal z -> d, Mon May  2 23:31:15 2016
+       @generated from testing/testing_zlarfb_gpu.cpp, normal z -> d, Tue Aug 30 09:39:11 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -27,7 +27,8 @@
 */
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     // constants
     const double c_zero    = MAGMA_D_ZERO;
@@ -39,7 +40,7 @@ int main( int argc, char** argv )
     magma_int_t M, N, K, size, ldc, ldv, ldt, ldw, ldw2, nv;
     magma_int_t ISEED[4] = {0,0,0,1};
     double Cnorm, error, work[1];
-    magma_int_t status = 0;
+    int status = 0;
     
     // test all combinations of input parameters
     magma_side_t   side  [] = { MagmaLeft,       MagmaRight    };
@@ -59,8 +60,8 @@ int main( int argc, char** argv )
       N = opts.nsize[itest];
       K = opts.ksize[itest];
       if ( M < K || N < K || K <= 0 ) {
-          printf( "%5d %5d %5d   skipping because dlarfb requires M >= K, N >= K, K >= 0\n",
-                  (int) M, (int) N, (int) K );
+          printf( "%5lld %5lld %5lld   skipping because dlarfb requires M >= K, N >= K, K >= 0\n",
+                  (long long) M, (long long) N, (long long) K );
           continue;
       }
       for( int istor = 0; istor < 2; ++istor ) {
@@ -78,18 +79,18 @@ int main( int argc, char** argv )
             
             // Allocate memory for matrices
             double *C, *R, *V, *T, *W;
-            TESTING_MALLOC_CPU( C, double, ldc*N );
-            TESTING_MALLOC_CPU( R, double, ldc*N );
-            TESTING_MALLOC_CPU( V, double, ldv*K );
-            TESTING_MALLOC_CPU( T, double, ldt*K );
-            TESTING_MALLOC_CPU( W, double, ldw*K );
+            TESTING_CHECK( magma_dmalloc_cpu( &C, ldc*N ));
+            TESTING_CHECK( magma_dmalloc_cpu( &R, ldc*N ));
+            TESTING_CHECK( magma_dmalloc_cpu( &V, ldv*K ));
+            TESTING_CHECK( magma_dmalloc_cpu( &T, ldt*K ));
+            TESTING_CHECK( magma_dmalloc_cpu( &W, ldw*K ));
             
             magmaDouble_ptr dC, dV, dT, dW, dW2;
-            TESTING_MALLOC_DEV( dC,  double, ldc*N );
-            TESTING_MALLOC_DEV( dV,  double, ldv*K );
-            TESTING_MALLOC_DEV( dT,  double, ldt*K );
-            TESTING_MALLOC_DEV( dW,  double, ldw*K );
-            TESTING_MALLOC_DEV( dW2, double, ldw2*K );
+            TESTING_CHECK( magma_dmalloc( &dC,  ldc*N ));
+            TESTING_CHECK( magma_dmalloc( &dV,  ldv*K ));
+            TESTING_CHECK( magma_dmalloc( &dT,  ldt*K ));
+            TESTING_CHECK( magma_dmalloc( &dW,  ldw*K ));
+            TESTING_CHECK( magma_dmalloc( &dW2, ldw2*K ));
             
             // C is M x N.
             size = ldc*N;
@@ -121,7 +122,7 @@ int main( int argc, char** argv )
                     lapackf77_dlaset( MagmaUpperStr, &K, &K, &c_zero, &c_one, &V[(nv-K)*ldv], &ldv );
                 }
             }
-            //printf( "# ldv %d, nv %d\n", ldv, nv );
+            //printf( "# ldv %lld, nv %lld\n", (long long) ldv, (long long) nv );
             //printf( "V=" );  magma_dprint( ldv, nv, V, ldv );
             
             // T is K x K, upper triangular for forward, and lower triangular for backward
@@ -165,24 +166,24 @@ int main( int argc, char** argv )
             Cnorm = lapackf77_dlange( "Fro", &M, &N, C, &ldc, work );
             error = lapackf77_dlange( "Fro", &M, &N, R, &ldc, work ) / Cnorm;
             
-            printf( "%5d %5d %5d      %c       %c       %c       %c      %8.2e   %s\n",
-                    (int) M, (int) N, (int) K,
+            printf( "%5lld %5lld %5lld      %c       %c       %c       %c      %8.2e   %s\n",
+                    (long long) M, (long long) N, (long long) K,
                     lapacke_storev_const(storev[istor]), lapacke_side_const(side[iside]),
                     lapacke_direct_const(direct[idir]), lapacke_trans_const(trans[itran]),
                    error, (error < tol ? "ok" : "failed") );
             status += ! (error < tol);
             
-            TESTING_FREE_CPU( C );
-            TESTING_FREE_CPU( R );
-            TESTING_FREE_CPU( V );
-            TESTING_FREE_CPU( T );
-            TESTING_FREE_CPU( W );
+            magma_free_cpu( C );
+            magma_free_cpu( R );
+            magma_free_cpu( V );
+            magma_free_cpu( T );
+            magma_free_cpu( W );
             
-            TESTING_FREE_DEV( dC  );
-            TESTING_FREE_DEV( dV  );
-            TESTING_FREE_DEV( dT  );
-            TESTING_FREE_DEV( dW  );
-            TESTING_FREE_DEV( dW2 );
+            magma_free( dC  );
+            magma_free( dV  );
+            magma_free( dT  );
+            magma_free( dW  );
+            magma_free( dW2 );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -193,6 +194,6 @@ int main( int argc, char** argv )
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

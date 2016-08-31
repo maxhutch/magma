@@ -2,11 +2,11 @@
 #define ZGEMM_FERMI_KERNELS_H
 
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -16,15 +16,14 @@
 */
 #include "magma_internal.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
+// =============================================================================
 #define COMPLEX
 #define DOUBLE
 #define TEXTURE_1D
 
 #include "gemm_stencil_defs.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // currently, CPU driver assumes all transpose versions have same DIM_X, DIM_Y
 
 // size of thread block for calculating C (innermost loop)
@@ -32,7 +31,7 @@
 #define DIM_Y  8
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // A x B
 // size of work for a thread block
 #define BLK_M_nn  24
@@ -64,7 +63,7 @@
 #undef DIM_YB
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // A x B^T
 // size of work for a thread block
 #define BLK_M_nt  16
@@ -104,7 +103,7 @@
 #undef DIM_YB
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // A^T x B^T
 // size of work for a thread block
 #define BLK_M_tt  16
@@ -160,7 +159,7 @@
 #undef DIM_YB
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // A^T x B
 // size of work for a thread block
 #define BLK_M_tn  24

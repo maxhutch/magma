@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #ifndef MAGMA_TYPES_H
@@ -19,7 +19,7 @@
 #endif
 
 
-// ========================================
+// =============================================================================
 // C99 standard defines __func__. Some older compilers use __FUNCTION__.
 // Note __func__ in C99 is not a macro, so ifndef __func__ doesn't work.
 #if __STDC_VERSION__ < 199901L
@@ -33,7 +33,7 @@
 #endif
 
 
-// ========================================
+// =============================================================================
 // To use int64_t, link with mkl_intel_ilp64 or similar (instead of mkl_intel_lp64).
 // Similar to magma_int_t we declare magma_index_t used for row/column indices in sparse
 #if defined(MAGMA_ILP64) || defined(MKL_ILP64)
@@ -49,14 +49,14 @@ typedef int magma_index_t;
 typedef double real_Double_t;
 
 
-// ========================================
+// =============================================================================
 // opaque queue structure
 struct magma_queue;
 typedef struct magma_queue* magma_queue_t;
 
 
 
-// ========================================
+// =============================================================================
 // define types specific to implementation (CUDA, OpenCL, MIC)
 // define macros to deal with complex numbers
 #if defined(HAVE_CUBLAS)
@@ -64,39 +64,42 @@ typedef struct magma_queue* magma_queue_t;
     #ifndef CUBLAS_H_
     #include <cublas_v2.h>
     #endif
-    
+
     #include <cusparse_v2.h>
-    
+
     #ifdef __cplusplus
     extern "C" {
     #endif
-    
+
     magma_int_t      magma_queue_get_device         ( magma_queue_t queue );
     cudaStream_t     magma_queue_get_cuda_stream    ( magma_queue_t queue );
     cublasHandle_t   magma_queue_get_cublas_handle  ( magma_queue_t queue );
     cusparseHandle_t magma_queue_get_cusparse_handle( magma_queue_t queue );
-    
+
     #ifdef __cplusplus
     }
     #endif
-    
+
     typedef cudaEvent_t    magma_event_t;
-    typedef int            magma_device_t;
-    
+    typedef magma_int_t    magma_device_t;
+
     typedef cuDoubleComplex magmaDoubleComplex;
     typedef cuFloatComplex  magmaFloatComplex;
-    
-    #define MAGMA_Z_MAKE(r,i)     make_cuDoubleComplex(r, i)
-    #define MAGMA_Z_REAL(a)       (a).x
-    #define MAGMA_Z_IMAG(a)       (a).y
-    #define MAGMA_Z_ADD(a, b)     cuCadd(a, b)
-    #define MAGMA_Z_SUB(a, b)     cuCsub(a, b)
-    #define MAGMA_Z_MUL(a, b)     cuCmul(a, b)
-    #define MAGMA_Z_DIV(a, b)     cuCdiv(a, b)
-    #define MAGMA_Z_ABS(a)        cuCabs(a)
-    #define MAGMA_Z_ABS1(a)       (fabs((a).x) + fabs((a).y))
-    #define MAGMA_Z_CONJ(a)       cuConj(a)
-    
+
+    /// @addtogroup magma_complex
+    /// @{
+
+    #define MAGMA_Z_MAKE(r,i)     make_cuDoubleComplex(r, i)    ///< @return complex number r + i*sqrt(-1).
+    #define MAGMA_Z_REAL(a)       (a).x                         ///< @return real component of a.
+    #define MAGMA_Z_IMAG(a)       (a).y                         ///< @return imaginary component of a.
+    #define MAGMA_Z_ADD(a, b)     cuCadd(a, b)                  ///< @return (a + b).
+    #define MAGMA_Z_SUB(a, b)     cuCsub(a, b)                  ///< @return (a - b).
+    #define MAGMA_Z_MUL(a, b)     cuCmul(a, b)                  ///< @return (a * b).
+    #define MAGMA_Z_DIV(a, b)     cuCdiv(a, b)                  ///< @return (a / b).
+    #define MAGMA_Z_ABS(a)        cuCabs(a)                     ///< @return absolute value, |a| = sqrt( real(a)^2 + imag(a)^2 ).
+    #define MAGMA_Z_ABS1(a)       (fabs((a).x) + fabs((a).y))   ///< @return 1-norm absolute value, | real(a) | + | imag(a) |.
+    #define MAGMA_Z_CONJ(a)       cuConj(a)                     ///< @return conjugate of a.
+
     #define MAGMA_C_MAKE(r,i)     make_cuFloatComplex(r, i)
     #define MAGMA_C_REAL(a)       (a).x
     #define MAGMA_C_IMAG(a)       (a).y
@@ -107,16 +110,19 @@ typedef struct magma_queue* magma_queue_t;
     #define MAGMA_C_ABS(a)        cuCabsf(a)
     #define MAGMA_C_ABS1(a)       (fabsf((a).x) + fabsf((a).y))
     #define MAGMA_C_CONJ(a)       cuConjf(a)
-    
+
+    /// @}
+    // end group magma_complex
+
 #elif defined(HAVE_clBLAS)
     #include <clBLAS.h>
-    
+
     typedef cl_event          magma_event_t;
     typedef cl_device_id      magma_device_t;
-    
+
     typedef DoubleComplex magmaDoubleComplex;
     typedef FloatComplex  magmaFloatComplex;
-    
+
     #define MAGMA_Z_MAKE(r,i)     doubleComplex(r,i)
     #define MAGMA_Z_REAL(a)       (a).x
     #define MAGMA_Z_IMAG(a)       (a).y
@@ -126,7 +132,7 @@ typedef struct magma_queue* magma_queue_t;
     #define MAGMA_Z_ABS(a)        magma_cabs(a)
     #define MAGMA_Z_ABS1(a)       (fabs((a).x) + fabs((a).y))
     #define MAGMA_Z_CONJ(a)       MAGMA_Z_MAKE((a).x, -(a).y)
-    
+
     #define MAGMA_C_MAKE(r,i)     floatComplex(r,i)
     #define MAGMA_C_REAL(a)       (a).x
     #define MAGMA_C_IMAG(a)       (a).y
@@ -165,7 +171,7 @@ typedef struct magma_queue* magma_queue_t;
     #define MAGMA_Z_MUL(a, b)     ((a)*(b))
     #define MAGMA_Z_DIV(a, b)     ((a)/(b))
     #define MAGMA_Z_ABS(a)        abs(a)
-    #define MAGMA_Z_ABS1(a)       (fabs((a).real()) + fabs((a).imag())) 
+    #define MAGMA_Z_ABS1(a)       (fabs((a).real()) + fabs((a).imag()))
     #define MAGMA_Z_CONJ(a)       conj(a)
 
     #define MAGMA_C_MAKE(r, i)    std::complex<float> (r,i)
@@ -251,7 +257,7 @@ typedef struct magma_queue* magma_queue_t;
     typedef cl_mem magmaDouble_ptr;
     typedef cl_mem magmaFloatComplex_ptr;
     typedef cl_mem magmaDoubleComplex_ptr;
-    
+
     typedef cl_mem magma_const_ptr;
     typedef cl_mem magmaInt_const_ptr;
     typedef cl_mem magmaIndex_const_ptr;
@@ -268,7 +274,7 @@ typedef struct magma_queue* magma_queue_t;
     typedef double             *magmaDouble_ptr;
     typedef magmaFloatComplex  *magmaFloatComplex_ptr;
     typedef magmaDoubleComplex *magmaDoubleComplex_ptr;
-    
+
     typedef void               const *magma_const_ptr;
     typedef magma_int_t        const *magmaInt_const_ptr;
     typedef magma_index_t      const *magmaIndex_const_ptr;
@@ -279,13 +285,13 @@ typedef struct magma_queue* magma_queue_t;
 #endif
 
 
-// ========================================
+// =============================================================================
 // MAGMA constants
 
-// ----------------------------------------
+// -----------------------------------------------------------------------------
 #define MAGMA_VERSION_MAJOR 2
-#define MAGMA_VERSION_MINOR 0
-#define MAGMA_VERSION_MICRO 2
+#define MAGMA_VERSION_MINOR 1
+#define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
 #define MAGMA_VERSION_STAGE ""
@@ -293,31 +299,37 @@ typedef struct magma_queue* magma_queue_t;
 #define MagmaMaxGPUs 8
 #define MagmaMaxAccelerators 8
 
+// trsv template parameter
+#define MagmaBigTileSize 1000000
 
-// ----------------------------------------
+
+// -----------------------------------------------------------------------------
 // Return codes
 // LAPACK argument errors are < 0 but > MAGMA_ERR.
 // MAGMA errors are < MAGMA_ERR.
-#define MAGMA_SUCCESS               0
-#define MAGMA_ERR                  -100
-#define MAGMA_ERR_NOT_INITIALIZED  -101
-#define MAGMA_ERR_REINITIALIZED    -102
-#define MAGMA_ERR_NOT_SUPPORTED    -103
-#define MAGMA_ERR_ILLEGAL_VALUE    -104
-#define MAGMA_ERR_NOT_FOUND        -105
-#define MAGMA_ERR_ALLOCATION       -106
-#define MAGMA_ERR_INTERNAL_LIMIT   -107
-#define MAGMA_ERR_UNALLOCATED      -108
-#define MAGMA_ERR_FILESYSTEM       -109
-#define MAGMA_ERR_UNEXPECTED       -110
-#define MAGMA_ERR_SEQUENCE_FLUSHED -111
-#define MAGMA_ERR_HOST_ALLOC       -112
-#define MAGMA_ERR_DEVICE_ALLOC     -113
-#define MAGMA_ERR_CUDASTREAM       -114
-#define MAGMA_ERR_INVALID_PTR      -115
-#define MAGMA_ERR_UNKNOWN          -116
-#define MAGMA_ERR_NOT_IMPLEMENTED  -117
-#define MAGMA_ERR_NAN              -118
+/// @addtogroup magma_error_codes
+/// @{
+
+#define MAGMA_SUCCESS               0       ///< operation was successful
+#define MAGMA_ERR                  -100     ///< unspecified error
+#define MAGMA_ERR_NOT_INITIALIZED  -101     ///< magma_init() was not called
+#define MAGMA_ERR_REINITIALIZED    -102     // unused
+#define MAGMA_ERR_NOT_SUPPORTED    -103     ///< not supported on this GPU
+#define MAGMA_ERR_ILLEGAL_VALUE    -104     // unused
+#define MAGMA_ERR_NOT_FOUND        -105     ///< file not found
+#define MAGMA_ERR_ALLOCATION       -106     // unused
+#define MAGMA_ERR_INTERNAL_LIMIT   -107     // unused
+#define MAGMA_ERR_UNALLOCATED      -108     // unused
+#define MAGMA_ERR_FILESYSTEM       -109     // unused
+#define MAGMA_ERR_UNEXPECTED       -110     // unused
+#define MAGMA_ERR_SEQUENCE_FLUSHED -111     // unused
+#define MAGMA_ERR_HOST_ALLOC       -112     ///< could not malloc CPU host memory
+#define MAGMA_ERR_DEVICE_ALLOC     -113     ///< could not malloc GPU device memory
+#define MAGMA_ERR_CUDASTREAM       -114     // unused
+#define MAGMA_ERR_INVALID_PTR      -115     ///< can't free invalid pointer
+#define MAGMA_ERR_UNKNOWN          -116     ///< unspecified error
+#define MAGMA_ERR_NOT_IMPLEMENTED  -117     ///< not implemented yet
+#define MAGMA_ERR_NAN              -118     ///< NaN (not-a-number) detected
 
 // some sparse-iter errors
 #define MAGMA_SLOW_CONVERGENCE     -201
@@ -329,6 +341,7 @@ typedef struct magma_queue* magma_queue_t;
 // When adding error codes, please add to interface_cuda/error.cpp
 
 // map cusparse errors to magma errors
+#define MAGMA_ERR_CUSPARSE                            -3000
 #define MAGMA_ERR_CUSPARSE_NOT_INITIALIZED            -3001
 #define MAGMA_ERR_CUSPARSE_ALLOC_FAILED               -3002
 #define MAGMA_ERR_CUSPARSE_INVALID_VALUE              -3003
@@ -339,13 +352,15 @@ typedef struct magma_queue* magma_queue_t;
 #define MAGMA_ERR_CUSPARSE_MATRIX_TYPE_NOT_SUPPORTED  -3008
 #define MAGMA_ERR_CUSPARSE_ZERO_PIVOT                 -3009
 
-// some template parameter
-#define MagmaBigTileSize 1000000    
+/// @}
+// end group magma_error_codes
 
-// ----------------------------------------
+
+// -----------------------------------------------------------------------------
 // parameter constants
 // numbering is consistent with CBLAS and PLASMA; see plasma/include/plasma.h
 // also with lapack_cwrapper/include/lapack_enum.h
+// see http://www.netlib.org/lapack/lapwrapc/
 typedef enum {
     MagmaFalse         = 0,
     MagmaTrue          = 1
@@ -451,7 +466,7 @@ typedef enum {
     MagmaRowwise       = 402
 } magma_storev_t;
 
-// --------------------
+// -----------------------------------------------------------------------------
 // sparse
 typedef enum {
     Magma_CSR          = 611,
@@ -471,7 +486,8 @@ typedef enum {
     Magma_CSRL         = 627,
     Magma_CSRU         = 628,
     Magma_CSRCOO       = 629,
-    Magma_CUCSR        = 630
+    Magma_CUCSR        = 630,
+    Magma_COOLIST      = 631
 } magma_storage_t;
 
 
@@ -492,8 +508,8 @@ typedef enum {
     Magma_PASTIX       = 444,
     Magma_ILU          = 445,
     Magma_ICC          = 446,
-    Magma_AILU         = 447,
-    Magma_AICC         = 448,
+    Magma_PARILU       = 447,
+    Magma_PARIC        = 448,
     Magma_BAITER       = 449,
     Magma_LOBPCG       = 450,
     Magma_NONE         = 451,
@@ -504,13 +520,13 @@ typedef enum {
     Magma_PCGS         = 456,
     Magma_CGSMERGE     = 457,
     Magma_PCGSMERGE    = 458,
-    Magma_TFQMR        = 459,   
+    Magma_TFQMR        = 459,
     Magma_PTFQMR       = 460,
-    Magma_TFQMRMERGE   = 461,   
+    Magma_TFQMRMERGE   = 461,
     Magma_PTFQMRMERGE  = 462,
-    Magma_QMR          = 463,   
+    Magma_QMR          = 463,
     Magma_PQMR         = 464,
-    Magma_QMRMERGE     = 465,   
+    Magma_QMRMERGE     = 465,
     Magma_PQMRMERGE    = 466,
     Magma_BOMBARD      = 490,
     Magma_BOMBARDMERGE = 491,
@@ -518,7 +534,7 @@ typedef enum {
     Magma_BAITERO      = 493,
     Magma_IDRMERGE     = 494,
   Magma_PBICGSTABMERGE = 495,
-    Magma_AICT         = 496,
+    Magma_PARICT       = 496,
     Magma_CUSTOMIC     = 497,
     Magma_CUSTOMILU    = 498,
     Magma_PIDRMERGE    = 499,
@@ -526,8 +542,10 @@ typedef enum {
     Magma_BICGMERGE    = 501,
     Magma_PBICG        = 502,
     Magma_PBICGMERGE   = 503,
-    Magma_LSQR         = 504
-    
+    Magma_LSQR         = 504,
+    Magma_PARILUT      = 505,
+    Magma_ISAI         = 506,
+    Magma_CUSOLVE      = 507
 } magma_solver_type;
 
 typedef enum {
@@ -576,7 +594,7 @@ typedef enum {
 #define Magma2lapack_Max  MagmaRowwise   // 402
 
 
-// ----------------------------------------
+// -----------------------------------------------------------------------------
 // string constants for calling Fortran BLAS and LAPACK
 // todo: use translators instead? lapack_const_str( MagmaUpper )
 #define MagmaRowMajorStr      "Row"
@@ -622,7 +640,7 @@ typedef enum {
 extern "C" {
 #endif
 
-// --------------------
+// -----------------------------------------------------------------------------
 // Convert LAPACK character constants to MAGMA constants.
 // This is a one-to-many mapping, requiring multiple translators
 // (e.g., "N" can be NoTrans or NonUnit or NoVec).
@@ -643,7 +661,7 @@ magma_direct_t magma_direct_const( char lapack_char );
 magma_storev_t magma_storev_const( char lapack_char );
 
 
-// --------------------
+// -----------------------------------------------------------------------------
 // Convert MAGMA constants to LAPACK(E) constants.
 // The generic lapack_const_str works for all cases, but the specific routines
 // (e.g., lapack_trans_const) do better error checking.
@@ -687,7 +705,7 @@ static inline char lapacke_direct_const( magma_direct_t magma_const ) { return *
 static inline char lapacke_storev_const( magma_storev_t magma_const ) { return *lapack_storev_const( magma_const ); }
 
 
-// --------------------
+// -----------------------------------------------------------------------------
 // Convert MAGMA constants to clBLAS constants.
 #if defined(HAVE_clBLAS)
 clblasOrder          clblas_order_const( magma_order_t order );
@@ -698,7 +716,7 @@ clblasSide           clblas_side_const ( magma_side_t  side  );
 #endif
 
 
-// --------------------
+// -----------------------------------------------------------------------------
 // Convert MAGMA constants to CUBLAS constants.
 #if defined(CUBLAS_V2_H_)
 cublasOperation_t    cublas_trans_const ( magma_trans_t trans );
@@ -708,7 +726,7 @@ cublasSideMode_t     cublas_side_const  ( magma_side_t  side  );
 #endif
 
 
-// --------------------
+// -----------------------------------------------------------------------------
 // Convert MAGMA constants to CBLAS constants.
 #if defined(HAVE_CBLAS)
 #include <cblas.h>

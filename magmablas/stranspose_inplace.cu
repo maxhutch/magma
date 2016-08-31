@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/ztranspose_inplace.cu normal z -> s, Mon May  2 23:30:36 2016
+       @generated from magmablas/ztranspose_inplace.cu, normal z -> s, Tue Aug 30 09:38:34 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -15,7 +15,7 @@
 #define NB 16
 
 
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // grid is (n/nb) x ((n/nb)/2 + 1), where n/nb is odd.
 // lower indicates blocks in lower triangle of grid, including diagonal.
 // lower blocks cover left side of matrix, including diagonal.
@@ -26,7 +26,7 @@
 // grid [ A20 A21 A22 ] covers matrix as [ A20 A21 A22 |  .   .  ]
 //      [ A30 A31 A32 ]                  [ A30 A31 A32 | A01  .  ]
 //      [ A40 A41 A42 ]                  [ A40 A41 A42 | A02 A12 ]
-//
+// 
 // See stranspose_inplace_even for description of threads.
 
 __global__ void stranspose_inplace_odd(
@@ -75,7 +75,7 @@ __global__ void stranspose_inplace_odd(
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // grid is ((n/nb) + 1) x (n/nb)/2, where n/nb is even.
 // lower indicates blocks in strictly lower triangle of grid, excluding diagonal.
 // lower blocks shift up by one to cover left side of matrix including diagonal.
@@ -139,7 +139,7 @@ __global__ void stranspose_inplace_even(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     stranspose_inplace_q transposes a square N-by-N matrix in-place.
@@ -165,8 +165,8 @@ __global__ void stranspose_inplace_even(
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_transpose
+*******************************************************************************/
 extern "C" void
 magmablas_stranspose_inplace_q(
     magma_int_t n,

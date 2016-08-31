@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
@@ -21,16 +21,12 @@
 
 #include "gemv_template_kernel_batched.cuh"
 
-
-
-
-
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
 extern __shared__ magmaDoubleComplex shared_data[];
 
 
-//==============================================================================
+/******************************************************************************/
 /*
     used in upper nontranspose and lower transpose
 */
@@ -90,11 +86,10 @@ ztrsv_backwards_tri_device( int n,
     }
 }
 
-//==============================================================================
+/******************************************************************************/
 /*
     used in lower nontranspose and upper transpose
 */
-
 template<magma_trans_t transA, magma_diag_t diag>
 static __device__ void
 ztrsv_forwards_tri_device(int n,
@@ -152,7 +147,7 @@ ztrsv_forwards_tri_device(int n,
 }
 
 
-//==============================================================================
+/******************************************************************************/
 template<const int BLOCK_SIZE, const int BLK_X, const int BLK_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag>
 static __device__ void
 ztrsv_notrans_device(
@@ -220,9 +215,7 @@ ztrsv_notrans_device(
 }
 
 
-
-//==============================================================================
-
+/******************************************************************************/
 template<const int BLOCK_SIZE, const int BLK_X, const int BLK_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag >
 static __device__ void
 ztrsv_trans_device(
@@ -286,6 +279,5 @@ ztrsv_trans_device(
     }
     __syncthreads();
 }
-
 
 #endif // MAGMABLAS_TRSV_TEMPLATE_H

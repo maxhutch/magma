@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @date May 2016
+       @date August 2016
             
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zlobpcg.cpp normal z -> d, Mon May  2 23:31:01 2016
+       @generated from sparse-iter/src/zlobpcg.cpp, normal z -> d, Tue Aug 30 09:38:58 2016
 */
 #include "magmasparse_internal.h"
 
@@ -88,7 +88,7 @@ magma_dlobpcg(
 
 //**************************************************************
 
-    // Memory allocation for the eigenvectors, eigenvalues, and workspace
+    // %Memory allocation for the eigenvectors, eigenvalues, and workspace
     solver_par->solver = Magma_LOBPCG;
     magma_int_t m = A.num_rows;
     magma_int_t n = (solver_par->num_eigenvalues);
@@ -123,7 +123,7 @@ magma_dlobpcg(
     magma_int_t iterationNumber, cBlockSize, restart = 1, iter;
 
     //Chronometry
-    real_Double_t tempo1, tempo2, tempop1, tempop2;
+    real_Double_t tempo1, tempo2;
     
     magma_int_t lwork = max( 2*n+n*magma_get_dsytrd_nb(n),
                                             1 + 6*3*n + 2* 3*n* 3*n);
@@ -283,11 +283,8 @@ magma_dlobpcg(
             magma_d_matrix bWv={Magma_CSR}, bRv={Magma_CSR};
             bWv.memory_location = Magma_DEV;  bWv.num_rows = m; bWv.num_cols = cBlockSize; bWv.major = MagmaColMajor;  bWv.nnz = m*cBlockSize;  bWv.dval = blockW;
             bRv.memory_location = Magma_DEV;  bRv.num_rows = m; bRv.num_cols = cBlockSize; bRv.major = MagmaColMajor;  bRv.nnz = m*cBlockSize;  bRv.dval = blockR;
-            tempop1 = magma_sync_wtime( queue );
             CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, bRv, &bWv, precond_par, queue ));
             CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, bWv, &bRv, precond_par, queue ));
-            tempop2 = magma_sync_wtime( queue );
-            precond_par->runtime += tempop2-tempop1;
         
             // === make the preconditioned residuals orthogonal to X
             if( precond_par->solver != Magma_NONE){

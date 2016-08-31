@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zhemm_mgpu.cpp normal z -> d, Mon May  2 23:30:39 2016
+       @generated from magmablas/zhemm_mgpu.cpp, normal z -> d, Tue Aug 30 09:38:37 2016
        @author Mark Gates
        @author Azzam Haidar
 */
@@ -15,7 +15,7 @@
 #include "magma_bulge.h"
 //#include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DSYMM performs one of the matrix-matrix operations
@@ -129,8 +129,8 @@
             On entry, LDDC specifies the first dimension of C as declared
             in the calling (sub) program. LDDC >= max( 1, m ).
 
-    @ingroup magma_dblas3
-    ********************************************************************/
+    @ingroup magma_hemm
+*******************************************************************************/
 extern "C"
 void magmablas_dsymm_mgpu(
     magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,

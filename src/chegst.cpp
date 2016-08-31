@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from src/zhegst.cpp normal z -> c, Mon May  2 23:30:20 2016
+       @generated from src/zhegst.cpp, normal z -> c, Tue Aug 30 09:38:20 2016
 */
 
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHEGST reduces a complex Hermitian-definite generalized
@@ -77,8 +77,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_cheev_comp
-    ********************************************************************/
+    @ingroup magma_hegst
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chegst(
     magma_int_t itype, magma_uplo_t uplo, magma_int_t n,

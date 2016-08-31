@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -12,15 +12,15 @@
 */
 #include "magma_internal.h"
 
-/* ////////////////////////////////////////////////////////////////////////////
-   -- Auxiliary function: "A" is pointer to the current panel holding the
-      Householder vectors for the QR factorization of the panel. This routine
-      puts ones on the diagonal and zeros in the upper triangular part of "A".
-      The upper triangular values are stored in work.
-      
-      Then, the inverse is calculated in place in work, so as a final result,
-      work holds the inverse of the upper triangular diagonal block.
-*/
+/***************************************************************************//**
+    Auxiliary function: "A" is pointer to the current panel holding the
+    Householder vectors for the QR factorization of the panel. This routine
+    puts ones on the diagonal and zeros in the upper triangular part of "A".
+    The upper triangular values are stored in work.
+    
+    Then, the inverse is calculated in place in work, so as a final result,
+    work holds the inverse of the upper triangular diagonal block.
+*******************************************************************************/
 void zsplit_diag_block_invert(
     magma_int_t ib, magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *work )
@@ -44,7 +44,8 @@ void zsplit_diag_block_invert(
     lapackf77_ztrtri( MagmaUpperStr, MagmaNonUnitStr, &ib, work, &ib, &info );
 }
 
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     ZGEQRF computes a QR factorization of a complex M-by-N matrix A:
@@ -117,8 +118,8 @@ void zsplit_diag_block_invert(
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_zgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgeqrf_gpu(
     magma_int_t m, magma_int_t n,

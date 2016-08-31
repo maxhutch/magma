@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -17,18 +17,12 @@
 */
 
 #include "magma_internal.h"
+
+#define    TRTRI_NONBATCHED
 #include "ztrtri.cuh"
 
 
-/**
-    Inverts the NB x NB diagonal blocks of a triangular matrix.
-    This routine is used in ztrsm.
-    
-    Same as ztrtri_diag, but adds queue argument.
-    
-    @ingroup magma_zblas3
-    ********************************************************************/
-/**
+/***************************************************************************//**
     Purpose
     -------
     ztrtri_diag inverts the NB x NB diagonal blocks of A.
@@ -81,8 +75,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_trtri_diag
+*******************************************************************************/
 extern "C" void
 magmablas_ztrtri_diag_q(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,

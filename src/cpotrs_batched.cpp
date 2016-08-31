@@ -1,19 +1,19 @@
 
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
 
-       @generated from src/zpotrs_batched.cpp normal z -> c, Mon May  2 23:30:27 2016
+       @generated from src/zpotrs_batched.cpp, normal z -> c, Tue Aug 30 09:38:26 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     CPOTRS solves a system of linear equations A*X = B with a Hermitian
@@ -65,8 +65,8 @@
             Queue to execute in.
 
 
-    @ingroup magma_cposv_comp
-    ********************************************************************/
+    @ingroup magma_potrs_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrs_batched(
                   magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
@@ -110,7 +110,7 @@ magma_cpotrs_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, CTRTRI_BATCHED_NB )*CTRTRI_BATCHED_NB;
     magma_int_t dwork_msize = n*nrhs;
     magmaFloatComplex* dinvA      = NULL;
     magmaFloatComplex* dwork      = NULL; // dinvA and dwork are workspace in ctrsm
@@ -135,7 +135,7 @@ magma_cpotrs_batched(
     magmablas_claset_q( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
     magmablas_claset_q( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
     magma_cset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
-    magma_cset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+    magma_cset_pointer( dinvA_array, dinvA, CTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
     if ( uplo == MagmaUpper) {
         if (nrhs > 1)

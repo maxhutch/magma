@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #ifndef MAGMABLAS_V1_H
@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 
-// ========================================
+// =============================================================================
 // queue support
 // new magma_queue_create adds device
 #define magma_queue_create( queue_ptr ) \
@@ -36,7 +36,7 @@ void magma_queue_create_internal(
     const char* func, const char* file, int line );
 
 
-// ========================================
+// =============================================================================
 // @deprecated
 
 #define MagmaUpperLower     MagmaFull
@@ -51,7 +51,7 @@ void magma_queue_create_internal(
 void magma_device_sync();
 
 
-// ========================================
+// =============================================================================
 // Define magma queue
 // @deprecated
 magma_int_t magmablasSetKernelStream( magma_queue_t queue );

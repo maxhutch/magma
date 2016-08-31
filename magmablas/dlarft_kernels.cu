@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlarft_kernels.cu normal z -> d, Mon May  2 23:30:37 2016
+       @generated from magmablas/zlarft_kernels.cu, normal z -> d, Tue Aug 30 09:38:31 2016
        @author Azzam Haidar
 */
 
@@ -18,11 +18,11 @@
 
 extern __shared__ double shared_data[];
 
-
-//===================================================================================================
+/******************************************************************************/
 static __device__
-void dlarft_gemvcolwise_device( int m, double *v, double *tau,
-                         double *c, int ldc, double *T, int ldt, int step )
+void dlarft_gemvcolwise_device(
+    int m, double *v, double *tau,
+    double *c, int ldc, double *T, int ldt, int step )
 {
     const int thblk =  blockIdx.x;
     if (thblk > step)
@@ -70,7 +70,7 @@ void dlarft_gemvcolwise_device( int m, double *v, double *tau,
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__
 void dlarft_gemvcolwise_kernel( int m, double *v, int ldv, double *tau,
                           double *T, int ldt, int step )
@@ -79,7 +79,7 @@ void dlarft_gemvcolwise_kernel( int m, double *v, int ldv, double *tau,
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__
 void dlarft_gemvcolwise_kernel_batched( int m, double **v_array, int ldv, double **tau_array,
                           double **T_array, int ldt, int step )
@@ -89,7 +89,7 @@ void dlarft_gemvcolwise_kernel_batched( int m, double **v_array, int ldv, double
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C" 
 void magmablas_dlarft_gemvcolwise(
     magma_int_t m,  magma_int_t step,
@@ -106,7 +106,7 @@ void magmablas_dlarft_gemvcolwise(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C" 
 void magmablas_dlarft_gemvcolwise_batched(
     magma_int_t m,  magma_int_t step,
@@ -120,12 +120,9 @@ void magmablas_dlarft_gemvcolwise_batched(
         <<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, v_array, ldv, tau_array, T_array, ldt, step);
 }
-//===================================================================================================
 
 
-
-
-//===================================================================================================
+/******************************************************************************/
 // dgemv(y=alpha*A*x) interface: T/W=tau*v*x, 
 static __device__ void
 dlarft_gemvrowwise_device(
@@ -180,10 +177,10 @@ dlarft_gemvrowwise_device(
 
 
 
-//T(1:i-1,i) := - tau(i) * V(i:n,1:i-1)' * V(i:n,i)
-//T(i,i) = tau(i)
-//===================================================================================================
- __global__ void
+/******************************************************************************/
+// T(1:i-1,i) := - tau(i) * V(i:n,1:i-1)' * V(i:n,i)
+// T(i,i) = tau(i)
+__global__ void
 dlarft_gemvrowwise_kernel(
     int m, int i, 
     double *tau, 
@@ -199,7 +196,7 @@ dlarft_gemvrowwise_kernel(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void
 dlarft_gemvrowwise_kernel_batched(
     int m, int i,
@@ -218,7 +215,7 @@ dlarft_gemvrowwise_kernel_batched(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_gemvrowwise(
     magma_int_t m, magma_int_t i, 
@@ -237,7 +234,7 @@ void magmablas_dlarft_gemvrowwise(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_gemvrowwise_batched(
     magma_int_t m, magma_int_t i, 
@@ -254,12 +251,10 @@ void magmablas_dlarft_gemvrowwise_batched(
     dlarft_gemvrowwise_kernel_batched
         <<< grid, threads, shmem, queue->cuda_stream() >>>
         (m, i,  tau_array, v_array, ldv, T_array, ldt);
-}
-//===================================================================================================
-   
+}   
 
 
-//===================================================================================================
+/******************************************************************************/
 /*
    loop_inside
 */
@@ -341,7 +336,7 @@ dlarft_gemv_loop_inside_device(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void
 dlarft_gemv_loop_inside_kernel(
     int n, int k, 
@@ -353,7 +348,7 @@ dlarft_gemv_loop_inside_kernel(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void
 dlarft_gemv_loop_inside_kernel_batched(
     int n, int k, 
@@ -366,7 +361,7 @@ dlarft_gemv_loop_inside_kernel_batched(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_gemv_loop_inside(
     magma_int_t n, magma_int_t k, 
@@ -384,7 +379,7 @@ void magmablas_dlarft_gemv_loop_inside(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_gemv_loop_inside_batched(
     magma_int_t n, magma_int_t k, 
@@ -399,11 +394,9 @@ void magmablas_dlarft_gemv_loop_inside_batched(
         <<< grid, threads, shmem, queue->cuda_stream() >>>
         (n, k, tau_array, v_array, ldv, T_array, ldt); 
 }
-//===================================================================================================
 
 
-
-//===================================================================================================
+/******************************************************************************/
 static  __device__ void 
 dlarft_dtrmv_sm32x32_device(
     int n, int k, double *tau,
@@ -471,7 +464,7 @@ dlarft_dtrmv_sm32x32_device(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void 
 dlarft_dtrmv_sm32x32_kernel(
     int n, int k, double *tau,
@@ -481,7 +474,7 @@ dlarft_dtrmv_sm32x32_kernel(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void 
 dlarft_dtrmv_sm32x32_kernel_batched(
     int n, int k, double **tau_array,
@@ -490,10 +483,9 @@ dlarft_dtrmv_sm32x32_kernel_batched(
     int batchId = blockIdx.z;
     dlarft_dtrmv_sm32x32_device( n, k, tau_array[batchId], Tin_array[batchId], ldtin, Tout_array[batchId], ldtout);
 }
-//===================================================================================================
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_dtrmv_sm32x32(
     magma_int_t m, magma_int_t n, 
@@ -511,7 +503,7 @@ void magmablas_dlarft_dtrmv_sm32x32(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_dtrmv_sm32x32_batched(
     magma_int_t m, magma_int_t n, 
@@ -527,13 +519,9 @@ void magmablas_dlarft_dtrmv_sm32x32_batched(
         <<< grid, threads, shmem, queue->cuda_stream() >>>
         (m, n,  tau_array, Tin_array, ldtin, Tout_array, ldtout);
 }
-//===================================================================================================
 
 
-
-
-//===================================================================================================
-//===================================================================================================
+/******************************************************************************/
 static __device__ void 
 dlarft_recdtrmv_sm32x32_device(
     int m, int n, double *tau,
@@ -575,7 +563,7 @@ dlarft_recdtrmv_sm32x32_device(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void 
 dlarft_recdtrmv_sm32x32_kernel(
     int m, int n, double *tau,
@@ -585,7 +573,7 @@ dlarft_recdtrmv_sm32x32_kernel(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 __global__ void 
 dlarft_recdtrmv_sm32x32_kernel_batched(
     int m, int n, double **tau_array,
@@ -596,7 +584,7 @@ dlarft_recdtrmv_sm32x32_kernel_batched(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_recdtrmv_sm32x32(
     magma_int_t m, magma_int_t n, 
@@ -614,7 +602,7 @@ void magmablas_dlarft_recdtrmv_sm32x32(
 }
 
 
-//===================================================================================================
+/******************************************************************************/
 extern "C"
 void magmablas_dlarft_recdtrmv_sm32x32_batched(
     magma_int_t m, magma_int_t n, 
@@ -630,4 +618,3 @@ void magmablas_dlarft_recdtrmv_sm32x32_batched(
         <<< grid, threads, shmem, queue->cuda_stream() >>>
         (m, n,  tau_array, Trec_array, ldtrec, Ttri_array, ldttri);
 }
-//===================================================================================================

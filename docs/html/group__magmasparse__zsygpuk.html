@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -107,16 +106,360 @@ $(document).ready(function(){initNavTree('group__magmasparse__zsygpuk.html','');
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">double-complex precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__gpukernels.html">GPU kernels for sparse LA</a> &raquo; <a class="el" href="group__sparse__sygpuk.html">GPU kernels for symmetric/Hermitian sparse LA</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gadffeb10f0bf6cd1f07f4ce8cfb394136"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zsygpuk.html#gadffeb10f0bf6cd1f07f4ce8cfb394136">magma_zcgmerge_xrbeta</a> (magma_int_t n, magmaDoubleComplex_ptr d1, magmaDoubleComplex_ptr d2, magmaDoubleComplex_ptr dx, magmaDoubleComplex_ptr dr, magmaDoubleComplex_ptr dd, magmaDoubleComplex_ptr dz, magmaDoubleComplex_ptr skp, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:gadffeb10f0bf6cd1f07f4ce8cfb394136"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the update of r and x with the dot product and performs then the update for the Krylov vector d.  <a href="#gadffeb10f0bf6cd1f07f4ce8cfb394136">More...</a><br /></td></tr>
+<tr class="separator:gadffeb10f0bf6cd1f07f4ce8cfb394136"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2829a7769c73bffdac9e926c58819fe0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zsygpuk.html#ga2829a7769c73bffdac9e926c58819fe0">magma_zpcgmerge_xrbeta1</a> (magma_int_t n, magmaDoubleComplex_ptr dx, magmaDoubleComplex_ptr dr, magmaDoubleComplex_ptr dd, magmaDoubleComplex_ptr dz, magmaDoubleComplex_ptr skp, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga2829a7769c73bffdac9e926c58819fe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the update of r and x with the dot product and performs then the update for the Krylov vector d.  <a href="#ga2829a7769c73bffdac9e926c58819fe0">More...</a><br /></td></tr>
+<tr class="separator:ga2829a7769c73bffdac9e926c58819fe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8e321425147b86768c8ce3df431f6106"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zsygpuk.html#ga8e321425147b86768c8ce3df431f6106">magma_zpcgmerge_xrbeta2</a> (magma_int_t n, magmaDoubleComplex_ptr d1, magmaDoubleComplex_ptr d2, magmaDoubleComplex_ptr dh, magmaDoubleComplex_ptr dr, magmaDoubleComplex_ptr dd, magmaDoubleComplex_ptr skp, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga8e321425147b86768c8ce3df431f6106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the update of r and x with the dot product and performs then the update for the Krylov vector d.  <a href="#ga8e321425147b86768c8ce3df431f6106">More...</a><br /></td></tr>
+<tr class="separator:ga8e321425147b86768c8ce3df431f6106"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac03dbfa5595213b3687f2b1f66a07b0c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zsygpuk.html#gac03dbfa5595213b3687f2b1f66a07b0c">magma_zjcgmerge_xrbeta</a> (magma_int_t n, magmaDoubleComplex_ptr d1, magmaDoubleComplex_ptr d2, magmaDoubleComplex_ptr diag, magmaDoubleComplex_ptr dx, magmaDoubleComplex_ptr dr, magmaDoubleComplex_ptr dd, magmaDoubleComplex_ptr dz, magmaDoubleComplex_ptr dh, magmaDoubleComplex_ptr skp, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:gac03dbfa5595213b3687f2b1f66a07b0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the update of r and x with the dot product and performs then the update for the Krylov vector d.  <a href="#gac03dbfa5595213b3687f2b1f66a07b0c">More...</a><br /></td></tr>
+<tr class="separator:gac03dbfa5595213b3687f2b1f66a07b0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="gadffeb10f0bf6cd1f07f4ce8cfb394136"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zcgmerge_xrbeta </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>d1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>d2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>skp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merges the update of r and x with the dot product and performs then the update for the Krylov vector d. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>int dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d1</td><td>magmaDoubleComplex_ptr temporary vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d2</td><td>magmaDoubleComplex_ptr temporary vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>magmaDoubleComplex_ptr input vector x</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dr</td><td>magmaDoubleComplex_ptr input/output vector r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dd</td><td>magmaDoubleComplex_ptr input vector d</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dz</td><td>magmaDoubleComplex_ptr input vector z </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">skp</td><td>magmaDoubleComplex_ptr array for parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga2829a7769c73bffdac9e926c58819fe0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zpcgmerge_xrbeta1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>skp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merges the update of r and x with the dot product and performs then the update for the Krylov vector d. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>int dimension n</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>magmaDoubleComplex_ptr input vector x</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dr</td><td>magmaDoubleComplex_ptr input/output vector r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dd</td><td>magmaDoubleComplex_ptr input vector d</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dz</td><td>magmaDoubleComplex_ptr input vector z </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">skp</td><td>magmaDoubleComplex_ptr array for parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga8e321425147b86768c8ce3df431f6106"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zpcgmerge_xrbeta2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>d1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>d2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>skp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merges the update of r and x with the dot product and performs then the update for the Krylov vector d. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>int dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d1</td><td>magmaDoubleComplex_ptr temporary vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d2</td><td>magmaDoubleComplex_ptr temporary vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dh</td><td>magmaDoubleComplex_ptr input vector x</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dr</td><td>magmaDoubleComplex_ptr input/output vector r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">skp</td><td>magmaDoubleComplex_ptr array for parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gac03dbfa5595213b3687f2b1f66a07b0c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zjcgmerge_xrbeta </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>d1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>d2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>diag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>skp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merges the update of r and x with the dot product and performs then the update for the Krylov vector d. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>int dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d1</td><td>magmaDoubleComplex_ptr temporary vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d2</td><td>magmaDoubleComplex_ptr temporary vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dh</td><td>magmaDoubleComplex_ptr input vector x</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dr</td><td>magmaDoubleComplex_ptr input/output vector r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">skp</td><td>magmaDoubleComplex_ptr array for parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

@@ -1,22 +1,19 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from src/zgetf2_batched.cpp normal z -> d, Mon May  2 23:30:25 2016
+   @generated from src/zgetf2_batched.cpp, normal z -> d, Tue Aug 30 09:38:23 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
-#define A(i, j)  (A + (i) + (j)*ldda)   // A(i, j) means at i row, j column
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGETF2 computes an LU factorization of a general M-by-N matrix A
@@ -95,9 +92,8 @@
     this is an internal routine that might have many assumption.
 
 
-    @ingroup magma_dgesv_aux
-    ********************************************************************/
-
+    @ingroup magma_getf2_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgetf2_batched(
     magma_int_t m, magma_int_t n,
@@ -111,6 +107,8 @@ magma_dgetf2_batched(
     magma_int_t batchCount,
     magma_queue_t queue)
 {
+    #define A(i, j)  (A + (i) + (j)*ldda)
+    
     magma_int_t arginfo = 0;
     if (m < 0) {
         arginfo = -1;
@@ -194,6 +192,3 @@ magma_dgetf2_batched(
 
     return 0;
 }
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////

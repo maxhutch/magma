@@ -82,7 +82,7 @@ magma_ztrdtype1cbHLsym_withQ_v2(
     magmaDoubleComplex c_one    =  MAGMA_Z_ONE;
 
     magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep-1, st-1, ldv, &vpos, &taupos);
-    //printf("voici vpos %d taupos %d  tpos %d  blkid %d \n", vpos, taupos, tpos, blkid);
+    //printf("voici vpos %d taupos %d  tpos %d  blkid %d\n", vpos, taupos, tpos, blkid);
 
     len     = ed-st+1;
     *V(vpos)  = c_one;

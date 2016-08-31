@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Mark Gates
@@ -26,7 +26,7 @@
 /***************************************************************************//**
     Purpose
     -------
-    Returns the number of threads to use for parallel sections of MAGMA.
+    @return Number of threads to use for parallel sections of MAGMA.
     Typically, it is initially set by the environment variables
     OMP_NUM_THREADS or MAGMA_NUM_THREADS.
 
@@ -41,8 +41,8 @@
 
     @sa magma_get_lapack_numthreads
     @sa magma_set_lapack_numthreads
-    @ingroup magma_util
-    ********************************************************************/
+    @ingroup magma_thread
+*******************************************************************************/
 extern "C"
 magma_int_t magma_get_parallel_numthreads()
 {
@@ -80,8 +80,8 @@ magma_int_t magma_get_parallel_numthreads()
         threads = strtol( threads_str, &endptr, 10 );
         if ( threads < 1 || *endptr != '\0' ) {
             threads = 1;
-            fprintf( stderr, "$MAGMA_NUM_THREADS='%s' is an invalid number; using %d thread.\n",
-                     threads_str, (int) threads );
+            fprintf( stderr, "$MAGMA_NUM_THREADS='%s' is an invalid number; using %lld threads.\n",
+                     threads_str, (long long) threads );
         }
     }
     else {
@@ -104,9 +104,10 @@ magma_int_t magma_get_parallel_numthreads()
 /***************************************************************************//**
     Purpose
     -------
-    Returns the number of threads currently used for LAPACK and BLAS.
-    Typically, the number of threads is initially set by the environment variables
-    OMP_NUM_THREADS or MKL_NUM_THREADS.
+    @return Number of threads currently used for LAPACK and BLAS.
+    
+    Typically, the number of threads is initially set by the environment
+    variables OMP_NUM_THREADS or MKL_NUM_THREADS.
 
     If MAGMA is compiled with MAGMA_WITH_MKL, this queries MKL;
     else if MAGMA is compiled with OpenMP, this queries OpenMP;
@@ -114,8 +115,8 @@ magma_int_t magma_get_parallel_numthreads()
     
     @sa magma_get_parallel_numthreads
     @sa magma_set_lapack_numthreads
-    @ingroup magma_util
-    ********************************************************************/
+    @ingroup magma_thread
+*******************************************************************************/
 extern "C"
 magma_int_t magma_get_lapack_numthreads()
 {
@@ -161,8 +162,8 @@ magma_int_t magma_get_lapack_numthreads()
 
     @sa magma_get_parallel_numthreads
     @sa magma_get_lapack_numthreads
-    @ingroup magma_util
-    ********************************************************************/
+    @ingroup magma_thread
+*******************************************************************************/
 extern "C"
 void magma_set_lapack_numthreads(magma_int_t threads)
 {
@@ -171,11 +172,11 @@ void magma_set_lapack_numthreads(magma_int_t threads)
     }
 
 #if defined(MAGMA_WITH_MKL)
-    mkl_set_num_threads( threads );
+    mkl_set_num_threads( int(threads) );
 #elif defined(_OPENMP)
     #pragma omp parallel
     {
-        omp_set_num_threads( threads );
+        omp_set_num_threads( int(threads) );
     }
 #endif
 }
@@ -184,14 +185,14 @@ void magma_set_lapack_numthreads(magma_int_t threads)
 /***************************************************************************//**
     Purpose
     -------
-    Returns the number of threads currently used for OMP sections.
-    Typically, the number of threads is initially set by the environment variables
-    OMP_NUM_THREADS.
+    @return Number of threads currently used for OMP sections.
+    Typically, the number of threads is initially set by the environment
+    variable OMP_NUM_THREADS.
 
     @sa magma_get_parallel_numthreads
     @sa magma_set_lapack_numthreads
-    @ingroup magma_util
-    ********************************************************************/
+    @ingroup magma_thread
+*******************************************************************************/
 extern "C"
 magma_int_t magma_get_omp_numthreads()
 {
@@ -206,6 +207,8 @@ magma_int_t magma_get_omp_numthreads()
 
     return threads;
 }
+
+
 /***************************************************************************//**
     Purpose
     -------
@@ -229,8 +232,8 @@ magma_int_t magma_get_omp_numthreads()
 
     @sa magma_get_parallel_numthreads
     @sa magma_get_lapack_numthreads
-    @ingroup magma_util
-    ********************************************************************/
+    @ingroup magma_thread
+*******************************************************************************/
 extern "C"
 void magma_set_omp_numthreads(magma_int_t threads)
 {

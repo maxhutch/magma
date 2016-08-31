@@ -1,11 +1,11 @@
 /*
--- MAGMA (version 2.0.2) --
+-- MAGMA (version 2.1.0) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date May 2016
+ @date August 2016
 
- @generated from sparse-iter/include/magmasparse_zc.h mixed zc -> ds, Mon May  2 23:31:25 2016
+ @generated from sparse-iter/include/magmasparse_zc.h, mixed zc -> ds, Tue Aug 30 09:39:22 2016
  @author Hartwig Anzt
 */
 
@@ -63,8 +63,8 @@ magmablas_dlag2s_sparse(
     magma_int_t lda, 
     magmaFloat_ptr dSA, 
     magma_int_t ldsa,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void 
 magmablas_slag2d_sparse(
@@ -74,8 +74,8 @@ magmablas_slag2d_sparse(
     magma_int_t ldsa, 
     magmaDouble_ptr dA, 
     magma_int_t lda,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void 
 magma_dlag2s_CSR_DENSE(

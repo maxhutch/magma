@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
-       @generated from src/zungbr.cpp normal z -> s, Mon May  2 23:30:24 2016
+       @generated from src/zungbr.cpp, normal z -> s, Tue Aug 30 09:38:23 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SORGBR generates one of the real orthogonal matrices Q or P**H
@@ -101,8 +101,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_sgesvd_comp
-    ********************************************************************/
+    @ingroup magma_ungbr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sorgbr(
     magma_vect_t vect, magma_int_t m, magma_int_t n, magma_int_t k,
@@ -116,15 +116,16 @@ magma_sorgbr(
     // Constants
     const float c_zero = MAGMA_S_ZERO;
     const float c_one  = MAGMA_S_ONE;
+    const magma_int_t ineg_one = -1;
     
     // Local variables
     bool lquery, wantq;
-    magma_int_t i, iinfo, j, lwkopt, mn;
+    magma_int_t i, iinfo, j, lwkmin, lwkopt, min_mn;
     
     // Test the input arguments
     *info = 0;
     wantq = (vect == MagmaQ);
-    mn = min( m, n );
+    min_mn = min( m, n );
     lquery = (lwork == -1);
     if ( ! wantq && vect != MagmaP ) {
         *info = -1;
@@ -146,12 +147,15 @@ magma_sorgbr(
                 // magma_sorgqr takes dT instead of work
                 // magma_sorgqr2 doesn't take work
                 //magma_sorgqr2( m, n, k, A, lda, tau, work, -1, &iinfo );
-                work[0] = c_one;
+                lapackf77_sorgqr( &m, &n, &k, A, &lda, tau, work, &ineg_one, &iinfo );
             }
             else if (m > 1) {
                 //magma_sorgqr2( m-1, m-1, m-1, A(1,1), lda, tau, work, -1, &iinfo );
-                work[0] = c_one;
+                magma_int_t m1 = m-1;
+                lapackf77_sorgqr( &m1, &m1, &m1, A(1,1), &lda, tau, work, &ineg_one, &iinfo );
             }
+            lwkopt = MAGMA_S_REAL( work[0] );
+            lwkmin = min_mn;
         }
         else {
             if (k < n) {
@@ -160,10 +164,10 @@ magma_sorgbr(
             else if (n > 1) {
                 magma_sorglq( n-1, n-1, n-1, A(1,1), lda, tau, work, -1, &iinfo );
             }
+            lwkopt = MAGMA_S_REAL( work[0] );
+            lwkmin = lwkopt;
         }
-        lwkopt = MAGMA_S_REAL( work[0] );
-        lwkopt = max( lwkopt, mn );
-        if (lwork < lwkopt && ! lquery) {
+        if (lwork < lwkmin && ! lquery) {
             *info = -9;
         }
     }

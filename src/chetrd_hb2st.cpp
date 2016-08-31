@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zhetrd_hb2st.cpp normal z -> c, Mon May  2 23:30:18 2016
+       @generated from src/zhetrd_hb2st.cpp, normal z -> c, Tue Aug 30 09:38:17 2016
 
 */
 #include "magma_internal.h"
@@ -38,8 +38,8 @@ static void magma_ctile_bulge_computeT_parallel(
     magmaFloatComplex *T, magma_int_t ldt,
     magma_int_t n, magma_int_t nb, magma_int_t Vblksiz);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************/
 typedef struct magma_cbulge_data_s {
     magma_int_t threads_num;
     magma_int_t n;
@@ -59,6 +59,8 @@ typedef struct magma_cbulge_data_s {
     pthread_barrier_t myptbarrier;
 } magma_cbulge_data;
 
+
+/******************************************************************************/
 void magma_cbulge_data_init(
     magma_cbulge_data *cbulge_data_S,
     magma_int_t threads_num, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
@@ -84,29 +86,36 @@ void magma_cbulge_data_init(
     cbulge_data_S->ldt = ldt;
     cbulge_data_S->prog = prog;
 
-    pthread_barrier_init(&(cbulge_data_S->myptbarrier), NULL, cbulge_data_S->threads_num);
+    pthread_barrier_init(&(cbulge_data_S->myptbarrier), NULL, (unsigned) cbulge_data_S->threads_num);
 }
+
+
+/******************************************************************************/
 void magma_cbulge_data_destroy(magma_cbulge_data *cbulge_data_S)
 {
     pthread_barrier_destroy(&(cbulge_data_S->myptbarrier));
 }
+
+
+/******************************************************************************/
 typedef struct magma_cbulge_id_data_s {
     magma_int_t id;
     magma_cbulge_data* data;
 } magma_cbulge_id_data;
 
+
+/******************************************************************************/
 void magma_cbulge_id_data_init(magma_cbulge_id_data *id_data, magma_int_t id, magma_cbulge_data* data)
 {
     id_data->id = id;
     id_data->data = data;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
+/***************************************************************************//**
     Purpose
     -------
-
+    Reduces Hermitian band matrix to real symmetric tridiagonal.
 
     Arguments
     ---------
@@ -174,8 +183,8 @@ void magma_cbulge_id_data_init(magma_cbulge_id_data *id_data, magma_int_t id, ma
             The leading dimension of T.
             LDT > Vblksiz
 
-    @ingroup magma_cheev_2stage
-    ********************************************************************/
+    @ingroup magma_hetrd_hb2st
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chetrd_hb2st(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
@@ -222,7 +231,7 @@ magma_chetrd_hb2st(
     // Set one thread per core
     pthread_attr_init(&thread_attr);
     pthread_attr_setscope(&thread_attr, PTHREAD_SCOPE_SYSTEM);
-    pthread_setconcurrency(parallel_threads);
+    pthread_setconcurrency( (unsigned)parallel_threads );
 
     //timing
     #ifdef ENABLE_TIMER
@@ -306,8 +315,8 @@ magma_chetrd_hb2st(
     return MAGMA_SUCCESS;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************/
 static void *magma_chetrd_hb2st_parallel_section(void *arg)
 {
     magma_int_t my_core_id  = ((magma_cbulge_id_data*)arg) -> id;
@@ -381,8 +390,6 @@ static void *magma_chetrd_hb2st_parallel_section(void *arg)
 #endif
 #endif
 
-
-
     /* compute the Q1 overlapped with the bulge chasing+T.
     * if all_cores_num=1 it call Q1 on GPU and then bulgechasing.
     * otherwise the first thread run Q1 on GPU and
@@ -441,7 +448,8 @@ static void *magma_chetrd_hb2st_parallel_section(void *arg)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************/
 #define expertmyss_cond_wait(m, n, val) \
 do { \
     while (prog[(m)] != (val)) { \
@@ -516,9 +524,7 @@ do { \
 } while(0)
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 static void magma_ctile_bulge_parallel(
     magma_int_t my_core_id, magma_int_t cores_num,
     magmaFloatComplex *A, magma_int_t lda,
@@ -541,7 +547,7 @@ static void magma_ctile_bulge_parallel(
     if (grsiz <= 0)
         return;
 
-    //printf("=================> my core id %d of %d \n",my_core_id, cores_num);
+    //printf("=================> my core id %lld of %lld\n", (long long) my_core_id, (long long) cores_num );
 
     /* As I store V in the V vector there are overlap between
      * tasks so shift is now 4 where group need to be always
@@ -577,10 +583,12 @@ static void magma_ctile_bulge_parallel(
         if (cores_num > maxrequiredcores)
         {
             printf("==================================================================================\n");
-            printf("  WARNING only %3d threads are required to run this test optimizing cache reuse\n",maxrequiredcores);
+            printf("  WARNING only %3lld threads are required to run this test optimizing cache reuse\n", (long long) maxrequiredcores );
             printf("==================================================================================\n");
         }
-        printf("  SS_COND Static bulgechasing version v9_9col threads  %4d   threads_used  %4d   n %5d      nb %5d    grs %4d thgrsiz %4d  wantz %4d\n",cores_num, allcoresnb, n, nb, grsiz,thgrsiz,wantz);
+        printf("  SS_COND Static bulgechasing version v9_9col threads  %4lld   threads_used  %4lld   n %5lld      nb %5lld    grs %4lld thgrsiz %4lld  wantz %4lld\n",
+               (long long) cores_num, (long long) allcoresnb, (long long) n,
+               (long long) nb, (long long) grsiz, (long long) thgrsiz, (long long) wantz );
     }
     #endif
 
@@ -658,11 +666,11 @@ static void magma_ctile_bulge_parallel(
     /* finalize static sched */
     //myss_finalize(); // initialized at top level so freed there
 
-
     magma_free_cpu(work);
 } // END FUNCTION
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+/******************************************************************************/
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)   &(T[(m)])
@@ -690,10 +698,8 @@ static void magma_ctile_bulge_computeT_parallel(
 
     #ifdef ENABLE_DEBUG
     if (my_core_id == 0)
-        printf("  COMPUTE T parallel threads %d with  n %d   nb %d   Vblksiz %d \n", cores_num, n, nb, Vblksiz);
+        printf("  COMPUTE T parallel threads %lld with  n %lld   nb %lld   Vblksiz %lld\n", (long long) cores_num, (long long) n, (long long) nb, (long long) Vblksiz );
     #endif
-
-
 
     /*========================================
      * compute the T's in parallel.
@@ -737,7 +743,7 @@ static void magma_ctile_bulge_computeT_parallel(
         }
     }
 }
+
 #undef V
 #undef TAU
 #undef T
-////////////////////////////////////////////////////////////////////////////////////////////////////

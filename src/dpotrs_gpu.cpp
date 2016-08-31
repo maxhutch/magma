@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zpotrs_gpu.cpp normal z -> d, Mon May  2 23:30:00 2016
+       @generated from src/zpotrs_gpu.cpp, normal z -> d, Tue Aug 30 09:38:01 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DPOTRS solves a system of linear equations A*X = B with a symmetric
@@ -56,8 +56,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_dposv_comp
-    ********************************************************************/
+    @ingroup magma_potrs
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dpotrs_gpu(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,

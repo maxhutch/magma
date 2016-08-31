@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -281,8 +281,8 @@ magma_zbombard_merge(
             B_rho_old = B_rho_new;    
             B_rho_new = magma_zdotc( dofs, r_tld.dval, 1, B_r.dval, 1, queue );  // rho=<rr,r>
             B_beta = B_rho_new/B_rho_old * B_alpha/B_omega;   // beta=rho/rho_old *alpha/omega
-
-        }else{
+        }
+        else {
             B_rho_old = B_rho_new; 
             magma_zmdotc4(
             b.num_rows,  
@@ -502,8 +502,7 @@ magma_zbombard_merge(
         Q_gamm = c_one / magma_zsqrt(c_one + Q_thet*Q_thet);        
         Q_eta = - Q_eta * Q_rho1 * Q_gamm * Q_gamm / (Q_beta * Q_gamm1 * Q_gamm1);        
         
-        if( solver_par->numiter == 1 ){
-            
+        if ( solver_par->numiter == 1 ) {
                 //QMR: d = eta * p + pds * d;
                 //QMR: s = eta * pt + pds * d;
                 //QMR: x = x + d;
@@ -520,8 +519,7 @@ magma_zbombard_merge(
             Q_r.dval, 
             queue );
         }
-        else{
-
+        else {
             Q_pds = (Q_thet1 * Q_gamm) * (Q_thet1 * Q_gamm);
             
                 //QMR: d = eta * p + pds * d;
@@ -578,8 +576,8 @@ magma_zbombard_merge(
             B_res = magma_dznrm2( dofs, B_r.dval, 1, queue );
                 //QMR: psi = norm(z);
             Q_psi = magma_zsqrt( magma_zdotc( dofs, Q_z.dval, 1, Q_z.dval, 1), queue );
-            
-        }else{
+        }
+        else {
             magma_zmdotc4(
             b.num_rows,  
             Q_r.dval, 
@@ -649,10 +647,6 @@ magma_zbombard_merge(
         if ( res/nomb <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
-        
-                
-
- 
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
         

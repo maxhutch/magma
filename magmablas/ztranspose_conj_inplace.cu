@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c
 
@@ -16,7 +16,7 @@
 
 // nearly same code in ztranspose_inplace.cu
 
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // grid is (n/nb) x ((n/nb)/2 + 1), where n/nb is odd.
 // lower indicates blocks in lower triangle of grid, including diagonal.
 // lower blocks cover left side of matrix, including diagonal.
@@ -74,7 +74,7 @@ __global__ void ztranspose_conj_inplace_odd( int n, magmaDoubleComplex *matrix, 
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // grid is ((n/nb) + 1) x (n/nb)/2, where n/nb is even.
 // lower indicates blocks in strictly lower triangle of grid, excluding diagonal.
 // lower blocks shift up by one to cover left side of matrix including diagonal.
@@ -136,7 +136,7 @@ __global__ void ztranspose_conj_inplace_even( int n, magmaDoubleComplex *matrix,
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ztranspose_conj_inplace_q conjugate-transposes a square N-by-N matrix in-place.
@@ -162,8 +162,8 @@ __global__ void ztranspose_conj_inplace_even( int n, magmaDoubleComplex *matrix,
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_transpose
+*******************************************************************************/
 extern "C" void
 magmablas_ztranspose_conj_inplace_q(
     magma_int_t n,

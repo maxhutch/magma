@@ -1,21 +1,19 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Ahmad Ahmad
 
-   @generated from magmablas/zpotf2_kernels.cu normal z -> c, Mon May  2 23:30:41 2016
+   @generated from magmablas/zpotf2_kernels.cu, normal z -> c, Tue Aug 30 09:38:39 2016
  */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 #define PRECISION_c
-
-
 
 #if defined(VERSION31)
     #define ENABLE_COND1
@@ -23,7 +21,7 @@
 #endif
 
 #define MAX_NTCOL 8
-#ifdef PRECISION_s
+#if defined(PRECISION_s)
 #define NTCOL2   (4)
 #define NTCOL1   (8)
 #elif defined(PRECISION_d)
@@ -37,7 +35,7 @@
 
 #include "cpotf2_devicesfunc.cuh"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void cpotf2_smlpout_fixwidth_kernel_batched(int m, 
         magmaFloatComplex **dA_array, int lda, 
         int localstep, int gbstep, magma_int_t *info_array, const int batchCount)
@@ -48,7 +46,7 @@ __global__ void cpotf2_smlpout_fixwidth_kernel_batched(int m,
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void cpotf2_smlpout_anywidth_kernel_batched(int m, int n, 
         magmaFloatComplex **dA_array, int lda, 
         int localstep, int gbstep, magma_int_t *info_array, const int batchCount)
@@ -57,13 +55,9 @@ __global__ void cpotf2_smlpout_anywidth_kernel_batched(int m, int n,
     if (batchid >= batchCount) return;
     cpotf2_smlpout_anywidth_device(m, n, dA_array[batchid]+localstep, dA_array[batchid]+localstep+localstep*lda, lda, localstep, gbstep, &(info_array[batchid]));
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/**
-    This is an internal routine.
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_lpout_batched(
         magma_uplo_t uplo, magma_int_t n, 
@@ -144,4 +138,3 @@ magma_cpotrf_lpout_batched(
 
     return arginfo;
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////

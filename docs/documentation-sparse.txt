@@ -1,12 +1,12 @@
 /**
 
 ********************************************************************************
-@page sparse-iter Sparse-Iter
+@page sparse-iter Sparse Overview
 
 
 The MAGMA Sparse-Iter Package
 =================================
-The sparse-iter package recently added to the MAGMA software stack contains
+The sparse-iter package in the MAGMA software stack contains
 sparse BLAS routines as well as functions to handle the complete iterative
 solution process of a sparse linear system of equations.
 A typical application includes:
@@ -293,7 +293,7 @@ These entities can either be initialized manually, or via the function
 
     magma_zsolverinfo_init(
         magma_z_solver_par *solver_par,
-        magma_z_preconditioner *precond,
+        magma_z_preconditioner *precond_par,
         magma_queue_t queue );
 
 setting them to some default values.
@@ -306,6 +306,48 @@ consistent with the matrix dimension, which requires additionally calling
 
 after setting  solver_par.ev_length and solver_par.num_eigenvalues to the
 correct numbers.
+
+For the preconditioner configuration, a similar structure is used:
+
+typedef struct magma_z_preconditioner
+{
+    magma_solver_type       solver;
+    magma_solver_type       trisolver;
+    magma_int_t             levels;
+    magma_int_t             sweeps;
+    magma_int_t             pattern;
+    magma_int_t             bsize;
+    magma_int_t             offset;
+    magma_precision         format;
+    double                  atol;                
+    double                  rtol;    
+    magma_int_t             maxiter;
+    magma_int_t             restart; 
+    magma_int_t             numiter;
+    magma_int_t             spmv_count;  
+    double                  init_res;
+    double                  final_res;
+    real_Double_t      runtime;       // feedback: preconditioner runtime
+    real_Double_t      setuptime;     // feedback: preconditioner setup time
+    magma_z_matrix   M;
+    magma_z_matrix   L;
+    magma_z_matrix   LT;
+    magma_z_matrix   U;
+    magma_z_matrix   UT;
+    magma_z_matrix   LD;
+    magma_z_matrix   UD;
+    magma_z_matrix          d;
+    magma_z_matrix          d2;
+    magma_z_matrix          work1;
+    magma_z_matrix          work2;
+    magma_int_t*            int_array_1;
+    magma_int_t*            int_array_2;
+    cusparseSolveAnalysisInfo_t cuinfo;      // for cuSPARSE ILU        
+    cusparseSolveAnalysisInfo_t cuinfoL;     // for cuSPARSE ILU 
+    cusparseSolveAnalysisInfo_t cuinfoLT;    // for cuSPARSE ILU 
+    cusparseSolveAnalysisInfo_t cuinfoU;     // for cuSPARSE ILU 
+    cusparseSolveAnalysisInfo_t cuinfoUT;    // for cuSPARSE ILU 
+} magma_z_preconditioner;
 
 An easy way to access the data collected during a solver execution is given
 by the function
@@ -324,26 +366,7 @@ After completion,
 
 deallocates all memory used within the solver and preconditioner structure.
 
-A solver can then be called via
-
-    magma_z*solvername*(
-        magma_z_matrix A,
-        magma_z_matrix b,
-        magma_z_matrix *x,
-        magma_z_solver_par *solver_par,
-        magma_queue_t queue );
-
-respectively
-
-    magma_zp*solvername*(
-        magma_z_matrix A,
-        magma_z_matrix b,
-        magma_z_matrix *x,
-        magma_z_solver_par *solver_par,
-        magma_z_preconditioner *precond_par,
-        magma_queue_t queue );
-
-for preconditioned solvers. More conveniant is the use the wrapper
+A solver can be called via the wrapper
 
     magma_z_solver(
         magma_z_matrix A, magma_z_matrix b,
@@ -354,13 +377,13 @@ where zopts is a structure containing both, the solver and the preconditioner
 information:
     struct magma_zopts{
             magma_z_solver_par          solver_par;
-            magma_z_preconditioner  precond_par;
-            magma_storage_t                 input_format;
+            magma_z_preconditioner      precond_par;
+            magma_storage_t             input_format;
             int     blocksize;
             int     alignment;
-            magma_storage_t                 output_format;
-            magma_location_t                input_location;
-            magma_location_t                output_location;
+            magma_storage_t              output_format;
+            magma_location_t             input_location;
+            magma_location_t             output_location;
             magma_scale_t scaling;
     }magma_zopts;
 
@@ -384,67 +407,54 @@ familiar with the package is to use and modify one of the predefined testers.
 In the following example we assume to have an application coded in C and
 running in double precision that at some instance requires solving a linear
 system of the form Ax=b, where A and b are generated within the application.
-Furthermore, we assume that the matrix A is in CSR format together
-with a RHS vector b in present in main memory.
-We do not know which solver and preconditioner combination works best for this
-problem, and which data format gives the best sparse-BLAS performance.
-For this purpose we extract parts of the testing_dsolver.cpp located in the
-sparse-iter/testing folder.
+Furthermore, we assume that the matrix A is in CSR format and stored in 
+row/col/val, and the vector b is stored in valb. These entities are passed to 
+MAGMA-sparse. In the end, we want the solution passed back to the application in 
+the vector valx.  
 
-First, we copy the includes, initialization and finalization into our
-application program. Then we focus on the linear system we want to solve.
-We extract line 34-43 and copy it into the right location. This includes the
-setup of the solver parameters via command line.
-As we do not want to read the linear system from file, but solve the system
-present in memory, we use
+    // initialize MAGMA-sparse and create some LA objects
+    magma_dopts dopts;
+    magma_queue_t queue;
+    magma_queue_create( 0, &queue );
+    magma_d_matrix A, A_d, x, x_d, b, b_d;
 
-        magma_dcsrset( m, n, row, col, val, &A, queue );
+    // pass linear system to MAGMA-sparse
+    magma_dcsrset( m, n, row, col, val, &A, queue );
+    magma_dvset( m, n, valb, &b, queue );
+    
+    // copy the linear system to the device
+    magma_d_vtransfer( b, &b_d, Magma_CPU, Magma_DEV, queue );    
+    magma_d_mtransfer( A, &A_d, Magma_CPU, Magma_DEV, queue );    
+    // allocate solution vector - on device
+    magma_d_vinit( &x_d, Magma_DEV, A.num_cols, one, queue );
+    
+    // configure solver
+    dopts.solver_par.solver = Magma_PGMRES; dopts.solver_par.restart = 30; 
+    dopts.solver_par.rtol = 1e-10;
+    magma_dsolverinfo_init( &dopts.solver_par, &dopts.precond_par, queue );
+    
+    // configure the preconditioner
+    dopts.precond_par.solver = Magma_ILU; dopts.precond_par.levels = 0; 
+    dopts.precond_par.trisolver = Magma_CUSOLVE;
+    magma_d_precondsetup( A, b, &dopts.solver_par, &dopts.precond_par, queue );
 
-to pass the matrix (present in row, col val) and
+    // solve the linear system
+    magma_d_solver( B_d, b_d, &x_d, &dopts, queue );
 
-        magma_dvset( m, n, valb, &b, queue );
+    // copy the solution vector back to the host and pass it back to the application
+    magma_d_mtransfer( x_d, &x, Magma_DEV, Magma_CPU, queue );
+    magma_dvget( x, &m, &n, &valx, queue );
+    
+    // clean up the memory
+    magma_dsolverinfo_free( &dopts.solver_par, &dopts.precond_par, queue );
+    magma_d_mfree(&A_d, queue );
+    magma_d_mfree(&A, queue );
+    magma_d_mfree(&x_d, queue );
+    magma_d_mfree(&b_d, queue );
+    magma_d_mfree(&b, queue );
 
-to pass the RHS vector b (entries in valb) to MAGMA.
-For the solution vector, we allocate an initial guess on the device via:
-
-        magma_d_vector x_d;
-        magma_d_vinit( &x_d, Magma_DEV, A.num_cols, one, queue );
-
-We then copy line 93-95 into the application to convert the matrix into the
-preferred format and copy it to the device. The RHS is transferred via
-
-        magma_d_vector b_d;
-        magma_d_vtransfer( b, &b_d, Magma_CPU, Magma_DEV, queue );
-
-We solve with
-
-        magma_d_solver( B_d, b_d, &x_d, &zopts, queue );
-
-and return the solution vector to the application via
-
-        magma_int_t m, n;
-        double * valx;
-        magma_dvget( x_d, &m, &n, &valx, queue );
-
-Finally, we clean up the used memory via
-
-        magma_z_mfree(&B_d, queue );
-        magma_z_mfree(&B, queue );
-        magma_z_vfree(&x_d, queue );
-        magma_z_vfree(&b_d, queue );
-
-and
-        magma_zsolverinfo_free( &zopts.solver_par, &zopts.precond_par, queue );
-
-Finally, we clean up the used memory via
-
-        magma_z_mfree(&B_d, queue );
-        magma_z_mfree(&B, queue );
-        magma_z_vfree(&x_d, queue );
-        magma_z_vfree(&b_d, queue );
-
-and
-
-        magma_dsolverinfo_free( &dopts.solver_par, &dopts.precond_par, queue );
+    // finalize MAGMA
+    magma_queue_destroy( queue );
+    magma_finalize();
 
 */

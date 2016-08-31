@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/src/magma_z_solver_wrapper.cpp normal z -> c, Mon May  2 23:31:04 2016
+       @generated from sparse-iter/src/magma_z_solver_wrapper.cpp, normal z -> c, Tue Aug 30 09:39:00 2016
        @author Hartwig Anzt
 
 */
@@ -92,14 +92,14 @@ magma_c_solver(
             case  Magma_PIDR:
                     CHECK( magma_cpidr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_PIDRMERGE:
-                    //CHECK( magma_cpidr_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
-                    CHECK( magma_cpidr_strms( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+                    CHECK( magma_cpidr_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+                    //CHECK( magma_cpidr_strms( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_LOBPCG:
                     CHECK( magma_clobpcg( A, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_ITERREF:
                     CHECK( magma_citerref( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_JACOBI:
-                    CHECK( magma_cjacobi( A, b, x, &zopts->solver_par, queue )); break;
+                    CHECK( magma_cftjacobi( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_BAITER:
                     CHECK( magma_cbaiter( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
             case  Magma_BAITERO:
@@ -122,8 +122,10 @@ magma_c_solver(
                     CHECK( magma_cptfqmr_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
             case  Magma_QMR:
                     CHECK( magma_cqmr( A, b, x, &zopts->solver_par, queue ) ); break;
-            case  Magma_LSQR:
-                    CHECK( magma_clsqr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_PQMR:
+                    CHECK( magma_cpqmr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+           case  Magma_PQMRMERGE:
+                    CHECK( magma_cpqmr_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
             case  Magma_QMRMERGE:
                     CHECK( magma_cqmr_merge( A, b, x, &zopts->solver_par, queue ) ); break;
             case  Magma_BOMBARD:

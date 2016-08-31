@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
  
        @author Mathieu Faverge
        @author Mark Gates
@@ -14,44 +14,66 @@
 
 #ifdef __cplusplus
 
-// including cmath undefs isinf, isnan, etc. macros.
-// doing "using std::isinf" or "using std::isnan" generates conflicts when using icc.
-//#include <cmath>
-//using std::fabs;
-
 // __host__ and __device__ are defined in CUDA headers.
 #include "magma_types.h"
 
-/* names to match C++ std complex functions */
+/// @addtogroup magma_complex
+/// In C++, including magma_operators.h defines the usual unary and binary
+/// operators for complex numbers: +, +=, -, -=, *, *=, /, /=, ==, !=.
+/// Additionally, real(), imag(), conj(), fabs(), and abs1() are defined
+/// to apply to both complex and real numbers.
+///
+/// In C, there are equivalent macros:
+/// MAGMA_Z_{MAKE, REAL, IMAG, ADD, SUB, MUL, DIV, ABS, ABS1, CONJ} for double-complex,
+/// MAGMA_C_{...} for float-complex,
+/// MAGMA_D_{...} for double,
+/// MAGMA_S_{...} for float.
+///
+/// Just the double-complex versions are documented here.
+
+
+// =============================================================================
+// names to match C++ std complex functions
+
+/// @return real component of complex number x; x for real number.
+/// @ingroup magma_complex
 __host__ __device__ static inline double real(const magmaDoubleComplex &x) { return MAGMA_Z_REAL(x); }
 __host__ __device__ static inline float  real(const magmaFloatComplex  &x) { return MAGMA_C_REAL(x); }
 __host__ __device__ static inline double real(const double             &x) { return x; }
 __host__ __device__ static inline float  real(const float              &x) { return x; }
 
+/// @return imaginary component of complex number x; 0 for real number.
+/// @ingroup magma_complex
 __host__ __device__ static inline double imag(const magmaDoubleComplex &x) { return MAGMA_Z_IMAG(x); }
 __host__ __device__ static inline float  imag(const magmaFloatComplex  &x) { return MAGMA_C_IMAG(x); }
-__host__ __device__ static inline double imag(const double        & /*x*/) { return 0.; }
-__host__ __device__ static inline float  imag(const float         & /*x*/) { return 0.; }
+__host__ __device__ static inline double imag(const double             &x) { return 0.; }
+__host__ __device__ static inline float  imag(const float              &x) { return 0.f; }
 
+/// @return conjugate of complex number x; x for real number.
+/// @ingroup magma_complex
 __host__ __device__ static inline magmaDoubleComplex conj(const magmaDoubleComplex &x) { return MAGMA_Z_CONJ(x); }
 __host__ __device__ static inline magmaFloatComplex  conj(const magmaFloatComplex  &x) { return MAGMA_C_CONJ(x); }
 __host__ __device__ static inline double             conj(const double             &x) { return x; }
 __host__ __device__ static inline float              conj(const float              &x) { return x; }
 
+/// @return 2-norm absolute value of complex number x: sqrt( real(x)^2 + imag(x)^2 ).
+///         math.h or cmath provide fabs for real numbers.
+/// @ingroup magma_complex
 __host__ __device__ static inline double fabs(const magmaDoubleComplex &x) { return MAGMA_Z_ABS(x); }
 __host__ __device__ static inline float  fabs(const magmaFloatComplex  &x) { return MAGMA_C_ABS(x); }
 //__host__ __device__ static inline float  fabs(const float              &x) { return MAGMA_S_ABS(x); }  // conflicts with std::fabs in .cu files
 // already have fabs( double ) in math.h
 
+/// @return 1-norm absolute value of complex nmuber x: | real(x) | + | imag(x) |.
+/// @ingroup magma_complex
 __host__ __device__ static inline double abs1(const magmaDoubleComplex &x) { return MAGMA_Z_ABS1(x); }
 __host__ __device__ static inline float  abs1(const magmaFloatComplex  &x) { return MAGMA_C_ABS1(x); }
 __host__ __device__ static inline double abs1(const double             &x) { return MAGMA_D_ABS1(x); }
 __host__ __device__ static inline float  abs1(const float              &x) { return MAGMA_S_ABS1(x); }
 
 
-/*************************************************************
- *              magmaDoubleComplex
- */
+// =============================================================================
+// magmaDoubleComplex
 
 // ---------- negate
 __host__ __device__ static inline magmaDoubleComplex
@@ -297,9 +319,8 @@ operator != (const double s, const magmaDoubleComplex a)
 }
 
 
-/*************************************************************
- *              magmaFloatComplex
- */
+// =============================================================================
+// magmaFloatComplex
 
 // ---------- negate
 __host__ __device__ static inline magmaFloatComplex

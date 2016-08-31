@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zswap.cpp normal z -> s, Mon May  2 23:31:09 2016
+       @generated from testing/testing_zswap.cpp, normal z -> s, Tue Aug 30 09:39:05 2016
        @author Mark Gates
 */
 // includes, system
@@ -55,7 +55,8 @@ static void init_matrix(
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     // OpenCL use:  cl_mem  , offset  (two arguments);
     // else   use:  pointer + offset  (one argument).
@@ -92,7 +93,7 @@ int main( int argc, char** argv)
     magma_int_t ione = 1;
     magma_int_t *ipiv, *ipiv2;
     magmaInt_ptr d_ipiv;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -115,17 +116,17 @@ int main( int argc, char** argv)
             // each swap does 2N loads and 2N stores, for nb swaps
             gbytes = sizeof(float) * 4.*N*nb / 1e9;
             
-            TESTING_MALLOC_PIN( h_A1, float, lda*N );
-            TESTING_MALLOC_PIN( h_A2, float, lda*N );
-            TESTING_MALLOC_PIN( h_R1, float, lda*N );
-            TESTING_MALLOC_PIN( h_R2, float, lda*N );
+            TESTING_CHECK( magma_smalloc_pinned( &h_A1, lda*N ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_A2, lda*N ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_R1, lda*N ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_R2, lda*N ));
             
-            TESTING_MALLOC_CPU( ipiv,  magma_int_t, nb );
-            TESTING_MALLOC_CPU( ipiv2, magma_int_t, nb );
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv,  nb ));
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv2, nb ));
             
-            TESTING_MALLOC_DEV( d_ipiv, magma_int_t, nb );
-            TESTING_MALLOC_DEV( d_A1, float, ldda*N );
-            TESTING_MALLOC_DEV( d_A2, float, ldda*N );
+            TESTING_CHECK( magma_imalloc( &d_ipiv, nb ));
+            TESTING_CHECK( magma_smalloc( &d_A1, ldda*N ));
+            TESTING_CHECK( magma_smalloc( &d_A2, ldda*N ));
             
             // getrf always makes ipiv[j] >= j+1, where ipiv is one based and j is zero based
             // some implementations (e.g., MacOS dlaswp) assume this
@@ -148,11 +149,7 @@ int main( int argc, char** argv)
             time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    #ifdef HAVE_CUBLAS
-                        cublasSswap( opts.handle, N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1 );
-                    #else
-                        magma_sswap(              N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1, opts.queue );
-                    #endif
+                    magma_sswap( N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1, opts.queue );
                 }
             }
             time = magma_sync_wtime( opts.queue ) - time;
@@ -178,11 +175,7 @@ int main( int argc, char** argv)
             time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    #ifdef HAVE_CUBLAS
-                        cublasSswap( opts.handle, N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda );
-                    #else
-                        magma_sswap(              N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda, opts.queue );
-                    #endif
+                    magma_sswap( N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda, opts.queue );
                 }
             }
             time = magma_sync_wtime( opts.queue ) - time;
@@ -407,8 +400,8 @@ int main( int argc, char** argv)
             // copy reads 1 matrix and writes 1 matrix, so has half gbytes of swap
             row_perf6 = 0.5 * gbytes / time;
 
-            printf("%5d  %3d  %6.2f%c/ %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f%c  %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f / %6.2f  %6.2f  %10s\n",
-                   (int) N, (int) nb,
+            printf("%5lld  %3lld  %6.2f%c/ %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f%c  %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f / %6.2f  %6.2f  %10s\n",
+                   (long long) N, (long long) nb,
                    row_perf0, ((check & 0x001) != 0 ? '*' : ' '),
                    col_perf0, ((check & 0x002) != 0 ? '*' : ' '),
                    row_perf1, ((check & 0x004) != 0 ? '*' : ' '),
@@ -425,17 +418,17 @@ int main( int argc, char** argv)
                    (check == 0 ? "ok" : "* failed") );
             status += ! (check == 0);
             
-            TESTING_FREE_PIN( h_A1 );
-            TESTING_FREE_PIN( h_A2 );
-            TESTING_FREE_PIN( h_R1 );
-            TESTING_FREE_PIN( h_R2 );
+            magma_free_pinned( h_A1 );
+            magma_free_pinned( h_A2 );
+            magma_free_pinned( h_R1 );
+            magma_free_pinned( h_R2 );
             
-            TESTING_FREE_CPU( ipiv  );
-            TESTING_FREE_CPU( ipiv2 );
+            magma_free_cpu( ipiv  );
+            magma_free_cpu( ipiv2 );
             
-            TESTING_FREE_DEV( d_ipiv );
-            TESTING_FREE_DEV( d_A1 );
-            TESTING_FREE_DEV( d_A2 );
+            magma_free( d_ipiv );
+            magma_free( d_A1 );
+            magma_free( d_A2 );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -444,6 +437,6 @@ int main( int argc, char** argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

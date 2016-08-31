@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/ztrsv_batched.cu normal z -> s, Mon May  2 23:30:42 2016
+       @generated from magmablas/ztrsv_batched.cu, normal z -> s, Tue Aug 30 09:38:39 2016
 */
 
 #include "magma_internal.h"
@@ -16,8 +16,6 @@
 #include "batched_kernel_param.h"
 
 #define PRECISION_s
-
-
 
 #define NB 256  //NB is the 1st level blocking in recursive blocking, BLOCK_SIZE is the 2ed level, NB=256, BLOCK_SIZE=64 is optimal for batched
 
@@ -37,8 +35,8 @@
 
 extern __shared__ float shared_data[];
 
-//==============================================================================
 
+/******************************************************************************/
 template< const int BLOCK_SIZE, const int DIM_X, const int DIM_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag>
 __global__ void
 strsv_notrans_kernel_outplace_batched(
@@ -53,8 +51,7 @@ strsv_notrans_kernel_outplace_batched(
 }
 
 
- 
-//==============================================================================
+/******************************************************************************/
 template<const int BLOCK_SIZE, const int DIM_X, const int DIM_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag>
 __global__ void
 strsv_trans_kernel_outplace_batched(
@@ -69,8 +66,7 @@ strsv_trans_kernel_outplace_batched(
 
 
 
-//==============================================================================
-
+/******************************************************************************/
 extern "C" void
 magmablas_strsv_outofplace_batched(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
@@ -296,10 +292,8 @@ magmablas_strsv_outofplace_batched(
     }
 }
 
-//==============================================================================
 
-
-
+/******************************************************************************/
 extern "C" void
 magmablas_strsv_recursive_outofplace_batched(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
@@ -434,9 +428,8 @@ magmablas_strsv_recursive_outofplace_batched(
     magma_free(dW2_displ);
 }
 
-//==============================================================================
 
-
+/******************************************************************************/
 extern "C" void
 magmablas_strsv_work_batched(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
@@ -455,9 +448,8 @@ magmablas_strsv_work_batched(
     magmablas_slacpy_batched( MagmaFull, n, incb, x_array, n, b_array, n, batchCount, queue);
 }
 
-//==============================================================================
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     strsv solves one of the matrix equations on gpu
@@ -542,12 +534,8 @@ magmablas_strsv_work_batched(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_sblas2
-    ********************************************************************/
-
-
-//==============================================================================
-
+    @ingroup magma_trsv_batched
+*******************************************************************************/
 extern "C" void
 magmablas_strsv_batched(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,

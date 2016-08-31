@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zqmr_merge.cpp normal z -> c, Mon May  2 23:30:57 2016
+       @generated from sparse-iter/src/zqmr_merge.cpp, normal z -> c, Tue Aug 30 09:38:53 2016
 */
 
 #include "magmasparse_internal.h"
@@ -259,7 +259,6 @@ magma_cqmr_merge(
         }
         
         if( solver_par->numiter == 1 ){
-            
                 // d = eta * p + pds * d;
                 // s = eta * pt + pds * d;
                 // x = x + d;
@@ -277,7 +276,6 @@ magma_cqmr_merge(
             queue );
         }
         else{
-
             pds = (thet1 * gamm) * (thet1 * gamm);
             
                 // d = eta * p + pds * d;
@@ -330,7 +328,6 @@ magma_cqmr_merge(
         if ( res/nomb <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
- 
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
     

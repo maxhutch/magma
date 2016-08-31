@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CONJ.
        
@@ -27,7 +27,7 @@
 #define half_NB_X    32
 
 
-/*******************************************************************************
+/***************************************************************************//**
     Lower case, compute block multiply, work = A*x, for any size n:
     
            [ A11*x1   A12*x2             A13*x3                    ]   [ A11 A12 A13 ]   [ x1 ]
@@ -53,7 +53,7 @@
     which doesn't work as well because that has dimension blocks*NB by blocks,
     where blocks*NB >= n, and it can be that blocks*NB > lda, so it won't fit in
     lda*blocks space. This is why it used to need lwork = lda*(blocks + 1).
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 zsymv_kernel_L(
     int n,
@@ -429,7 +429,7 @@ zsymv_kernel_L(
 // end zsymv_kernel_L
 
 
-/**************************************************************
+/***************************************************************************//**
     Lower case, sum up final results
     Each block sums one block row; each thread sums one row.
     
@@ -442,7 +442,7 @@ zsymv_kernel_L(
               [ (A11*x1) + (A21^H*x2) + (A31^H*x3) ]
     y = alpha*[ (A21*x1 + A22*x2)     + (A32^H*x3) ] + beta*y
               [ (A21*x1 + A22*x2 + A33*x3)         ]
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 zsymv_kernel_L_sum(
     int n,
@@ -471,7 +471,7 @@ zsymv_kernel_L_sum(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     magmablas_zsymv_work performs the matrix-vector operation:
@@ -577,8 +577,8 @@ zsymv_kernel_L_sum(
     Our tests show that this penalty is about 10 Gflop/s when the matrix
     size is around 10000.
 
-    @ingroup magma_zblas2
-    ********************************************************************/
+    @ingroup magma_symv
+*******************************************************************************/
 extern "C"
 magma_int_t
 magmablas_zsymv_work(
@@ -661,7 +661,7 @@ magmablas_zsymv_work(
 // end magmablas_zsymv_work
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     magmablas_zsymv performs the matrix-vector operation:
@@ -744,8 +744,8 @@ magmablas_zsymv_work(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zblas2
-    ********************************************************************/
+    @ingroup magma_symv
+*******************************************************************************/
 extern "C"
 magma_int_t
 magmablas_zsymv_q(

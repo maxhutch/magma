@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -18,11 +18,10 @@
 
 #define COMPLEX
 
+// These MAGMA v1 routines are all deprecated.
+// See corresponding v2 functions for documentation.
 
-/**
-    @see magmablas_zaxpycp_q
-    @ingroup magma_zblas1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zaxpycp(
     magma_int_t m,
@@ -34,10 +33,7 @@ magmablas_zaxpycp(
 }
 
 
-/**
-    @see magmablas_zgeadd_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zgeadd(
     magma_int_t m, magma_int_t n,
@@ -49,10 +45,7 @@ magmablas_zgeadd(
 }
 
 
-/**
-    @see magmablas_zgeadd2_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zgeadd2(
     magma_int_t m, magma_int_t n,
@@ -65,10 +58,7 @@ magmablas_zgeadd2(
 }
 
 
-/**
-    @see magmablas_zgemm_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zgemm(
     magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
@@ -85,10 +75,7 @@ magmablas_zgemm(
 }
 
 
-/**
-    @see magmablas_zgemv_q
-    @ingroup magma_zblas2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zgemv(
     magma_trans_t trans, magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
@@ -101,10 +88,7 @@ magmablas_zgemv(
 }
 
 
-/**
-    @see magmablas_zgemv_conj_q
-    @ingroup magma_zblas2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zgemv_conj(
     magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
@@ -118,10 +102,7 @@ magmablas_zgemv_conj(
 }
 
 
-/**
-    @see magmablas_zgemm_reduce_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zgemm_reduce(
     magma_int_t m, magma_int_t n, magma_int_t k,
@@ -136,7 +117,7 @@ magmablas_zgemm_reduce(
 }
 
 
-// @see magmablas_zgetmatrix_transpose_q
+/******************************************************************************/
 extern "C" void
 magmablas_zgetmatrix_transpose(
     magma_int_t m, magma_int_t n,
@@ -148,17 +129,14 @@ magmablas_zgetmatrix_transpose(
     magma_queue_create( &queues[0] );
     magma_queue_create( &queues[1] );
 
-    magmablas_zgetmatrix_transpose_q( m, n, dAT, ldda, hA, lda, dwork, lddwork, nb, queues );
+    magmablas_zgetmatrix_transpose_q( m, n, nb, dAT, ldda, hA, lda, dwork, lddwork, queues );
 
     magma_queue_destroy( queues[0] );
     magma_queue_destroy( queues[1] );
 }
 
 
-/**
-    @see magmablas_zhemv_q
-    @ingroup magma_zblas2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magmablas_zhemv(
     magma_uplo_t uplo, magma_int_t n,
@@ -173,10 +151,7 @@ magmablas_zhemv(
 
 
 #ifdef COMPLEX
-/**
-    @see magmablas_zsymv_q
-    @ingroup magma_zblas2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magmablas_zsymv(
     magma_uplo_t uplo, magma_int_t n,
@@ -191,10 +166,7 @@ magmablas_zsymv(
 #endif
 
 
-/**
-    @see magmablas_zprbt_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zprbt(
     magma_int_t n,
@@ -205,10 +177,7 @@ magmablas_zprbt(
 }
 
 
-/**
-    @see magmablas_zprbt_mtv_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zprbt_mv(
     magma_int_t n,
@@ -218,10 +187,7 @@ magmablas_zprbt_mv(
 }
 
 
-/**
-    @see magmablas_zprbt_mtv_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zprbt_mtv(
     magma_int_t n,
@@ -231,10 +197,7 @@ magmablas_zprbt_mtv(
 }
 
 
-/**
-    @see magmablas_zlacpy_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlacpy(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -245,10 +208,7 @@ magmablas_zlacpy(
 }
 
 
-/**
-    @see magmablas_zlacpy_conj_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlacpy_conj(
     magma_int_t n,
@@ -259,10 +219,7 @@ magmablas_zlacpy_conj(
 }
 
 
-/**
-    @see magmablas_zlacpy_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlacpy_sym_in(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -274,10 +231,7 @@ magmablas_zlacpy_sym_in(
 }
 
 
-/**
-    @see magmablas_zlacpy_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlacpy_sym_out(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -289,10 +243,7 @@ magmablas_zlacpy_sym_out(
 }
 
 
-/**
-    @see magmablas_zlange_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" double
 magmablas_zlange(
     magma_norm_t norm, magma_int_t m, magma_int_t n,
@@ -303,10 +254,7 @@ magmablas_zlange(
 }
 
 
-/**
-    @see magmablas_zlanhe_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" double
 magmablas_zlanhe(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
@@ -317,10 +265,7 @@ magmablas_zlanhe(
 }
 
 
-/**
-    @see magma_zlarfx_gpu_q
-    @ingroup magma_zaux1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zlarfx_gpu(
     magma_int_t m, magma_int_t n,
@@ -336,10 +281,7 @@ magma_zlarfx_gpu(
 }
 
 
-/**
-    @see magma_zlarfbx_gpu
-    @ingroup magma_zaux3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zlarfbx_gpu(
     magma_int_t m, magma_int_t k,
@@ -352,10 +294,7 @@ magma_zlarfbx_gpu(
 }
 
 
-/**
-    @see magmablas_zlarfg_q
-    @ingroup magma_zaux1
-    ********************************************************************/
+/******************************************************************************/
 extern "C"
 void magmablas_zlarfg(
     magma_int_t n,
@@ -367,10 +306,7 @@ void magmablas_zlarfg(
 }
 
 
-/**
-    @see magma_zlarfg_gpu_q
-    @ingroup magma_zaux1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zlarfg_gpu(
     magma_int_t n,
@@ -384,10 +320,7 @@ magma_zlarfg_gpu(
 }
 
 
-/**
-    @see magma_zlarfgx_gpu_q
-    @ingroup magma_zaux1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zlarfgx_gpu(
     magma_int_t n,
@@ -401,10 +334,7 @@ magma_zlarfgx_gpu(
 }
 
 
-/**
-    @see magma_zlarfgtx_gpu_q
-    @ingroup magma_zaux1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zlarfgtx_gpu(
     magma_int_t n,
@@ -422,10 +352,7 @@ magma_zlarfgtx_gpu(
 }
 
 
-/**
-    @see magmablas_zlascl_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlascl(
     magma_type_t type, magma_int_t kl, magma_int_t ku,
@@ -438,10 +365,7 @@ magmablas_zlascl(
 }
 
 
-/**
-    @see magmablas_zlascl2_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlascl2(
     magma_type_t type, magma_int_t m, magma_int_t n,
@@ -452,10 +376,7 @@ magmablas_zlascl2(
 }
 
 
-/**
-    @see magmablas_zlascl2_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlascl_2x2(
     magma_type_t type, magma_int_t m,
@@ -467,10 +388,7 @@ magmablas_zlascl_2x2(
 }
 
 
-/**
-    @see magmablas_zlascl_diag_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlascl_diag(
     magma_type_t type, magma_int_t m, magma_int_t n,
@@ -482,10 +400,7 @@ magmablas_zlascl_diag(
 }
 
 
-/**
-    @see magmablas_zlaset_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C"
 void magmablas_zlaset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -496,10 +411,7 @@ void magmablas_zlaset(
 }
 
 
-/**
-    @see magmablas_zlaset_band_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlaset_band(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
@@ -510,10 +422,7 @@ magmablas_zlaset_band(
 }
 
 
-/**
-    @see magmablas_zlaswp_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlaswp(
     magma_int_t n,
@@ -525,10 +434,7 @@ magmablas_zlaswp(
 }
 
 
-/**
-    @see magmablas_zlaswpx_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlaswpx(
     magma_int_t n,
@@ -540,10 +446,7 @@ magmablas_zlaswpx(
 }
 
 
-/**
-    @see magmablas_zlaswp2_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlaswp2(
     magma_int_t n,
@@ -555,10 +458,7 @@ magmablas_zlaswp2(
 }
 
 
-/**
-    @see magmablas_zlaswpx_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlaswp_sym( magma_int_t n, magmaDoubleComplex *dA, magma_int_t lda,
                       magma_int_t k1, magma_int_t k2,
@@ -568,10 +468,7 @@ magmablas_zlaswp_sym( magma_int_t n, magmaDoubleComplex *dA, magma_int_t lda,
 }
 
 
-/**
-    @see magmablas_dznrm2_check_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dznrm2_check(
     magma_int_t m, magma_int_t n,
@@ -583,10 +480,7 @@ magmablas_dznrm2_check(
 }
 
 
-/**
-    @see magmablas_dznrm2_adjust_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dznrm2_adjust(
     magma_int_t k,
@@ -597,10 +491,7 @@ magmablas_dznrm2_adjust(
 }
 
 
-/**
-    @see magmablas_dznrm2_row_check_adjust_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dznrm2_row_check_adjust(
     magma_int_t k, double tol,
@@ -613,10 +504,7 @@ magmablas_dznrm2_row_check_adjust(
 }
 
 
-/**
-    @see magmablas_dznrm2_cols_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dznrm2_cols(
     magma_int_t m, magma_int_t n,
@@ -627,10 +515,7 @@ magmablas_dznrm2_cols(
 }
 
 
-/**
-    @see magmablas_zsetmatrix_transpose_q
-    @ingroup magma_zblas1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zsetmatrix_transpose(
     magma_int_t m, magma_int_t n,
@@ -642,17 +527,14 @@ magmablas_zsetmatrix_transpose(
     magma_queue_create( &queues[0] );
     magma_queue_create( &queues[1] );
 
-    magmablas_zsetmatrix_transpose_q( m, n, hA, lda, dAT, ldda, dwork, lddwork, nb, queues );
+    magmablas_zsetmatrix_transpose_q( m, n, nb, hA, lda, dAT, ldda, dwork, lddwork, queues );
 
     magma_queue_destroy( queues[0] );
     magma_queue_destroy( queues[1] );
 }
 
 
-/**
-    @see magmablas_zswap_q
-    @ingroup magma_zblas1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zswap(
     magma_int_t n,
@@ -663,10 +545,7 @@ magmablas_zswap(
 }
 
 
-/**
-    @see magmablas_zswapblk_q
-    @ingroup magma_zblas2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zswapblk(
     magma_order_t order, magma_int_t n,
@@ -680,10 +559,7 @@ magmablas_zswapblk(
 }
 
 
-/**
-    @see magmablas_zswapdblk_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zswapdblk(
     magma_int_t n, magma_int_t nb,
@@ -694,10 +570,7 @@ magmablas_zswapdblk(
 }
 
 
-/**
-    @see magmablas_zsymmetrize_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zsymmetrize(
     magma_uplo_t uplo, magma_int_t m,
@@ -707,10 +580,7 @@ magmablas_zsymmetrize(
 }
 
 
-/**
-    @see magmablas_zsymmetrize_tiles_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zsymmetrize_tiles(
     magma_uplo_t uplo, magma_int_t m,
@@ -721,10 +591,7 @@ magmablas_zsymmetrize_tiles(
 }
 
 
-/**
-    @see magmablas_ztranspose_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_ztranspose(
     magma_int_t m, magma_int_t n,
@@ -736,10 +603,7 @@ magmablas_ztranspose(
 
 
 #ifdef COMPLEX
-/**
-    @see magmablas_ztranspose_conj_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_ztranspose_conj(
     magma_int_t m, magma_int_t n,
@@ -750,10 +614,7 @@ magmablas_ztranspose_conj(
 }
 
 
-/**
-    @see magmablas_ztranspose_conj_inplace_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_ztranspose_conj_inplace(
     magma_int_t n,
@@ -764,10 +625,7 @@ magmablas_ztranspose_conj_inplace(
 #endif
 
 
-/**
-    @see magmablas_ztranspose_inplace_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_ztranspose_inplace(
     magma_int_t n,
@@ -777,10 +635,7 @@ magmablas_ztranspose_inplace(
 }
 
 
-/**
-    @see magmablas_ztrsm_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C"
 void magmablas_ztrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -794,10 +649,7 @@ void magmablas_ztrsm(
 }
 
 
-/**
-    @see magmablas_ztrsm_outofplace_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C"
 void magmablas_ztrsm_outofplace(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -815,10 +667,7 @@ void magmablas_ztrsm_outofplace(
 }
 
 
-/**
-    @see magmablas_ztrsm_work_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C"
 void magmablas_ztrsm_work(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -836,10 +685,7 @@ void magmablas_ztrsm_work(
 }
 
 
-/**
-    @see magmablas_ztrtri_diag_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_ztrtri_diag(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
@@ -850,10 +696,7 @@ magmablas_ztrtri_diag(
 }
 
 
-/**
-    @see magma_zgetmatrix_1D_row_bcyclic_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zgetmatrix_1D_row_bcyclic(
     magma_int_t m, magma_int_t n,
@@ -866,7 +709,7 @@ magma_zgetmatrix_1D_row_bcyclic(
         magma_setdevice( dev );
         magma_queue_create( &queues[dev] );
     }
-    magma_zgetmatrix_1D_row_bcyclic_q( m, n, dA, ldda, hA, lda, ngpu, nb, queues );
+    magma_zgetmatrix_1D_row_bcyclic_q( ngpu, m, n, nb, dA, ldda, hA, lda, queues );
     for( int dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
@@ -875,10 +718,7 @@ magma_zgetmatrix_1D_row_bcyclic(
 }
 
 
-/**
-    @see magma_zgetmatrix_1D_col_bcyclic_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zgetmatrix_1D_col_bcyclic(
     magma_int_t m, magma_int_t n,
@@ -891,7 +731,7 @@ magma_zgetmatrix_1D_col_bcyclic(
         magma_setdevice( dev );
         magma_queue_create( &queues[dev] );
     }
-    magma_zgetmatrix_1D_col_bcyclic_q( m, n, dA, ldda, hA, lda, ngpu, nb, queues );
+    magma_zgetmatrix_1D_col_bcyclic_q( ngpu, m, n, nb, dA, ldda, hA, lda, queues );
     for( int dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
@@ -900,10 +740,7 @@ magma_zgetmatrix_1D_col_bcyclic(
 }
 
 
-/**
-    @see magma_zsetmatrix_1D_row_bcyclic_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zsetmatrix_1D_row_bcyclic(
     magma_int_t m, magma_int_t n,
@@ -916,7 +753,7 @@ magma_zsetmatrix_1D_row_bcyclic(
         magma_setdevice( dev );
         magma_queue_create( &queues[dev] );
     }
-    magma_zsetmatrix_1D_row_bcyclic_q( m, n, hA, lda, dA, ldda, ngpu, nb, queues );
+    magma_zsetmatrix_1D_row_bcyclic_q( ngpu, m, n, nb, hA, lda, dA, ldda, queues );
     for( int dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
@@ -925,10 +762,7 @@ magma_zsetmatrix_1D_row_bcyclic(
 }
 
 
-/**
-    @see magma_zsetmatrix_1D_col_bcyclic_q
-    @ingroup magma_zblas3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magma_zsetmatrix_1D_col_bcyclic(
     magma_int_t m, magma_int_t n,
@@ -941,7 +775,7 @@ magma_zsetmatrix_1D_col_bcyclic(
         magma_setdevice( dev );
         magma_queue_create( &queues[dev] );
     }
-    magma_zsetmatrix_1D_col_bcyclic_q( m, n, hA, lda, dA, ldda, ngpu, nb, queues );
+    magma_zsetmatrix_1D_col_bcyclic_q( ngpu, m, n, nb, hA, lda, dA, ldda, queues );
     for( int dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
@@ -951,10 +785,7 @@ magma_zsetmatrix_1D_col_bcyclic(
 
 
 // in src/zlarfb_gpu.cpp
-/**
-    @see magma_zlarfb_gpu_q
-    @ingroup magma_zaux3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zlarfb_gpu(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
@@ -972,10 +803,7 @@ magma_zlarfb_gpu(
 
 
 // in src/zlarfb_gpu_gemm.cpp
-/**
-    @see magma_zlarfb_gpu_gemm_q
-    @ingroup magma_zaux3
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zlarfb_gpu_gemm(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,

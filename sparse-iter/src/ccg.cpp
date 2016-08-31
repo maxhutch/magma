@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zcg.cpp normal z -> c, Mon May  2 23:30:55 2016
+       @generated from sparse-iter/src/zcg.cpp, normal z -> c, Tue Aug 30 09:38:51 2016
 */
 
 #include "magmasparse_internal.h"
@@ -100,7 +100,7 @@ magma_ccg(
         solver_par->res_vec[0] = (real_Double_t)nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -12,9 +12,7 @@
 
 #include "magma_internal.h"
 
-
-
-///////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 static
 __global__ void stepinit_ipiv_kernel(magma_int_t **ipiv_array, int pm)
 {
@@ -42,6 +40,8 @@ __global__ void stepinit_ipiv_kernel(magma_int_t **ipiv_array, int pm)
 #endif
 }
 
+
+/******************************************************************************/
 extern "C"
 void stepinit_ipiv(magma_int_t **ipiv_array,
                  magma_int_t pm,
@@ -53,7 +53,8 @@ void stepinit_ipiv(magma_int_t **ipiv_array,
         (ipiv_array, pm);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************/
 static
 __global__ void magma_iset_pointer_kernel(
     magma_int_t **output_array,
@@ -66,6 +67,7 @@ __global__ void magma_iset_pointer_kernel(
 }
 
 
+/******************************************************************************/
 extern "C"
 void magma_iset_pointer(
     magma_int_t **output_array,
@@ -87,6 +89,7 @@ void magma_iset_pointer(
 
 
 
+/******************************************************************************/
 __global__ void idisplace_pointers_kernel(magma_int_t **output_array,
                magma_int_t **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column)
@@ -97,6 +100,7 @@ __global__ void idisplace_pointers_kernel(magma_int_t **output_array,
 }
 
 
+/******************************************************************************/
 extern "C"
 void magma_idisplace_pointers(magma_int_t **output_array,
                magma_int_t **input_array, magma_int_t lda,

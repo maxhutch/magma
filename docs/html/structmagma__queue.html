@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li><a href="modules.html"><span>Modules</span></a></li>
-      <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -75,13 +74,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           </span>
         </div>
       </li>
-    </ul>
-  </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
-      <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 </div><!-- top -->
@@ -115,22 +107,144 @@ $(document).ready(function(){initNavTree('structmagma__queue.html','');});
 
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="structmagma__queue-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">magma_queue Struct Reference</div>  </div>
+<div class="title">magma_queue Struct Reference<div class="ingroups"><a class="el" href="group__group__util.html">Utilities</a> &raquo; <a class="el" href="group__magma__queue.html">Queue  management</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p><hr/>
-<p> Define <a class="el" href="structmagma__queue.html" title=" Define magma_queue structure ">magma_queue</a> structure  
+<p>Define <a class="el" href="structmagma__queue.html" title="Define magma_queue structure, which wraps around CUDA and OpenCL queues. ">magma_queue</a> structure, which wraps around CUDA and OpenCL queues.  
  <a href="structmagma__queue.html#details">More...</a></p>
 
 <p><code>#include &lt;magma_internal.h&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a059eb41cf5717333dd5916cda991e526"><td class="memItemLeft" align="right" valign="top">magma_device_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmagma__queue.html#a059eb41cf5717333dd5916cda991e526">device</a> ()</td></tr>
+<tr class="separator:a059eb41cf5717333dd5916cda991e526"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1b0a980090982212c375a0a970307cf"><td class="memItemLeft" align="right" valign="top">cudaStream_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmagma__queue.html#aa1b0a980090982212c375a0a970307cf">cuda_stream</a> ()</td></tr>
+<tr class="separator:aa1b0a980090982212c375a0a970307cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc1811bf0954b35ea207dd7e25484c99"><td class="memItemLeft" align="right" valign="top">cublasHandle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmagma__queue.html#abc1811bf0954b35ea207dd7e25484c99">cublas_handle</a> ()</td></tr>
+<tr class="separator:abc1811bf0954b35ea207dd7e25484c99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc5ebd1486844c9eac97acae670441d2"><td class="memItemLeft" align="right" valign="top">cusparseHandle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmagma__queue.html#adc5ebd1486844c9eac97acae670441d2">cusparse_handle</a> ()</td></tr>
+<tr class="separator:adc5ebd1486844c9eac97acae670441d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><hr/>
-<p> Define <a class="el" href="structmagma__queue.html" title=" Define magma_queue structure ">magma_queue</a> structure </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/mnt/scratch/mgates/disable-v1/magma-2.0.2/control/magma_internal.h</li>
+<div class="textblock"><p>Define <a class="el" href="structmagma__queue.html" title="Define magma_queue structure, which wraps around CUDA and OpenCL queues. ">magma_queue</a> structure, which wraps around CUDA and OpenCL queues. </p>
+<p>In C, this is a simple struct. In C++, it is a class with getter member functions. For both C/C++, use magma_queue_create() and <a class="el" href="group__magma__queue.html#gacd3182186abc4a99def8a61a48af43fc" title="Destroys a queue, freeing its resources. ">magma_queue_destroy()</a> to create and destroy a queue. Global getter functions exist to query the queue.</p>
+<dl class="section see"><dt>See also</dt><dd>magma_queue_create </dd>
+<dd>
+<a class="el" href="group__magma__queue.html#gae124e842ea829f39816d88f2aade3062" title="magma_queue_create( device, queue_ptr ) is the preferred alias to this function. ">magma_queue_create_v2</a> </dd>
+<dd>
+<a class="el" href="group__magma__queue.html#gacd3182186abc4a99def8a61a48af43fc" title="Destroys a queue, freeing its resources. ">magma_queue_destroy</a> </dd>
+<dd>
+<a class="el" href="group__magma__queue.html#ga49e39408583e02dfef86bac8ddb6d5d5">magma_queue_get_device</a> </dd>
+<dd>
+<a class="el" href="group__magma__queue.html#ga52943f155bf74be714a3c7ad8565772d">magma_queue_get_cuda_stream</a> </dd>
+<dd>
+<a class="el" href="group__magma__queue.html#gae170c3d343ba4ab6ce1ed463a2f5f4bd">magma_queue_get_cublas_handle</a> </dd>
+<dd>
+<a class="el" href="group__magma__queue.html#gae1a1a2938a02c5b56678d52874500e9a">magma_queue_get_cusparse_handle</a> </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a059eb41cf5717333dd5916cda991e526"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_device_t magma_queue::device </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>device associated with this queue </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aa1b0a980090982212c375a0a970307cf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">cudaStream_t magma_queue::cuda_stream </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>CUDA stream associated with this queue; requires CUDA. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abc1811bf0954b35ea207dd7e25484c99"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">cublasHandle_t magma_queue::cublas_handle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>cuBLAS handle associated with this queue; requires CUDA. MAGMA assumes the handle won't be changed, e.g., its stream won't be modified. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="adc5ebd1486844c9eac97acae670441d2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">cusparseHandle_t magma_queue::cusparse_handle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>cuSparse handle associated with this queue; requires CUDA. MAGMA assumes the handle won't be changed, e.g., its stream won't be modified. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>/mnt/scratch/mgates/magma-trunk/magma-2.1.0/control/magma_internal.h</li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -138,7 +252,7 @@ $(document).ready(function(){initNavTree('structmagma__queue.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="structmagma__queue.html">magma_queue</a></li>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

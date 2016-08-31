@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.2) --
+#   -- MAGMA (version 2.1.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2016
+#      @date August 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -14,7 +14,7 @@ cdir      := include
 
 # only headers needing precision generation need to go here.
 # plain headers do not need to be listed.
-zhdr += \
+hdr += \
 	$(cdir)/magma_z.h		\
 	$(cdir)/magma_zc.h		\
 	$(cdir)/magmablas_z_q.h		\
@@ -28,6 +28,8 @@ zhdr += \
 	$(cdir)/magma_zbulgeinc.h	\
 	$(cdir)/magma_zgehrd_m.h	\
 	$(cdir)/magma_zbatched.h	\
+	$(cdir)/magma_zvbatched.h	\
+
 
 
 # ----------------------------------------------------------------------

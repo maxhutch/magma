@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
 
-       @generated from src/core_zhbtype2cb.cpp normal z -> c, Mon May  2 23:30:20 2016
+       @generated from src/core_zhbtype2cb.cpp, normal z -> c, Tue Aug 30 09:38:19 2016
 
 */
 #include "magma_internal.h"
@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup magma_magmaFloatComplex
+ * @ingroup magma_hbtype2cb
  *
  *  magma_chbtype2cb is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel apply the right update remaining from the
@@ -55,6 +55,9 @@
  *          The Householder reflectors of the previous type 1 are used here
  *          to continue update then new one are generated to eliminate the
  *          bulge and stored in this array.
+ *
+ * @param[in] ldv
+ *          The leading dimension of the matrix V. ldv >= TODO.
  *
  * @param[in, out] TAU
  *          magmaFloatComplex array, dimension (n).
@@ -92,9 +95,9 @@
  *
  ******************************************************************************/
 
-/***************************************************************************
- *          TYPE 2-BAND Lower-columnwise-Householder
- ***************************************************************************/
+// -----------------------------------------------------------------------------
+// TYPE 2-BAND Lower-columnwise-Householder
+
 extern "C" void
 magma_chbtype2cb(magma_int_t n, magma_int_t nb,
                 magmaFloatComplex *A, magma_int_t lda,
@@ -159,9 +162,8 @@ magma_chbtype2cb(magma_int_t n, magma_int_t nb,
         ctmp = MAGMA_C_CONJ(*TAU(taupos));
         lapackf77_clarfx("L", &lem, &len, V(vpos),  &ctmp, A(J1, st+1), &ldx, work);
     }
-    return;
 }
-/***************************************************************************/
+
 #undef A
 #undef V
 #undef TAU

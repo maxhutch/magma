@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
   
-       @generated from src/zgeqp3_gpu.cpp normal z -> s, Mon May  2 23:30:08 2016
+       @generated from src/zgeqp3_gpu.cpp, normal z -> s, Tue Aug 30 09:38:09 2016
 
        @author Stan Tomov
        @author Ichitaro Yamazaki
@@ -15,7 +15,7 @@
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGEQP3 computes a QR factorization with column pivoting of a
@@ -70,8 +70,16 @@
             Note: unlike the CPU interface of this routine, the GPU interface
             does not support a workspace query.
 
+*/
+#ifdef COMPLEX
+/**
+
     @param
     rwork   (workspace, for [cz]geqp3 only) REAL array, dimension (2*N)
+
+*/
+#endif // COMPLEX
+/**
 
     @param[out]
     info    INTEGER
@@ -92,8 +100,8 @@
     with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in
     A(i+1:m,i), and tau in TAU(i).
 
-    @ingroup magma_sgeqp3_comp
-    ********************************************************************/
+    @ingroup magma_geqp3
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgeqp3_gpu(
     magma_int_t m, magma_int_t n,

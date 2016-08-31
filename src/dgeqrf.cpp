@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
-       @generated from src/zgeqrf.cpp normal z -> d, Mon May  2 23:30:09 2016
+       @generated from src/zgeqrf.cpp, normal z -> d, Tue Aug 30 09:38:10 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEQRF computes a QR factorization of a DOUBLE PRECISION M-by-N matrix A:
@@ -61,7 +61,7 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= max( N*NB, 2*NB*NB ),
+            The dimension of the array WORK.  LWORK >= N*NB,
             where NB can be obtained through magma_get_dgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
@@ -89,8 +89,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqrf(
     magma_int_t m, magma_int_t n,
@@ -115,6 +115,7 @@ magma_dgeqrf(
     const double c_one = MAGMA_D_ONE;
     
     /* Local variables */
+    double* work_local = NULL;
     magmaDouble_ptr dA, dT, dwork;
     magma_int_t i, ib, min_mn, ldda, lddwork, old_i, old_ib;
     
@@ -122,8 +123,7 @@ magma_dgeqrf(
     *info = 0;
     magma_int_t nb = magma_get_dgeqrf_nb( m, n );
     
-    // need 2*nb*nb to store T and upper triangle of V simultaneously
-    magma_int_t lwkopt = max( n*nb, 2*nb*nb );
+    magma_int_t lwkopt = n*nb;
     work[0] = magma_dmake_lwork( lwkopt );
     bool lquery = (lwork == -1);
     if (m < 0) {
@@ -162,6 +162,18 @@ magma_dgeqrf(
     if (MAGMA_SUCCESS != magma_dmalloc( &dA, n*ldda + nb*lddwork + nb*nb )) {
         /* alloc failed so call non-GPU-resident version */
         return magma_dgeqrf_ooc( m, n, A, lda, tau, work, lwork, info );
+    }
+    
+    // Need at least 2*nb*nb to store T and upper triangle of V simultaneously.
+    // For better LAPACK compatability, which needs N*NB,
+    // allow lwork < 2*NB*NB and allocate here if needed.
+    if (lwork < 2*nb*nb) {
+        if (MAGMA_SUCCESS != magma_dmalloc_cpu( &work_local, 2*nb*nb )) {
+            magma_free( dA );
+            *info = MAGMA_ERR_HOST_ALLOC;
+            return *info;
+        }
+        work = work_local;
     }
     
     dwork = dA + n*ldda;
@@ -258,10 +270,15 @@ magma_dgeqrf(
         lapackf77_dgeqrf( &rows, &ib, A(i,i), &lda, tau+i, work, &lwork, info );
     }
     
+    magma_queue_sync( queues[0] );
+    magma_queue_sync( queues[1] );
     magma_queue_destroy( queues[0] );
     magma_queue_destroy( queues[1] );
     
+    work[0] = magma_dmake_lwork( lwkopt );  // before free( work_local )
+    
     magma_free( dA );
+    magma_free_cpu( work_local );  // if allocated
     
     return *info;
 } /* magma_dgeqrf */

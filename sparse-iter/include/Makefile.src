@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.2) --
+#   -- MAGMA (version 2.1.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2016
+#      @date August 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -14,7 +14,7 @@ cdir      := sparse-iter/include
 
 # only headers needing precision generation need to go here.
 # plain headers do not need to be listed.
-zhdr += \
+hdr += \
 	$(cdir)/magmasparse_z.h               \
 	$(cdir)/magmasparse_zc.h              \
 	$(cdir)/magmasparse_types.h           \

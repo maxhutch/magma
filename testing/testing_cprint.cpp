@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
   
-       @generated from testing/testing_zprint.cpp normal z -> c, Mon May  2 23:31:09 2016
+       @generated from testing/testing_zprint.cpp, normal z -> c, Tue Aug 30 09:39:05 2016
        @author Mark Gates
 */
 // includes, system
@@ -19,23 +19,39 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#define REDIRECT
+#include <unistd.h>
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing cprint
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     magmaFloatComplex *hA;
     magmaFloatComplex_ptr dA;
     //magma_int_t ione     = 1;
     //magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t M, N, lda, ldda;  //size
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
+
+    #ifdef REDIRECT
+        // dup/dup2 aren't available on Windows to restore stdout
+        // save stdout and redirect to file
+        const char* fname = "testing_cprint.out";
+        printf( "redirecting output to %s\n", fname );
+        fflush( stdout );
+        int stdout_save = dup( fileno(stdout) );
+        FILE* f = freopen( fname, "w", stdout );
+        TESTING_CHECK( f == NULL );
+    #endif
 
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -46,8 +62,8 @@ int main( int argc, char** argv)
             //size  = lda*N;
 
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC_CPU( hA, magmaFloatComplex, lda *N );
-            TESTING_MALLOC_DEV( dA, magmaFloatComplex, ldda*N );
+            TESTING_CHECK( magma_cmalloc_cpu( &hA, lda *N ));
+            TESTING_CHECK( magma_cmalloc( &dA, ldda*N ));
         
             //lapackf77_clarnv( &ione, ISEED, &size, hA );
             for( int j = 0; j < N; ++j ) {
@@ -63,12 +79,28 @@ int main( int argc, char** argv)
             printf( "dA=" );
             magma_cprint_gpu( M, N, dA, ldda );
             
-            TESTING_FREE_CPU( hA );
-            TESTING_FREE_DEV( dA );
+            magma_free_cpu( hA );
+            magma_free( dA );
         }
     }
 
+    #ifdef REDIRECT
+        // restore stdout
+        fflush( stdout );
+        dup2( stdout_save, fileno(stdout) );
+        close( stdout_save );
+
+        // compare output file to reference
+        printf( "diff testing_cprint.ref testing_cprint.out\n" );
+        fflush( stdout );
+
+        int err = system( "diff testing_cprint.ref testing_cprint.out" );
+        bool okay = (err == 0);
+        status += ! okay;
+        printf( "diff %s\n", (okay ? "ok" : "failed") );
+    #endif
+
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

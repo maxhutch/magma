@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zclaswp.cu mixed zc -> ds, Mon May  2 23:30:34 2016
+       @generated from magmablas/zclaswp.cu, mixed zc -> ds, Tue Aug 30 09:38:32 2016
 
 */
 #include "magma_internal.h"
@@ -65,7 +65,7 @@ dslaswp_inv_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     Row i of  A is cast to single precision in row ipiv[i] of SA (incx > 0), or
@@ -111,8 +111,8 @@ dslaswp_inv_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_laswp
+*******************************************************************************/
 extern "C" void
 magmablas_dslaswp_q(
     magma_int_t n,

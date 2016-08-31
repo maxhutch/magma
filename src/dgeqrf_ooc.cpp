@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgeqrf_ooc.cpp normal z -> d, Mon May  2 23:30:09 2016
+       @generated from src/zgeqrf_ooc.cpp, normal z -> d, Tue Aug 30 09:38:10 2016
 
 */
 #include <cuda_runtime.h>
 
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEQRF_OOC computes a QR factorization of a DOUBLE PRECISION M-by-N matrix A:
@@ -91,8 +91,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqrf_ooc(
     magma_int_t m, magma_int_t n,
@@ -138,7 +138,7 @@ magma_dgeqrf_ooc(
     cudaMemGetInfo( &freeMem, &totalMem );
     freeMem /= sizeof(double);
     
-    magma_int_t NB = magma_int_t(0.8*freeMem/m);
+    magma_int_t NB = (magma_int_t)(0.8*freeMem/m);
     NB = (NB / nb) * nb;
 
     if (NB >= n)
@@ -170,7 +170,7 @@ magma_dgeqrf_ooc(
     /* start the main loop over the blocks that fit in the GPU memory */
     for (i=0; i < n; i += NB) {
         IB = min( n-i, NB );
-        //printf("Processing %5d columns -- %5d to %5d ... \n", IB, i, i+IB);
+        //printf("Processing %5lld columns -- %5lld to %5lld ...\n", (long long) IB, (long long) i, (long long)(i+IB) );
 
         /* 1. Copy the next part of the matrix to the GPU */
         magma_dsetmatrix_async( m, IB,

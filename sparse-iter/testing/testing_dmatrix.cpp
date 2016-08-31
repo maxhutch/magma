@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/testing/testing_zmatrix.cpp normal z -> d, Mon May  2 23:31:23 2016
+       @generated from sparse-iter/testing/testing_zmatrix.cpp, normal z -> d, Tue Aug 30 09:39:19 2016
        @author Hartwig Anzt
 */
 
@@ -16,12 +16,9 @@
 #include <math.h>
 
 // includes, project
-#include "flops.h"
 #include "magma_v2.h"
-#include "magma_lapack.h"
+#include "magmasparse.h"
 #include "testings.h"
-#include "magmasparse_internal.h"
-
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -30,7 +27,8 @@
 int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     magma_dopts zopts;
     magma_queue_t queue=NULL;
@@ -45,7 +43,7 @@ int main(  int argc, char** argv )
     magma_int_t start, end;
     
     int i=1;
-    CHECK( magma_dparse_opts( argc, argv, &zopts, &i, queue ));
+    TESTING_CHECK( magma_dparse_opts( argc, argv, &zopts, &i, queue ));
 
     B.blocksize = zopts.blocksize;
     B.alignment = zopts.alignment;
@@ -54,19 +52,19 @@ int main(  int argc, char** argv )
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
-            CHECK( magma_dm_5stencil(  laplace_size, &Z, queue ));
+            TESTING_CHECK( magma_dm_5stencil(  laplace_size, &Z, queue ));
         } else {                        // file-matrix test
-            CHECK( magma_d_csr_mtx( &Z,  argv[i], queue ));
+            TESTING_CHECK( magma_d_csr_mtx( &Z,  argv[i], queue ));
         }
 
-        printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                            int(Z.num_rows), int(Z.num_cols), int(Z.nnz) );
+        printf("%% matrix info: %lld-by-%lld with %lld nonzeros\n",
+                (long long) Z.num_rows, (long long) Z.num_cols, (long long) Z.nnz );
         
         // slice matrix
-        CHECK( magma_index_malloc_cpu( &comm_i, Z.num_rows ) );
-        CHECK( magma_dmalloc_cpu( &comm_v, Z.num_rows ) );
+        TESTING_CHECK( magma_index_malloc_cpu( &comm_i, Z.num_rows ) );
+        TESTING_CHECK( magma_dmalloc_cpu( &comm_v, Z.num_rows ) );
         
-        CHECK( magma_dmslice( 1, 0, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
+        TESTING_CHECK( magma_dmslice( 1, 0, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
         magma_dprint_matrix( A2, queue );
         magma_dprint_matrix( AT, queue );
         magma_dprint_matrix( B, queue );
@@ -74,7 +72,7 @@ int main(  int argc, char** argv )
         magma_dmfree(&AT, queue );
         magma_dmfree(&B, queue );
 
-        CHECK( magma_dmslice( 9, 0, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
+        TESTING_CHECK( magma_dmslice( 9, 0, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
         magma_dprint_matrix( A2, queue );
         magma_dprint_matrix( AT, queue );
         magma_dprint_matrix( B, queue );
@@ -82,7 +80,7 @@ int main(  int argc, char** argv )
         magma_dmfree(&AT, queue );
         magma_dmfree(&B, queue );
         
-        CHECK( magma_dmslice( 9, 1, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
+        TESTING_CHECK( magma_dmslice( 9, 1, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
         magma_dprint_matrix( A2, queue );
         magma_dprint_matrix( AT, queue );
         magma_dprint_matrix( B, queue );
@@ -90,7 +88,7 @@ int main(  int argc, char** argv )
         magma_dmfree(&AT, queue );
         magma_dmfree(&B, queue );
 
-        CHECK( magma_dmslice( 9, 8, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
+        TESTING_CHECK( magma_dmslice( 9, 8, Z, &A2, &AT, &B, comm_i, comm_v, &start, &end, queue ) );    
         magma_dprint_matrix( A2, queue );
         magma_dprint_matrix( AT, queue );
         magma_dprint_matrix( B, queue );
@@ -100,33 +98,33 @@ int main(  int argc, char** argv )
         
         
         // scale matrix
-        CHECK( magma_dmscale( &Z, zopts.scaling, queue ));
+        TESTING_CHECK( magma_dmscale( &Z, zopts.scaling, queue ));
 
         // remove nonzeros in matrix
-        CHECK( magma_dmcsrcompressor( &Z, queue ));
+        TESTING_CHECK( magma_dmcsrcompressor( &Z, queue ));
         
         // convert to be non-symmetric
-        CHECK( magma_dmconvert( Z, &A, Magma_CSR, Magma_CSRL, queue ));
+        TESTING_CHECK( magma_dmconvert( Z, &A, Magma_CSR, Magma_CSRL, queue ));
         
         // transpose
-        CHECK( magma_dmtranspose( A, &AT, queue ));
+        TESTING_CHECK( magma_dmtranspose( A, &AT, queue ));
 
         // convert, copy back and forth to check everything works
 
-        CHECK( magma_dmconvert( AT, &B, Magma_CSR, zopts.output_format, queue ));
+        TESTING_CHECK( magma_dmconvert( AT, &B, Magma_CSR, zopts.output_format, queue ));
         magma_dmfree(&AT, queue );
-        CHECK( magma_dmtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
+        TESTING_CHECK( magma_dmtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
         magma_dmfree(&B, queue );
-        CHECK( magma_dmcsrcompressor_gpu( &B_d, queue ));
-        CHECK( magma_dmtransfer( B_d, &B, Magma_DEV, Magma_CPU, queue ));
+        TESTING_CHECK( magma_dmcsrcompressor_gpu( &B_d, queue ));
+        TESTING_CHECK( magma_dmtransfer( B_d, &B, Magma_DEV, Magma_CPU, queue ));
         magma_dmfree(&B_d, queue );
-        CHECK( magma_dmconvert( B, &AT, zopts.output_format,Magma_CSR, queue ));
+        TESTING_CHECK( magma_dmconvert( B, &AT, zopts.output_format,Magma_CSR, queue ));
         magma_dmfree(&B, queue );
 
         // transpose back
-        CHECK( magma_dmtranspose( AT, &A2, queue ));
+        TESTING_CHECK( magma_dmtranspose( AT, &A2, queue ));
         magma_dmfree(&AT, queue );
-        CHECK( magma_dmdiff( A, A2, &res, queue));
+        TESTING_CHECK( magma_dmdiff( A, A2, &res, queue));
         printf("%% ||A-B||_F = %8.2e\n", res);
         if ( res < .000001 )
             printf("%% tester:  ok\n");
@@ -144,16 +142,7 @@ int main(  int argc, char** argv )
         i++;
     }
 
-cleanup:
-    magma_free_cpu( comm_i );
-    magma_free_cpu( comm_v );
-    magma_dmfree(&AT, queue );
-    magma_dmfree(&A, queue );
-    magma_dmfree(&B, queue );
-    magma_dmfree(&B_d, queue );
-    magma_dmfree(&A2, queue );
-    magma_dmfree(&Z, queue );
     magma_queue_destroy( queue );
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return info;
 }

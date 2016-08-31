@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlarfg.cu normal z -> d, Mon May  2 23:30:32 2016
+       @generated from magmablas/zlarfg.cu, normal z -> d, Tue Aug 30 09:38:31 2016
        
        @author Mark Gates
 */
@@ -18,7 +18,7 @@
 #define NB 512
 
 
-// ----------------------------------------
+/******************************************************************************/
 // kernel for magma_dlarfg.
 // Uses one block of NB (currently 512) threads.
 // Each thread sums dx[ tx + k*NB ]^2 for k = 0, 1, ...,
@@ -109,7 +109,7 @@ dlarfg_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLARFG generates a real elementary reflector (Householder matrix)
@@ -160,8 +160,8 @@ dlarfg_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_daux1
-    ********************************************************************/
+    @ingroup magma_larfg
+*******************************************************************************/
 extern "C"
 void magmablas_dlarfg_q(
     magma_int_t n,

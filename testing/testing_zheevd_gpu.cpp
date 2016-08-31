@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -33,7 +33,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     /* Constants */
     const double d_zero = 0;
@@ -53,7 +54,7 @@ int main( int argc, char** argv)
     magma_int_t N, n2, info, lwork, liwork, lda, ldda;
     magma_int_t ISEED[4] = {0,0,0,1};
     eps = lapackf77_dlamch( "E" );
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -161,28 +162,28 @@ int main( int argc, char** argv)
             liwork = aux_iwork[0];
             
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC_CPU( h_A,    magmaDoubleComplex, N*lda  );
-            TESTING_MALLOC_CPU( w1,     double,             N      );
-            TESTING_MALLOC_CPU( w2,     double,             N      );
+            TESTING_CHECK( magma_zmalloc_cpu( &h_A,    N*lda  ));
+            TESTING_CHECK( magma_dmalloc_cpu( &w1,     N      ));
+            TESTING_CHECK( magma_dmalloc_cpu( &w2,     N      ));
             #ifdef COMPLEX
-            TESTING_MALLOC_CPU( rwork,  double,             lrwork );
+            TESTING_CHECK( magma_dmalloc_cpu( &rwork,  lrwork ));
             #endif
-            TESTING_MALLOC_CPU( iwork,  magma_int_t,        liwork );
+            TESTING_CHECK( magma_imalloc_cpu( &iwork,  liwork ));
             
-            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, N*lda  );
-            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork  );
+            TESTING_CHECK( magma_zmalloc_pinned( &h_R,    N*lda  ));
+            TESTING_CHECK( magma_zmalloc_pinned( &h_work, lwork  ));
             
-            TESTING_MALLOC_DEV( d_R,    magmaDoubleComplex, N*ldda );
+            TESTING_CHECK( magma_zmalloc( &d_R,    N*ldda ));
             
             if (opts.version == 3) {
-                TESTING_MALLOC_DEV( d_Z,    magmaDoubleComplex, N*ldda     );
-                TESTING_MALLOC_CPU( h_Z,    magmaDoubleComplex, N*lda      );
-                TESTING_MALLOC_CPU( isuppz, magma_int_t,        2*max(1,N) );
+                TESTING_CHECK( magma_zmalloc( &d_Z,    N*ldda     ));
+                TESTING_CHECK( magma_zmalloc_cpu( &h_Z,    N*lda      ));
+                TESTING_CHECK( magma_imalloc_cpu( &isuppz, 2*max(1,N) ));
             }
             if (opts.version == 4) {
-                TESTING_MALLOC_DEV( d_Z,    magmaDoubleComplex, N*ldda     );
-                TESTING_MALLOC_CPU( h_Z,    magmaDoubleComplex, N*lda      );
-                TESTING_MALLOC_CPU( ifail,  magma_int_t,        N          );
+                TESTING_CHECK( magma_zmalloc( &d_Z,    N*ldda     ));
+                TESTING_CHECK( magma_zmalloc_cpu( &h_Z,    N*lda      ));
+                TESTING_CHECK( magma_imalloc_cpu( &ifail,  N          ));
             }
             
             /* Clear eigenvalues, for |S-S_magma| check when fraction < 1. */
@@ -222,7 +223,7 @@ int main( int argc, char** argv)
                                    #endif
                                    iwork, liwork,
                                    &info );
-                //printf( "il %d, iu %d, m1 %d\n", il, iu, m1 );
+                //printf( "il %lld, iu %lld, m1 %lld\n", (long long) il, (long long) iu, (long long) m1 );
             }
             else if ( opts.version == 3 ) {  // version 3: MRRR, computes selected eigenvalues/vectors
                 // only complex version available
@@ -265,8 +266,8 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0) {
-                printf("magma_zheevd_gpu returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_zheevd_gpu returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             bool okay = true;
@@ -281,7 +282,7 @@ int main( int argc, char** argv)
                 magma_zgetmatrix( N, N, d_R, ldda, h_R, lda, opts.queue );
                 
                 magmaDoubleComplex *work;
-                TESTING_MALLOC_CPU( work, magmaDoubleComplex, 2*N*N );
+                TESTING_CHECK( magma_zmalloc_cpu( &work, 2*N*N ));
                 
                 // e=NULL is unused since kband=0; tau=NULL is unused since itype=1
                 lapackf77_zhet21( &ione, lapack_uplo_const(opts.uplo), &N, &izero,
@@ -297,7 +298,7 @@ int main( int argc, char** argv)
                 result[0] *= eps;
                 result[1] *= eps;
                 
-                TESTING_FREE_CPU( work );  work=NULL;
+                magma_free_cpu( work );  work=NULL;
                 
                 // Disable third eigenvalue check that calls routine again --
                 // it obscures whether error occurs in first call above or in this call.
@@ -314,8 +315,8 @@ int main( int argc, char** argv)
                 //                  iwork, liwork,
                 //                  &info);
                 //if (info != 0) {
-                //    printf("magma_zheevd_gpu returned error %d: %s.\n",
-                //           (int) info, magma_strerror( info ));
+                //    printf("magma_zheevd_gpu returned error %lld: %s.\n",
+                //           (long long) info, magma_strerror( info ));
                 //}
                 //
                 //double maxw=0, diff=0;
@@ -377,8 +378,8 @@ int main( int argc, char** argv)
                 }
                 cpu_time = magma_wtime() - cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_zheevd returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_zheevd returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 // compare eigenvalues
@@ -391,12 +392,12 @@ int main( int argc, char** argv)
                 result[3] = diff / (N*maxw);
                 
                 okay = okay && (result[3] < tolulp);
-                printf("%5d   %9.4f        %9.4f         %8.2e  ",
-                       (int) N, cpu_time, gpu_time, result[3] );
+                printf("%5lld   %9.4f        %9.4f         %8.2e  ",
+                       (long long) N, cpu_time, gpu_time, result[3] );
             }
             else {
-                printf("%5d      ---           %9.4f           ---     ",
-                       (int) N, gpu_time);
+                printf("%5lld      ---           %9.4f           ---     ",
+                       (long long) N, gpu_time);
             }
             
             // print error checks
@@ -410,28 +411,28 @@ int main( int argc, char** argv)
             printf("   %s\n", (okay ? "ok" : "failed"));
             status += ! okay;
 
-            TESTING_FREE_CPU( h_A    );
-            TESTING_FREE_CPU( w1     );
-            TESTING_FREE_CPU( w2     );
+            magma_free_cpu( h_A    );
+            magma_free_cpu( w1     );
+            magma_free_cpu( w2     );
             #ifdef COMPLEX
-            TESTING_FREE_CPU( rwork  );
+            magma_free_cpu( rwork  );
             #endif
-            TESTING_FREE_CPU( iwork  );
+            magma_free_cpu( iwork  );
             
-            TESTING_FREE_PIN( h_R    );
-            TESTING_FREE_PIN( h_work );
+            magma_free_pinned( h_R    );
+            magma_free_pinned( h_work );
             
-            TESTING_FREE_DEV( d_R );
+            magma_free( d_R );
             
             if ( opts.version == 3 ) {
-                TESTING_FREE_DEV( d_Z    );
-                TESTING_FREE_CPU( h_Z    );
-                TESTING_FREE_CPU( isuppz );
+                magma_free( d_Z    );
+                magma_free_cpu( h_Z    );
+                magma_free_cpu( isuppz );
             }
             if ( opts.version == 4 ) {
-                TESTING_FREE_DEV( d_Z    );
-                TESTING_FREE_CPU( h_Z    );
-                TESTING_FREE_CPU( ifail  );
+                magma_free( d_Z    );
+                magma_free_cpu( h_Z    );
+                magma_free_cpu( ifail  );
             }
             fflush( stdout );
         }
@@ -441,6 +442,6 @@ int main( int argc, char** argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

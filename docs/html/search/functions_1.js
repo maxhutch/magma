@@ -1,5 +1,23 @@
 var searchData=
 [
-  ['d_5ftranspose_5fcsr',['d_transpose_csr',['../group__magmasparse__daux.html#ga3c4991d4d879c5953aab600eba839c9f',1,'magma_dmtranspose.cpp']]],
-  ['dtrevc3',['dtrevc3',['../group__magma__dgeev__comp.html#ga22043a0e4e3976d5d3f3c009264caa5e',1,'lapack_dtrevc3.f']]]
+  ['c_5ftranspose_5fcsr',['c_transpose_csr',['../group__magmasparse__caux.html#ga15d080288b0b4864d5e31f72b6a50bad',1,'magma_cmtranspose.cpp']]],
+  ['cblas_5fdiag_5fconst',['cblas_diag_const',['../group__cblas__const.html#gad2b76ac3bd5246433f5a406fb05c0733',1,'cblas_diag_const(magma_diag_t magma_const):&#160;constants.cpp'],['../group__cblas__const.html#gad2b76ac3bd5246433f5a406fb05c0733',1,'cblas_diag_const(magma_diag_t diag):&#160;constants.cpp']]],
+  ['cblas_5forder_5fconst',['cblas_order_const',['../group__cblas__const.html#ga3b5bdd83623e6e62d461a548cafa0058',1,'cblas_order_const(magma_order_t magma_const):&#160;constants.cpp'],['../group__cblas__const.html#ga3b5bdd83623e6e62d461a548cafa0058',1,'cblas_order_const(magma_order_t order):&#160;constants.cpp']]],
+  ['cblas_5fside_5fconst',['cblas_side_const',['../group__cblas__const.html#ga303a35abca3c4e48884f67682aedc06e',1,'cblas_side_const(magma_side_t magma_const):&#160;constants.cpp'],['../group__cblas__const.html#ga303a35abca3c4e48884f67682aedc06e',1,'cblas_side_const(magma_side_t side):&#160;constants.cpp']]],
+  ['cblas_5ftrans_5fconst',['cblas_trans_const',['../group__cblas__const.html#ga5a34b4f4254d05b54b31fd076ed1879d',1,'cblas_trans_const(magma_trans_t magma_const):&#160;constants.cpp'],['../group__cblas__const.html#ga5a34b4f4254d05b54b31fd076ed1879d',1,'cblas_trans_const(magma_trans_t trans):&#160;constants.cpp']]],
+  ['cblas_5fuplo_5fconst',['cblas_uplo_const',['../group__cblas__const.html#ga75f4887b6c0c019a50851e1809bc20e1',1,'cblas_uplo_const(magma_uplo_t magma_const):&#160;constants.cpp'],['../group__cblas__const.html#ga75f4887b6c0c019a50851e1809bc20e1',1,'cblas_uplo_const(magma_uplo_t uplo):&#160;constants.cpp']]],
+  ['clblas_5fdiag_5fconst',['clblas_diag_const',['../group__clblas__const.html#ga642386587c0f75b276a2eb01038190bc',1,'clblas_diag_const(magma_diag_t magma_const):&#160;constants.cpp'],['../group__clblas__const.html#ga642386587c0f75b276a2eb01038190bc',1,'clblas_diag_const(magma_diag_t diag):&#160;constants.cpp']]],
+  ['clblas_5forder_5fconst',['clblas_order_const',['../group__clblas__const.html#ga98764441c2d7536f4033a0236560d368',1,'clblas_order_const(magma_order_t magma_const):&#160;constants.cpp'],['../group__clblas__const.html#ga98764441c2d7536f4033a0236560d368',1,'clblas_order_const(magma_order_t order):&#160;constants.cpp']]],
+  ['clblas_5fside_5fconst',['clblas_side_const',['../group__clblas__const.html#ga07ad861b8c5f97c6e09474dec004939e',1,'clblas_side_const(magma_side_t magma_const):&#160;constants.cpp'],['../group__clblas__const.html#ga07ad861b8c5f97c6e09474dec004939e',1,'clblas_side_const(magma_side_t side):&#160;constants.cpp']]],
+  ['clblas_5ftrans_5fconst',['clblas_trans_const',['../group__clblas__const.html#ga2278546942d4a171593d8d08efd93375',1,'clblas_trans_const(magma_trans_t magma_const):&#160;constants.cpp'],['../group__clblas__const.html#ga2278546942d4a171593d8d08efd93375',1,'clblas_trans_const(magma_trans_t trans):&#160;constants.cpp']]],
+  ['clblas_5fuplo_5fconst',['clblas_uplo_const',['../group__clblas__const.html#ga482e43d3d355b2a08b3119fa28d6416e',1,'clblas_uplo_const(magma_uplo_t magma_const):&#160;constants.cpp'],['../group__clblas__const.html#ga482e43d3d355b2a08b3119fa28d6416e',1,'clblas_uplo_const(magma_uplo_t uplo):&#160;constants.cpp']]],
+  ['conj',['conj',['../group__magma__complex.html#gadd082b05392b38ff4c5ed0bf72ba966d',1,'magma_operators.h']]],
+  ['cublas_5fdiag_5fconst',['cublas_diag_const',['../group__cublas__const.html#ga4d2170d5fc8a24ef4501eb34130f59b5',1,'constants.cpp']]],
+  ['cublas_5fhandle',['cublas_handle',['../structmagma__queue.html#abc1811bf0954b35ea207dd7e25484c99',1,'magma_queue']]],
+  ['cublas_5fside_5fconst',['cublas_side_const',['../group__cublas__const.html#gaaeaaef4d7659644ca94f93f15dfec60e',1,'constants.cpp']]],
+  ['cublas_5ftrans_5fconst',['cublas_trans_const',['../group__cublas__const.html#ga5694b511a5f82605fa838a8ab56e6382',1,'constants.cpp']]],
+  ['cublas_5fuplo_5fconst',['cublas_uplo_const',['../group__cublas__const.html#gab5b9f1f683509487376de5069da56d59',1,'constants.cpp']]],
+  ['cuda_5fstream',['cuda_stream',['../structmagma__queue.html#aa1b0a980090982212c375a0a970307cf',1,'magma_queue']]],
+  ['cusparse2magma_5ferror',['cusparse2magma_error',['../group__magma__error__internal.html#gaf1a014b017dcd37c5157b89ac4c89200',1,'cusparse2magma_error(cusparseStatus_t status):&#160;error.cpp'],['../group__magma__error__internal.html#gaf1a014b017dcd37c5157b89ac4c89200',1,'cusparse2magma_error(cusparseStatus_t status):&#160;error.cpp']]],
+  ['cusparse_5fhandle',['cusparse_handle',['../structmagma__queue.html#adc5ebd1486844c9eac97acae670441d2',1,'magma_queue']]]
 ];

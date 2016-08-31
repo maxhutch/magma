@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -12,9 +12,11 @@
        @author Mark Gates
 */
 #include "magma_internal.h"
+
+#define TRTRI_NONBATCHED
 #include "ztrtri.cuh"  // get NB from ztrtri
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ztrsm_outofplace solves one of the matrix equations on gpu
@@ -138,8 +140,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C"
 void magmablas_ztrsm_outofplace_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -379,13 +381,13 @@ void magmablas_ztrsm_outofplace_q(
 }
 
 
-/**
-    Similar to magmablas_ztrsm_outofplace, but copies result dX back to dB,
+/***************************************************************************//**
+    Similar to magmablas_ztrsm_outofplace(), but copies result dX back to dB,
     as in classical ztrsm interface.
     
     @see magmablas_ztrsm_outofplace
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C"
 void magmablas_ztrsm_work_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -406,14 +408,14 @@ void magmablas_ztrsm_work_q(
 }
 
 
-/**
-    Similar to magmablas_ztrsm_outofplace, but allocates dX and d_dinvA
+/***************************************************************************//**
+    Similar to magmablas_ztrsm_outofplace(), but allocates dX and d_dinvA
     internally. This makes it a synchronous call, whereas
-    magmablas_ztrsm_outofplace and magmablas_ztrsm_work are asynchronous.
+    magmablas_ztrsm_outofplace() and magmablas_ztrsm_work() are asynchronous.
     
     @see magmablas_ztrsm_work
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C"
 void magmablas_ztrsm_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,

@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -110,88 +109,94 @@ $(document).ready(function(){initNavTree('group__magmasparse__zgesv.html','');})
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">double-complex precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__solvers.html">Sparse linear systems</a> &raquo; <a class="el" href="group__sparse__gesv.html">General solver</a></div></div>  </div>
+<div class="title">double-complex precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__solvers.html">Sparse linear systems</a> &raquo; <a class="el" href="group__sparse__gesv.html">General matrices</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gac66dd328b2406caf5947353e8e60739d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gac66dd328b2406caf5947353e8e60739d">magma_zbaiter</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gac66dd328b2406caf5947353e8e60739d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gac66dd328b2406caf5947353e8e60739d">magma_zbaiter</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gac66dd328b2406caf5947353e8e60739d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * x = b via the block asynchronous iteration method on GPU.  <a href="#gac66dd328b2406caf5947353e8e60739d">More...</a><br /></td></tr>
 <tr class="separator:gac66dd328b2406caf5947353e8e60739d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga42216da23d4da74d139e1798953a9ac7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga42216da23d4da74d139e1798953a9ac7">magma_zbaiter_overlap</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga42216da23d4da74d139e1798953a9ac7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga42216da23d4da74d139e1798953a9ac7">magma_zbaiter_overlap</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga42216da23d4da74d139e1798953a9ac7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * x = b via the block asynchronous iteration method on GPU.  <a href="#ga42216da23d4da74d139e1798953a9ac7">More...</a><br /></td></tr>
 <tr class="separator:ga42216da23d4da74d139e1798953a9ac7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga23969bddd15f805ce15e18b2c718c476"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga23969bddd15f805ce15e18b2c718c476">magma_zbicg</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga23969bddd15f805ce15e18b2c718c476"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga23969bddd15f805ce15e18b2c718c476">magma_zbicg</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga23969bddd15f805ce15e18b2c718c476"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#ga23969bddd15f805ce15e18b2c718c476">More...</a><br /></td></tr>
 <tr class="separator:ga23969bddd15f805ce15e18b2c718c476"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1c3ac14fb9883fb4821de495638d4fae"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga1c3ac14fb9883fb4821de495638d4fae">magma_zbicgstab</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga1c3ac14fb9883fb4821de495638d4fae"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga1c3ac14fb9883fb4821de495638d4fae">magma_zbicgstab</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga1c3ac14fb9883fb4821de495638d4fae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#ga1c3ac14fb9883fb4821de495638d4fae">More...</a><br /></td></tr>
 <tr class="separator:ga1c3ac14fb9883fb4821de495638d4fae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga78bc54c0d670049f409dce046a12473c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga78bc54c0d670049f409dce046a12473c">magma_zbicgstab_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga78bc54c0d670049f409dce046a12473c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga78bc54c0d670049f409dce046a12473c">magma_zbicgstab_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga78bc54c0d670049f409dce046a12473c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#ga78bc54c0d670049f409dce046a12473c">More...</a><br /></td></tr>
 <tr class="separator:ga78bc54c0d670049f409dce046a12473c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8a7862907714f6bc688b06df265373c0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga8a7862907714f6bc688b06df265373c0">magma_zbicgstab_merge2</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga8a7862907714f6bc688b06df265373c0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga8a7862907714f6bc688b06df265373c0">magma_zbicgstab_merge2</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga8a7862907714f6bc688b06df265373c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#ga8a7862907714f6bc688b06df265373c0">More...</a><br /></td></tr>
 <tr class="separator:ga8a7862907714f6bc688b06df265373c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga35c95662f2630cc19b120a084bd0af72"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga35c95662f2630cc19b120a084bd0af72">magma_zbicgstab_merge3</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga35c95662f2630cc19b120a084bd0af72"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga35c95662f2630cc19b120a084bd0af72">magma_zbicgstab_merge3</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga35c95662f2630cc19b120a084bd0af72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#ga35c95662f2630cc19b120a084bd0af72">More...</a><br /></td></tr>
 <tr class="separator:ga35c95662f2630cc19b120a084bd0af72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae7462797624924c815f242f36635106c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gae7462797624924c815f242f36635106c">magma_zbombard</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gae7462797624924c815f242f36635106c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gae7462797624924c815f242f36635106c">magma_zbombard</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gae7462797624924c815f242f36635106c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex general matrix A.  <a href="#gae7462797624924c815f242f36635106c">More...</a><br /></td></tr>
 <tr class="separator:gae7462797624924c815f242f36635106c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadc991c60491377ca23847f907467cda7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gadc991c60491377ca23847f907467cda7">magma_zbombard_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gadc991c60491377ca23847f907467cda7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gadc991c60491377ca23847f907467cda7">magma_zbombard_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gadc991c60491377ca23847f907467cda7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex general matrix A.  <a href="#gadc991c60491377ca23847f907467cda7">More...</a><br /></td></tr>
 <tr class="separator:gadc991c60491377ca23847f907467cda7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadc49fc0bc6e54cbd6ed80351500ceafe"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gadc49fc0bc6e54cbd6ed80351500ceafe">magma_zcgs</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gadc49fc0bc6e54cbd6ed80351500ceafe"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gadc49fc0bc6e54cbd6ed80351500ceafe">magma_zcgs</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gadc49fc0bc6e54cbd6ed80351500ceafe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#gadc49fc0bc6e54cbd6ed80351500ceafe">More...</a><br /></td></tr>
 <tr class="separator:gadc49fc0bc6e54cbd6ed80351500ceafe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0db5bfc065a198f2e8892c62959cdfbc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga0db5bfc065a198f2e8892c62959cdfbc">magma_zfgmres</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga0db5bfc065a198f2e8892c62959cdfbc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga0db5bfc065a198f2e8892c62959cdfbc">magma_zfgmres</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga0db5bfc065a198f2e8892c62959cdfbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex sparse matrix stored in the GPU memory.  <a href="#ga0db5bfc065a198f2e8892c62959cdfbc">More...</a><br /></td></tr>
 <tr class="separator:ga0db5bfc065a198f2e8892c62959cdfbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga586da3780cf221816de77d1fd121b3ab"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga586da3780cf221816de77d1fd121b3ab">magma_ziterref</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga586da3780cf221816de77d1fd121b3ab"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga586da3780cf221816de77d1fd121b3ab">magma_ziterref</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga586da3780cf221816de77d1fd121b3ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex Hermitian N-by-N positive definite matrix A.  <a href="#ga586da3780cf221816de77d1fd121b3ab">More...</a><br /></td></tr>
 <tr class="separator:ga586da3780cf221816de77d1fd121b3ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga36d7a948aaf96583ec4479804abe8b66"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga36d7a948aaf96583ec4479804abe8b66">magma_zjacobi</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga36d7a948aaf96583ec4479804abe8b66"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga36d7a948aaf96583ec4479804abe8b66">magma_zjacobi</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga36d7a948aaf96583ec4479804abe8b66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex Hermitian N-by-N positive definite matrix A.  <a href="#ga36d7a948aaf96583ec4479804abe8b66">More...</a><br /></td></tr>
 <tr class="separator:ga36d7a948aaf96583ec4479804abe8b66"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga883f1f9fffadbfb30bc84480aa6b48df"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga883f1f9fffadbfb30bc84480aa6b48df">magma_zjacobidomainoverlap</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga883f1f9fffadbfb30bc84480aa6b48df"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga883f1f9fffadbfb30bc84480aa6b48df">magma_zjacobidomainoverlap</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga883f1f9fffadbfb30bc84480aa6b48df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex Hermitian N-by-N positive definite matrix A.  <a href="#ga883f1f9fffadbfb30bc84480aa6b48df">More...</a><br /></td></tr>
 <tr class="separator:ga883f1f9fffadbfb30bc84480aa6b48df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga96b7ec1f8315f777d55a4b95f9879877"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga96b7ec1f8315f777d55a4b95f9879877">magma_zlsqr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga96b7ec1f8315f777d55a4b95f9879877"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga96b7ec1f8315f777d55a4b95f9879877">magma_zlsqr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga96b7ec1f8315f777d55a4b95f9879877"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A*X=B for X if A is consistent, otherwise it attempts to solve the least squares solution X that minimizes norm(B-A*X).  <a href="#ga96b7ec1f8315f777d55a4b95f9879877">More...</a><br /></td></tr>
 <tr class="separator:ga96b7ec1f8315f777d55a4b95f9879877"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7f43498b64d2d3aaea95da5ad534bdb5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga7f43498b64d2d3aaea95da5ad534bdb5">magma_zpbicg</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga7f43498b64d2d3aaea95da5ad534bdb5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga7f43498b64d2d3aaea95da5ad534bdb5">magma_zpbicg</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga7f43498b64d2d3aaea95da5ad534bdb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#ga7f43498b64d2d3aaea95da5ad534bdb5">More...</a><br /></td></tr>
 <tr class="separator:ga7f43498b64d2d3aaea95da5ad534bdb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3bfbf1ac9d9ed6c4dca3b45245701764"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga3bfbf1ac9d9ed6c4dca3b45245701764">magma_zpbicgstab</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga3bfbf1ac9d9ed6c4dca3b45245701764"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga3bfbf1ac9d9ed6c4dca3b45245701764">magma_zpbicgstab</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga3bfbf1ac9d9ed6c4dca3b45245701764"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex N-by-N general matrix.  <a href="#ga3bfbf1ac9d9ed6c4dca3b45245701764">More...</a><br /></td></tr>
 <tr class="separator:ga3bfbf1ac9d9ed6c4dca3b45245701764"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf7ac8555b16177512c470b925fd3cadc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gaf7ac8555b16177512c470b925fd3cadc">magma_zpbicgstab_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gaf7ac8555b16177512c470b925fd3cadc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gaf7ac8555b16177512c470b925fd3cadc">magma_zpbicgstab_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gaf7ac8555b16177512c470b925fd3cadc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general matrix.  <a href="#gaf7ac8555b16177512c470b925fd3cadc">More...</a><br /></td></tr>
 <tr class="separator:gaf7ac8555b16177512c470b925fd3cadc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1ce1070a8306fa2577600badba5c7cad"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga1ce1070a8306fa2577600badba5c7cad">magma_zpcgs</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga1ce1070a8306fa2577600badba5c7cad"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga1ce1070a8306fa2577600badba5c7cad">magma_zpcgs</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga1ce1070a8306fa2577600badba5c7cad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#ga1ce1070a8306fa2577600badba5c7cad">More...</a><br /></td></tr>
 <tr class="separator:ga1ce1070a8306fa2577600badba5c7cad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaed05ac969962864f8d10d89ea5ebf9bd"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gaed05ac969962864f8d10d89ea5ebf9bd">magma_zpcgs_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gaed05ac969962864f8d10d89ea5ebf9bd"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gaed05ac969962864f8d10d89ea5ebf9bd">magma_zpcgs_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gaed05ac969962864f8d10d89ea5ebf9bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#gaed05ac969962864f8d10d89ea5ebf9bd">More...</a><br /></td></tr>
 <tr class="separator:gaed05ac969962864f8d10d89ea5ebf9bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac8503557899f3517d3f9a7111c6278e6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gac8503557899f3517d3f9a7111c6278e6">magma_zptfqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga35d0235589963c4d0c54e519416fb16d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga35d0235589963c4d0c54e519416fb16d">magma_zpqmr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga35d0235589963c4d0c54e519416fb16d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general complex matrix A.  <a href="#ga35d0235589963c4d0c54e519416fb16d">More...</a><br /></td></tr>
+<tr class="separator:ga35d0235589963c4d0c54e519416fb16d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga04a9e6e65fbc2e5fb4ac0b2fb9f6a8ed"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga04a9e6e65fbc2e5fb4ac0b2fb9f6a8ed">magma_zpqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga04a9e6e65fbc2e5fb4ac0b2fb9f6a8ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general complex matrix A.  <a href="#ga04a9e6e65fbc2e5fb4ac0b2fb9f6a8ed">More...</a><br /></td></tr>
+<tr class="separator:ga04a9e6e65fbc2e5fb4ac0b2fb9f6a8ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac8503557899f3517d3f9a7111c6278e6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gac8503557899f3517d3f9a7111c6278e6">magma_zptfqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gac8503557899f3517d3f9a7111c6278e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#gac8503557899f3517d3f9a7111c6278e6">More...</a><br /></td></tr>
 <tr class="separator:gac8503557899f3517d3f9a7111c6278e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3a3e0b94cadb3cc60abf537ff00067ae"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga3a3e0b94cadb3cc60abf537ff00067ae">magma_zqmr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga3a3e0b94cadb3cc60abf537ff00067ae"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga3a3e0b94cadb3cc60abf537ff00067ae">magma_zqmr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga3a3e0b94cadb3cc60abf537ff00067ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general complex matrix A.  <a href="#ga3a3e0b94cadb3cc60abf537ff00067ae">More...</a><br /></td></tr>
 <tr class="separator:ga3a3e0b94cadb3cc60abf537ff00067ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac4b85f9a9bc711d6c9f5effca7fdf1cd"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gac4b85f9a9bc711d6c9f5effca7fdf1cd">magma_zqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gac4b85f9a9bc711d6c9f5effca7fdf1cd"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gac4b85f9a9bc711d6c9f5effca7fdf1cd">magma_zqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gac4b85f9a9bc711d6c9f5effca7fdf1cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex general matrix A.  <a href="#gac4b85f9a9bc711d6c9f5effca7fdf1cd">More...</a><br /></td></tr>
 <tr class="separator:gac4b85f9a9bc711d6c9f5effca7fdf1cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga67f7b9d111c389c5023edbc8ae69463b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga67f7b9d111c389c5023edbc8ae69463b">magma_ztfqmr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga67f7b9d111c389c5023edbc8ae69463b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#ga67f7b9d111c389c5023edbc8ae69463b">magma_ztfqmr</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga67f7b9d111c389c5023edbc8ae69463b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#ga67f7b9d111c389c5023edbc8ae69463b">More...</a><br /></td></tr>
 <tr class="separator:ga67f7b9d111c389c5023edbc8ae69463b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae164889c3b5ddd577b8874d53f21730d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gae164889c3b5ddd577b8874d53f21730d">magma_ztfqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gae164889c3b5ddd577b8874d53f21730d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gae164889c3b5ddd577b8874d53f21730d">magma_ztfqmr_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gae164889c3b5ddd577b8874d53f21730d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#gae164889c3b5ddd577b8874d53f21730d">More...</a><br /></td></tr>
 <tr class="separator:gae164889c3b5ddd577b8874d53f21730d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad8b9bcf98b8db6e239ba3a699fc55ea2"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gad8b9bcf98b8db6e239ba3a699fc55ea2">magma_ztfqmr_unrolled</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gad8b9bcf98b8db6e239ba3a699fc55ea2"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgesv.html#gad8b9bcf98b8db6e239ba3a699fc55ea2">magma_ztfqmr_unrolled</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gad8b9bcf98b8db6e239ba3a699fc55ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#gad8b9bcf98b8db6e239ba3a699fc55ea2">More...</a><br /></td></tr>
 <tr class="separator:gad8b9bcf98b8db6e239ba3a699fc55ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -234,7 +239,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -297,7 +302,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -355,7 +360,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -412,7 +417,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -469,7 +474,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -526,7 +531,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -583,7 +588,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -640,7 +645,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -697,7 +702,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -754,7 +759,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -817,7 +822,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -881,7 +886,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -939,7 +944,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -996,7 +1001,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1059,7 +1064,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1123,7 +1128,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1187,7 +1192,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1251,7 +1256,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1315,7 +1320,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1379,7 +1384,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1392,6 +1397,134 @@ Functions</h2></td></tr>
 
 <p>Solves a system of linear equations A * X = B where A is a complex matrix A. </p>
 <p>This is a GPU implementation of the preconditioned Conjugate Gradient Squared (CGS) method.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_z_matrix RHS b</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_z_matrix* solution approximation</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_z_solver_par* solver parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">precond_par</td><td>magma_z_preconditioner* preconditioner</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga35d0235589963c4d0c54e519416fb16d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zpqmr </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_solver_par *&#160;</td>
+          <td class="paramname"><em>solver_par</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond_par</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Solves a system of linear equations A * X = B where A is a general complex matrix A. </p>
+<p>This is a GPU implementation of the preconditioned Quasi-Minimal Residual method (QMR).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_z_matrix RHS b</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_z_matrix* solution approximation</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_z_solver_par* solver parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">precond_par</td><td>magma_z_preconditioner* preconditioner</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga04a9e6e65fbc2e5fb4ac0b2fb9f6a8ed"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zpqmr_merge </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_solver_par *&#160;</td>
+          <td class="paramname"><em>solver_par</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond_par</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Solves a system of linear equations A * X = B where A is a general complex matrix A. </p>
+<p>This is a GPU implementation of the preconditioned Quasi-Minimal Residual method (QMR) using custom-designed kernels.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A</td></tr>
@@ -1443,7 +1576,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1501,7 +1634,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1558,7 +1691,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1615,7 +1748,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1672,7 +1805,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1729,7 +1862,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1760,7 +1893,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

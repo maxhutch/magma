@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
-       @generated from src/zunmbr.cpp normal z -> d, Mon May  2 23:30:25 2016
+       @generated from src/zunmbr.cpp, normal z -> d, Tue Aug 30 09:38:23 2016
 
 */
 #include "magma_internal.h"
@@ -18,7 +18,7 @@
  */
 #define VERSION 2
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DORMBR multiplies by Q or P as part of the SVD decomposition.
@@ -138,8 +138,8 @@
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
     
 
-    @ingroup magma_dgesvd_comp
-    ********************************************************************/
+    @ingroup magma_unmbr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dormbr(
     magma_vect_t vect, magma_side_t side, magma_trans_t trans,
@@ -153,7 +153,7 @@ magma_dormbr(
     #define A(i,j)  (A + (i) + (j)*lda)
     #define C(i,j)  (C + (i) + (j)*ldc)
             
-    magma_int_t i1, i2, nb, mi, ni, nq, nq_1, nw, iinfo, lwkopt;
+    magma_int_t i1, i2, nb, mi, ni, nq, nq_1, minwrk, iinfo, lwkopt;
     magma_int_t left, notran, applyq, lquery;
     magma_trans_t transt;
     
@@ -165,17 +165,17 @@ magma_dormbr(
     notran = (trans == MagmaNoTrans);
     lquery = (lwork == -1);
 
-    /* NQ is the order of Q or P and NW is the minimum dimension of WORK */
+    /* NQ is the order of Q or P and MINWRK (previously "nw") is the minimum dimension of WORK */
     if (left) {
         nq = m;
-        nw = n;
+        minwrk = n;
     }
     else {
         nq = n;
-        nw = m;
+        minwrk = m;
     }
     if (m == 0 || n == 0) {
-        nw = 0;
+        minwrk = 0;
     }
     
     /* check arguments */
@@ -204,16 +204,16 @@ magma_dormbr(
     else if (ldc < max(1,m)) {
         *info = -11;
     }
-    else if (lwork < max(1,nw) && ! lquery) {
+    else if (lwork < max(1,minwrk) && ! lquery) {
         *info = -13;
     }
 
     if (*info == 0) {
-        if (nw > 0) {
+        if (minwrk > 0) {
             // TODO have get_dormqr_nb and get_dormlq_nb routines? see original LAPACK dormbr.
             // TODO make them dependent on m, n, and k?
             nb = magma_get_dgebrd_nb( m, n );
-            lwkopt = max(1, nw*nb);
+            lwkopt = max(1, minwrk*nb);
         }
         else {
             lwkopt = 1;

@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -110,36 +109,113 @@ $(document).ready(function(){initNavTree('group__magmasparse__zhepr.html','');})
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">double-complex precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__precond.html">Sparse preconditioner</a> &raquo; <a class="el" href="group__sparse__hepr.html">Hermitian preconditioner</a></div></div>  </div>
+<div class="title">double-complex precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__precond.html">Sparse preconditioners</a> &raquo; <a class="el" href="group__sparse__hepr.html">Symmetric/Hermitian preconditioner</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga748138090870bbdb9c7be4d30e5c48d6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga748138090870bbdb9c7be4d30e5c48d6">magma_zcumiccsetup</a> (magma_z_matrix A, magma_z_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga748138090870bbdb9c7be4d30e5c48d6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga748138090870bbdb9c7be4d30e5c48d6">magma_zcumiccsetup</a> (magma_z_matrix A, magma_z_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga748138090870bbdb9c7be4d30e5c48d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the IC preconditioner via cuSPARSE.  <a href="#ga748138090870bbdb9c7be4d30e5c48d6">More...</a><br /></td></tr>
 <tr class="separator:ga748138090870bbdb9c7be4d30e5c48d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga060b9d48d6643dd17ad222caa1c6b1a5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga060b9d48d6643dd17ad222caa1c6b1a5">magma_zcumicgeneratesolverinfo</a> (magma_z_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga060b9d48d6643dd17ad222caa1c6b1a5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga060b9d48d6643dd17ad222caa1c6b1a5">magma_zcumicgeneratesolverinfo</a> (magma_z_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga060b9d48d6643dd17ad222caa1c6b1a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the IC preconditioner solverinfo via cuSPARSE for a triangular matrix present on the device in precond-&gt;M.  <a href="#ga060b9d48d6643dd17ad222caa1c6b1a5">More...</a><br /></td></tr>
 <tr class="separator:ga060b9d48d6643dd17ad222caa1c6b1a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadfc02cb240090c6ca1eb9f1ac0e0eccf"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#gadfc02cb240090c6ca1eb9f1ac0e0eccf">magma_zapplycumicc_l</a> (magma_z_matrix b, magma_z_matrix *x, magma_z_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memitem:gadfc02cb240090c6ca1eb9f1ac0e0eccf"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#gadfc02cb240090c6ca1eb9f1ac0e0eccf">magma_zapplycumicc_l</a> (magma_z_matrix b, magma_z_matrix *x, magma_z_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gadfc02cb240090c6ca1eb9f1ac0e0eccf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the left triangular solves using the ICC preconditioner.  <a href="#gadfc02cb240090c6ca1eb9f1ac0e0eccf">More...</a><br /></td></tr>
 <tr class="separator:gadfc02cb240090c6ca1eb9f1ac0e0eccf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4fba5906d6c82604f752657ee679ba9a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga4fba5906d6c82604f752657ee679ba9a">magma_zapplycumicc_r</a> (magma_z_matrix b, magma_z_matrix *x, magma_z_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga4fba5906d6c82604f752657ee679ba9a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga4fba5906d6c82604f752657ee679ba9a">magma_zapplycumicc_r</a> (magma_z_matrix b, magma_z_matrix *x, magma_z_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga4fba5906d6c82604f752657ee679ba9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the right triangular solves using the ICC preconditioner.  <a href="#ga4fba5906d6c82604f752657ee679ba9a">More...</a><br /></td></tr>
 <tr class="separator:ga4fba5906d6c82604f752657ee679ba9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0522c8524f3e0a91ac5f2515bdbcecfb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga0522c8524f3e0a91ac5f2515bdbcecfb">magma_ziteriluupdate</a> (magma_z_matrix A, magma_z_preconditioner *precond, magma_int_t updates, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga0522c8524f3e0a91ac5f2515bdbcecfb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga0522c8524f3e0a91ac5f2515bdbcecfb">magma_ziteriluupdate</a> (magma_z_matrix A, magma_z_preconditioner *precond, magma_int_t updates, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga0522c8524f3e0a91ac5f2515bdbcecfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an existing preconditioner via additional iterative ILU sweeps for previous factorization initial guess (PFIG).  <a href="#ga0522c8524f3e0a91ac5f2515bdbcecfb">More...</a><br /></td></tr>
 <tr class="separator:ga0522c8524f3e0a91ac5f2515bdbcecfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7f988b565cb14ea719c66a98ecda65ee"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga7f988b565cb14ea719c66a98ecda65ee">magma_zitericsetup</a> (magma_z_matrix A, magma_z_matrix b, magma_z_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga7f988b565cb14ea719c66a98ecda65ee"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#ga7f988b565cb14ea719c66a98ecda65ee">magma_zitericsetup</a> (magma_z_matrix A, magma_z_matrix b, magma_z_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga7f988b565cb14ea719c66a98ecda65ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the IC preconditioner via the iterative IC iteration.  <a href="#ga7f988b565cb14ea719c66a98ecda65ee">More...</a><br /></td></tr>
 <tr class="separator:ga7f988b565cb14ea719c66a98ecda65ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac46b284e4fba32a72f4a7eccceed8525"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#gac46b284e4fba32a72f4a7eccceed8525">magma_zitericupdate</a> (magma_z_matrix A, magma_z_preconditioner *precond, magma_int_t updates, magma_queue_t queue)</td></tr>
+<tr class="memitem:gac46b284e4fba32a72f4a7eccceed8525"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zhepr.html#gac46b284e4fba32a72f4a7eccceed8525">magma_zitericupdate</a> (magma_z_matrix A, magma_z_preconditioner *precond, magma_int_t updates, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gac46b284e4fba32a72f4a7eccceed8525"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an existing preconditioner via additional iterative IC sweeps for previous factorization initial guess (PFIG).  <a href="#gac46b284e4fba32a72f4a7eccceed8525">More...</a><br /></td></tr>
 <tr class="separator:gac46b284e4fba32a72f4a7eccceed8525"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga748138090870bbdb9c7be4d30e5c48d6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zcumiccsetup </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prepares the IC preconditioner via cuSPARSE. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_z_preconditioner* preconditioner parameters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga060b9d48d6643dd17ad222caa1c6b1a5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zcumicgeneratesolverinfo </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prepares the IC preconditioner solverinfo via cuSPARSE for a triangular matrix present on the device in precond-&gt;M. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_z_preconditioner* preconditioner parameters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="gadfc02cb240090c6ca1eb9f1ac0e0eccf"></a>
 <div class="memitem">
 <div class="memproto">
@@ -165,7 +241,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -214,7 +290,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -238,12 +314,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga748138090870bbdb9c7be4d30e5c48d6"></a>
+<a class="anchor" id="ga0522c8524f3e0a91ac5f2515bdbcecfb"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">magma_int_t magma_zcumiccsetup </td>
+          <td class="memname">magma_int_t magma_ziteriluupdate </td>
           <td>(</td>
           <td class="paramtype">magma_z_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>
@@ -257,43 +333,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Prepares the IC preconditioner via cuSPARSE. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_z_preconditioner* preconditioner parameters </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga060b9d48d6643dd17ad222caa1c6b1a5"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zcumicgeneratesolverinfo </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond</em>, </td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>updates</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -304,10 +350,13 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Prepares the IC preconditioner solverinfo via cuSPARSE for a triangular matrix present on the device in precond-&gt;M. </p>
+<p>Updates an existing preconditioner via additional iterative ILU sweeps for previous factorization initial guess (PFIG). </p>
+<p>See Anzt et al., Parallel Computing, 2015.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_z_preconditioner* preconditioner parameters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A, current target system</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">precond</td><td>magma_z_preconditioner* preconditioner parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">updates</td><td>magma_int_t number of updates</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -340,7 +389,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -389,7 +438,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -414,62 +463,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga0522c8524f3e0a91ac5f2515bdbcecfb"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ziteriluupdate </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>updates</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Updates an existing preconditioner via additional iterative ILU sweeps for previous factorization initial guess (PFIG). </p>
-<p>See Anzt et al., Parallel Computing, 2015.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A, current target system</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">precond</td><td>magma_z_preconditioner* preconditioner parameters</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">updates</td><td>magma_int_t number of updates</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

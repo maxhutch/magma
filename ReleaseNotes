@@ -24,13 +24,17 @@ Included are routines for the following algorithms:
 Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
+ 2.1.0 - Aug 30, 2016
+    * Added variable size batched routines:
+      magmablas_[sdcz]{gemm, gemv, syrk, herk, syr2k, her2k}_vbatched
+    * Improved performance of SVD routines, and fixed workspace size bugs.
+    * More robust error checking for BLAS routines.
+    * Expanded and reorganized documentation.
+    * Improved install (added DESTDIR, LIB_SUFFIX to Makefile; added install to CMake).
 
- 2.0.2 - May  2, 2016
-    * Add MAGMA_NO_V1 option, to disable MAGMA v1.x compatability. See README.
-    * Update testers to use MAGMA v2.0 interfaces.
-    * Fixed magma_{set,get}matrix_1D_{row,col}_bcyclic to by synchronous,
-      to match old behavior.
-    * Fixed use of NULL stream in multi-threaded code in MAGMA v1.x compatability mode.
+    MAGMA sparse
+    * Added a preconditioned QMR iterative solver (PQMR) including a kernel-merged version.
+    * Updated the preconditioner structure to allow for a specific ILU triangular solver.
 
  2.0.1 - Feb 26, 2016
     * Fixed bug with 'make install'
@@ -58,12 +62,12 @@ single (s), double (d), single-complex (c), double-complex (z).
     MAGMA sparse
     * Added QMR, TFQMR, preconditioned TFQMR
     * Added CGS, preconditioned CGS
-    * Added kernel-fused versions for CGS/PCGS QMR, TFQMR/PTFQMR 
+    * Added kernel-fused versions for CGS/PCGS QMR, TFQMR/PTFQMR
     * Changed relative stopping criterion to be relative to RHS
     * Fixed bug in complex version of CG
     * Accelerated version of Jacobi-CG
     * Added very efficient IDR
-    * Performance tuning for SELLP SpMV   
+    * Performance tuning for SELLP SpMV
 
  1.7.0 - final:  Sep 11, 2015
        - beta 1: Aug 25, 2015
@@ -89,7 +93,7 @@ single (s), double (d), single-complex (c), double-complex (z).
 
     MAGMA sparse
     * Added Induced Dimension Reduction Iterative solver (IDR).
-    * Added iterative sparse triangular solves for 
+    * Added iterative sparse triangular solves for
       incomplete factorization preconditioners.
 
  1.6.2 - May 4, 2015

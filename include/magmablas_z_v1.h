@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
@@ -561,7 +561,7 @@ magmablas_ztrsm_work(
    * These wrap CUBLAS or AMD OpenCL BLAS functions.
    */
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set  copies host   to device
 // get  copies device to host
@@ -603,7 +603,7 @@ magma_zcopyvector_internal(
 { magma_copyvector_internal( n, sizeof(magmaDoubleComplex), dx_src, incx, dy_dst, incy, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 
 #define magma_zsetmatrix(           m, n, hA_src, lda,  dB_dst, lddb ) \
@@ -640,7 +640,7 @@ magma_zcopymatrix_internal(
 { magma_copymatrix_internal( m, n, sizeof(magmaDoubleComplex), dA_src, ldda, dB_dst, lddb, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // Level 1 BLAS (alphabetical order)
 
 // in cublas_v2, result returned through output argument
@@ -741,7 +741,7 @@ magma_zswap(
     magmaDoubleComplex_ptr dx, magma_int_t incx,
     magmaDoubleComplex_ptr dy, magma_int_t incy );
 
-// ========================================
+// =============================================================================
 // Level 2 BLAS (alphabetical order)
 
 void
@@ -811,7 +811,7 @@ magma_ztrsv(
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr       dx, magma_int_t incx );
 
-// ========================================
+// =============================================================================
 // Level 3 BLAS (alphabetical order)
 
 void

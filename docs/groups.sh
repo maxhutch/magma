@@ -8,14 +8,15 @@
 #
 # @author Mark Gates
 
-grep -h '@ingroup' ../*/*.{h,c,cu,cpp} ../sparse-iter/*/*.{h,cu,cpp} | \
-	perl -pe 's/^ *\*//;  s/^ +//;  s/\@ingroup/\@group/;' | \
+cd .. && make generate && cd docs
+
+egrep -h '@(addto|in)group' ../*/*.{h,c,cu,cpp} ../sparse-iter/*/*.{h,cu,cpp} | \
+	perl -pe 's#/// +##;  s/^ *\*//;  s/^ +//;  s/\@(addto|in)group/\@group/;' | \
 	sort --unique > ingroup
 
-# only take groups indented to 4th level --
-# other groups are parents that shouldn't have functions directly inside them.
-grep -h '^            @defgroup' doxygen-modules.h | \
-	perl -pe 's/^( *)\@defgroup (\w+).*/\@group $2/;' | \
+egrep -h '^ *@defgroup' groups.dox | \
+    egrep -v 'group_|core_blas' | \
+    perl -pe 's/^ *\@defgroup +(\w+).*/\@group $1/;' | \
 	sort > defgroup
 
 opendiff ingroup defgroup

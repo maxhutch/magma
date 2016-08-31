@@ -1,16 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgerbt_batched.cpp normal z -> s, Mon May  2 23:30:26 2016
+       @generated from src/zgerbt_batched.cpp, normal z -> s, Tue Aug 30 09:38:25 2016
        @author Adrien REMY
 */
 #include "magma_internal.h"
 
 
+/******************************************************************************/
 static void
 init_butterfly(
         magma_int_t n,
@@ -28,7 +29,7 @@ init_butterfly(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGERBT solves a system of linear equations
@@ -111,8 +112,8 @@ init_butterfly(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_sgesv_comp
-    ********************************************************************/
+    @ingroup magma_gerbt_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgerbt_batched(
     magma_bool_t gen, magma_int_t n, magma_int_t nrhs,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmdotc.cu normal z -> c, Mon May  2 23:30:45 2016
+       @generated from sparse-iter/blas/zmdotc.cu, normal z -> c, Tue Aug 30 09:38:43 2016
        @author Hartwig Anzt
 
 */
@@ -196,7 +196,6 @@ magma_cmdotc1(
     magmaFloatComplex_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -225,7 +224,7 @@ magma_cmdotc1(
     magma_cgetvector( 1 , aux1, 1, skp, 1, queue );
     
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 //        2 dot products     //
@@ -471,7 +470,6 @@ magma_cmdotc2(
     magmaFloatComplex_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -500,7 +498,7 @@ magma_cmdotc2(
     magma_cgetvector( 2 , aux1, n, skp, 1, queue );
     
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -764,7 +762,6 @@ magma_cmdotc3(
     magmaFloatComplex_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -792,7 +789,7 @@ magma_cmdotc3(
         // copy vectors to host
     magma_cgetvector( 3 , aux1, n, skp, 1, queue );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -1070,7 +1067,6 @@ magma_cmdotc4(
     magmaFloatComplex_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -1098,7 +1094,5 @@ magma_cmdotc4(
         // copy vectors to host
     magma_cgetvector( 4 , aux1, n, skp, 1, queue );
     
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-
-

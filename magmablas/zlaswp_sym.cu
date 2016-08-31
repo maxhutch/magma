@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        
@@ -74,7 +74,7 @@ __global__ void zlaswp_sym_kernel( zlaswp_sym_params_t params )
 }
 
 
-// Launch zlaswpx kernel with ceil( n / NTHREADS ) blocks of NTHREADS threads each.
+// Launch zlaswp_sym kernel with ceil( n / NTHREADS ) blocks of NTHREADS threads each.
 extern "C" void zlaswp_sym( zlaswp_sym_params_t &params, magma_queue_t queue )
 {
     int blocks = magma_ceildiv(params.n,  NTHREADS);
@@ -82,49 +82,45 @@ extern "C" void zlaswp_sym( zlaswp_sym_params_t &params, magma_queue_t queue )
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
-    ZLASWPX performs a series of row interchanges on the matrix A.
-    One row interchange is initiated for each of rows K1 through K2 of A.
-    
-    ** Unlike LAPACK, here A is stored either row-wise or column-wise,
-       depending on ldx and ldy. **
-    Otherwise, this is identical to LAPACK's interface.
+    ZLASWP_SYM applies a series of symmetric pivoting on a symmetric matrix A.
+    Currently, it is only implemented for the lower-triangular part of the matrix.
     
     Arguments:
     ==========
-    \param[in]
+    @param[in]
     n        INTEGER
              The number of columns of the matrix A.
     
-    \param[in,out]
+    @param[in,out]
     dA       COMPLEX*16 array on GPU, dimension (*,*)
              On entry, the matrix of column dimension N to which the row
              interchanges will be applied.
              On exit, the permuted matrix.
     
-    \param[in]
+    @param[in]
     lda      INTEGER
              Stride between elements in same column.
     
-    \param[in]
+    @param[in]
     k1       INTEGER
              The first element of IPIV for which a row interchange will
              be done. (One based index.)
     
-    \param[in]
+    @param[in]
     k2       INTEGER
              The last element of IPIV for which a row interchange will
              be done. (One based index.)
     
-    \param[in]
+    @param[in]
     ipiv     INTEGER array, on CPU, dimension (K2*abs(INCI))
              The vector of pivot indices.  Only the elements in positions
              K1 through K2 of IPIV are accessed.
              IPIV(K) = L implies rows K and L are to be interchanged.
     
-    \param[in]
+    @param[in]
     inci     INTEGER
              The increment between successive values of IPIV.
              Currently, IPIV > 0.
@@ -134,8 +130,8 @@ extern "C" void zlaswp_sym( zlaswp_sym_params_t &params, magma_queue_t queue )
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_laswp_sym
+*******************************************************************************/
 extern "C" void
 magmablas_zlaswp_sym_q(
     magma_int_t n, magmaDoubleComplex *dA, magma_int_t lda,

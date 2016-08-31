@@ -1,10 +1,10 @@
 
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
 
@@ -12,8 +12,8 @@
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     ZPOTRS solves a system of linear equations A*X = B with a Hermitian
@@ -65,8 +65,8 @@
             Queue to execute in.
 
 
-    @ingroup magma_zposv_comp
-    ********************************************************************/
+    @ingroup magma_potrs_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrs_batched(
                   magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
@@ -110,7 +110,7 @@ magma_zpotrs_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, ZTRTRI_BATCHED_NB )*ZTRTRI_BATCHED_NB;
     magma_int_t dwork_msize = n*nrhs;
     magmaDoubleComplex* dinvA      = NULL;
     magmaDoubleComplex* dwork      = NULL; // dinvA and dwork are workspace in ztrsm
@@ -135,7 +135,7 @@ magma_zpotrs_batched(
     magmablas_zlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA, invA_msize, queue );
     magmablas_zlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork, dwork_msize, queue );
     magma_zset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
-    magma_zset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+    magma_zset_pointer( dinvA_array, dinvA, ZTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
     if ( uplo == MagmaUpper) {
         if (nrhs > 1)

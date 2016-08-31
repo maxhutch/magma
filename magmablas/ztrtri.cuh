@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -18,10 +18,18 @@
 #ifndef ZTRTRI_H
 #define ZTRTRI_H
 
-// TODO this IB is a half warp -- that seems really ineffficient!
-#define IB 16   // inner blocking size, <= 32
-#define NB 128  // outer blocking size, > IB
+#define PRECISION_z 
 
+#include "batched_kernel_param.h"
+#if   defined(TRTRI_BATCHED)
+#define IB    (ZTRTRI_BATCHED_BLOCK_SIZE)
+#define NB    (ZTRTRI_BATCHED_NB)
+#elif defined(TRTRI_NONBATCHED)
+#define IB    (16)
+#define NB    (128)
+#else
+#error "One of {TRTRI_BATCHED, TRTRI_NONBATCHED} must be defined."
+#endif
 
 /*
  * zaxpy16 computes c += alpha*b, where b and c are 16-element vectors.
@@ -289,18 +297,5 @@ triple_zgemm_above64_part2_upper_kernel_batched(
 __global__ void
 triple_zgemm_above64_part3_upper_kernel_batched(
     int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif        //  #ifndef ZTRTRI_H

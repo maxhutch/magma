@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        
@@ -12,7 +12,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEHRD reduces a COMPLEX_16 general matrix A to upper Hessenberg form H by
@@ -123,8 +123,8 @@
     
     This version stores the T matrices in dT, for later use in magma_zunghr.
 
-    @ingroup magma_zgeev_comp
-    ********************************************************************/
+    @ingroup magma_gehrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgehrd(
     magma_int_t n, magma_int_t ilo, magma_int_t ihi,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -14,6 +14,7 @@
 */
 
 #include "magma_internal.h"
+
 #define PRECISION_c
 
 #include "gemm_template_kernel_batched.cuh"
@@ -21,9 +22,10 @@
 #include "gemm_config/cgemm_param_nt.h"
 #include "gemm_config/cgemm_param_tn.h"
 #include "gemm_config/cgemm_param_tt.h"
+
 #define version(s,v) s ## _V_ ## v
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEMM performs one of the matrix-matrix operations
@@ -89,8 +91,8 @@
     
     @param[in]
     ldda    INTEGER.
-            On entry, ldda specifies the first dimension of each array A as 
-            declared in the calling (sub) program. When  transA = MagmaNoTrans 
+            On entry, ldda specifies the first dimension of each array A as
+            declared in the calling (sub) program. When  transA = MagmaNoTrans
             then ldda must be at least  max( 1, m ), otherwise  ldda must be at
             least  max( 1, k ).
     
@@ -105,8 +107,8 @@
     
     @param[in]
     lddb    INTEGER.
-            On entry, lddb specifies the first dimension of each array B as 
-            declared in the calling (sub) program. When  transB = MagmaNoTrans 
+            On entry, lddb specifies the first dimension of each array B as
+            declared in the calling (sub) program. When  transB = MagmaNoTrans
             then lddb must be at least  max( 1, k ), otherwise lddb must be at
             least  max( 1, n ).
     
@@ -126,8 +128,8 @@
     
     @param[in]
     lddc    INTEGER.
-            On entry, lddc specifies the first dimension of each array C as 
-            declared in  the  calling  (sub)  program.   lddc  must  be  at  
+            On entry, lddc specifies the first dimension of each array C as
+            declared in  the  calling  (sub)  program.   lddc  must  be  at
             least max( 1, m ).
     
     @param[in]
@@ -138,17 +140,20 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cblas3
-    ********************************************************************/
+    @ingroup magma_gemm_batched
+*******************************************************************************/
 void
-magmablas_cgemm_batched(
-    magma_trans_t transA, magma_trans_t transB, 
+magmablas_cgemm_batched_core(
+    magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
     magmaFloatComplex const * const * dA_array, magma_int_t ldda,
     magmaFloatComplex const * const * dB_array, magma_int_t lddb,
     magmaFloatComplex beta,
-    magmaFloatComplex **dC_array, magma_int_t lddc, 
+    magmaFloatComplex **dC_array, magma_int_t lddc,
+    magma_int_t roffA, magma_int_t coffA,
+    magma_int_t roffB, magma_int_t coffB,
+    magma_int_t roffC, magma_int_t coffC,
     magma_int_t batchCount, magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -176,7 +181,7 @@ magmablas_cgemm_batched(
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
-        fprintf( stderr, "%s: CUDA arch < 200 not supported\n", __func__ ); // TODO call cublas
+        printf("arch < 200 not supported \n"); // TODO call cublas
         return;
     }
     
@@ -194,13 +199,6 @@ magmablas_cgemm_batched(
     else if (transA == MagmaConjTrans && transB == MagmaTrans)     { shape = 7; } // ct
     else if (transA == MagmaConjTrans && transB == MagmaConjTrans) { shape = 8; } // cc
     
-    //TODO: probably the texture init code should be placed here
-    
-    size_t offsetA = 0;
-    size_t offsetB = 0;
-    offsetA = offsetA/sizeof(magmaFloatComplex);
-    offsetB = offsetB/sizeof(magmaFloatComplex);
-    
     switch(shape)
     {
         case 0: // nn
@@ -209,18 +207,18 @@ magmablas_cgemm_batched(
                 {
                     if (k == 8 && n == 24)
                         gemm_template_batched_nn<magmaFloatComplex, version(NN,113), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     else if (n < 32)
                         gemm_template_batched_nn<magmaFloatComplex, version(NN,124), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     else
                         gemm_template_batched_nn<magmaFloatComplex, version(NN,308), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     gemm_template_batched_nn<magmaFloatComplex, version(NN,318), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -229,19 +227,19 @@ magmablas_cgemm_batched(
                 if (k < 64)
                 {
                     gemm_template_batched_nt<magmaFloatComplex, version(NT,338), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     if (m < 128)
                     {
                         gemm_template_batched_nt<magmaFloatComplex, version(NT,338), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                     else
                     {
                         gemm_template_batched_nt<magmaFloatComplex, version(NT,426), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                 }
             }
@@ -251,19 +249,19 @@ magmablas_cgemm_batched(
                 if (k < 64)
                 {
                     gemm_template_batched_nt<magmaFloatComplex, version(NT,338), 0, 1>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     if (m < 128)
                     {
                         gemm_template_batched_nt<magmaFloatComplex, version(NT,338), 0, 1>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                     else
                     {
                         gemm_template_batched_nt<magmaFloatComplex, version(NT,426), 0, 1>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                 }
             }
@@ -273,12 +271,12 @@ magmablas_cgemm_batched(
                 if (k < 16)
                 {
                     gemm_template_batched_tn<magmaFloatComplex, version(TN,282), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     gemm_template_batched_tn<magmaFloatComplex, version(TN,505), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -287,12 +285,12 @@ magmablas_cgemm_batched(
                 if (k < 16)
                 {
                     gemm_template_batched_tn<magmaFloatComplex, version(TN,282), 1, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     gemm_template_batched_tn<magmaFloatComplex, version(TN,505), 1, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -303,17 +301,17 @@ magmablas_cgemm_batched(
                     if (m < 128)
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,73), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     } else
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 0, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                 }
                 else
                 {
                     gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -324,17 +322,17 @@ magmablas_cgemm_batched(
                     if (m < 128)
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,73), 0, 1>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     } else
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 0, 1>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                 }
                 else
                 {
                     gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 0, 1>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -345,17 +343,17 @@ magmablas_cgemm_batched(
                     if (m < 128)
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,73), 1, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     } else
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 1, 0>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                 }
                 else
                 {
                     gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 1, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -366,21 +364,20 @@ magmablas_cgemm_batched(
                     if (m < 128)
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,73), 1, 1>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     } else
                     {
                         gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 1, 1>
-                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                        (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                     }
                 }
                 else
                 {
                     gemm_template_batched_tt<magmaFloatComplex, version(TT,175), 1, 1>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
         default:; // propose something
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////

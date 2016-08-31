@@ -1,50 +1,49 @@
 /*
- * Copyright (c) 2011      The University of Tennessee and The University
- *                         of Tennessee Research Foundation.  All rights
- *                         reserved.
- *
- *
- *     @author Azzam Haidar
- *     @author Stan Tomov
- *     @author Raffaele Solca
- *
- *     @generated from src/zbulge_applyQ_v2.cpp normal z -> d, Mon May  2 23:30:17 2016
- *
- */
+    -- MAGMA (version 2.1.0) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date August 2016
+
+       @author Azzam Haidar
+       @author Stan Tomov
+       @author Raffaele Solca
+  
+       @generated from src/zbulge_applyQ_v2.cpp, normal z -> d, Tue Aug 30 09:38:17 2016
+*/
 #include <cuda_runtime.h>
 
 #include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_dbulgeinc.h"
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 #ifdef HAVE_clBLAS
 #define dE(i,j)  (dE, (dE_offset + (i) + ldde*(j)))
 #else
-#define dE(i,j)  (dE+(i) + ldde*(j))
+#define dE(i,j)  (dE + (i) + ldde*(j))
 #endif
 #define V(j)     (V+(j))
 #define T(j)     (T+(j))
-/***************************************************************************
- *  Parallel apply Q2 from bulgechasing symetric matrices - static scheduling
- *  Lower case is treated
- **/
-    /*
-     * side == magmaLeft:
-     *     meaning apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so
-     *     traverse Vs in reverse order (forward) from q_n to q_1 Also
-     *     E is splitten by block of col over cores because each apply
-     *     consist in a block of row (horizontal block)
-     */
-    /*
-     * side == magmaRight:
-     *     meaning apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so
-     *     traverse Vs in normal order (forward) from q_1 to q_n Also
-     *     E is splitten by block of row over core because each apply
-     *     consist in a block of col (vertical block)
-     */
-/***************************************************************************/
+
+/***************************************************************************//**
+    Parallel apply Q2 from bulgechasing symetric matrices - static scheduling
+    Lower case is treated
+    
+    side == magmaLeft:
+        meaning apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so
+        traverse Vs in reverse order (forward) from q_n to q_1 Also
+        E is splitten by block of col over cores because each apply
+        consist in a block of row (horizontal block)
+    
+    
+    side == magmaRight:
+        meaning apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so
+        traverse Vs in normal order (forward) from q_1 to q_n Also
+        E is splitten by block of row over core because each apply
+        consist in a block of col (vertical block)
+    
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dbulge_applyQ_v2(
     magma_side_t side,
@@ -155,12 +154,13 @@ magma_dbulge_applyQ_v2(
      *            Also E is splitten by col meaning each apply consist in a block of col (vertical block) */
 
     #ifdef ENABLE_DEBUG
-    printf("  APPLY Q_v22 GPU with  N %5d, NE %5d,  NB %5d, Vblksiz %5d, versionL %5d versionR %5d  SIDE %5d \n",
-           N, NE, NB, Vblksiz, versionL, versionR, side);
+    printf("  APPLY Q_v22 GPU with  N %5lld, NE %5lld,  NB %5lld, Vblksiz %5lld, versionL %5lld versionR %5lld  SIDE %5d\n",
+           (long long) N, (long long) NE, (long long) NB, (long long) Vblksiz,
+           (long long) versionL, (long long) versionR, side );
     #endif
 
     /*
-     * MagmamaLeft
+     * MagmaLeft
      */
     if (side == MagmaLeft) {
         /*
@@ -194,7 +194,7 @@ magma_dbulge_applyQ_v2(
                     /*calculate the pointer to the Vs and the Ts.
                      * Note that Vs and Ts have special storage done
                      * by the bulgechasing function*/
-                    //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d vpos %d \n",blkj,blki,Vm, Vn,mycol,vpos);
+                    //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d vpos %d\n",blkj,blki,Vm, Vn,mycol,vpos);
                     magma_bulge_findpos113(N, NB, Vblksiz, mycol, myrow, &blkid);
                
                     // COPY Vchunksiz Vs and Vchunksiz Ts to GPU and store it in dV0/dV1 and dT0/dT1
@@ -244,7 +244,7 @@ magma_dbulge_applyQ_v2(
                         locpos = blkid%Vchunksiz;
                         magma_int_t lcvpos   = locpos*Vblksiz*lddv;
                         magma_int_t lctpos   = locpos*Vblksiz*lddt;
-                        //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d locvpos %5d loctpos %5d  blkid %2d  using data in dV%1d dT%1d \n",blkj,blki,Vm, Vn,mycol,lcvpos,lctpos, blkid,flip,flip);
+                        //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d locvpos %5d loctpos %5d  blkid %2d  using data in dV%1d dT%1d\n",blkj,blki,Vm, Vn,mycol,lcvpos,lctpos, blkid,flip,flip);
                         if (flip == 0) {
                             magma_queue_wait_event( queues[0], myevent[1] );
                             for (magma_int_t i=0; i < NE; i += sz_bl) {
@@ -401,10 +401,9 @@ magma_dbulge_applyQ_v2(
     magma_queue_destroy( queues[1] );
     magma_free(dwork);
 
-
     return *info;
 }
+
 #undef V
 #undef T
 #undef dE
-////////////////////////////////////////////////////////////////////////////////////////////////////

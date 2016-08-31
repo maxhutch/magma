@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from magmablas/zlacpy_sym_in.cu normal z -> c, Mon May  2 23:30:31 2016
+       @generated from magmablas/zlacpy_sym_in.cu, normal z -> c, Tue Aug 30 09:38:29 2016
 
 */
 #include "magma_internal.h"
@@ -16,6 +16,7 @@
 #define BLK_X 64
 #define BLK_Y 32
 
+/******************************************************************************/
 /*
     Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
     Each block has BLK_X threads.
@@ -54,6 +55,7 @@ void clacpy_sym_in_full_device(
 }
 
 
+/******************************************************************************/
 /*
     Similar to clacpy_full, but updates only the diagonal and below.
     Blocks that are fully above the diagonal exit immediately.
@@ -142,7 +144,7 @@ void clacpy_sym_in_upper_device(
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 /*
     kernel wrappers to call the device functions.
 */
@@ -174,7 +176,7 @@ void clacpy_sym_in_upper_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLACPY_Q copies all or part of a two-dimensional matrix dA to another
@@ -232,8 +234,8 @@ void clacpy_sym_in_upper_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_caux2
-    ********************************************************************/
+    @ingroup magma_lacpy
+*******************************************************************************/
 extern "C" void
 magmablas_clacpy_sym_in_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,

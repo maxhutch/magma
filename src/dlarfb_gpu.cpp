@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zlarfb_gpu.cpp normal z -> d, Mon May  2 23:30:07 2016
+       @generated from src/zlarfb_gpu.cpp, normal z -> d, Tue Aug 30 09:38:08 2016
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLARFB applies a real block reflector H or its transpose H^H to a
@@ -127,8 +127,8 @@
                      (  0  1 v3 )
                      (  0  0  1 )
 
-    @ingroup magma_daux3
-    ********************************************************************/
+    @ingroup magma_larfb
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dlarfb_gpu_q(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,

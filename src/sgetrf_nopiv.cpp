@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgetrf_nopiv.cpp normal z -> s, Mon May  2 23:30:04 2016
+       @generated from src/zgetrf_nopiv.cpp, normal z -> s, Tue Aug 30 09:38:06 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGETRF_NOPIV computes an LU factorization of a general M-by-N
@@ -55,8 +55,8 @@
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
-    @ingroup magma_sgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgetrf_nopiv(
     magma_int_t m, magma_int_t n,

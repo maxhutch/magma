@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
 
@@ -72,6 +72,10 @@ magmaint_zlag2c_sparse(
     ldsa    INTEGER
             The leading dimension of the array SA.  LDSA >= max(1,M).
     
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+                
     @param[in,out]
     info    INTEGER
       -     = 0:  successful exit.
@@ -79,9 +83,6 @@ magmaint_zlag2c_sparse(
       -     = 1:  an entry of the matrix A is greater than the COMPLEX
                   overflow threshold, in this case, the content
                   of SA in exit is unspecified.
-    @param[in]
-    queue       magma_queue_t
-                Queue to execute in.
 
     @ingroup magmasparse_zaux
     ********************************************************************/
@@ -93,8 +94,8 @@ magmablas_zlag2c_sparse(
     magma_int_t lda,
     magmaFloatComplex *SA,
     magma_int_t ldsa,
-    magma_int_t *info,
-    magma_queue_t queue )
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     /*
     (TODO note from original dense source)

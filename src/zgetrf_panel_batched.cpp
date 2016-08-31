@@ -1,18 +1,18 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
    @precisions normal z -> s d c
 */
-
 #include "magma_internal.h"
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     This is an internal routine that might have many assumption.
@@ -79,9 +79,8 @@
     @param[in,out]
     dinvA_array    Array of pointers, dimension (batchCount).
             Each is a COMPLEX_16 array dinvA, a workspace on device.
-            If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
-            If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
-            where TRI_NB = 128.
+            If side == MagmaLeft,  dinvA must be of size >= ceil(m/ZTRTRI_BATCHED_NB)*ZTRTRI_BATCHED_NB*ZTRTRI_BATCHED_NB,
+            If side == MagmaRight, dinvA must be of size >= ceil(n/ZTRTRI_BATCHED_NB)*ZTRTRI_BATCHED_NB*ZTRTRI_BATCHED_NB,
 
     @param[in]
     dinvA_length    INTEGER
@@ -123,8 +122,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgetrf_recpanel_batched(
     magma_int_t m, magma_int_t n, magma_int_t min_recpnb,    
@@ -184,7 +183,7 @@ magma_zgetrf_recpanel_batched(
                            info_array, gbstep, batchCount, queue);
 
         // update A2
-        //if (DEBUG > 0)printf("calling TRSM  with             m=%d n=%d \n",m1,n2);
+        //if (DEBUG > 0)printf("calling TRSM  with             m=%d n=%d\n",m1,n2);
         
         // setup pivinfo 
         setup_pivinfo_batched(dpivinfo_array, dipiv_displ, m1, n1, batchCount, queue);
@@ -242,6 +241,3 @@ magma_zgetrf_recpanel_batched(
     magma_free(dipiv_displ);
     return 0;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////

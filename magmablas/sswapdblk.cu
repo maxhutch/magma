@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zswapdblk.cu normal z -> s, Mon May  2 23:30:35 2016
+       @generated from magmablas/zswapdblk.cu, normal z -> s, Tue Aug 30 09:38:33 2016
 
 */
 #include "magma_internal.h"
 
 
-/*********************************************************/
+/******************************************************************************/
 /*
  *  Swap diagonal blocks of two matrices.
  *  Each thread block swaps one diagonal block.
@@ -40,7 +40,7 @@ sswapdblk_kernel( int nb,
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     sswapdblk swaps diagonal blocks of size nb x nb between matrices
@@ -92,8 +92,8 @@ sswapdblk_kernel( int nb,
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_swapdblk
+*******************************************************************************/
 extern "C" void 
 magmablas_sswapdblk_q(
     magma_int_t n, magma_int_t nb,

@@ -3,6 +3,6 @@
 int main()
 {
     int size = sizeof(void*);
-    printf("%d", size);
+    printf("%d\n", size);
     return 0;
 }

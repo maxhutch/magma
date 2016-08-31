@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -38,7 +38,6 @@ magma_ztfqmr_1_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if ( i<num_rows ) {
         for( int j=0; j<num_cols; j++ ){
-            
             u_mp1[ i+j*num_rows ] = u_m[ i+j*num_rows ] - alpha * v[ i+j*num_rows ];
             w[ i+j*num_rows ] = w[ i+j*num_rows ] - alpha * Au[ i+j*num_rows ];
             d[ i+j*num_rows ] = pu_m[ i+j*num_rows ] + sigma * d[ i+j*num_rows ];
@@ -135,7 +134,7 @@ magma_ztfqmr_1(
     magma_ztfqmr_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, sigma,
                      v, Au, u_m, pu_m, u_mp1, w, d, Ad );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -224,7 +223,7 @@ magma_ztfqmr_2(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_ztfqmr_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, eta, d, Ad, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -305,7 +304,7 @@ magma_ztfqmr_3(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_ztfqmr_3_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, w, u_m, u_mp1 );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -389,7 +388,7 @@ magma_ztfqmr_4(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_ztfqmr_4_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, Au_new, v, Au );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -493,6 +492,5 @@ magma_ztfqmr_5(
     magma_ztfqmr_5_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, sigma,
                      v, Au, u_mp1, w, d, Ad );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-

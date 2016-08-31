@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zpotrf_mgpu.cpp normal z -> d, Mon May  2 23:30:00 2016
+       @generated from src/zpotrf_mgpu.cpp, normal z -> d, Tue Aug 30 09:38:02 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DPOTRF computes the Cholesky factorization of a real symmetric
@@ -68,8 +68,8 @@
                   positive definite, and the factorization could not be
                   completed.
 
-    @ingroup magma_dposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dpotrf_mgpu(
     magma_int_t ngpu,

@@ -1,16 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgerbt_gpu.cpp normal z -> d, Mon May  2 23:30:04 2016
+       @generated from src/zgerbt_gpu.cpp, normal z -> d, Tue Aug 30 09:38:05 2016
        @author Adrien REMY
 */
 #include "magma_internal.h"
 
 
+/******************************************************************************/
 static void
 init_butterfly(
         magma_int_t n,
@@ -19,15 +20,15 @@ init_butterfly(
     magma_int_t i;
     double u1, v1;
     for (i=0; i < n; ++i) {
-        u1 = exp( (rand()/double(RAND_MAX) - 0.5)/10 );
-        v1 = exp( (rand()/double(RAND_MAX) - 0.5)/10 );
+        u1 = exp( (rand()/(double)RAND_MAX - 0.5)/10 );
+        v1 = exp( (rand()/(double)RAND_MAX - 0.5)/10 );
         u[i] = MAGMA_D_MAKE( u1, u1 );
         v[i] = MAGMA_D_MAKE( v1, v1 );
     }
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGERBT solves a system of linear equations
@@ -96,8 +97,8 @@ init_butterfly(
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
 
-    @ingroup magma_dgesv_comp
-    ********************************************************************/
+    @ingroup magma_gerbt
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgerbt_gpu(
     magma_bool_t gen, magma_int_t n, magma_int_t nrhs,

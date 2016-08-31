@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/ztfqmr_merge.cpp normal z -> d, Mon May  2 23:30:57 2016
+       @generated from sparse-iter/src/ztfqmr_merge.cpp, normal z -> d, Tue Aug 30 09:38:53 2016
 */
 
 #include "magmasparse_internal.h"
@@ -268,7 +268,6 @@ magma_dtfqmr_merge(
         queue );
         
         magma_dcopy( dofs, u_mp1.dval, 1, u_m.dval, 1, queue ); 
-    
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
     

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zlahru_m.cpp normal z -> s, Mon May  2 23:30:23 2016
+       @generated from src/zlahru_m.cpp, normal z -> s, Tue Aug 30 09:38:22 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLAHRU is an auxiliary MAGMA routine that is used in SGEHRD to update
@@ -63,20 +63,20 @@
     The difference is that here Am is computed on the GPU.
     M is renamed Am, G is renamed Ag.
 
-    @ingroup magma_sgeev_aux
-    ********************************************************************/
+    @ingroup magma_lahru
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slahru_m(
     magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
     float *A, magma_int_t lda,
     struct sgehrd_data *data )
 {
-    #define dA(  d, i, j ) (data->A [d] + (i) + (j)*ldda)
-    #define dTi( d       ) (data->Ti[d])
-    #define dV(  d, i, j ) (data->V [d] + (i) + (j)*ldv )
-    #define dVd( d, i, j ) (data->Vd[d] + (i) + (j)*ldvd)
-    #define dW(  d, i, j ) (data->W [d] + (i) + (j)*ldda)
-    #define dY(  d, i, j ) (data->Y [d] + (i) + (j)*ldda)
+    #define dA(  dev, i, j ) (data->dA [dev] + (i) + (j)*ldda)
+    #define dTi( dev       ) (data->dTi[dev])
+    #define dV(  dev, i, j ) (data->dV [dev] + (i) + (j)*ldv )
+    #define dVd( dev, i, j ) (data->dVd[dev] + (i) + (j)*ldvd)
+    #define dW(  dev, i, j ) (data->dW [dev] + (i) + (j)*ldda)
+    #define dY(  dev, i, j ) (data->dY [dev] + (i) + (j)*ldda)
     
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
@@ -87,7 +87,7 @@ magma_slahru_m(
     magma_int_t ldv  = data->ldv;
     magma_int_t ldvd = data->ldvd;
     
-    magma_int_t d;
+    magma_int_t dev;
     magma_int_t dk, dkhi, dknb, dn;
     
     magma_int_t info = 0;
@@ -110,12 +110,12 @@ magma_slahru_m(
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
     
-    for( d = 0; d < ngpu; ++d ) {
-        magma_setdevice( d );
+    for( dev = 0; dev < ngpu; ++dev ) {
+        magma_setdevice( dev );
         
         // convert global indices (k) to local indices (dk)
-        magma_indices_1D_bcyclic( nb, ngpu, d, k,    ihi, &dk,   &dkhi );
-        magma_indices_1D_bcyclic( nb, ngpu, d, k+nb, n,   &dknb, &dn   );
+        magma_indices_1D_bcyclic( nb, ngpu, dev, k,    ihi, &dk,   &dkhi );
+        magma_indices_1D_bcyclic( nb, ngpu, dev, k+nb, n,   &dknb, &dn   );
         
         // -----
         // on right, A := A Q = A - A V T V'
@@ -123,24 +123,24 @@ magma_slahru_m(
         // Wd = Vd T' = V(k:ihi-1, 0:nb-1) * T(0:nb-1, 0:nb-1)'
         // Vd and Wd are the portions corresponding to the block cyclic dkstribution
         magma_sgemm( MagmaNoTrans, MagmaConjTrans, dkhi-dk, nb, nb,
-                     c_one,  dVd(d, dk, 0), ldvd,
-                             dTi(d),        nb,
-                     c_zero, dW (d, dk, 0), ldda, data->queues[d] );
+                     c_one,  dVd(dev, dk, 0), ldvd,
+                             dTi(dev),        nb,
+                     c_zero, dW (dev, dk, 0), ldda, data->queues[dev] );
         
         // Am = Am - Ym Wd' = A(0:k-1, k:ihi-1) - Ym(0:k-1, 0:nb-1) * W(k:ihi-1, 0:nb-1)'
         magma_sgemm( MagmaNoTrans, MagmaConjTrans, k, dkhi-dk, nb,
-                     c_neg_one, dY(d, 0,  0),  ldda,
-                                dW(d, dk, 0),  ldda,
-                     c_one,     dA(d, 0,  dk), ldda, data->queues[d] );
+                     c_neg_one, dY(dev, 0,  0),  ldda,
+                                dW(dev, dk, 0),  ldda,
+                     c_one,     dA(dev, 0,  dk), ldda, data->queues[dev] );
 
         // -----
         // on right, A := A Q = A - A V T V'
         // Update Ag = Ag - Ag V T V' = Ag - Yg Wd'
         // Ag = Ag - Yg Wd' = A(k:ihi-1, nb:ihi-k-1) - Y(k:ihi-1, 0:nb-1) * W(k+nb:ihi-1, 0:nb-1)'
         magma_sgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, dkhi-dknb, nb,
-                     c_neg_one, dY(d, k,    0),    ldda,
-                                dW(d, dknb, 0),    ldda,
-                     c_one,     dA(d, k,    dknb), ldda, data->queues[d] );
+                     c_neg_one, dY(dev, k,    0),    ldda,
+                                dW(dev, dknb, 0),    ldda,
+                     c_one,     dA(dev, k,    dknb), ldda, data->queues[dev] );
         
         // -----
         // on left, A := Q' A = A - V T' V' A
@@ -153,21 +153,21 @@ magma_slahru_m(
         // TODO would it be cheaper to compute the whole matrix and
         // copy the block cyclic portions to another workspace?
         magma_sgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, nb, nb,
-                     c_one,  dV (d, k, 0), ldv,
-                             dTi(d),       nb,
-                     c_zero, dW (d, k, 0), ldda, data->queues[d] );
+                     c_one,  dV (dev, k, 0), ldv,
+                             dTi(dev),       nb,
+                     c_zero, dW (dev, k, 0), ldda, data->queues[dev] );
         
         // Z = V(k:ihi-1, 0:nb-1)' * A(k:ihi-1, nb:n-k-1);  Z is stored over Y
         magma_sgemm( MagmaConjTrans, MagmaNoTrans, nb, dn-dknb, ihi-k,
-                     c_one,  dV(d, k, 0),    ldv,
-                             dA(d, k, dknb), ldda,
-                     c_zero, dY(d, 0, 0),    nb, data->queues[d] );
+                     c_one,  dV(dev, k, 0),    ldv,
+                             dA(dev, k, dknb), ldda,
+                     c_zero, dY(dev, 0, 0),    nb, data->queues[dev] );
         
         // Ag2 = Ag2 - W Z = A(k:ihi-1, k+nb:n-1) - W(k+nb:n-1, 0:nb-1) * Z(0:nb-1, k+nb:n-1)
         magma_sgemm( MagmaNoTrans, MagmaNoTrans, ihi-k, dn-dknb, nb,
-                     c_neg_one, dW(d, k, 0),    ldda,
-                                dY(d, 0, 0),    nb,
-                     c_one,     dA(d, k, dknb), ldda, data->queues[d] );
+                     c_neg_one, dW(dev, k, 0),    ldda,
+                                dY(dev, 0, 0),    nb,
+                     c_one,     dA(dev, k, dknb), ldda, data->queues[dev] );
     }
     
     magma_setdevice( orig_dev );

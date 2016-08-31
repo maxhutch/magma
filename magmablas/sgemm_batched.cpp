@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgemm_batched.cpp normal z -> s, Mon May  2 23:30:40 2016
+       @generated from magmablas/zgemm_batched.cpp, normal z -> s, Tue Aug 30 09:38:38 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -22,14 +22,12 @@
        
        The batched version uses gemm_kernel_batched.cuh instead of gemm_kernel.cuh.
 */
-#include "cublas_v2.h"
 #include "magma_internal.h"
 #include "commonblas_s.h"
 
 #define PRECISION_s
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGEMM performs one of the matrix-matrix operations
@@ -144,8 +142,29 @@
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_sblas3
-    ********************************************************************/
+    @ingroup magma_gemm_batched
+*******************************************************************************/
+extern "C" void
+magmablas_sgemm_batched( magma_trans_t transA, magma_trans_t transB, 
+                     magma_int_t m, magma_int_t n, magma_int_t k,
+                     float alpha,
+                     float const * const * dA_array, magma_int_t ldda,
+                     float const * const * dB_array, magma_int_t lddb,
+                     float beta,
+                     float **dC_array, magma_int_t lddc, 
+                     magma_int_t batchCount, magma_queue_t queue )
+{
+    magmablas_sgemm_batched_core(
+                transA, transB, m, n, k,
+                alpha, dA_array, ldda,
+                dB_array, lddb,
+                beta, dC_array, lddc, 
+                0, 0, 0, 0, 0, 0, 
+                batchCount, queue );
+}
+
+
+/******************************************************************************/
 extern "C" void
 magma_sgemm_batched( magma_trans_t transA, magma_trans_t transB, 
                      magma_int_t m, magma_int_t n, magma_int_t k,
@@ -159,19 +178,19 @@ magma_sgemm_batched( magma_trans_t transA, magma_trans_t transB,
     magma_int_t use_cublas = magma_srecommend_cublas_gemm_batched(transA, transB, m, n, k);
 
     if (use_cublas) {
-        cublasSgemmBatched(queue->cublas_handle(), cublas_trans_const(transA), cublas_trans_const(transB),
-                     m, n, k,
-                     &alpha, (const float**)dA_array,    ldda,
-                             (const float**)dB_array,    lddb,
-                     &beta, dC_array, lddc, batchCount);
+        cublasSgemmBatched(
+                queue->cublas_handle(), cublas_trans_const(transA), cublas_trans_const(transB),
+                int(m), int(n), int(k),
+                &alpha, (const float**)dA_array, int(ldda),
+                     (const float**)dB_array, int(lddb),
+                &beta, dC_array, int(lddc), int(batchCount) );
     }
     else {
         magmablas_sgemm_batched(
-                    transA, transB, m, n, k,
-                    alpha, dA_array, ldda,
-                    dB_array, lddb,
-                    beta, dC_array, lddc, 
-                    batchCount, queue );
+                transA, transB, m, n, k,
+                alpha, dA_array, ldda,
+                dB_array, lddb,
+                beta, dC_array, lddc, 
+                batchCount, queue );
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////

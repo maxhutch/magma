@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zgesellcmv.cu normal z -> c, Mon May  2 23:30:44 2016
+       @generated from sparse-iter/blas/zgesellcmv.cu, normal z -> c, Tue Aug 30 09:38:42 2016
 
 */
 #include "magmasparse_internal.h"
@@ -138,12 +138,12 @@ magma_cgesellcmv(
     magma_queue_t queue )
 {
     // the kernel can only handle up to 65535 slices 
-   // (~2M rows for blocksize 32)
-   dim3 grid( slices, 1, 1);
-   magma_int_t threads = blocksize;
-   cgesellcmv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
-   ( m, n, blocksize, alpha,
+    // (~2M rows for blocksize 32)
+    dim3 grid( slices, 1, 1);
+    magma_int_t threads = blocksize;
+    cgesellcmv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
+    ( m, n, blocksize, alpha,
         dval, dcolind, drowptr, dx, beta, dy );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

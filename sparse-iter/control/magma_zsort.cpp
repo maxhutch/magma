@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -389,7 +389,7 @@ magma_zmorderstatistics(
     if( r == 0 ){
         for ( st = i = 0; i < length - 1; i++ ) {
             if ( magma_z_isnan_inf( val[i]) ) {
-                printf("error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
+                printf("%% error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
                 info = MAGMA_ERR_NAN;
                 goto cleanup;
             }
@@ -414,7 +414,7 @@ magma_zmorderstatistics(
     } else {
         for ( st = i = 0; i < length - 1; i++ ) {
             if ( magma_z_isnan_inf( val[i]) ) {
-                printf("error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
+                printf("%% error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
                 info = MAGMA_ERR_NAN;
                 goto cleanup;
             }
@@ -434,7 +434,7 @@ magma_zmorderstatistics(
             CHECK( magma_zmorderstatistics( val, col, row, st, k, r, element, queue ));
         }
         else {
-             CHECK( magma_zmorderstatistics( val+st, col+st, row+st, length-st, k-st, r, element, queue ));
+            CHECK( magma_zmorderstatistics( val+st, col+st, row+st, length-st, k-st, r, element, queue ));
         }
     }
     
@@ -497,7 +497,7 @@ magma_zorderstatistics(
     if( r == 0 ){
         for ( st = i = 0; i < length - 1; i++ ) {
             if ( magma_z_isnan_inf( val[i]) ) {
-                printf("error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
+                printf("%%error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
                 info = MAGMA_ERR_NAN;
                 goto cleanup;
             }
@@ -522,7 +522,7 @@ magma_zorderstatistics(
     } else {
         for ( st = i = 0; i < length - 1; i++ ) {
             if ( magma_z_isnan_inf( val[i]) ) {
-                printf("error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
+                printf("%%error: array contains %f + %fi.\n", MAGMA_Z_REAL(val[i]), MAGMA_Z_IMAG(val[i]) );
                 info = MAGMA_ERR_NAN;
                 goto cleanup;
             }
@@ -549,4 +549,3 @@ magma_zorderstatistics(
 cleanup:
     return info;
 }
-

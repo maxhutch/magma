@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
@@ -131,7 +131,7 @@ magma_zhbtype3cb(magma_int_t n, magma_int_t nb,
 
 
 magma_int_t
-magma_zunmqr_gpu_2stages(
+magma_zunmqr_2stage_gpu(
     magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr dC, magma_int_t lddc,

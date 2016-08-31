@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -52,7 +52,7 @@ void clag2z_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLAG2Z converts a single-complex matrix, SA,
@@ -97,8 +97,8 @@ void clag2z_kernel(
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_caux2
-    ********************************************************************/
+    @ingroup magma_lag2
+*******************************************************************************/
 extern "C" void
 magmablas_clag2z_q(
     magma_int_t m, magma_int_t n,

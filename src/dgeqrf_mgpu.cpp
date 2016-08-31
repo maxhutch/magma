@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgeqrf_mgpu.cpp normal z -> d, Mon May  2 23:30:08 2016
+       @generated from src/zgeqrf_mgpu.cpp, normal z -> d, Tue Aug 30 09:38:09 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEQRF computes a QR factorization of a real M-by-N matrix A:
@@ -74,8 +74,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqrf2_mgpu(
     magma_int_t ngpu,
@@ -190,7 +190,7 @@ magma_dgeqrf2_mgpu(
             lapackf77_dgeqrf( &rows, &ib, hpanel(i), &ldhpanel, tau+i,
                               hwork, &lhwork, info );
             if ( *info != 0 ) {
-                fprintf( stderr, "error %d\n", (int) *info );
+                fprintf( stderr, "error %lld\n", (long long) *info );
             }
 
             // Form the triangular factor of the block reflector
@@ -307,7 +307,7 @@ magma_dgeqrf2_mgpu(
         lhwork = lwork - ib*rows;
         lapackf77_dgeqrf( &rows, &ib, hwork, &rows, tau+i, hwork + ib*rows, &lhwork, info );
         if ( *info != 0 ) {
-            fprintf( stderr, "error %d\n", (int) *info );
+            fprintf( stderr, "error %lld\n", (long long) *info );
         }
         
         for( j=i; j < n; j += nb ) {

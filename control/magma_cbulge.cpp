@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
-       @generated from control/magma_zbulge.cpp normal z -> c, Mon May  2 23:29:59 2016
+       @generated from control/magma_zbulge.cpp, normal z -> c, Tue Aug 30 09:38:00 2016
 
 */
 #include "magma_internal.h"
 #define COMPLEX
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_get_cbulge_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
 {
@@ -29,7 +29,7 @@ magma_get_cbulge_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" void
 magma_get_cbulge_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads,
         magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt)
@@ -40,7 +40,7 @@ magma_get_cbulge_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_cbulge_getstg2size(magma_int_t n, magma_int_t nb, magma_int_t wantz,
                          magma_int_t Vblksiz, magma_int_t ldv, magma_int_t ldt,
@@ -55,7 +55,7 @@ magma_cbulge_getstg2size(magma_int_t n, magma_int_t nb, magma_int_t wantz,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_cbulge_getlwstg2(magma_int_t n, magma_int_t threads, magma_int_t wantz,
                        magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt,
@@ -68,7 +68,7 @@ magma_cbulge_getlwstg2(magma_int_t n, magma_int_t threads, magma_int_t wantz,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" void
 magma_cheevdx_getworksize(magma_int_t n, magma_int_t threads,
         magma_int_t wantz,
@@ -110,4 +110,3 @@ magma_cheevdx_getworksize(magma_int_t n, magma_int_t threads,
     }
     #endif
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

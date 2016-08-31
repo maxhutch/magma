@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zlanhe.cpp normal z -> s, Mon May  2 23:31:08 2016
+       @generated from testing/testing_zlanhe.cpp, normal z -> s, Tue Aug 30 09:39:04 2016
        @author Mark Gates
 */
 // includes, system
@@ -24,7 +24,7 @@
 #include "magma_operators.h"
 #include "testings.h"
 
-#include "magma_threadsetting.h"  // to work around MKL bug
+#include "../control/magma_threadsetting.h"  // internal header, to work around MKL bug
 
 #define PRECISION_s
 #define REAL
@@ -34,7 +34,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
     float *h_A;
@@ -45,7 +46,7 @@ int main( int argc, char** argv)
     magma_int_t idist    = 3;  // normal distribution (otherwise max norm is always ~ 1)
     magma_int_t ISEED[4] = {0,0,0,1};
     float      error, norm_magma, norm_lapack;
-    magma_int_t status = 0;
+    int status = 0;
     magma_int_t lapack_nan_fail = 0;
     magma_int_t lapack_inf_fail = 0;
     bool mkl_warning = false;
@@ -64,9 +65,9 @@ int main( int argc, char** argv)
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
         printf("!!!! NOTE: Double-Complex %s and %s norm are not supported\n"
-               "!!!! on CUDA architecture %d; requires arch >= 200.\n"
+               "!!!! on CUDA architecture %lld; requires arch >= 200.\n"
                "!!!! It should report \"parameter number 1 had an illegal value\" below.\n\n",
-               MagmaInfNormStr, MagmaOneNormStr, (int) arch );
+               MagmaInfNormStr, MagmaOneNormStr, (long long) arch );
         for( int inorm = 0; inorm < 2; ++inorm ) {
         for( int iuplo = 0; iuplo < 2; ++iuplo ) {
             printf( "Testing that magmablas_slansy( %s, %s, ... ) returns -1 error...\n",
@@ -109,11 +110,11 @@ int main( int argc, char** argv)
             // read upper or lower triangle
             gbytes = 0.5*(N+1)*N*sizeof(float) / 1e9;
             
-            TESTING_MALLOC_CPU( h_A,    float, n2 );
-            TESTING_MALLOC_CPU( h_work, float, N );
+            TESTING_CHECK( magma_smalloc_cpu( &h_A,    n2 ));
+            TESTING_CHECK( magma_smalloc_cpu( &h_work, N ));
             
-            TESTING_MALLOC_DEV( d_A,    float, ldda*N );
-            TESTING_MALLOC_DEV( d_work, float, N );
+            TESTING_CHECK( magma_smalloc( &d_A,    ldda*N ));
+            TESTING_CHECK( magma_smalloc( &d_work, N ));
             
             /* Initialize the matrix */
             lapackf77_slarnv( &idist, ISEED, &n2, h_A );
@@ -128,13 +129,13 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (norm_magma == -1) {
-                printf( "%5d   %4c   skipped because %s norm isn't supported\n",
-                        (int) N, lapacke_norm_const( norm[inorm] ), lapack_norm_const( norm[inorm] ));
+                printf( "%5lld   %4c   skipped because %s norm isn't supported\n",
+                        (long long) N, lapacke_norm_const( norm[inorm] ), lapack_norm_const( norm[inorm] ));
                 goto cleanup;
             }
             else if (norm_magma < 0) {
                 printf("magmablas_slansy returned error %f: %s.\n",
-                       norm_magma, magma_strerror( (int) norm_magma ));
+                       norm_magma, magma_strerror( magma_int_t(norm_magma) ));
             }
             
             /* =====================================================================
@@ -156,7 +157,7 @@ int main( int argc, char** argv)
             cpu_perf = gbytes / cpu_time;
             if (norm_lapack < 0) {
                 printf("lapackf77_slansy returned error %f: %s.\n",
-                       norm_lapack, magma_strerror( (int) norm_lapack ));
+                       norm_lapack, magma_strerror( magma_int_t(norm_lapack) ));
             }
             
             /* =====================================================================
@@ -226,8 +227,8 @@ int main( int argc, char** argv)
             }
             #endif
             
-            printf("%5d   %4c   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %-6s   %6s%1s  %6s%1s\n",
-                   (int) N,
+            printf("%5lld   %4c   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %-6s   %6s%1s  %6s%1s\n",
+                   (long long) N,
                    lapacke_norm_const( norm[inorm] ),
                    lapacke_uplo_const( uplo[iuplo] ),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
@@ -237,11 +238,11 @@ int main( int argc, char** argv)
                    (inf_okay ? "ok" : "failed"), (la_inf_okay ? " " : "*"));
             
         cleanup:
-            TESTING_FREE_CPU( h_A    );
-            TESTING_FREE_CPU( h_work );
+            magma_free_cpu( h_A    );
+            magma_free_cpu( h_work );
             
-            TESTING_FREE_DEV( d_A    );
-            TESTING_FREE_DEV( d_work );
+            magma_free( d_A    );
+            magma_free( d_work );
             fflush( stdout );
         } // end iter
         if ( opts.niter > 1 ) {
@@ -265,6 +266,6 @@ int main( int argc, char** argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

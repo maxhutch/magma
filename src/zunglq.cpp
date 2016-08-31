@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
@@ -12,7 +12,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose:
     ---------
     ZUNGLQ generates an M-by-N complex matrix Q with orthonormal rows,
@@ -60,7 +60,7 @@
     
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK. LWORK >= NB*NB, where NB is
+            The dimension of the array WORK. LWORK >= M*NB, where NB is
             the optimal blocksize.
     
             If LWORK = -1, a workspace query is assumed; the routine
@@ -73,8 +73,8 @@
       -     = 0:  successful exit;
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_zgelqf_comp
-    ********************************************************************/
+    @ingroup magma_unglq
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zunglq(
     magma_int_t m, magma_int_t n, magma_int_t k,
@@ -96,12 +96,12 @@ magma_zunglq(
     magma_int_t i, ib, ki, ldda, lddwork, lwkopt, mib, nb, n_i;
     magma_queue_t queue = NULL;
     magmaDoubleComplex_ptr dA = NULL;
-    magmaDoubleComplex* work2 = NULL;
+    magmaDoubleComplex* work_local = NULL;
     
     // Test the input arguments
     *info = 0;
     nb = magma_get_zgelqf_nb( m, n );
-    lwkopt = nb*nb;
+    lwkopt = m*nb;
     work[0] = magma_zmake_lwork( lwkopt );
     lquery = (lwork == -1);
     if (m < 0) {
@@ -114,8 +114,6 @@ magma_zunglq(
         *info = -5;
     } else if (lwork < max( 1, lwkopt ) && ! lquery) {
         *info = -8;
-        //printf( "m %d, n %d, nb %d: lwork %d, required %d\n", m, n, nb, lwork, lwkopt );
-        //*info = 0;
     }
     
     if (*info != 0) {
@@ -132,13 +130,16 @@ magma_zunglq(
         return *info;
     }
     
-    //if (lwork < lwkopt) {
-    //    magma_zmalloc_cpu( &work2, lwkopt );
-    //}
-    //else {
-    //    work2 = work;
-    //}
-    work2 = work;
+    // Need at least nb*nb to store T.
+    // For better LAPACK compatability, which needs M*NB,
+    // allow lwork < NB*NB and allocate here if needed.
+    if (lwork < nb*nb) {
+        if (MAGMA_SUCCESS != magma_zmalloc_cpu( &work_local, lwkopt )) {
+            *info = MAGMA_ERR_HOST_ALLOC;
+            goto cleanup;
+        }
+        work = work_local;
+    }
     
     // Allocate GPU work space
     // ldda*n     for matrix dA
@@ -151,9 +152,10 @@ magma_zunglq(
         goto cleanup;
     }
     
-    magmaDoubleComplex_ptr dV; dV = dA + ldda*n;
-    magmaDoubleComplex_ptr dW; dW = dA + ldda*n + n*nb;
-    magmaDoubleComplex_ptr dT; dT = dA + ldda*n + n*nb + lddwork*nb;
+    magmaDoubleComplex_ptr dV, dW, dT;
+    dV = dA + ldda*n;
+    dW = dA + ldda*n + n*nb;
+    dT = dA + ldda*n + n*nb + lddwork*nb;
     
     magma_device_t cdev;
     magma_getdevice( &cdev );
@@ -185,9 +187,9 @@ magma_zunglq(
         // H = H(i) H(i+1) . . . H(i+ib-1)
         n_i = n - i;
         lapackf77_zlarft( MagmaForwardStr, MagmaRowwiseStr, &n_i, &ib,
-                          A(i,i), &lda, &tau[i], work2, &nb );
+                          A(i,i), &lda, &tau[i], work, &nb );
         magma_zsetmatrix_async( ib, ib,
-                                work2, nb,
+                                work, nb,
                                 dT,   nb, queue );
         
         // set panel of A (block row) to identity
@@ -208,13 +210,13 @@ magma_zunglq(
                       dA(0,0), ldda, A(0,0), lda, queue );
 
 cleanup:
+    magma_queue_sync( queue );
     magma_queue_destroy( queue );
+    
+    work[0] = magma_zmake_lwork( lwkopt );  // before free( work_local )
+    
     magma_free( dA );
+    magma_free_cpu( work_local );
     
-    //if (work2 != work) {
-    //    magma_free_cpu( work2 );
-    //}
-    
-    work[0] = magma_zmake_lwork( lwkopt );
     return *info;
 }

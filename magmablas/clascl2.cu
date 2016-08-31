@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlascl2.cu normal z -> c, Mon May  2 23:30:33 2016
+       @generated from magmablas/zlascl2.cu, normal z -> c, Tue Aug 30 09:38:32 2016
 
        @author Theo Mary
 */
@@ -64,7 +64,7 @@ clascl2_upper(int m, int n, const float *D, magmaFloatComplex* A, int lda)
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLASCL2 scales the M by N complex matrix A by the real diagonal matrix dD.
@@ -110,8 +110,9 @@ clascl2_upper(int m, int n, const float *D, magmaFloatComplex* A, int lda)
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_caux2
-    ********************************************************************/
+    @see magma_clascl_diag 
+    @ingroup magma_lascl_diag
+*******************************************************************************/
 extern "C" void
 magmablas_clascl2_q(
     magma_type_t type, magma_int_t m, magma_int_t n,

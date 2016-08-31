@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from src/zheevx_gpu.cpp normal z -> c, Mon May  2 23:30:13 2016
+       @generated from src/zheevx_gpu.cpp, normal z -> c, Tue Aug 30 09:38:14 2016
 
  */
 #include "magma_internal.h"
 
 //#define FAST_HEMV
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHEEVX computes selected eigenvalues and, optionally, eigenvectors
@@ -181,8 +181,8 @@
       -     > 0:  if INFO = i, then i eigenvectors failed to converge.
                   Their indices are stored in array IFAIL.
 
-    @ingroup magma_cheev_driver
-    ********************************************************************/
+    @ingroup magma_heevx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cheevx_gpu(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
@@ -291,7 +291,7 @@ magma_cheevx_gpu(
     if (n <= 128) {
         #ifdef ENABLE_DEBUG
         printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
+        printf("  warning matrix too small N=%lld NB=%lld, calling lapack on CPU\n", (long long) n, (long long) nb );
         printf("--------------------------------------------------------------\n");
         #endif
         magmaFloatComplex *A;

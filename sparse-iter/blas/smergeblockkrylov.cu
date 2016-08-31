@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmergeblockkrylov.cu normal z -> s, Mon May  2 23:30:50 2016
+       @generated from sparse-iter/blas/zmergeblockkrylov.cu, normal z -> s, Tue Aug 30 09:38:47 2016
        @author Hartwig Anzt
 
 */
@@ -33,16 +33,13 @@ magma_smergeblockkrylov_kernel(
     int vec = blockIdx.y;
     
     if ( row<num_rows ) {
-        
         float val = x[ row + vec * num_rows ];
         
         for( int j=0; j<num_vecs; j++ ){
-            
             float lalpha = alpha[ j * num_vecs + vec ];
             float xval = p[ row + j * num_rows ];
             
             val += lalpha * xval;
-            
         }
         x[ row + vec * num_rows ] = val;
     }
@@ -102,6 +99,5 @@ magma_smergeblockkrylov(
     magma_smergeblockkrylov_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>
                 ( num_rows, num_cols, alpha, p, x );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -11,8 +11,6 @@
 #include "magma_internal.h"
 #include "magma_templates.h"
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // size of work for a thread block
 #define BLK_M 16
 #define BLK_N 16
@@ -21,7 +19,7 @@
 // because it depends on the CUDA architecture at runtime.
 
 
-//==============================================================================
+/******************************************************************************/
 // BLK_K size is templated, as it depends on CUDA architecture at runtime.
 // Hmm... how to compile for both CUDA arch 1.x and 2.x?
 
@@ -69,9 +67,8 @@ void zgemm_reduce_kernel(
 #endif
 }
 
-//==============================================================================
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEMM_REDUCE  performs one of the matrix-matrix operations
@@ -84,8 +81,8 @@ void zgemm_reduce_kernel(
     This routine is tuned for m, n << k. Typically, m and n are expected
     to be less than 128.
 
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_gemm
+*******************************************************************************/
 extern "C" void
 magmablas_zgemm_reduce_q(
     magma_int_t m, magma_int_t n, magma_int_t k,

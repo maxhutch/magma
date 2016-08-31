@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Mark Gates
 
-       @generated from magmablas/zswap.cu normal z -> d, Mon May  2 23:30:35 2016
+       @generated from magmablas/zswap.cu, normal z -> d, Tue Aug 30 09:38:33 2016
 
 */
 #include "magma_internal.h"
@@ -35,7 +35,7 @@ __global__ void dswap_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     Swap vector x and y; \f$ x <-> y \f$.
@@ -61,8 +61,8 @@ __global__ void dswap_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_dblas1
-    ********************************************************************/
+    @ingroup magma_swap
+*******************************************************************************/
 extern "C" void 
 magmablas_dswap_q(
     magma_int_t n,

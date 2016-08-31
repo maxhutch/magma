@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_ztranspose.cpp normal z -> s, Mon May  2 23:31:09 2016
+       @generated from testing/testing_ztranspose.cpp, normal z -> s, Tue Aug 30 09:39:05 2016
        @author Mark Gates
 
 */
@@ -30,7 +30,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     // OpenCL use:  cl_mem  , offset  (two arguments);
     // else   use:  pointer + offset  (one argument).
@@ -49,7 +50,7 @@ int main( int argc, char** argv)
     magmaFloat_ptr d_A, d_B;
     magma_int_t M, N, size, lda, ldda, ldb, lddb;
     magma_int_t ione     = 1;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -77,12 +78,12 @@ int main( int argc, char** argv)
             // load entire matrix, save entire matrix
             gbytes = sizeof(float) * 2.*M*N / 1e9;
             
-            TESTING_MALLOC_CPU( h_A, float, lda*N  );  // input:  M x N
-            TESTING_MALLOC_CPU( h_B, float, ldb*M  );  // output: N x M
-            TESTING_MALLOC_CPU( h_R, float, ldb*M  );  // output: N x M
+            TESTING_CHECK( magma_smalloc_cpu( &h_A, lda*N  ));  // input:  M x N
+            TESTING_CHECK( magma_smalloc_cpu( &h_B, ldb*M  ));  // output: N x M
+            TESTING_CHECK( magma_smalloc_cpu( &h_R, ldb*M  ));  // output: N x M
             
-            TESTING_MALLOC_DEV( d_A, float, ldda*N );  // input:  M x N
-            TESTING_MALLOC_DEV( d_B, float, lddb*M );  // output: N x M
+            TESTING_CHECK( magma_smalloc( &d_A, ldda*N ));  // input:  M x N
+            TESTING_CHECK( magma_smalloc( &d_B, lddb*M ));  // output: N x M
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -177,9 +178,9 @@ int main( int argc, char** argv)
                 blasf77_saxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
                 error2 = lapackf77_slange("f", &N, &M, h_R, &ldb, work );
     
-                printf("%5c %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %6s  %7.2f (%7.2f)  %s\n",
+                printf("%5c %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)  %6s  %7.2f (%7.2f)  %s\n",
                        lapacke_trans_const( trans[itran] ),
-                       (int) M, (int) N,
+                       (long long) M, (long long) N,
                        cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        (error  == 0. ? "ok" : "failed"),
                        gpu_perf2, gpu_time2,
@@ -187,20 +188,20 @@ int main( int argc, char** argv)
                 status += ! (error == 0. && error2 == 0.);
             }
             else {
-                printf("%5c %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %6s    ---   (  ---  )\n",
+                printf("%5c %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)  %6s    ---   (  ---  )\n",
                        lapacke_trans_const( trans[itran] ),
-                       (int) M, (int) N,
+                       (long long) M, (long long) N,
                        cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        (error  == 0. ? "ok" : "failed") );
                 status += ! (error == 0.);
             }
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_B );
-            TESTING_FREE_CPU( h_R );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_B );
+            magma_free_cpu( h_R );
             
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_B );
+            magma_free( d_A );
+            magma_free( d_B );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -210,6 +211,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

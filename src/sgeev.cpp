@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/dgeev.cpp normal d -> s, Mon May  2 23:30:22 2016
+       @generated from src/dgeev.cpp, normal d -> s, Tue Aug 30 09:38:20 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -16,8 +16,8 @@
 
 /*
  * Version1 - LAPACK              (lapack_zgehrd and lapack_zunghr)
- * Version2 - MAGMA without dT    (magma_zgehrd2 and lapack_zunghr)
- * Version3 - MAGMA with dT       (magma_zgehrd  and magma_zunghr)
+ * Version2 - MAGMA without dT    (magma_cgehrd2 and lapack_zunghr)
+ * Version3 - MAGMA with dT       (magma_cgehrd  and magma_cunghr)
  */
 #define VERSION3
 
@@ -30,7 +30,7 @@
  */
 #define TREVC_VERSION 4
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGEEV computes for an N-by-N real nonsymmetric matrix A, the
@@ -130,8 +130,8 @@
                   elements and i+1:N of w contain eigenvalues which have
                   converged.
 
-    @ingroup magma_sgeev_driver
-    ********************************************************************/
+    @ingroup magma_geev
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgeev(
     magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,
@@ -484,10 +484,10 @@ CLEANUP:
     
     timer_stop( time_total );
     flops_stop( flop_total );
-    timer_printf( "sgeev times n %5d, gehrd %7.3f, unghr %7.3f, hseqr %7.3f, trevc %7.3f, total %7.3f, sum %7.3f\n",
-                  (int) n, time_gehrd, time_unghr, time_hseqr, time_trevc, time_total, time_sum );
-    timer_printf( "sgeev flops n %5d, gehrd %7lld, unghr %7lld, hseqr %7lld, trevc %7lld, total %7lld, sum %7lld\n",
-                  (int) n, flop_gehrd, flop_unghr, flop_hseqr, flop_trevc, flop_total, flop_sum );
+    timer_printf( "sgeev times n %5lld, gehrd %7.3f, unghr %7.3f, hseqr %7.3f, trevc %7.3f, total %7.3f, sum %7.3f\n",
+                  (long long) n, time_gehrd, time_unghr, time_hseqr, time_trevc, time_total, time_sum );
+    timer_printf( "sgeev flops n %5lld, gehrd %7lld, unghr %7lld, hseqr %7lld, trevc %7lld, total %7lld, sum %7lld\n",
+                  (long long) n, flop_gehrd, flop_unghr, flop_hseqr, flop_trevc, flop_total, flop_sum );
     
     work[0] = magma_smake_lwork( optwrk );
     

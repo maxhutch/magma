@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zsymmetrize_tiles.cu normal z -> c, Mon May  2 23:30:36 2016
+       @generated from magmablas/zsymmetrize_tiles.cu, normal z -> c, Tue Aug 30 09:38:34 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -66,7 +66,7 @@ csymmetrize_tiles_upper( int m, magmaFloatComplex *dA, int ldda, int mstride, in
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     
@@ -114,8 +114,8 @@ csymmetrize_tiles_upper( int m, magmaFloatComplex *dA, int ldda, int mstride, in
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_caux2
-    ********************************************************************/
+    @ingroup magma_symmetrize_batched
+*******************************************************************************/
 extern "C" void
 magmablas_csymmetrize_tiles_q(
     magma_uplo_t uplo, magma_int_t m,

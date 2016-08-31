@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmergeqmr.cu normal z -> c, Mon May  2 23:30:47 2016
+       @generated from sparse-iter/blas/zmergeqmr.cu, normal z -> c, Tue Aug 30 09:38:44 2016
        @author Hartwig Anzt
 
 */
@@ -34,7 +34,6 @@ magma_cqmr_1_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if ( i<num_rows ) {
         for( int j=0; j<num_cols; j++ ){
-            
             magmaFloatComplex ytmp = y[ i+j*num_rows ] / rho;
             y[ i+j*num_rows ] = ytmp;
             v[ i+j*num_rows ] = ytmp;
@@ -42,7 +41,6 @@ magma_cqmr_1_kernel(
             magmaFloatComplex ztmp = z[ i+j*num_rows ] / psi;
             z[ i+j*num_rows ] = ztmp;
             w[ i+j*num_rows ] = ztmp;
-            
         }
     }
 }
@@ -115,7 +113,7 @@ magma_cqmr_1(
     magma_cqmr_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, rho, psi,
                      y, z, v, w );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -210,7 +208,7 @@ magma_cqmr_2(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cqmr_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, pde, rde, y, z, p, q );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -294,7 +292,7 @@ magma_cqmr_3(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cqmr_3_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, pt, v, y );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -315,7 +313,6 @@ magma_cqmr_4_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if ( i<num_rows ) {
         for( int j=0; j<num_cols; j++ ){
-            
             magmaFloatComplex tmpd = eta * p[ i+j*num_rows ];
             d[ i+j*num_rows ] = tmpd;
             x[ i+j*num_rows ] = x[ i+j*num_rows ] + tmpd;
@@ -401,7 +398,7 @@ magma_cqmr_4(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cqmr_4_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, eta, p, pt, d, s, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -421,7 +418,6 @@ magma_cqmr_5_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if ( i<num_rows ) {
         for( int j=0; j<num_cols; j++ ){
-            
             magmaFloatComplex tmpd = eta * p[ i+j*num_rows ] + pds * d[ i+j*num_rows ];
             d[ i+j*num_rows ] = tmpd;
             x[ i+j*num_rows ] = x[ i+j*num_rows ] + tmpd;
@@ -512,7 +508,7 @@ magma_cqmr_5(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cqmr_5_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, eta, pds, p, pt, d, s, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -532,7 +528,6 @@ magma_cqmr_6_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if ( i<num_rows ) {
         for( int j=0; j<num_cols; j++ ){
-            
             magmaFloatComplex wttmp = wt[ i+j*num_rows ]
                                 - MAGMA_C_CONJ( beta ) * w[ i+j*num_rows ];
                                 
@@ -545,7 +540,6 @@ magma_cqmr_6_kernel(
             magmaFloatComplex ytmp = y[ i+j*num_rows ] / rho;
             y[ i+j*num_rows ] = ytmp;
             v[ i+j*num_rows ] = ytmp;
-            
         }
     }
 }
@@ -629,5 +623,191 @@ magma_cqmr_6(
     magma_cqmr_6_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, rho, psi,
                      y, z, v, w, wt );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
+}
+
+
+__global__ void
+magma_cqmr_7_kernel(  
+    int num_rows,
+    int num_cols,
+    magmaFloatComplex beta,
+    magmaFloatComplex *pt,
+    magmaFloatComplex *v,
+    magmaFloatComplex *vt )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if ( i<num_rows ) {
+        for( int j=0; j<num_cols; j++ ){
+            magmaFloatComplex tmp = pt[ i+j*num_rows ] - beta * v[ i+j*num_rows ];
+            vt[ i+j*num_rows ] = tmp;
+        }
+    }
+}
+
+/**
+    Purpose
+    -------
+
+    Mergels multiple operations into one kernel:
+
+    vt = pt - beta * v
+
+    Arguments
+    ---------
+
+    @param[in]
+    num_rows    magma_int_t
+                dimension m
+                
+    @param[in]
+    num_cols    magma_int_t
+                dimension n
+                
+    @param[in]
+    beta        magmaFloatComplex
+                scalar
+                
+    @param[in]
+    pt          magmaFloatComplex_ptr 
+                vector
+
+    @param[in,out]
+    v           magmaFloatComplex_ptr 
+                vector
+                
+    @param[in,out]
+    vt          magmaFloatComplex_ptr 
+                vector
+
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_cgegpuk
+    ********************************************************************/
+
+extern "C" 
+magma_int_t
+magma_cqmr_7(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaFloatComplex beta,
+    magmaFloatComplex_ptr pt,
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr vt,
+    magma_queue_t queue )
+{
+    dim3 Bs( BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
+    magma_cqmr_7_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, pt, v, vt );
+
+    return MAGMA_SUCCESS;
+}
+
+
+
+__global__ void
+magma_cqmr_8_kernel(  
+    int num_rows, 
+    int num_cols, 
+    magmaFloatComplex rho,
+    magmaFloatComplex psi,
+    magmaFloatComplex *vt, 
+    magmaFloatComplex *wt,
+    magmaFloatComplex *y, 
+    magmaFloatComplex *z,
+    magmaFloatComplex *v,
+    magmaFloatComplex *w )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if ( i<num_rows ) {
+        for( int j=0; j<num_cols; j++ ){
+            y[ i+j*num_rows ] = y[ i+j*num_rows ] / rho;
+            v[ i+j*num_rows ] = vt[ i+j*num_rows ] / rho;
+            z[ i+j*num_rows ] = z[ i+j*num_rows ] / psi;
+            w[ i+j*num_rows ] = wt[ i+j*num_rows ] / psi;
+        }
+    }
+}
+
+/**
+    Purpose
+    -------
+
+    Mergels multiple operations into one kernel:
+
+    v = y / rho
+    y = y / rho
+    w = wt / psi
+    z = z / psi
+    
+    @param[in]
+    num_rows    magma_int_t
+                dimension m
+                
+    @param[in]
+    num_cols    magma_int_t
+                dimension n
+                
+    @param[in]
+    rho         magmaFloatComplex
+                scalar
+                
+    @param[in]
+    psi         magmaFloatComplex
+                scalar
+                
+    @param[in]
+    vt          magmaFloatComplex_ptr 
+                vector
+
+    @param[in]
+    wt          magmaFloatComplex_ptr 
+                vector
+                
+    @param[in,out]
+    y           magmaFloatComplex_ptr 
+                vector
+                
+    @param[in,out]
+    z           magmaFloatComplex_ptr 
+                vector
+                
+    @param[in,out]
+    v           magmaFloatComplex_ptr 
+                vector
+
+    @param[in,out]
+    w           magmaFloatComplex_ptr 
+                vector
+
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_cgegpuk
+    ********************************************************************/
+
+extern "C" 
+magma_int_t
+magma_cqmr_8(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaFloatComplex rho,
+    magmaFloatComplex psi,
+    magmaFloatComplex_ptr vt,
+    magmaFloatComplex_ptr wt,
+    magmaFloatComplex_ptr y, 
+    magmaFloatComplex_ptr z,
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr w,
+    magma_queue_t queue )
+{
+    dim3 Bs( BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
+    magma_cqmr_8_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, rho, psi,
+                     vt, wt, y, z, v, w );
+
+    return MAGMA_SUCCESS;
 }

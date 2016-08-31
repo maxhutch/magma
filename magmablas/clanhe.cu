@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from magmablas/zlanhe.cu normal z -> c, Mon May  2 23:30:31 2016
+       @generated from magmablas/zlanhe.cu, normal z -> c, Tue Aug 30 09:38:30 2016
 
 */
 #include "magma_internal.h"
@@ -19,9 +19,10 @@
 #define COMPLEX
 
 
-/* ====================================================================== */
-/* inf-norm */
+// =============================================================================
+// inf-norm
 
+/******************************************************************************/
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
  * where n is any size and A is stored lower.
  * Has ceil( n / inf_bs ) blocks of (inf_bs x 4) threads each (inf_bs=32).
@@ -232,7 +233,7 @@ clanhe_inf_kernel_lower(
 }
 
 
-
+/******************************************************************************/
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
  * where n is any size and A is stored upper.
  * Has ceil( n / inf_bs ) blocks of (inf_bs x 4) threads each (inf_bs=32).
@@ -450,6 +451,7 @@ clanhe_inf_kernel_upper(
 }
 
 
+/******************************************************************************/
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf */
 extern "C" void
 clanhe_inf(
@@ -474,9 +476,10 @@ clanhe_inf(
 }
 
 
-/* ====================================================================== */
-/* max-norm */
+// =============================================================================
+// max-norm
 
+/******************************************************************************/
 /* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored lower */
 __global__ void
 clanhe_max_kernel_lower(
@@ -500,6 +503,7 @@ clanhe_max_kernel_lower(
 }
 
 
+/******************************************************************************/
 /* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored upper. */
 __global__ void
 clanhe_max_kernel_upper(
@@ -524,6 +528,7 @@ clanhe_max_kernel_upper(
 }
 
 
+/******************************************************************************/
 /* Computes dwork[i] = max( abs( A(i,:) )), i=0:n-1, for ||A||_max */
 extern "C" void
 clanhe_max(
@@ -546,8 +551,7 @@ clanhe_max(
 }
 
 
-/* ====================================================================== */
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLANHE returns the value of the one norm, or the Frobenius norm, or
@@ -616,8 +620,8 @@ clanhe_max(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_caux2
-    ********************************************************************/
+    @ingroup magma_lanhe
+*******************************************************************************/
 extern "C" float
 magmablas_clanhe_q(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,

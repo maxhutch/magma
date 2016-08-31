@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmergecg.cu normal z -> s, Mon May  2 23:30:47 2016
+       @generated from sparse-iter/blas/zmergecg.cu, normal z -> s, Tue Aug 30 09:38:44 2016
        @author Hartwig Anzt
 
 */
@@ -1044,7 +1044,6 @@ magma_scgmerge_spmv1(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( A.num_rows, local_block_size ) );
@@ -1081,7 +1080,6 @@ magma_scgmerge_spmv1(
         descr = 0;
         magma_scgmerge_spmvellpackrt_kernel2<<< Gs, Bs, Ms, queue->cuda_stream() >>>
                       ( A.num_rows, dz, dd, d1 );
-
     }
     else if ( A.storage_type == Magma_SELLP && A.alignment == 1 ) {
             magma_scgmerge_spmvell_kernelb1<<< Gs, Bs, Ms, queue->cuda_stream() >>>
@@ -1200,7 +1198,7 @@ magma_scgmerge_spmv1(
     dim3 Gs2( 1 );
     magma_scg_rhokernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -1371,7 +1369,6 @@ magma_scgmerge_xrbeta(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -1406,7 +1403,7 @@ magma_scgmerge_xrbeta(
     dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_scg_d_kernel<<< Gs3, Bs3, 0, queue->cuda_stream()>>>( n, skp, dr, dd );  
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1573,14 +1570,13 @@ magma_spcgmerge_xrbeta1(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
     magma_spcgmerge_xrbeta_kernel<<< Gs, Bs, 0, queue->cuda_stream()>>>
                                     ( n, dx, dr, dd, dz, skp );  
                                     
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1638,7 +1634,6 @@ magma_spcgmerge_xrbeta2(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -1673,7 +1668,7 @@ magma_spcgmerge_xrbeta2(
     dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_scg_d_kernel<<< Gs3, Bs3, 0, queue->cuda_stream()>>>( n, skp, dh, dd );  
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1778,7 +1773,6 @@ magma_sjcgmerge_xrbeta_kernel(
             vtmp[ blockIdx.x ] = temp[ 0 ];
             vtmp[ blockIdx.x+n ] = temp[ blockDim.x ];
     }
-    
 }
 
 
@@ -1840,7 +1834,6 @@ magma_sjcgmerge_xrbeta(
     magmaFloat_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -1875,7 +1868,7 @@ magma_sjcgmerge_xrbeta(
     dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_scg_d_kernel<<< Gs3, Bs3, 0, queue->cuda_stream()>>>( n, skp, dh, dd );  
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */

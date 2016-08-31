@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
        
@@ -19,12 +19,29 @@
 #include "flops.h"
 #include "magma_v2.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 
+/* ////////////////////////////////////////////////////////////////////////////
+   -- Testing zsymv
+*/
 int main(int argc, char **argv)
 {
-    TESTING_INIT();
+    #ifdef HAVE_clBLAS
+    #define dA(i_, j_)  dA, ((i_) + (j_)*ldda)
+    #define dX(i_)      dX, ((i_))
+    #define dY(i_)      dY, ((i_))
+    #define dwork(i_)   dwork, ((i_))
+    #else
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #define dX(i_)     (dX + (i_))
+    #define dY(i_)     (dY + (i_))
+    #define dwork(i_)  (dwork + (i_))
+    #endif
+    
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     const magma_int_t        ione      = 1;
@@ -40,12 +57,14 @@ int main(int argc, char **argv)
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );
     magmaDoubleComplex *A, *X, *Y, *Ymagma;
     magmaDoubleComplex_ptr dA, dX, dY, dwork;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
     
-    double tol = opts.tolerance * lapackf77_dlamch("E");
+    // See testing_zgemm about tolerance.
+    double eps = lapackf77_dlamch("E");
+    double tol = 3*eps;
 
     printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("%%   N   MAGMA Gflop/s (ms)  CPU Gflop/s (ms)  MAGMA error\n");
@@ -60,21 +79,21 @@ int main(int argc, char **argv)
             sizeY  = N*incy;
             gflops = FLOPS_ZSYMV( N ) / 1e9;
             
-            TESTING_MALLOC_CPU( A,       magmaDoubleComplex, sizeA );
-            TESTING_MALLOC_CPU( X,       magmaDoubleComplex, sizeX );
-            TESTING_MALLOC_CPU( Y,       magmaDoubleComplex, sizeY );
-            TESTING_MALLOC_CPU( Ymagma,  magmaDoubleComplex, sizeY );
+            TESTING_CHECK( magma_zmalloc_cpu( &A,       sizeA ));
+            TESTING_CHECK( magma_zmalloc_cpu( &X,       sizeX ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Y,       sizeY ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Ymagma,  sizeY ));
             
-            TESTING_MALLOC_DEV( dA, magmaDoubleComplex, ldda*N );
-            TESTING_MALLOC_DEV( dX, magmaDoubleComplex, sizeX );
-            TESTING_MALLOC_DEV( dY, magmaDoubleComplex, sizeY );
+            TESTING_CHECK( magma_zmalloc( &dA, ldda*N ));
+            TESTING_CHECK( magma_zmalloc( &dX, sizeX ));
+            TESTING_CHECK( magma_zmalloc( &dY, sizeY ));
             
             blocks = magma_ceildiv( N, nb );
             ldwork = ldda*blocks;
-            TESTING_MALLOC_DEV( dwork, magmaDoubleComplex, ldwork );
+            TESTING_CHECK( magma_zmalloc( &dwork, ldwork ));
             
-            magmablas_zlaset( MagmaFull, ldwork, 1, MAGMA_Z_NAN, MAGMA_Z_NAN, dwork, ldwork, opts.queue );
-            magmablas_zlaset( MagmaFull, ldda,   N, MAGMA_Z_NAN, MAGMA_Z_NAN, dA,    ldda,   opts.queue );
+            magmablas_zlaset( MagmaFull, ldwork, 1, MAGMA_Z_NAN, MAGMA_Z_NAN, dwork(0), ldwork, opts.queue );
+            magmablas_zlaset( MagmaFull, ldda,   N, MAGMA_Z_NAN, MAGMA_Z_NAN, dA(0,0),  ldda,   opts.queue );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, A );
@@ -92,28 +111,41 @@ int main(int argc, char **argv)
             lapackf77_zlarnv( &ione, ISEED, &sizeX, X );
             lapackf77_zlarnv( &ione, ISEED, &sizeY, Y );
             
+            // for error checks
+            // lanhe and lansy should be same
+            double Anorm = safe_lapackf77_zlanhe( "F", lapack_uplo_const(opts.uplo), &N, A, &lda, work );
+            double Xnorm = lapackf77_zlange( "F", &N, &ione, X, &N, work );
+            double Ynorm = lapackf77_zlange( "F", &N, &ione, Y, &N, work );
+            
             /* Note: CUBLAS does not implement zsymv */
             
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
             #ifdef HAVE_CUBLAS
-                magma_zsetmatrix( N, N, A, lda, dA, ldda, opts.queue );
-                magma_zsetvector( N, X, incx, dX, incx, opts.queue );
-                magma_zsetvector( N, Y, incy, dY, incy, opts.queue );
+                magma_zsetmatrix( N, N, A, lda, dA(0,0), ldda, opts.queue );
+                magma_zsetvector( N, X, incx, dX(0), incx, opts.queue );
+                magma_zsetvector( N, Y, incy, dY(0), incy, opts.queue );
                 
                 magma_time = magma_sync_wtime( opts.queue );
                 if ( opts.version == 1 ) {
-                    magmablas_zsymv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork, opts.queue );
+                    magmablas_zsymv_work( opts.uplo, N,
+                                          alpha, dA(0,0), ldda,
+                                                 dX(0),   incx,
+                                          beta,  dY(0),   incy,
+                                          dwork(0), ldwork, opts.queue );
                 }
                 else {
                     // non-work interface (has added overhead)
-                    magmablas_zsymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, opts.queue );
+                    magmablas_zsymv( opts.uplo, N,
+                                     alpha, dA(0,0), ldda,
+                                            dX(0),   incx,
+                                     beta,  dY(0),   incy, opts.queue );
                 }
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
-                magma_zgetvector( N, dY, incy, Ymagma, incy, opts.queue );
+                magma_zgetvector( N, dY(0), incy, Ymagma, incy, opts.queue );
             #endif
             
             /* =====================================================================
@@ -127,25 +159,28 @@ int main(int argc, char **argv)
             /* =====================================================================
                Check the result
                =================================================================== */
+            // See testing_zgemm for formula. Here K = N.
             blasf77_zaxpy( &N, &c_neg_one, Y, &incy, Ymagma, &incy );
-            magma_error = lapackf77_zlange( "M", &N, &ione, Ymagma, &N, work ) / N;
+            magma_error = lapackf77_zlange( "M", &N, &ione, Ymagma, &N, work )
+                            / (sqrt(double(N+2))*fabs(alpha)*Anorm*Xnorm + 2*fabs(beta)*Ynorm);
             
-            printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                   (int) N,
+            bool okay = (magma_error < tol);
+            status += ! okay;
+            printf("%5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                   (long long) N,
                    magma_perf,  1000.*magma_time,
                    cpu_perf,    1000.*cpu_time,
-                   magma_error, (magma_error < tol ? "ok" : "failed"));
-            status += ! (magma_error < tol);
+                   magma_error, (okay ? "ok" : "failed"));
             
-            TESTING_FREE_CPU( A );
-            TESTING_FREE_CPU( X );
-            TESTING_FREE_CPU( Y );
-            TESTING_FREE_CPU( Ymagma  );
+            magma_free_cpu( A );
+            magma_free_cpu( X );
+            magma_free_cpu( Y );
+            magma_free_cpu( Ymagma  );
             
-            TESTING_FREE_DEV( dA );
-            TESTING_FREE_DEV( dX );
-            TESTING_FREE_DEV( dY );
-            TESTING_FREE_DEV( dwork );
+            magma_free( dA );
+            magma_free( dX );
+            magma_free( dY );
+            magma_free( dwork );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -154,6 +189,6 @@ int main(int argc, char **argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

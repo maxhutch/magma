@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zpotrf_gpu.cpp normal z -> s, Mon May  2 23:29:59 2016
+       @generated from src/zpotrf_gpu.cpp, normal z -> s, Tue Aug 30 09:38:01 2016
 */
 #include "magma_internal.h"
 
@@ -17,7 +17,7 @@
     #define magma_strsm magmablas_strsm
 // === End defining what BLAS to use =======================================
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SPOTRF computes the Cholesky factorization of a real symmetric
@@ -68,8 +68,8 @@
                   positive definite, and the factorization could not be
                   completed.
 
-    @ingroup magma_sposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_spotrf_gpu(
     magma_uplo_t uplo, magma_int_t n,

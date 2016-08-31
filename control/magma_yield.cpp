@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
 
@@ -45,10 +45,12 @@
     #error "Cannot determine the OS, or OS not supported. Supported systems are: Linux, FreeBSD, Windows, MacOS X, AIX."
 #endif
 
-/** ****************************************************************************
-   A thread can unlock the CPU if it has nothing to do to let
-   another thread of less priority running for example for I/O.
- */
+/***************************************************************************//**
+    Yield the CPU to let another thread of lower priority run,
+    for example, for I/O.
+
+    @ingroup magma_thread
+*******************************************************************************/
 magma_int_t magma_yield()
 {
 #if (defined MAGMA_OS_LINUX) || (defined MAGMA_OS_FREEBSD) || (defined MAGMA_OS_MACOS) || (defined MAGMA_OS_AIX)

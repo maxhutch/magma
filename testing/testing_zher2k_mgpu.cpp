@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        
@@ -21,6 +21,7 @@
 #include "flops.h"
 #include "magma_v2.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 // define ICHI to test with Ichi's version, too
@@ -32,22 +33,23 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex alpha = MAGMA_Z_MAKE( 1.2345, 4.321 );
     double beta = 3.14159;
     
     real_Double_t    gflops, gpu_perf, cpu_perf, gpu_time, cpu_time;
-    double           Anorm, error, work[1];
-    magmaDoubleComplex *hA, *hR, *hR2, *hV, *hW;
-    magmaDoubleComplex_ptr dV[MagmaMaxGPUs], dW[MagmaMaxGPUs], dA[MagmaMaxGPUs];
+    double           error, work[1];
+    magmaDoubleComplex *hC, *hR, *hR2, *hA, *hB;
+    magmaDoubleComplex_ptr dA[MagmaMaxGPUs], dB[MagmaMaxGPUs], dC[MagmaMaxGPUs];
     magma_int_t n, k, size, lda, ldda, nb, ngpu, nqueue;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
 
     magma_queue_t queues[MagmaMaxGPUs][20], queues0[MagmaMaxGPUs];
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -66,7 +68,7 @@ int main( int argc, char** argv)
 #endif
     printf( "\n" );
     
-    printf("%% nb %d, ngpu %d, nqueue %d\n", (int) nb, (int) ngpu, (int) nqueue );
+    printf("%% nb %lld, ngpu %lld, nqueue %lld\n", (long long) nb, (long long) ngpu, (long long) nqueue );
     printf("%%   n     k    nb offset  CPU Gflop/s (sec)   GPU Gflop/s (sec)   |R|/(|V|*|W|+|A|)\n");
     printf("%%==================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -79,17 +81,17 @@ int main( int argc, char** argv)
                 ldda   = magma_roundup( n, opts.align );  // multiple of 32 by default
                 gflops = FLOPS_ZHER2K( k, n-offset ) / 1e9;
                 
-                TESTING_MALLOC_CPU( hA,  magmaDoubleComplex, lda*n   );
-                TESTING_MALLOC_CPU( hR,  magmaDoubleComplex, lda*n   );
-                TESTING_MALLOC_CPU( hR2, magmaDoubleComplex, lda*n   );
-                TESTING_MALLOC_CPU( hV,  magmaDoubleComplex, lda*k*2 );
-                //TESTING_MALLOC_CPU( hW,  magmaDoubleComplex, lda*k   );
+                TESTING_CHECK( magma_zmalloc_cpu( &hC,  lda*n ));
+                TESTING_CHECK( magma_zmalloc_cpu( &hR,  lda*n ));
+                TESTING_CHECK( magma_zmalloc_cpu( &hR2, lda*n ));
+                TESTING_CHECK( magma_zmalloc_cpu( &hA,  lda*k ));
+                TESTING_CHECK( magma_zmalloc_cpu( &hB,  lda*k ));
                 for( int dev = 0; dev < ngpu; ++dev ) {
                     magma_int_t nlocal = ((n / nb) / ngpu + 1) * nb;
                     magma_setdevice( dev );
-                    TESTING_MALLOC_DEV( dA[dev], magmaDoubleComplex, ldda*nlocal );
-                    TESTING_MALLOC_DEV( dV[dev], magmaDoubleComplex, ldda*k*2    );
-                    //TESTING_MALLOC_DEV( dW[dev], magmaDoubleComplex, ldda*k      );
+                    TESTING_CHECK( magma_zmalloc( &dC[dev], ldda*nlocal ));
+                    TESTING_CHECK( magma_zmalloc( &dA[dev], ldda*k*2    ));
+                    //TESTING_CHECK( magma_zmalloc( &dB[dev], ldda*k      ));
                     for( int i = 0; i < nqueue; ++i ) {
                         magma_queue_create( dev, &queues[dev][i] );
                     }
@@ -97,31 +99,36 @@ int main( int argc, char** argv)
                 }
                 
                 size = lda*n;
+                lapackf77_zlarnv( &ione, ISEED, &size, hC );
+                size = lda*k;
                 lapackf77_zlarnv( &ione, ISEED, &size, hA );
-                size = lda*k*2;
-                lapackf77_zlarnv( &ione, ISEED, &size, hV );
-                hW = hV + lda*k;
-                //lapackf77_zlarnv( &ione, ISEED, &size, hW );
+                lapackf77_zlarnv( &ione, ISEED, &size, hB );
+            
+                // for error checks
+                double Anorm = lapackf77_zlange( "F", &n, &k, hA, &lda, work );
+                double Bnorm = lapackf77_zlange( "F", &n, &k, hB, &lda, work );
+                double Cnorm = safe_lapackf77_zlanhe( "F", lapack_uplo_const(opts.uplo), &n, hC, &lda, work );
                 
                 /* ====================================================================
                    Performs operation using MAGMA
                    =================================================================== */
-                magma_zsetmatrix_1D_col_bcyclic( n, n, hA, lda, dA, ldda, ngpu, nb, queues0 );
+                magma_zsetmatrix_1D_col_bcyclic( ngpu, n, n, nb, hC, lda, dC, ldda, queues0 );
                 for( int dev = 0; dev < ngpu; ++dev ) {
                     magma_setdevice( dev );
-                    dW[dev] = dV[dev] + ldda*k;
-                    magma_zsetmatrix( n, k, hV, lda, dV[dev], ldda, opts.queue );
-                    magma_zsetmatrix( n, k, hW, lda, dW[dev], ldda, opts.queue );
+                    dB[dev] = dA[dev] + ldda*k;
+                    magma_zsetmatrix( n, k, hA, lda, dA[dev], ldda, opts.queue );
+                    magma_zsetmatrix( n, k, hB, lda, dB[dev], ldda, opts.queue );
                 }
                 
                 gpu_time = magma_sync_wtime(0);
                 
+                // only Lower, NoTrans implemented
                 if ( opts.version == 1 ) {
                     magmablas_zher2k_mgpu2(
                         MagmaLower, MagmaNoTrans, n-offset, k,
-                        alpha, dV, ldda, 0,
-                               dW, ldda, 0,
-                        beta,  dA, ldda, offset,
+                        alpha, dA, ldda, 0,
+                               dB, ldda, 0,
+                        beta,  dC, ldda, offset,
                         ngpu, nb, queues, nqueue );
                 }
                 else if ( opts.version == 2 ) {
@@ -129,18 +136,19 @@ int main( int argc, char** argv)
                     printf( "magmablas_zher2k_mgpu_spec not compiled\n" );
                     //magmablas_zher2k_mgpu_spec(
                     //    MagmaLower, MagmaNoTrans, n-offset, k,
-                    //    alpha, dV, ldda, 0,
-                    //           dW, ldda, 0,
-                    //    beta,  dA, ldda, offset,
+                    //    alpha, dA, ldda, 0,
+                    //           dB, ldda, 0,
+                    //    beta,  dC, ldda, offset,
                     //    ngpu, nb, queues, nqueue );
                 }
                 else {
 #ifdef ICHI
+                    // assumes that dA and dB are stored consecutively?
                     magma_zher2k_mgpu(
                         ngpu, MagmaLower, MagmaNoTrans, nb, n-offset, k,
-                        alpha, dV, ldda,
-                               //dW, ldda,
-                        beta,  dA, ldda, offset,
+                        alpha, dA, ldda,
+                               //dB, ldda,
+                        beta,  dC, ldda, offset,
                         nqueue, queues );
 #endif
                 }
@@ -148,8 +156,8 @@ int main( int argc, char** argv)
                 gpu_time = magma_sync_wtime(0) - gpu_time;
                 gpu_perf = gflops / gpu_time;
                 
-                // Get dA back to the CPU to compare with the CPU result.
-                magma_zgetmatrix_1D_col_bcyclic( n, n, dA, ldda, hR, lda, ngpu, nb, queues0 );
+                // Get dC back to the CPU to compare with the CPU result.
+                magma_zgetmatrix_1D_col_bcyclic( ngpu, n, n, nb, dC, ldda, hR, lda, queues0 );
                 
                 /* =====================================================================
                    Performs operation using LAPACK
@@ -157,47 +165,47 @@ int main( int argc, char** argv)
                 if ( opts.lapack || opts.check ) {
                     // store ||V||*||W|| + ||A||
                     magma_int_t n_offset = n - offset;
-                    Anorm  = lapackf77_zlange("f", &n_offset, &k, hV, &lda, work );
-                    Anorm *= lapackf77_zlange("f", &n_offset, &k, hW, &lda, work );
-                    Anorm += lapackf77_zlange("f", &n_offset, &n_offset, &hA[offset + offset*lda], &lda, work );
+                    Anorm  = lapackf77_zlange("f", &n_offset, &k, hA, &lda, work );
+                    Anorm *= lapackf77_zlange("f", &n_offset, &k, hB, &lda, work );
+                    Anorm += lapackf77_zlange("f", &n_offset, &n_offset, &hC[offset + offset*lda], &lda, work );
                     
                     cpu_time = magma_wtime();
                     blasf77_zher2k( "Lower", "NoTrans", &n_offset, &k,
-                                    &alpha, hV, &lda,
-                                            hW, &lda,
-                                    &beta,  &hA[offset + offset*lda], &lda );
+                                    &alpha, hA, &lda,
+                                            hB, &lda,
+                                    &beta,  &hC[offset + offset*lda], &lda );
                     cpu_time = magma_wtime() - cpu_time;
                     cpu_perf = gflops / cpu_time;
                     
                     // compute relative error ||R||/||A||, where R := A_magma - A_lapack = R - A
                     size = lda*n;
-                    blasf77_zaxpy( &size, &c_neg_one, hA, &ione, hR, &ione );
+                    blasf77_zaxpy( &size, &c_neg_one, hC, &ione, hR, &ione );
                     error = safe_lapackf77_zlanhe("fro", "Lower", &n_offset, &hR[offset + offset*lda], &lda, work)
-                          / Anorm;
+                            / (2*sqrt(double(k+2))*fabs(alpha)*Anorm*Bnorm + 2*fabs(beta)*Cnorm);
                     
-                    printf( "%5d %5d %5d %5d   %7.1f (%7.4f)   %7.1f (%7.4f)   %8.2e   %s\n",
-                            (int) n, (int) k, (int) nb, (int) offset,
+                    printf( "%5lld %5lld %5lld %5lld   %7.1f (%7.4f)   %7.1f (%7.4f)   %8.2e   %s\n",
+                            (long long) n, (long long) k, (long long) nb, (long long) offset,
                             cpu_perf, cpu_time, gpu_perf, gpu_time,
                             error, (error < tol ? "ok" : "failed"));
                             //, gpu_perf2, gpu_time2, error, error2 );
                     status += ! (error < tol);
                 }
                 else {
-                    printf( "%5d %5d %5d %5d     ---   (  ---  )   %7.1f (%7.4f)     ---\n",
-                            (int) n, (int) k, (int) nb, (int) offset,
+                    printf( "%5lld %5lld %5lld %5lld     ---   (  ---  )   %7.1f (%7.4f)     ---\n",
+                            (long long) n, (long long) k, (long long) nb, (long long) offset,
                             gpu_perf, gpu_time );
                 }
                 
-                TESTING_FREE_CPU( hA  );
-                TESTING_FREE_CPU( hR  );
-                TESTING_FREE_CPU( hR2 );
-                TESTING_FREE_CPU( hV  );
-                //TESTING_FREE_CPU( hW );
+                magma_free_cpu( hC  );
+                magma_free_cpu( hR  );
+                magma_free_cpu( hR2 );
+                magma_free_cpu( hA  );
+                magma_free_cpu( hB  );
                 for( int dev = 0; dev < ngpu; ++dev ) {
                     magma_setdevice( dev );
-                    TESTING_FREE_DEV( dA[dev] );
-                    TESTING_FREE_DEV( dV[dev] );
-                    //TESTING_FREE_DEV( dW[dev] );
+                    magma_free( dC[dev] );
+                    magma_free( dA[dev] );
+                    //magma_free( dB[dev] );
                     for( int i = 0; i < nqueue; ++i ) {
                         magma_queue_destroy( queues[dev][i] );
                     }
@@ -212,6 +220,6 @@ int main( int argc, char** argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

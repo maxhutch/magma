@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -17,7 +17,7 @@
 #ifndef GEMM_TEMPLATE_DEVICE_CUH
 #define GEMM_TEMPLATE_DEVICE_CUH
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // op<trans>( x ) returns x or conj(x).
 template< const int conjugate, typename T >
 __host__ __device__ static inline
@@ -31,7 +31,7 @@ T op( T& x )
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 template<typename T, const int DIM_X, const int DIM_Y, const int BLK_M, const int BLK_N, const int BLK_K, 
          const int DIM_XA, const int DIM_YA, const int DIM_XB, const int DIM_YB, 
          const int THR_M, const int THR_N, const int CONJA, const int CONJB>
@@ -41,8 +41,7 @@ void gemm_template_device_nn(
     const T* __restrict__ A, int LDA,
     const T* __restrict__ B, int LDB,
     T*       __restrict__ C, int LDC,
-    T alpha, T beta,
-    int offsetA, int offsetB )
+    T alpha, T beta )
 {
 #if (__CUDA_ARCH__ >= 200)
     int idx = threadIdx.x;  // thread's m dimension
@@ -70,17 +69,12 @@ void gemm_template_device_nn(
     T ra[BLK_K/DIM_YA][BLK_M/DIM_XA];
     T rb[BLK_N/DIM_YB][BLK_K/DIM_XB];
     
-    #ifdef TEXTURE_1D
-        int coord_A = offsetA + blx*BLK_M     + idyA*LDA + idxA;
-        int coord_B = offsetB + bly*BLK_N*LDB + idyB*LDB + idxB;
-    #else
-        const T *offs_dA = A + blx*BLK_M     + idyA*LDA + idxA;
-        ptrdiff_t boundA = (LDA*(K-1) + M) - ( blx*BLK_M  + idyA*LDA + idxA ) -1;
+    const T *offs_dA = A + blx*BLK_M     + idyA*LDA + idxA;
+    ptrdiff_t boundA = (LDA*(K-1) + M) - ( blx*BLK_M  + idyA*LDA + idxA ) -1;
         
-        const T *offs_dB = B + bly*BLK_N*LDB + idyB*LDB + idxB;
-        ptrdiff_t boundB = (LDB*(N-1) + K) - ( bly*BLK_N*LDB + idyB*LDB + idxB ) -1;
-    #endif
-
+    const T *offs_dB = B + bly*BLK_N*LDB + idyB*LDB + idxB;
+    ptrdiff_t boundB = (LDB*(N-1) + K) - ( bly*BLK_N*LDB + idyB*LDB + idxB ) -1;
+    
     int m, n, k, kk;
 
 
@@ -220,7 +214,7 @@ void gemm_template_device_nn(
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 template<typename T, const int DIM_X, const int DIM_Y, const int BLK_M, const int BLK_N, const int BLK_K, 
          const int DIM_XA, const int DIM_YA, const int DIM_XB, const int DIM_YB, 
          const int THR_M, const int THR_N, const int CONJA, const int CONJB>
@@ -230,8 +224,7 @@ void gemm_template_device_nt(
     const T* __restrict__ A, int LDA,
     const T* __restrict__ B, int LDB,
     T*       __restrict__ C, int LDC,
-    T alpha, T beta,
-    int offsetA, int offsetB )
+    T alpha, T beta )
 {
 #if (__CUDA_ARCH__ >= 200)
     int idx = threadIdx.x;  // thread's m dimension
@@ -259,17 +252,12 @@ void gemm_template_device_nt(
     T ra[BLK_K/DIM_YA][BLK_M/DIM_XA];
     T rb[BLK_K/DIM_YB][BLK_N/DIM_XB];
 
-    #ifdef TEXTURE_1D
-        int coord_A = offsetA + blx*BLK_M     + idyA*LDA + idxA;
-        int coord_B = offsetB + bly*BLK_N     + idyB*LDB + idxB;
-    #else
-        const T *offs_dA = A + blx*BLK_M     + idyA*LDA + idxA;
-        ptrdiff_t boundA = (LDA*(K-1) + M) - ( blx*BLK_M  + idyA*LDA + idxA ) -1;
+    const T *offs_dA = A + blx*BLK_M     + idyA*LDA + idxA;
+    ptrdiff_t boundA = (LDA*(K-1) + M) - ( blx*BLK_M  + idyA*LDA + idxA ) -1;
         
-        const T *offs_dB = B + bly*BLK_N     + idyB*LDB + idxB;
-        ptrdiff_t boundB = (LDB*(K-1) + N) - ( bly*BLK_N     + idyB*LDB + idxB ) -1;
-    #endif
-
+    const T *offs_dB = B + bly*BLK_N     + idyB*LDB + idxB;
+    ptrdiff_t boundB = (LDB*(K-1) + N) - ( bly*BLK_N     + idyB*LDB + idxB ) -1;
+    
     int m, n, k, kk;
 
 
@@ -413,7 +401,7 @@ void gemm_template_device_nt(
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 template<typename T, const int DIM_X, const int DIM_Y, const int BLK_M, const int BLK_N, const int BLK_K, 
          const int DIM_XA, const int DIM_YA, const int DIM_XB, const int DIM_YB, 
          const int THR_M, const int THR_N, const int CONJA, const int CONJB>
@@ -423,8 +411,7 @@ void gemm_template_device_tn(
     const T* __restrict__ A, int LDA,
     const T* __restrict__ B, int LDB,
     T*       __restrict__ C, int LDC,
-    T alpha, T beta,
-    int offsetA, int offsetB )
+    T alpha, T beta )
 {
 #if (__CUDA_ARCH__ >= 200)
     int idx = threadIdx.x;  // thread's m dimension
@@ -453,18 +440,13 @@ void gemm_template_device_tn(
     T ra[BLK_M/DIM_YA][BLK_K/DIM_XA];
     T rb[BLK_N/DIM_YB][BLK_K/DIM_XB];
     
-    #ifdef TEXTURE_1D
-        int coord_A = offsetA + blx*BLK_M*LDA + idyA*LDA + idxA;
-        int coord_B = offsetB + bly*BLK_N*LDB + idyB*LDB + idxB;
-    #else
-        // bound is the correction to offs_d in order to not get out of memory bound
-        // so bound could be negative value since offs_d could be out of bound
-            const T *offs_dA = A + blx*BLK_M*LDA + idyA*LDA + idxA;
-            ptrdiff_t boundA = (LDA*(M-1) + K) - ( blx*BLK_M*LDA + idyA*LDA + idxA ) -1;
+    // bound is the correction to offs_d in order to not get out of memory bound
+    // so bound could be negative value since offs_d could be out of bound
+    const T *offs_dA = A + blx*BLK_M*LDA + idyA*LDA + idxA;
+    ptrdiff_t boundA = (LDA*(M-1) + K) - ( blx*BLK_M*LDA + idyA*LDA + idxA ) -1;
 
-            const T *offs_dB = B + bly*BLK_N*LDB + idyB*LDB + idxB;
-            ptrdiff_t boundB = (LDB*(N-1) + K) - ( bly*BLK_N*LDB + idyB*LDB + idxB ) -1;
-    #endif
+    const T *offs_dB = B + bly*BLK_N*LDB + idyB*LDB + idxB;
+    ptrdiff_t boundB = (LDB*(N-1) + K) - ( bly*BLK_N*LDB + idyB*LDB + idxB ) -1;
 
     int m, n, k, kk;
 
@@ -609,7 +591,7 @@ void gemm_template_device_tn(
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 template<typename T, const int DIM_X, const int DIM_Y, const int BLK_M, const int BLK_N, const int BLK_K, 
          const int DIM_XA, const int DIM_YA, const int DIM_XB, const int DIM_YB, 
          const int THR_M, const int THR_N, const int CONJA, const int CONJB>
@@ -619,8 +601,7 @@ void gemm_template_device_tt(
     const T* __restrict__ A, int LDA,
     const T* __restrict__ B, int LDB,
     T*       __restrict__ C, int LDC,
-    T alpha, T beta,
-    int offsetA, int offsetB )
+    T alpha, T beta )
 {
 #if (__CUDA_ARCH__ >= 200)
     int idx = threadIdx.x;  // thread's m dimension
@@ -649,19 +630,14 @@ void gemm_template_device_tt(
     T ra[BLK_M/DIM_YA][BLK_K/DIM_XA];
     T rb[BLK_K/DIM_YB][BLK_N/DIM_XB];
     
-    #ifdef TEXTURE_1D
-        int coord_A = offsetA + blx*BLK_M*LDA + idyA*LDA + idxA;
-        int coord_B = offsetB + bly*BLK_N     + idyB*LDB + idxB;
-    #else
-        // bound is the correction to offs_d in order to not get out of memory bound
-        // so bound could be negative value since offs_d could be out of bound
-        const T *offs_dA = A + blx*BLK_M*LDA + idyA*LDA + idxA;
-        ptrdiff_t boundA = (LDA*(M-1) + K) - ( blx*BLK_M*LDA + idyA*LDA + idxA ) -1;
+    // bound is the correction to offs_d in order to not get out of memory bound
+    // so bound could be negative value since offs_d could be out of bound
+    const T *offs_dA = A + blx*BLK_M*LDA + idyA*LDA + idxA;
+    ptrdiff_t boundA = (LDA*(M-1) + K) - ( blx*BLK_M*LDA + idyA*LDA + idxA ) -1;
         
-        const T *offs_dB = B + bly*BLK_N     + idyB*LDB + idxB;
-        ptrdiff_t boundB = (LDB*(K-1) + N) - ( bly*BLK_N     + idyB*LDB + idxB ) -1;
-    #endif
-
+    const T *offs_dB = B + bly*BLK_N     + idyB*LDB + idxB;
+    ptrdiff_t boundB = (LDB*(K-1) + N) - ( bly*BLK_N     + idyB*LDB + idxB ) -1;
+    
     int m, n, k, kk;
 
     // Zero C
@@ -804,6 +780,5 @@ void gemm_template_device_tt(
     }
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif //GEMM_TEMPLATE_DEVICE_CUH

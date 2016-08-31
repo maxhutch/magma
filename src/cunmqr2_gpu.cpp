@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zunmqr2_gpu.cpp normal z -> c, Mon May  2 23:30:08 2016
+       @generated from src/zunmqr2_gpu.cpp, normal z -> c, Tue Aug 30 09:38:09 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CUNMQR overwrites the general complex M-by-N matrix C with
@@ -108,8 +108,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_cgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_unmqr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cunmqr2_gpu(
     magma_side_t side, magma_trans_t trans,

@@ -1,11 +1,11 @@
 /*
- -- MAGMA (version 2.0.2) --
+ -- MAGMA (version 2.1.0) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date May 2016
+ @date August 2016
 
- @generated from sparse-iter/include/magmasparse_z.h normal z -> c, Mon May  2 23:31:25 2016
+ @generated from sparse-iter/include/magmasparse_z.h, normal z -> c, Tue Aug 30 09:39:22 2016
  @author Hartwig Anzt
 */
 
@@ -507,6 +507,8 @@ magma_csolverinfo_free(
     magma_c_preconditioner *precond,
     magma_queue_t queue );
 
+magma_int_t
+magma_cKrylov_check( magma_solver_type solver );
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -628,10 +630,21 @@ magma_cmLdiagadd(
 /* ////////////////////////////////////////////////////////////////////////////
  -- MAGMA_SPARSE iterative dynamic ILU
 */
-#ifdef _OPENMP
+// #ifdef _OPENMP
+/*
+magma_int_t
+magma_cparict_insert(
+    magma_int_t tri,
+    magma_int_t num_rm,
+    magma_index_t *rm_loc,
+    magma_c_matrix *LU_new,
+    magma_c_matrix *LU,
+    omp_lock_t *rowlock,
+    magma_queue_t queue );
+
 
 magma_int_t
-magma_cmdynamicic_insert(
+magma_cparict_insert_U(
     magma_int_t tri,
     magma_int_t num_rm,
     magma_index_t *rm_loc,
@@ -641,14 +654,65 @@ magma_cmdynamicic_insert(
     magma_queue_t queue );
 
 magma_int_t
-magma_cmdynamicilu_set_thrs(
+magma_cparict_insert_LU(
+    magma_int_t tri,
+    magma_int_t num_rm,
+    magma_index_t *rm_loc,
+    magma_index_t *rm_loc2,
+    magma_c_matrix *LU_new,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    omp_lock_t *rowlock,
+    magma_queue_t queue );
+    */
+magma_int_t
+magma_cparilut_insert_LU(
+    magma_int_t num_rm,
+    magma_index_t *rm_loc,
+    magma_index_t *rm_loc2,
+    magma_c_matrix *LU_new,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilut_set_thrs(
     magma_int_t num_rm,
     magma_c_matrix *LU,
+    magma_int_t order,
     magmaFloatComplex *thrs,
     magma_queue_t queue );
 
 magma_int_t
-magma_cmdynamicilu_rm_thrs(
+magma_cparilut_set_approx_thrs(
+    magma_int_t num_rm,
+    magma_c_matrix *LU,
+    magma_int_t order,
+    magmaFloatComplex *thrs,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilut_LU_approx_thrs(
+    magma_int_t num_rm,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_int_t order,
+    magmaFloatComplex *thrs,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilut_reorder(
+    magma_c_matrix *LU,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilut_copy(
+    magma_c_matrix LU,
+    magma_c_matrix *LUCSR,
+    magma_queue_t queue );
+/*
+magma_int_t
+magma_cparilut_rm_thrs(
     magmaFloatComplex *thrs,
     magma_int_t *num_rm,
     magma_c_matrix *LU,    
@@ -658,21 +722,56 @@ magma_cmdynamicilu_rm_thrs(
     magma_queue_t queue );
 
 magma_int_t
-magma_cmdynamicic_sweep(
-    magma_c_matrix A,
+magma_cparilut_rm_thrs_U(
+    magmaFloatComplex *thrs,
+    magma_int_t *num_rm,
+    magma_c_matrix *U,
+    magma_c_matrix *LU_new,
+    magma_index_t *rm_loc,
+    omp_lock_t *rowlock,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilut_rm_thrs_LU(
+    magmaFloatComplex *thrs,
+    magma_int_t *num_rm,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_c_matrix *LU_new,
+    magma_index_t *rm_loc,
+    omp_lock_t *rowlock,
+    magma_queue_t queue );
+    */
+magma_int_t
+magma_cparict_sweep(
+    magma_c_matrix *A,
     magma_c_matrix *LU,
     magma_queue_t queue );
 
 magma_int_t
-magma_cmdynamicic_residuals(
+magma_cparict_residuals(
     magma_c_matrix A,
     magma_c_matrix LU,
     magma_c_matrix *LU_new,
     magma_queue_t queue );
 
 magma_int_t
-magma_cmdynamicic_candidates(
+magma_cmeliminate_duplicates(
+    magma_int_t num_rm,
+    magma_c_matrix *LU_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparict_candidates(
     magma_c_matrix LU,
+    magma_c_matrix *LU_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmilu0_candidates(
+    magma_c_matrix A,
+    magma_c_matrix L,
+    magma_c_matrix U,
     magma_c_matrix *LU_new,
     magma_queue_t queue );
 
@@ -683,7 +782,434 @@ magma_citerictsetup(
     magma_c_preconditioner *precond,
     magma_queue_t queue );
 
-#endif
+magma_int_t
+magma_cparilut_zero(
+    magma_c_matrix *A,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_sweep(
+    magma_c_matrix *A,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_residuals(
+    magma_c_matrix A,
+    magma_c_matrix L,
+    magma_c_matrix U,
+    magma_c_matrix *L_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_sweep_list(
+    magma_c_matrix *A,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_residuals_list(
+    magma_c_matrix A,
+    magma_c_matrix L,
+    magma_c_matrix U,
+    magma_c_matrix *L_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_sweep_linkedlist(
+    magma_c_matrix *A,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_residuals_linkedlist(
+    magma_c_matrix A,
+    magma_c_matrix L,
+    magma_c_matrix U,
+    magma_c_matrix *L_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_colmajor(
+    magma_c_matrix A,
+    magma_c_matrix *AC,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_colmajorup(
+    magma_c_matrix A,
+    magma_c_matrix *AC,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparictsetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilutsetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_insert(
+    magma_int_t *num_rmL,
+    magma_int_t *num_rmU,
+    magma_index_t *rm_locL,
+    magma_index_t *rm_locU,
+    magma_c_matrix *L_new,
+    magma_c_matrix *U_new,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_c_matrix *UR,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_insertsort(
+    magma_int_t *num_rmL,
+    magma_int_t *num_rmU,
+    magma_index_t *addL,
+    magma_index_t *addU,
+    magma_c_matrix *L_new,
+    magma_c_matrix *U_new,
+    magma_c_matrix *L,
+    magma_c_matrix *U,
+    magma_c_matrix *UR,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_rmsort(
+    magmaFloatComplex *thrs,
+    magma_int_t *num_rm,
+    magma_c_matrix *LU,
+    magma_c_matrix *LU_new,
+    magma_index_t *rm_loc,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_candidates(
+    magma_c_matrix L,
+    magma_c_matrix U,
+    magma_c_matrix UR,
+    magma_c_matrix *L_new,
+    magma_c_matrix *U_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_candidates_linkedlist(
+    magma_c_matrix L,
+    magma_c_matrix U,
+    magma_c_matrix UR,
+    magma_c_matrix *L_new,
+    magma_c_matrix *U_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_candlist(
+    magma_c_matrix L,
+    magma_c_matrix U,
+    magma_c_matrix UR,
+    magma_c_matrix *L_new,
+    magma_c_matrix *U_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_rm_thrs(
+    magmaFloatComplex *thrs,
+    magma_int_t *num_rm,
+    magma_c_matrix *LU,
+    magma_c_matrix *LU_new,
+    magma_index_t *rm_loc,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_rm_thrsrc(
+    magmaFloatComplex *thrs,
+    magma_int_t *num_rm,
+    magma_c_matrix *LU,
+    magma_c_matrix *LUC,
+    magma_c_matrix *LU_new,
+    magma_index_t *rm_loc,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_count(
+    magma_c_matrix L,
+    magma_int_t *num,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cparilut_randlist(
+    magma_c_matrix *LU,
+    magma_queue_t queue );
+
+
+magma_int_t
+magma_cmpilut_select_candidates(
+    magma_int_t *num_rm,
+    magma_int_t *rm_loc,
+    magma_c_matrix *L_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_select_candidates_L(
+    magma_int_t *num_rm,
+    magma_index_t *rm_loc,
+    magma_c_matrix *L_new,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmpilut_select_candidates_U(
+    magma_int_t *num_rm,
+    magma_index_t *rm_loc,
+    magma_c_matrix *L_new,
+    magma_queue_t queue );
+
+
+// ISAI preconditioner
+
+magma_int_t
+magma_cmprepare_batched(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix LC,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmtrisolve_batched(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix LC,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmbackinsert_batched(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmprepare_batched_gpu(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix LC,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmtrisolve_batched_gpu(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix LC,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmbackinsert_batched_gpu(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_ciluisaisetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_ciluisaisetup_t(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cicisaisetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_l(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_r(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_l_t(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_r_t(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmiluisai_sizecheck(
+    magma_c_matrix A,
+    magma_index_t batchsize,
+    magma_index_t *maxsize,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmisai_blockstruct(
+    magma_int_t n,
+    magma_int_t bs,
+    magma_int_t offs,
+    magma_uplo_t uplotype,
+    magma_c_matrix *S,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cmisai_blockstruct_gpu(
+    magma_int_t n,
+    magma_int_t bs,
+    magma_int_t offs,
+    magma_uplo_t uplotype,
+    magma_c_matrix *A,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cgeisai_maxblock(
+    magma_c_matrix L,
+    magma_c_matrix *MT,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisaigenerator_32_gpu(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisaigenerator_16_gpu(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisaigenerator_8_gpu(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_generator_regs(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_generator_regs2(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+magma_int_t
+magma_cisai_generator_regs3(
+    magma_uplo_t uplotype,
+    magma_trans_t transtype,
+    magma_diag_t diagtype,
+    magma_c_matrix L,
+    magma_c_matrix *M,
+    magma_index_t *sizes,
+    magma_index_t *locations,
+    magmaFloatComplex *trisystems,
+    magmaFloatComplex *rhs,    
+    magma_queue_t queue );
+
+// #endif
 /* ////////////////////////////////////////////////////////////////////////////
  -- MAGMA_SPARSE function definitions / Data on CPU
 */
@@ -757,9 +1283,23 @@ magma_cqmr(
     magma_queue_t queue );
 
 magma_int_t
+magma_cpqmr(
+    magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x,
+    magma_c_solver_par *solver_par,
+    magma_c_preconditioner *precond_par,
+    magma_queue_t queue );
+
+magma_int_t
 magma_cqmr_merge(
     magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x,
     magma_c_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cpqmr_merge(
+    magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x,
+    magma_c_solver_par *solver_par,
+    magma_c_preconditioner *precond_par,
     magma_queue_t queue );
 
 magma_int_t
@@ -953,6 +1493,26 @@ magma_cbaiter_overlap(
     magma_queue_t queue );
 
 magma_int_t
+magma_cftjacobicontractions(
+    magma_c_matrix xkm2,
+    magma_c_matrix xkm1, 
+    magma_c_matrix xk, 
+    magma_c_matrix *z,
+    magma_c_matrix *c,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cftjacobiupdatecheck(
+    float delta,
+    magma_c_matrix *xold,
+    magma_c_matrix *xnew, 
+    magma_c_matrix *zprev, 
+    magma_c_matrix c,
+    magma_int_t *flag_t,
+    magma_int_t *flag_fp,
+    magma_queue_t queue );
+
+magma_int_t
 magma_citerref(
     magma_c_matrix A, magma_c_matrix b, 
     magma_c_matrix *x, magma_c_solver_par *solver_par, 
@@ -1093,6 +1653,14 @@ magma_cjacobiiter_sys(
     magma_c_matrix b, 
     magma_c_matrix d, 
     magma_c_matrix t, 
+    magma_c_matrix *x,  
+    magma_c_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cftjacobi(
+    magma_c_matrix A, 
+    magma_c_matrix b, 
     magma_c_matrix *x,  
     magma_c_solver_par *solver_par,
     magma_queue_t queue );
@@ -1394,6 +1962,12 @@ magma_int_t
 magma_cdiagcheck(
     magma_c_matrix dA,
     magma_queue_t queue );
+
+magma_int_t
+magma_cdiagcheck_cpu(
+    magma_c_matrix A,
+    magma_queue_t queue );
+
 
 
 /*/////////////////////////////////////////////////////////////////////////////
@@ -1930,6 +2504,30 @@ magma_cqmr_6(
     magma_queue_t queue );
 
 magma_int_t
+magma_cqmr_7(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaFloatComplex beta,
+    magmaFloatComplex_ptr pt,
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr vt,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cqmr_8(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaFloatComplex rho,
+    magmaFloatComplex psi,
+    magmaFloatComplex_ptr vt,
+    magmaFloatComplex_ptr wt,
+    magmaFloatComplex_ptr y, 
+    magmaFloatComplex_ptr z,
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr w,
+    magma_queue_t queue );
+
+magma_int_t
 magma_cbicgstab_1(  
     magma_int_t num_rows, 
     magma_int_t num_cols, 
@@ -2287,6 +2885,11 @@ magma_cbcsrblockinfo5(
     magmaFloatComplex_ptr *AII,
     magma_queue_t queue );
 
+
+magma_int_t
+magma_ctestasync( 
+    magma_c_matrix A,
+    magma_queue_t queue );
  
 #ifdef __cplusplus
 }

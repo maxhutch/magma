@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #ifndef MAGMASPARSE_TYPES_H
@@ -449,8 +449,12 @@ typedef struct magma_s_solver_par
 typedef struct magma_z_preconditioner
 {
     magma_solver_type       solver;
+    magma_solver_type       trisolver;
     magma_int_t             levels;
     magma_int_t             sweeps;
+    magma_int_t             pattern;
+    magma_int_t             bsize;
+    magma_int_t             offset;
     magma_precision         format;
     double                  atol;                
     double                  rtol;    
@@ -460,8 +464,8 @@ typedef struct magma_z_preconditioner
     magma_int_t             spmv_count;  
     double                  init_res;
     double                  final_res;
-    real_Double_t      runtime;                // feedback: preconditioner runtime needed
-    real_Double_t      setuptime;           // feedback: preconditioner setup time needed
+    real_Double_t      runtime;                 // feedback: preconditioner runtime needed
+    real_Double_t      setuptime;               // feedback: preconditioner setup time needed
     magma_z_matrix   M;
     magma_z_matrix   L;
     magma_z_matrix   LT;
@@ -469,6 +473,8 @@ typedef struct magma_z_preconditioner
     magma_z_matrix   UT;
     magma_z_matrix   LD;
     magma_z_matrix   UD;
+    magma_z_matrix   LDT;
+    magma_z_matrix   UDT;
     magma_z_matrix          d;
     magma_z_matrix          d2;
     magma_z_matrix          work1;
@@ -490,8 +496,12 @@ typedef struct magma_z_preconditioner
 typedef struct magma_c_preconditioner
 {
     magma_solver_type       solver;
+    magma_solver_type       trisolver;
     magma_int_t             levels;
     magma_int_t             sweeps;
+    magma_int_t             pattern;
+    magma_int_t             bsize;
+    magma_int_t             offset;
     magma_precision         format;
     float                   atol;                
     float                   rtol;               
@@ -510,6 +520,8 @@ typedef struct magma_c_preconditioner
     magma_c_matrix   UT;
     magma_c_matrix   LD;
     magma_c_matrix   UD;
+    magma_c_matrix   LDT;
+    magma_c_matrix   UDT;
     magma_c_matrix          d;
     magma_c_matrix          d2;
     magma_c_matrix          work1;
@@ -532,8 +544,12 @@ typedef struct magma_c_preconditioner
 typedef struct magma_d_preconditioner
 {
     magma_solver_type       solver;
+    magma_solver_type       trisolver;
     magma_int_t             levels;
     magma_int_t             sweeps;
+    magma_int_t             pattern;
+    magma_int_t             bsize;
+    magma_int_t             offset;
     magma_precision         format;
     double                  atol;                
     double                  rtol; 
@@ -552,6 +568,8 @@ typedef struct magma_d_preconditioner
     magma_d_matrix   UT;
     magma_d_matrix   LD;
     magma_d_matrix   UD;
+    magma_d_matrix   LDT;
+    magma_d_matrix   UDT;
     magma_d_matrix          d;
     magma_d_matrix          d2;
     magma_d_matrix          work1;
@@ -574,8 +592,12 @@ typedef struct magma_d_preconditioner
 typedef struct magma_s_preconditioner
 {
     magma_solver_type       solver;
+    magma_solver_type       trisolver;
     magma_int_t             levels;
     magma_int_t             sweeps;
+    magma_int_t             pattern;
+    magma_int_t             bsize;
+    magma_int_t             offset;
     magma_precision         format;
     float                   atol;                
     float                   rtol;    
@@ -594,6 +616,8 @@ typedef struct magma_s_preconditioner
     magma_s_matrix   UT;
     magma_s_matrix   LD;
     magma_s_matrix   UD;
+    magma_s_matrix   LDT;
+    magma_s_matrix   UDT;
     magma_s_matrix          d;
     magma_s_matrix          d2;
     magma_s_matrix          work1;

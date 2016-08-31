@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zgegqr_gpu.cpp normal z -> s, Mon May  2 23:31:14 2016
+       @generated from testing/testing_zgegqr_gpu.cpp, normal z -> s, Tue Aug 30 09:39:09 2016
        @author Stan Tomov
 
 */
@@ -27,7 +27,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     float           error, e1, e2, e3, e4, e5, *work;
@@ -40,7 +41,7 @@ int main( int argc, char** argv)
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn;
     magma_int_t ione     = 1, ldwork;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -48,13 +49,13 @@ int main( int argc, char** argv)
     
     // versions 1...4 are valid
     if (opts.version < 1 || opts.version > 4) {
-        printf("Unknown version %d; exiting\n", (int) opts.version );
+        printf("Unknown version %lld; exiting\n", (long long) opts.version );
         return -1;
     }
     
     float tol = 10. * opts.tolerance * lapackf77_slamch("E");
     
-    printf("%% version %d\n", (int) opts.version );
+    printf("%% version %lld\n", (long long) opts.version );
     printf("%% M     N     CPU Gflop/s (ms)    GPU Gflop/s (ms)      ||I-Q'Q||_F / M     ||I-Q'Q||_I / M    ||A-Q R||_I\n");
     printf("%%                                                       MAGMA  /  LAPACK    MAGMA  /  LAPACK\n");
     printf("%%=========================================================================================================\n");
@@ -64,13 +65,13 @@ int main( int argc, char** argv)
             N = opts.nsize[itest];
 
             if (N > 128) {
-                printf("%5d %5d   skipping because sgegqr requires N <= 128\n",
-                        (int) M, (int) N);
+                printf("%5lld %5lld   skipping because sgegqr requires N <= 128\n",
+                        (long long) M, (long long) N);
                 continue;
             }
             if (M < N) {
-                printf("%5d %5d   skipping because sgegqr requires M >= N\n",
-                        (int) M, (int) N);
+                printf("%5lld %5lld   skipping because sgegqr requires M >= N\n",
+                        (long long) M, (long long) N);
                 continue;
             }
 
@@ -91,17 +92,17 @@ int main( int argc, char** argv)
                 ldwork = 3*N*N + min_mn + 2;
             }
 
-            TESTING_MALLOC_PIN( tau,    float, min_mn );
-            TESTING_MALLOC_PIN( h_work, float, lwork  );
-            TESTING_MALLOC_PIN(h_rwork, float, lwork  );
+            TESTING_CHECK( magma_smalloc_pinned( &tau,    min_mn ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_work, lwork  ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_rwork, lwork  ));
 
-            TESTING_MALLOC_CPU( h_A,   float, n2     );
-            TESTING_MALLOC_CPU( h_R,   float, n2     );
-            TESTING_MALLOC_CPU( work,  float,             M      );
+            TESTING_CHECK( magma_smalloc_cpu( &h_A,   n2     ));
+            TESTING_CHECK( magma_smalloc_cpu( &h_R,   n2     ));
+            TESTING_CHECK( magma_smalloc_cpu( &work,  M      ));
             
-            TESTING_MALLOC_DEV( d_A,   float, ldda*N );
-            TESTING_MALLOC_DEV( dtau,  float, min_mn );
-            TESTING_MALLOC_DEV( dwork, float, ldwork );
+            TESTING_CHECK( magma_smalloc( &d_A,   ldda*N ));
+            TESTING_CHECK( magma_smalloc( &dtau,  min_mn ));
+            TESTING_CHECK( magma_smalloc( &dwork, ldwork ));
 
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -123,8 +124,8 @@ int main( int argc, char** argv)
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0) {
-                printf("magma_sgegqr returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_sgegqr returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
 
             magma_sgetmatrix( M, N, d_A, ldda, h_R, lda, opts.queue );
@@ -152,22 +153,22 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_sorgqr returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_sorgqr returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
                 blasf77_sgemm("c", "n", &N, &N, &M, &c_one, h_R, &lda, h_R, &lda, &c_zero, h_work, &N);
-                for (int ii = 0; ii < N*N; ii += N+1 ) {
+                for (magma_int_t ii = 0; ii < N*N; ii += N+1 ) {
                     h_work[ii] = MAGMA_S_SUB(h_work[ii], c_one);
                 }
                 e1 = lapackf77_slange("f", &N, &N, h_work, &N, work) / N;
                 e3 = lapackf77_slange("i", &N, &N, h_work, &N, work) / N;
 
                 blasf77_sgemm("c", "n", &N, &N, &M, &c_one, h_A, &lda, h_A, &lda, &c_zero, h_work, &N);
-                for (int ii = 0; ii < N*N; ii += N+1 ) {
+                for (magma_int_t ii = 0; ii < N*N; ii += N+1 ) {
                     h_work[ii] = MAGMA_S_SUB(h_work[ii], c_one);
                 }
                 e2 = lapackf77_slange("f", &N, &N, h_work, &N, work) / N;
@@ -178,28 +179,28 @@ int main( int argc, char** argv)
                 else
                     error = e1 / (10.*max(M,N));
 
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e / %8.2e   %8.2e / %8.2e   %8.2e  %s\n",
-                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
+                printf("%5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e / %8.2e   %8.2e / %8.2e   %8.2e  %s\n",
+                       (long long) M, (long long) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
                        e1, e2, e3, e4, e5,
                        (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);
             }
             else {
-                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
-                       (int) M, (int) N, gpu_perf, 1000.*gpu_time );
+                printf("%5lld %5lld     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
+                       (long long) M, (long long) N, gpu_perf, 1000.*gpu_time );
             }
             
-            TESTING_FREE_PIN( tau    );
-            TESTING_FREE_PIN( h_work );
-            TESTING_FREE_PIN( h_rwork );
+            magma_free_pinned( tau    );
+            magma_free_pinned( h_work );
+            magma_free_pinned( h_rwork );
            
-            TESTING_FREE_CPU( h_A  );
-            TESTING_FREE_CPU( h_R  );
-            TESTING_FREE_CPU( work );
+            magma_free_cpu( h_A  );
+            magma_free_cpu( h_R  );
+            magma_free_cpu( work );
 
-            TESTING_FREE_DEV( d_A   );
-            TESTING_FREE_DEV( dtau  );
-            TESTING_FREE_DEV( dwork );
+            magma_free( d_A   );
+            magma_free( dtau  );
+            magma_free( dwork );
 
             fflush( stdout );
         }
@@ -209,6 +210,6 @@ int main( int argc, char** argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

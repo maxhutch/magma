@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgerbt_func_batched.cu normal z -> c, Mon May  2 23:30:40 2016
+       @generated from magmablas/zgerbt_func_batched.cu, normal z -> c, Tue Aug 30 09:38:38 2016
 
        @author Adrien Remy
        @author Azzam Haidar
@@ -18,8 +18,7 @@
 #define block_length 256
 #define NB 64
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     CPRBT_MVT compute B = UTB to randomize B
@@ -42,7 +41,7 @@
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-    ********************************************************************/
+*******************************************************************************/
 extern "C" void
 magmablas_cprbt_mtv_batched(
     magma_int_t n, 
@@ -61,8 +60,7 @@ magmablas_cprbt_mtv_batched(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     CPRBT_MV compute B = VB to obtain the non randomized solution
@@ -85,7 +83,7 @@ magmablas_cprbt_mtv_batched(
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-    ********************************************************************/
+*******************************************************************************/
 extern "C" void
 magmablas_cprbt_mv_batched(
     magma_int_t n, 
@@ -105,8 +103,7 @@ magmablas_cprbt_mv_batched(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     CPRBT randomize a square general matrix using partial randomized transformation
@@ -137,8 +134,7 @@ magmablas_cprbt_mv_batched(
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-
-    ********************************************************************/
+*******************************************************************************/
 extern "C" void 
 magmablas_cprbt_batched(
     magma_int_t n, 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmdot_shfl.cu normal z -> c, Mon May  2 23:30:45 2016
+       @generated from sparse-iter/blas/zmdot_shfl.cu, normal z -> c, Tue Aug 30 09:38:43 2016
        @author Moritz Kreutzer
 
 */
@@ -258,8 +258,6 @@ magma_cblockdot_kernel_shuffle_1dblock(
     @ingroup magmasparse_cblas
     ********************************************************************/
 
-#define PAD(n, p) (((n) < 1 || (p) < 1)?(n):(((n) % (p)) ? ((n) + (p) - (n) % (p)) : (n)))
-
 extern "C" magma_int_t
 magma_cmdotc_shfl(
     magma_int_t n, 
@@ -283,7 +281,7 @@ magma_cmdotc_shfl(
             deviceReduceKernel<magmaFloatComplex> <<<1, 1024, 32*sizeof(magmaFloatComplex), queue->cuda_stream()>>>(d1+grid.x*j, skp+j, grid.x);
         }
     } else {
-        dim3 block( PAD(magma_ceildiv(BLOCK_SIZE, k), 32), k );
+        dim3 block( magma_roundup( magma_ceildiv(BLOCK_SIZE, k), 32 ), k );
         while (block.x*block.y > 1024) {
             block.x -= 32;
         }

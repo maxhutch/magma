@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zlahru.cpp normal z -> d, Mon May  2 23:30:22 2016
+       @generated from src/zlahru.cpp, normal z -> d, Tue Aug 30 09:38:21 2016
        @author Stan Tomov
        @author Mark Gates
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLAHRU is an auxiliary MAGMA routine that is used in DGEHRD to update
@@ -110,8 +110,8 @@
     The difference is that here Am is computed on the GPU.
     M is renamed Am, G is renamed Ag.
 
-    @ingroup magma_dgeev_aux
-    ********************************************************************/
+    @ingroup magma_lahru
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dlahru(
     magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,

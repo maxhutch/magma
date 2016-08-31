@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
@@ -135,7 +135,7 @@ extern "C" {
    * These wrap CUBLAS or AMD OpenCL BLAS functions.
    */
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set  copies host   to device
 // get  copies device to host
@@ -152,7 +152,7 @@ extern "C" {
 #define magma_zcopyvector                    magma_zcopyvector_q
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 
 #undef magma_zsetmatrix
@@ -164,7 +164,7 @@ extern "C" {
 #define magma_zcopymatrix                    magma_zcopymatrix_q
 
 
-// ========================================
+// =============================================================================
 // Level 1 BLAS (alphabetical order)
 
 #define magma_izamax                         magma_izamax_q
@@ -176,6 +176,7 @@ extern "C" {
 #define magma_zdotu                          magma_zdotu_q
 #define magma_dznrm2                         magma_dznrm2_q
 #define magma_zrot                           magma_zrot_q
+#define magma_zrotg                          magma_zrotg_q
 #define magma_zdrot                          magma_zdrot_q
                         
 #ifdef REAL             
@@ -188,29 +189,40 @@ extern "C" {
 #define magma_zswap                          magma_zswap_q
 
 
-// ========================================
+// =============================================================================
 // Level 2 BLAS (alphabetical order)
 
 #define magma_zgemv                          magma_zgemv_q
 #define magma_zgerc                          magma_zgerc_q
+
+#ifdef COMPLEX
 #define magma_zgeru                          magma_zgeru_q
 #define magma_zhemv                          magma_zhemv_q
 #define magma_zher                           magma_zher_q
 #define magma_zher2                          magma_zher2_q
+#endif // COMPLEX
+
+#define magma_zsymv                          magma_zsymv_q
+#define magma_zsyr                           magma_zsyr_q
+#define magma_zsyr2                          magma_zsyr2_q
 #define magma_ztrmv                          magma_ztrmv_q
 #define magma_ztrsv                          magma_ztrsv_q
 
 
-// ========================================
+// =============================================================================
 // Level 3 BLAS (alphabetical order)
 
 #define magma_zgemm                          magma_zgemm_q
-#define magma_zsymm                          magma_zsymm_q
+
+#ifdef COMPLEX
 #define magma_zhemm                          magma_zhemm_q
-#define magma_zsyr2k                         magma_zsyr2k_q
 #define magma_zher2k                         magma_zher2k_q
-#define magma_zsyrk                          magma_zsyrk_q
 #define magma_zherk                          magma_zherk_q
+#endif // COMPLEX
+
+#define magma_zsymm                          magma_zsymm_q
+#define magma_zsyr2k                         magma_zsyr2k_q
+#define magma_zsyrk                          magma_zsyrk_q
 #define magma_ztrmm                          magma_ztrmm_q
 #define magma_ztrsm                          magma_ztrsm_q
 

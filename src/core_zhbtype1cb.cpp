@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
 
@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup magma_magmaDoubleComplex
+ * @ingroup magma_hbtype1cb
  *
  *  magma_zhbtype1cb is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel eliminate a column by an column-wise
@@ -53,6 +53,9 @@
  *          magmaDoubleComplex array, dimension 2*n if eigenvalue only
  *          requested or (ldv*blkcnt*Vblksiz) if Eigenvectors requested
  *          The Householder reflectors are stored in this array.
+ *
+ * @param[in] ldv
+ *          The leading dimension of the matrix V. ldv >= TODO.
  *
  * @param[out] TAU
  *          magmaDoubleComplex array, dimension (n).
@@ -88,9 +91,10 @@
  *          \retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-/***************************************************************************
- *          TYPE 1-BAND Lower-columnwise-Householder
- ***************************************************************************/
+
+// -----------------------------------------------------------------------------
+// TYPE 1-BAND Lower-columnwise-Householder
+
 extern "C" void
 magma_zhbtype1cb(magma_int_t n, magma_int_t nb,
                 magmaDoubleComplex *A, magma_int_t lda,
@@ -132,10 +136,8 @@ magma_zhbtype1cb(magma_int_t n, magma_int_t nb,
 
     /* Apply left and right on A(st:ed,st:ed) */
     magma_zlarfy(len, A(st,st), lda-1, V(vpos), TAU(taupos), work);
-
-    return;
 }
-/***************************************************************************/
+
 #undef A
 #undef V
 #undef TAU

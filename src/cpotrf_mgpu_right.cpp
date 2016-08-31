@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from src/zpotrf_mgpu_right.cpp normal z -> c, Mon May  2 23:30:00 2016
+       @generated from src/zpotrf_mgpu_right.cpp, normal z -> c, Tue Aug 30 09:38:02 2016
 
 */
 #ifndef MAGMA_NO_V1
@@ -17,7 +17,7 @@
 #include "trace.h"
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CPOTRF computes the Cholesky factorization of a complex Hermitian
@@ -75,8 +75,8 @@
                   positive definite, and the factorization could not be
                   completed.
 
-    @ingroup magma_cposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_mgpu_right(
     magma_int_t ngpu,
@@ -413,19 +413,19 @@ magma_cpotrf_mgpu_right(
                     prevtrsmrows = trsmrows;
 
                     #if defined (ENABLE_TIMER)
-                    ttot += (tcnp+tcchol+tctrsm+therk[0]+therk[1]+therk[2]+tctm+tmnp);
-                    printf("%10d %10d %10d %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf(%d) %10.3lf\n",
-                            j, nb, rows, tmtc,
+                    ttot += (tcnp + tcchol + tctrsm + therk[0] + therk[1] + therk[2] + tctm + tmnp);
+                    printf("%10lld %10lld %10lld %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf(%lld) %10.3lf\n",
+                            (long long) j, (long long) nb, (long long) rows, tmtc,
                             tcnp,     // gemm
                             tcchol,   // potrf
                             tctrsm,   // trsm
                             (tcchol + tctrsm),
-                            (tmtc+tcnp+tcchol+tctrsm),
+                            (tmtc + tcnp + tcchol + tctrsm),
                             therk[0], therk[1], therk[2], therk[3], // syrk
                             tctm, // copy panel to GPU
                             tmnp, // lookahead on GPU
-                            (id + 1) % ngpu,
-                            (tcnp+tcchol+tctrsm+therk[0]+therk[1]+therk[2]+tctm+tmnp));
+                            (long long)((id + 1) % ngpu),
+                            (tcnp + tcchol + tctrsm + therk[0] + therk[1] + therk[2] + tctm + tmnp));
                     fflush(0);
                     #endif
                 }
@@ -437,28 +437,28 @@ magma_cpotrf_mgpu_right(
                 }
             }
             #if defined (ENABLE_TIMER)
-            printf("\n%10d %10d %10d %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf(-) %10.3lf\n",
-                    n, n, 0, ttot_mtc,
+            printf("\n%10lld %10lld %10lld %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf(-) %10.3lf\n",
+                    (long long) n, (long long) n, (long long) 0, ttot_mtc,
                     ttot_cnp,     // gemm
                     ttot_cchol,   // potrf
                     ttot_ctrsm,   // trsm
                     (ttot_cchol + ttot_ctrsm),
-                    (ttot_mtc+ttot_cnp+ttot_cchol+ttot_ctrsm),
+                    (ttot_mtc + ttot_cnp + ttot_cchol + ttot_ctrsm),
                     ttot_herk[0], ttot_herk[1], ttot_herk[2], ttot_herk[3], // syrk
                     ttot_ctm, // copy panel to GPU
                     ttot_mnp, // lookahead on GPU
-                    (ttot_cnp+ttot_cchol+ttot_ctrsm+ttot_herk[0]+ttot_herk[1]+ttot_herk[2]+ttot_ctm+ttot_mnp));
-            printf("%10d %10d %10d %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf(-) %10.3lf (ratio)\n",
-                    n, n, 0, ttot_mtc/ttot,
+                    (ttot_cnp + ttot_cchol + ttot_ctrsm + ttot_herk[0] + ttot_herk[1] + ttot_herk[2] + ttot_ctm + ttot_mnp));
+            printf("%10lld %10lld %10lld %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf %10.3lf(-) %10.3lf (ratio)\n",
+                    (long long) n, (long long) n, (long long) 0, ttot_mtc/ttot,
                     ttot_cnp/ttot,     // gemm
                     ttot_cchol/ttot,   // potrf
                     ttot_ctrsm/ttot,   // trsm
                     (ttot_cchol + ttot_ctrsm)/ttot,
-                    (ttot_mtc+ttot_cnp+ttot_cchol+ttot_ctrsm)/ttot,
+                    (ttot_mtc + ttot_cnp + ttot_cchol + ttot_ctrsm)/ttot,
                     ttot_herk[0]/ttot, ttot_herk[1]/ttot, ttot_herk[2]/ttot, ttot_herk[3]/ttot, // syrk
                     ttot_ctm/ttot, // copy panel to GPU
                     ttot_mnp/ttot, // lookahead on GPU
-                    (ttot_cnp+ttot_cchol+ttot_ctrsm+ttot_herk[0]+ttot_herk[1]+ttot_herk[2]+ttot_ctm+ttot_mnp)/ttot);
+                    (ttot_cnp + ttot_cchol + ttot_ctrsm + ttot_herk[0] + ttot_herk[1] + ttot_herk[2] + ttot_ctm + ttot_mnp)/ttot);
             #endif
 
             // cholesky for the last block
@@ -481,7 +481,7 @@ magma_cpotrf_mgpu_right(
                 #endif
             }
             #if defined (ENABLE_TIMER)
-            printf( " matrix_get,set: %10.3lf %10.3lf -> %10.3lf\n",tget,tset,ttot+tget+tset );
+            printf( " matrix_get,set: %10.3lf %10.3lf -> %10.3lf\n", tget, tset, ttot + tget + tset );
             #endif
         } // end of else not upper
 

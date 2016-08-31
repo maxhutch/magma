@@ -79,7 +79,7 @@ MAGMA README FILE
 
     Several compiler defines, below, affect how MAGMA is compiled and
     might have a large performance impact. These are set in make.inc files
-    using the -D compiler flag, e.g., -DMAGMA_WITH_MKL in CFLAGS, NVCCFLAGS, etc.
+    using the -D compiler flag, e.g., -DMAGMA_WITH_MKL in CFLAGS.
 
     MAGMA_WITH_MKL
         If linked with MKL, allows MAGMA to get MKL's version and
@@ -209,19 +209,6 @@ MAGMA README FILE
 
     Performance results are included in results/vA.B.C/cudaX.Y-zzz/*.txt
     for MAGMA version A.B.C, CUDA version X.Y, and GPU zzz.
-
-----------------------------------------------------------------------------
-* Experimental MAGMA
-
-    Experimental dynamic scheduling code is in directory 'exp'. After making,
-    type 'export MKL_NUM_THREADS=1'. Next go to directory 'testing'.
-    Provided are drivers testing multi-core Cholesky, QR, and LU; and
-    single GPU all, available CPU cores QR. Typing a given driver name will
-    result in clear instructions on what to provide on the command line.
-
-    Note that on some systems the experimental code must be linked against
-    sequential MKL. If you notice excessively poor performance, change
-    make.inc to link against sequential MKL.
 
 ----------------------------------------------------------------------------
 * Forum

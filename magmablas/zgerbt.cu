@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -18,8 +18,7 @@
 #define block_length 256
 #define NB 64
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPRBT_MVT compute B = UTB to randomize B
@@ -42,7 +41,7 @@
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-    ********************************************************************/
+*******************************************************************************/
 extern "C" void
 magmablas_zprbt_mtv_q(
     magma_int_t n, 
@@ -64,8 +63,7 @@ magmablas_zprbt_mtv_q(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPRBT_MV compute B = VB to obtain the non randomized solution
@@ -88,7 +86,7 @@ magmablas_zprbt_mtv_q(
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-    ********************************************************************/
+*******************************************************************************/
 extern "C" void
 magmablas_zprbt_mv_q(
     magma_int_t n, 
@@ -108,8 +106,7 @@ magmablas_zprbt_mv_q(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPRBT randomize a square general matrix using partial randomized transformation
@@ -140,8 +137,7 @@ magmablas_zprbt_mv_q(
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-
-    ********************************************************************/
+*******************************************************************************/
 extern "C" void 
 magmablas_zprbt_q(
     magma_int_t n, 

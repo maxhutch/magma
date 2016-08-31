@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -16,7 +16,7 @@
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DSYEVD computes all eigenvalues and, optionally, eigenvectors of
@@ -74,10 +74,10 @@
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
-            NB can be obtained through magma_get_dsytrd_nb(N).
+     -      If N <= 1,                      LWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
+     -      If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
+     -      NB can be obtained through magma_get_dsytrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal sizes of the WORK and IWORK
@@ -92,9 +92,9 @@
     @param[in]
     liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                      LIWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
-            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+     -      If N <= 1,                      LIWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+     -      If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK and
@@ -122,8 +122,8 @@
 
     Modified description of INFO. Sven, 16 Feb 05.
 
-    @ingroup magma_dsyev_driver
-    ********************************************************************/
+    @ingroup magma_heevd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dsyevd(
     magma_vec_t jobz, magma_uplo_t uplo,

@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgeadd_batched.cu normal z -> s, Mon May  2 23:30:40 2016
+       @generated from magmablas/zgeadd_batched.cu, normal z -> s, Tue Aug 30 09:38:38 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
 
 #define NB 64
 
-/* =====================================================================
+/******************************************************************************/
+/*
     Batches slacpy of multiple arrays;
     y-dimension of grid is different arrays,
     x-dimension of grid is blocks for each array.
@@ -49,8 +50,7 @@ sgeadd_batched_kernel(
 }
 
 
-/* ===================================================================== */
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i],
@@ -98,8 +98,8 @@ sgeadd_batched_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_geadd_batched
+*******************************************************************************/
 extern "C" void
 magmablas_sgeadd_batched(
     magma_int_t m, magma_int_t n,

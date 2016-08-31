@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgerbt.h normal z -> c, Mon May  2 23:31:25 2016
+       @generated from magmablas/zgerbt.h, normal z -> c, Tue Aug 30 09:39:22 2016
 
        @author Adrien Remy
        @author Azzam Haidar
@@ -15,9 +15,9 @@
 
 #ifndef CGERBT_H
 #define CGERBT_H
-/////////////////////////////////////
+
+// =============================================================================
 // classical prototypes
-/////////////////////////////////////
 
 __global__ void 
 magmablas_celementary_multiplication_kernel(
@@ -35,9 +35,10 @@ __global__ void
 magmablas_capply_transpose_vector_kernel(
     magma_int_t n,
     magmaFloatComplex *du, magma_int_t offsetu, magmaFloatComplex *db, magma_int_t offsetb );
-/////////////////////////////////////
+
+// =============================================================================
 // batched prototypes
-/////////////////////////////////////
+
 __global__ void 
 magmablas_celementary_multiplication_kernel_batched(
     magma_int_t n,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
 
@@ -11,7 +11,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZSTEDX computes some eigenvalues and eigenvectors of a
@@ -127,8 +127,8 @@
        Jeff Rutter, Computer Science Division, University of California
        at Berkeley, USA
 
-    @ingroup magma_zheev_comp
-    ********************************************************************/
+    @ingroup magma_stedx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zstedx_m(
     magma_int_t ngpu,

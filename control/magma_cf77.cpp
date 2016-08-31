@@ -111,10 +111,10 @@ magma_int_t magmaf_get_chegst_nb( magma_int_t *n )
     return magma_get_chegst_nb( *n );
 }
 
-#define magmaf_get_chegst_nb_m FORTRAN_NAME( magmaf_get_chegst_nb_m, MAGMAF_GET_CHEGST_NB_M )
-magma_int_t magmaf_get_chegst_nb_m( magma_int_t *n )
+#define magmaf_get_chegst_m_nb FORTRAN_NAME( magmaf_get_chegst_m_nb, MAGMAF_GET_CHEGST_M_NB )
+magma_int_t magmaf_get_chegst_m_nb( magma_int_t *n )
 {
-    return magma_get_chegst_nb_m( *n );
+    return magma_get_chegst_m_nb( *n );
 }
 
 #define magmaf_get_cgebrd_nb FORTRAN_NAME( magmaf_get_cgebrd_nb, MAGMAF_GET_CGEBRD_NB )

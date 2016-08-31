@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlange.cu normal z -> c, Mon May  2 23:30:31 2016
+       @generated from magmablas/zlange.cu, normal z -> c, Tue Aug 30 09:38:30 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -171,7 +171,7 @@ clange_one_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLANGE  returns the value of the one norm, or the Frobenius norm, or
@@ -235,8 +235,8 @@ clange_one_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_caux2
-    ********************************************************************/
+    @ingroup magma_lange
+*******************************************************************************/
 extern "C" float
 magmablas_clange_q(
     magma_norm_t norm, magma_int_t m, magma_int_t n,

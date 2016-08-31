@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from src/zhetrd_he2hb.cpp normal z -> s, Mon May  2 23:30:17 2016
+       @generated from src/zhetrd_he2hb.cpp, normal z -> s, Tue Aug 30 09:38:17 2016
 
 */
 #include <cuda_runtime.h>
@@ -17,7 +17,7 @@
 #include "trace.h"
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SSYTRD_HE2HB reduces a real symmetric matrix A to real symmetric
@@ -140,8 +140,8 @@
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
 
-    @ingroup magma_ssyev_2stage
-    ********************************************************************/
+    @ingroup magma_hetrd_sy2sb
+*******************************************************************************/
 extern "C" magma_int_t
 magma_ssytrd_sy2sb(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
@@ -298,7 +298,7 @@ magma_ssytrd_sy2sb(
                Prepare the V and T matrices.
                ==========================================================  */
             #ifdef TRACING
-            snprintf( buf, sizeof(buf), "panel %d", i );
+            snprintf( buf, sizeof(buf), "panel %lld", (long long) i );
             #endif
             trace_cpu_start( 0, "geqrf", buf );
             lapackf77_sgeqrf(&pm, &pn, A(indi, indj), &lda,

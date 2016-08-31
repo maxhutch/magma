@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -97,7 +97,7 @@ void clat2z_upper(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLAT2Z converts a single-complex matrix, SA,
@@ -145,8 +145,8 @@ void clat2z_upper(
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_lat2
+*******************************************************************************/
 extern "C" void
 magmablas_clat2z_q(
     magma_uplo_t uplo, magma_int_t n,

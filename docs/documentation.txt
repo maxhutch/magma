@@ -3,12 +3,12 @@ This file is processed with Doxygen. See docs/html/index.html for formatted vers
 /**
 
 ********************************************************************************
-@mainpage MAGMA User Guide
+@mainpage MAGMA Users' Guide
 
 Univ. of Tennessee, Knoxville \n
 Univ. of California, Berkeley \n
 Univ. of Colorado, Denver
-@date May 2016
+@date August 2016
 
 The goal of the MAGMA project is to create a new generation of linear algebra
 libraries that achieves the fastest possible time to an accurate solution on
@@ -38,27 +38,28 @@ algorithm is used. Also included is MAGMA BLAS, a complementary to CUBLAS routin
 ********************************************************************************
 @page authors Collaborators
 
-- H. Anzt     (UT Knoxville)
-- M. Baboulin (U Paris-Sud)
-- C. Cao      (UT Knoxville)
-- J. Demmel   (UC Berkeley)
-- T. Dong     (UT Knoxville)
-- J. Dongarra (UT Knoxville)
-- P. Du       (UT Knoxville)
-- M. Faverge  (INRIA)
-- M. Gates    (UT Knoxville)
-- A. Haidar   (UT Knoxville)
-- M. Horton   (UT Knoxville)
-- J. Kurzak   (UT Knoxville)
-- J. Langou   (UC Denver)
-- H. Ltaief   (KAUST)
-- P. Luszczek (UT Knoxville)
-- T. Mary     (IRIT, Team APO)
-- R. Nath     (UT Knoxville)
-- R. Solca    (ETH Zurich)
-- S. Tomov    (UT Knoxville)
-- V. Volkov   (UC Berkeley)
-- I. Yamazaki (UT Knoxville)
+- A. Abdelfattah (UT Knoxville)
+- H. Anzt        (UT Knoxville)
+- M. Baboulin    (U Paris-Sud)
+- C. Cao         (UT Knoxville)
+- J. Demmel      (UC Berkeley)
+- T. Dong        (UT Knoxville)
+- J. Dongarra    (UT Knoxville)
+- P. Du          (UT Knoxville)
+- M. Faverge     (INRIA)
+- M. Gates       (UT Knoxville)
+- A. Haidar      (UT Knoxville)
+- M. Horton      (UT Knoxville)
+- J. Kurzak      (UT Knoxville)
+- J. Langou      (UC Denver)
+- H. Ltaief      (KAUST)
+- P. Luszczek    (UT Knoxville)
+- T. Mary        (IRIT, Team APO)
+- R. Nath        (UT Knoxville)
+- R. Solca       (ETH Zurich)
+- S. Tomov       (UT Knoxville)
+- V. Volkov      (UC Berkeley)
+- I. Yamazaki    (UT Knoxville)
 
 
 ********************************************************************************
@@ -113,7 +114,7 @@ useful as examples, though they contain additional testing features that
 your application does not need, or would do differently. The \ref example "example"
 directory has a simple example without all this additional framework.
 
-See the \ref run_tests.py file to run a standard set of test sizes and options.
+See the testing/run_tests.py file to run a standard set of test sizes and options.
 Currentyl, nearly all the tests pass with --tol 100. With the default tolerance,
 usually 30, some tests will signal false negatives, where the test is okay but
 just slightly above the accuracy tolerance check.
@@ -128,7 +129,7 @@ we've developed for the tests.
 
 
 ********************************************************************************
-@page routines      Routine names
+@page routines      Overview
 
 The interface for MAGMA is similar to LAPACK, to facilitate porting existing
 codes. Many routines have the same base names and the same arguments as LAPACK.
@@ -196,15 +197,18 @@ Driver routines  {#driver}
 =================================
 Driver routines solve an entire problem.
 
-Name                                                                                               |  Description
------------                                                                                        |  -----------
-\ref magma_dgesv_driver  "gesv",  \ref magma_dposv_driver "posv"                                   |  solve linear system, AX = B
-\ref magma_dgels_driver  "gels"                                                                    |  least squares solve, AX = B
-\ref magma_dgeev_driver  "geev",  \ref magma_dsyev_driver "syev",  \ref magma_zheev_driver "heev"  |  eigenvalue solver, AX = X Lambda
-\ref magma_dsyev_driver  "syevd", \ref magma_zheev_driver "heevd"                                  |  eigenvalue solver using divide & conquer
-\ref magma_dsygv_driver  "sygvd", \ref magma_zhegv_driver "hegvd"                                  |  generalized eigenvalue solver, AX = BX Lambda
-\ref magma_dgesvd_driver "gesvd"                                                                   |  singular value decomposition (SVD), A = U Sigma V^H
-\ref magma_dgesvd_driver "gesdd"                                                                   |  SVD using divide & conquer
+Name                            |  Description
+-----------                     |  -----------
+\ref magma_gesv  "gesv"         |  solve linear system, AX = B, A is general (non-symmetric)
+\ref magma_posv  "posv"         |  solve linear system, AX = B, A is symmetric/Hermitian positive definite
+\ref magma_hesv  "hesv"         |  solve linear system, AX = B, A is symmetric indefinite
+\ref magma_gels  "gels"         |  least squares solve, AX = B, A is rectangular
+\ref magma_geev  "geev"         |  non-symmetric eigenvalue solver, AX = X Lambda
+\ref magma_heev  "syev/heev"    |  symmetric eigenvalue solver, AX = X Lambda
+\ref magma_heev  "syevd/heevd"  |  symmetric eigenvalue solver, AX = X Lambda, using divide & conquer
+\ref magma_hegv  "sygvd/hegvd"  |  symmetric generalized eigenvalue solver, AX = BX Lambda
+\ref magma_gesvd "gesvd"        |  singular value decomposition (SVD), A = U Sigma V^H
+\ref magma_gesvd "gesdd"        |  singular value decomposition (SVD), A = U Sigma V^H, using divide & conquer
 
 Computational routines  {#comp}
 =================================
@@ -212,26 +216,25 @@ Computational routines solve one piece of a problem. Typically, driver
 routines call several computational routines to solve the entire problem.
 Here, curly braces { } group similar routines.
 Starred * routines are not yet implemented in MAGMA.
-
-Name                                                                                   |  Description
------------                                                                            |  -----------
-: **Triangular factorizations** :                                                      |  **Description**
-\ref magma_dgetrf     "getrf", \ref magma_dpotrf     "potrf"                           |  triangular factorization (LU, Cholesky)
-\ref magma_dgetrs_gpu "getrs", \ref magma_dpotrs_gpu "potrs"                           |  triangular forward and back solve
-\ref magma_dgetri_gpu "getri", \ref magma_dpotri     "potri"                           |  triangular inverse
-\ref magma_dgetf2_gpu "getf2", \ref magma_dpotf2_gpu "potf2"                           |  triangular panel factorization (BLAS-2)
-. **Orthogonal factorizations**                                                        |  **Description**
-ge{\ref magma_dgeqrf "qrf", \ref magma_dgeqlf "qlf",  \ref magma_dgelqf "lqf",  rqf*}  |  QR, QL, LQ, RQ factorization
-\ref magma_dgeqp3 "geqp3"                                                              |  QR with column pivoting (BLAS-3)
-or{\ref magma_dormqr "mqr", \ref magma_dormql "mql",  \ref magma_dormlq "mlq",  mrq*}  |  multiply by Q after factorization (real)
-un{\ref magma_zunmqr "mqr", \ref magma_zunmql "mql",  \ref magma_zunmlq "mlq",  mrq*}  |  multiply by Q after factorization (complex)
-or{\ref magma_dorgqr "gqr", gql*, glq*, grq*}                                          |  generate Q after factorization (real)
-un{\ref magma_zungqr "gqr", gql*, glq*, grq*}                                          |  generate Q after factorization (complex)
-\ref magma_dgeqr2_gpu "geqr2"                                                          |  QR panel factorization (BLAS-2)
-. **Eigenvalue & SVD**                                                                 |  **Description**
-\ref magma_dgehrd "gehrd"                                                              |  Hessenberg  reduction (in geev)
-\ref magma_dsytrd "sytrd", \ref magma_zhetrd "hetrd"                                   |  tridiagonal reduction (in syev, heev)
-\ref magma_dgebrd "gebrd"                                                              |  bidiagonal  reduction (in gesvd)
+                                                                                     
+Name                                                                                |  Description
+-----------                                                                         |  -----------
+: **Triangular factorizations** :                                                   |  **Description**
+\ref magma_getrf "getrf", \ref magma_potrf "potrf", \ref magma_hetrf "hetrf"        |  triangular factorization (LU, Cholesky, Indefinite)
+\ref magma_getrs "getrs", \ref magma_potrs "potrs", \ref magma_hetrs "hetrs"        |  triangular forward and back solve
+\ref magma_getri "getri", \ref magma_potri "potri"                                  |  triangular inverse
+\ref magma_getf2 "getf2", \ref magma_potf2 "potf2"                                  |  triangular panel factorization (BLAS-2)
+. **Orthogonal factorizations**                                                     |  **Description**
+ge{\ref magma_geqrf "qrf", \ref magma_geqlf "qlf",  \ref magma_gelqf "lqf",  rqf*}  |  QR, QL, LQ, RQ factorization
+\ref magma_geqp3 "geqp3"                                                            |  QR with column pivoting (BLAS-3)
+or{\ref magma_unmqr "mqr", \ref magma_unmql "mql",  \ref magma_unmlq "mlq",  mrq*}  |  multiply by Q after factorization (real)
+un{\ref magma_unmqr "mqr", \ref magma_unmql "mql",  \ref magma_unmlq "mlq",  mrq*}  |  multiply by Q after factorization (complex)
+or{\ref magma_ungqr "gqr", gql*, glq*, grq*}                                        |  generate Q after factorization (real)
+un{\ref magma_ungqr "gqr", gql*, glq*, grq*}                                        |  generate Q after factorization (complex)
+. **Eigenvalue & SVD**                                                              |  **Description**
+\ref magma_gehrd "gehrd"                                                            |  Hessenberg  reduction (in geev)
+\ref magma_hetrd "sytrd/hetrd"                                                      |  tridiagonal reduction (in syev, heev)
+\ref magma_gebrd "gebrd"                                                            |  bidiagonal  reduction (in gesvd)
 
 There are many other computational routines that are mostly internal to
 MAGMA and LAPACK, and not commonly called by end users.
@@ -254,43 +257,43 @@ These do O(n) operations on O(n) data and are memory-bound.
 
 Name                     |  Description
 -----------              |  -----------
-\ref magma_dcopy "copy"  |  copy vector, y = x
-\ref magma_dscal "scal"  |  scale vector, y = alpha*y
-\ref magma_dswap "swap"  |  swap two vectors, y <---> x
-\ref magma_daxpy "axpy"  |  y = alpha*x + y
-\ref magma_dnrm2 "nrm2"  |  vector 2-norm
-\ref magma_idamax "amax" |  vector max-norm
-\ref magma_dasum "asum"  |  vector one-norm
-\ref magma_ddot  "dot"   |  dot product (real), x^T y
-\ref magma_zdotu "dotu"  |  dot product (complex), unconjugated, x^T y
-\ref magma_zdotc "dotc"  |  dot product (complex), conjugated,   x^H y
+\ref magma_copy  "copy"  |  copy vector, y = x
+\ref magma_scal  "scal"  |  scale vector, y = alpha*y
+\ref magma_swap  "swap"  |  swap two vectors, y <---> x
+\ref magma_axpy  "axpy"  |  y = alpha*x + y
+\ref magma_nrm2  "nrm2"  |  vector 2-norm
+\ref magma_iamax "amax"  |  vector max-norm
+\ref magma_asum  "asum"  |  vector one-norm
+\ref magma__dot  "dot"   |  dot product (real), x^T y
+\ref magma__dot  "dotu"  |  dot product (complex), unconjugated, x^T y
+\ref magma__dot  "dotc"  |  dot product (complex), conjugated,   x^H y
 
 BLAS-2: matrix-vector operations
 ---------------------------------
 These do O(n^2) operations on O(n^2) data and are memory-bound.
 
-Name                                               |  Description
------------                                        |  -----------
-\ref magma_dgemv  "gemv"                           |  general matrix-vector product, y = A*x
-\ref magma_dsymv  "symv", \ref magma_zhemv "hemv"  |  symmetric/Hermitian matrix-vector product, y = A*x
-\ref magma_dsyr   "syr",  \ref magma_zher  "her"   |  symmetric/Hermitian rank-1 update, A = A + x*x^H
-\ref magma_dsyr2  "syr2", \ref magma_zher2 "her2"  |  symmetric/Hermitian rank-2 update, A = A + x*y^H + y*x^H
-\ref magma_dtrmv  "trmv"                           |  triangular matrix-vector product, y = A*x
-\ref magma_dtrsv  "trsv"                           |  triangular solve, one right-hand side (RHS), solve Ax = b
+Name                                             |  Description
+-----------                                      |  -----------
+\ref magma_gemv  "gemv"                          |  general matrix-vector product, y = A*x
+\ref magma_symv  "symv", \ref magma_hemv "hemv"  |  symmetric/Hermitian matrix-vector product, y = A*x
+\ref magma_syr   "syr",  \ref magma_her  "her"   |  symmetric/Hermitian rank-1 update, A = A + x*x^H
+\ref magma_syr2  "syr2", \ref magma_her2 "her2"  |  symmetric/Hermitian rank-2 update, A = A + x*y^H + y*x^H
+\ref magma_trmv  "trmv"                          |  triangular matrix-vector product, y = A*x
+\ref magma_trsv  "trsv"                          |  triangular solve, one right-hand side (RHS), solve Ax = b
 
 BLAS-3: matrix-matrix operations
 ---------------------------------
 These do O(n^3) operations on O(n^2) data and are compute-bound.
 Level 3 BLAS are significantly more efficient than the memory-bound level 1 and level 2 BLAS.
 
-Name                                                  |  Description
------------                                           |  -----------
-\ref magma_dgemm  "gemm"                              |  general matrix-matrix multiply, C = C + A*B
-\ref magma_dsymm  "symm",  \ref magma_zhemm  "hemm"   |  symmetric/Hermitian matrix-matrix multiply, C = C + A*B, A is symmetric
-\ref magma_dsyrk  "syrk",  \ref magma_zherk  "herk"   |  symmetric/Hermitian rank-k update, C = C + A*A^H, C is symmetric
-\ref magma_dsyr2k "syr2k", \ref magma_zher2k "her2k"  |  symmetric/Hermitian rank-2k update, C = C + A*B^H + B*A^H, C is symmetric
-\ref magma_dtrmm  "trmm"                              |  triangular matrix-matrix multiply, B = A*B or B*A, A is triangular
-\ref magma_dtrsm  "trsm"                              |  triangular solve, multiple RHS, solve A*X = B or X*A = B, A is triangular
+Name                                                |  Description
+-----------                                         |  -----------
+\ref magma_gemm  "gemm"                             |  general matrix-matrix multiply, C = C + A*B
+\ref magma_symm  "symm",  \ref magma_hemm  "hemm"   |  symmetric/Hermitian matrix-matrix multiply, C = C + A*B, A is symmetric
+\ref magma_syrk  "syrk",  \ref magma_herk  "herk"   |  symmetric/Hermitian rank-k update, C = C + A*A^H, C is symmetric
+\ref magma_syr2k "syr2k", \ref magma_her2k "her2k"  |  symmetric/Hermitian rank-2k update, C = C + A*B^H + B*A^H, C is symmetric
+\ref magma_trmm  "trmm"                             |  triangular matrix-matrix multiply, B = A*B or B*A, A is triangular
+\ref magma_trsm  "trsm"                             |  triangular solve, multiple RHS, solve A*X = B or X*A = B, A is triangular
 
 Auxiliary routines  {#aux}
 =================================
@@ -302,25 +305,24 @@ For auxiliary routines, the **magmablas_ prefix** indicates
 our own MAGMA implementation (e.g., magmablas_zlaswp). All MAGMA auxiliary routines
 are GPU native and take the matrix in GPU memory.
 
-Name                                     |  Description
------------                              |  -----------
-\ref magmablas_dgeadd "geadd"            |  add general matrices (like axpy), B = alpha*A + B
-\ref magmablas_dlaswp "laswp"            |  swap rows (in getrf)
-\ref magmablas_dlaset "laset"            |  set matrix to constant
-\ref magmablas_dlacpy "lacpy"            |  copy matrix
-\ref magmablas_dlascl "lascl"            |  scale matrix
-\ref magmablas_dlange "lange"            |  norm, general matrix
-\ref magmablas_dlansy "lansy"            |  norm, symmetric matrix
-\ref magmablas_zlanhe "lanhe"            |  norm, Hermitian matrix
-\ref magmablas_dlantr "lantr"            |  norm, triangular matrix
-\ref magmablas_dlag2s "lag2"             |  convert general    matrix from one precision to another (e.g., dlag2s is double to single)
-\ref magmablas_dlat2s "lat2"             |  convert triangular matrix from one precision to another
-\ref magmablas_dlarf  "larf"             |  apply    Householder elementary reflector
-\ref magmablas_dlarfg "larfg"            |  generate Householder elementary reflector
-\ref magmablas_dlarfb "larfb"            |  apply      block Householder elementary reflector
-\ref magmablas_dlarft "larft"            |  form T for block Householder elementary reflector
-\ref magmablas_dsymmetrize "symmetrize"  |  copy lower triangle to upper triangle, or vice-versa
-\ref magmablas_dtranspose  "transpose"   |  transpose matrix
+Name                                |  Description
+-----------                         |  -----------
+\ref magma_geadd "geadd"            |  add general matrices (like axpy), B = alpha*A + B
+\ref magma_laswp "laswp"            |  swap rows (in getrf)
+\ref magma_laset "laset"            |  set matrix to constant
+\ref magma_lacpy "lacpy"            |  copy matrix
+\ref magma_lascl "lascl"            |  scale matrix
+\ref magma_lange "lange"            |  norm, general matrix
+\ref magma_lanhe "lansy/lanhe"      |  norm, symmetric/Hermitian matrix
+\ref magma_lantr "lantr"            |  norm, triangular matrix
+\ref magma_lag2  "lag2"             |  convert general    matrix from one precision to another (e.g., dlag2s is double to single)
+\ref magma_lat2  "lat2"             |  convert triangular matrix from one precision to another
+\ref magma_larf  "larf"             |  apply    Householder elementary reflector
+\ref magma_larfg "larfg"            |  generate Householder elementary reflector
+\ref magma_larfb "larfb"            |  apply      block Householder elementary reflector
+\ref magma_larft "larft"            |  form T for block Householder elementary reflector
+\ref magma_symmetrize "symmetrize"  |  copy lower triangle to upper triangle, or vice-versa
+\ref magma_transpose  "transpose"   |  transpose matrix
 
 Utility routines  {#util}
 =================================
@@ -334,14 +336,14 @@ to cast and use sizeof, and un-typed versions (e.g., magma_malloc) that
 are more flexible but require a (void**) cast and multiplying the number of
 elements by sizeof.
 
-Name                                              |  Description
------------                                       |  -----------
-\ref magma_dmalloc_cpu    "magma_*malloc_cpu"     |  allocate CPU memory that is aligned for better performance & reproducibility
-\ref magma_free_cpu       "magma_free_cpu"        |  free CPU memory allocated with malloc_cpu
-\ref magma_dmalloc_pinned "magma_*malloc_pinned"  |  allocate CPU memory that is pinned (page-locked)
-\ref magma_free_pinned    "magma_free_pinned"     |  free CPU memory allocated with malloc_pinned
-\ref magma_dmalloc        "magma_*malloc"         |  allocate GPU memory
-\ref magma_free           "magma_free"            |  free GPU memory
+Name                  |  Description
+-----------           |  -----------
+magma_malloc_cpu()    |  allocate CPU memory that is aligned for better performance & reproducibility
+magma_malloc_pinned() |  allocate CPU memory that is pinned (page-locked)
+magma_malloc()        |  allocate GPU memory
+magma_free_cpu()      |  free CPU memory allocated with magma_malloc_cpu
+magma_free_pinned()   |  free CPU memory allocated with magma_malloc_pinned
+magma_free()          |  free GPU memory allocated with magma_malloc
 
 where * is one of the four precisions, s d c z, or i for magma_int_t, or none
 for an un-typed version.
@@ -353,14 +355,14 @@ The name of communication routines is from the CPU's point of view.
 
 Name                               |  Description
 -----------                        |  -----------
-\ref magma_dsetmatrix "setmatrix"  |  send matrix to GPU
-\ref magma_dsetvector "setvector"  |  send vector to GPU
-\ref magma_dgetmatrix "getmatrix"  |  get  matrix from GPU
-\ref magma_dgetvector "getvector"  |  get  vector from GPU
+\ref magma_setmatrix  "setmatrix"  |  send matrix to GPU
+\ref magma_setvector  "setvector"  |  send vector to GPU
+\ref magma_getmatrix  "getmatrix"  |  get  matrix from GPU
+\ref magma_getvector  "getvector"  |  get  vector from GPU
 
 
-********************************************************************************
-@page types         Data types & complex numbers
+Data types & complex numbers {#types}
+=================================
 
 Integers
 ---------------------------------
@@ -369,7 +371,7 @@ Most systems today use the LP64 convention, meaning long and pointers are
 64-bit, while int is 32-bit.
 
 MAGMA also supports the ILP64 convention as an alternative, where int, long, and
-pointers are all 64-bit. To use this, we typedef magma_int_t to be int64_t. To
+pointers are all 64-bit. To use this, we typedef magma_int_t to be long long. To
 use ILP64, define MAGMA_ILP64 or MKL_ILP64 when compiling, and link with an
 ILP64 BLAS and LAPACK library; see make.inc.mkl-ilp64 for an example.
 
@@ -408,8 +410,8 @@ c = MAGMA_*_INF        |                |  infinity (e.g., 1/0, overflow)
 where * is one of the four precisions, S D C Z.
 
 
-********************************************************************************
-@page variables     Conventions for variables
+Conventions for variables {#variables}
+=================================
 
 Here are general guidelines for variable names; there are of course
 exceptions to these.
@@ -472,8 +474,8 @@ For several routines (amax, amin, asum, nrm2, scal), the order is irrelevant,
 so negative incx are not allowed; incx > 0.
 
 
-********************************************************************************
-@page constants     Constants
+Constants {#constants}
+=================================
 
 MAGMA defines a few constant parameters, such as `MagmaTrans, MagmaNoTrans`,
 that are equivalent of CBLAS and LAPACK parameters. The
@@ -598,8 +600,8 @@ enum CBLAS_DIAG      | cblas_diag_const   | ( diag  )  |  Map MagmaNonUnit,  Mag
 enum CBLAS_SIDE      | cblas_side_const   | ( side  )  |  Map MagmaLeft,     MagmaRight    \n to CblasLeft,     CblasRight
 
 
-********************************************************************************
-@page errors        Errors
+Errors {#errors}
+=================================
 
 Driver and computational routines, and a few BLAS/auxiliary routines, currently
 return errors both as a return value and in the info argument. The return value
@@ -620,16 +622,16 @@ MAGMA_ERR_INVALID_PTR      |  Can't free pointer
 MAGMA_ERR_NOT_IMPLEMENTED  |  Function or option not implemented
 MAGMA_ERR_NOT_SUPPORTED    |  Function or option not supported on the current architecture
 
-\ref magma_xerbla is called to report errors (mostly bad arguments) to user.
+magma_xerbla() is called to report errors (mostly bad arguments) to the user.
 
-\ref magma_strerror returns string description of an error code.
+magma_strerror() returns string description of an error code.
 
 
-********************************************************************************
-@page methodology   Methodology
+Methodology {#methodology}
+=================================
 
 One-sided matrix factorizations
-=================================
+---------------------------------
 
 The one-sided LU, Cholesky, and QR factorizations form a basis for solving
 linear systems. A general recommendation is to use
@@ -680,7 +682,7 @@ and high accuracy solvers.
 
 
 Two-sided matrix factorizations
-=================================
+---------------------------------
 
 As the one-sided matrix factorizations are the basis for various linear
 solvers, the two-sided matrix factorizations are the basis for eigen-solvers,

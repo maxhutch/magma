@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlarf.cu normal z -> d, Mon May  2 23:30:32 2016
+       @generated from magmablas/zlarf.cu, normal z -> d, Tue Aug 30 09:38:30 2016
        @author Azzam Haidar
 
 */
@@ -19,12 +19,11 @@
 #define BLOCK_SIZEy  16
 
 
-//==============================================================================
-//==============================================================================
-
+/******************************************************************************/
 __global__
-void magma_dlarf_kernel( int m, const double *dv, const double *dtau,
-                         double *dc, int lddc )
+void magma_dlarf_kernel(
+    int m, const double *dv, const double *dtau,
+    double *dc, int lddc )
 {
     if ( !MAGMA_D_EQUAL(*dtau, MAGMA_D_ZERO) ) {
         const int tx = threadIdx.x;
@@ -54,12 +53,12 @@ void magma_dlarf_kernel( int m, const double *dv, const double *dtau,
     }
 }
 
-//==============================================================================
-//==============================================================================
 
+/******************************************************************************/
 __global__
-void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
-                           double *dc, int lddc )
+void magma_dlarf_smkernel(
+    int m, int n, double *dv, double *dtau,
+    double *dc, int lddc )
 {
     if ( ! MAGMA_D_EQUAL(*dtau, MAGMA_D_ZERO) ) {
         const int i = threadIdx.x, col= threadIdx.y;
@@ -94,8 +93,8 @@ void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
     }
 }
 
-//==============================================================================
 
+/******************************************************************************/
 /*
     Apply a real elementary reflector H to a real M-by-N
     matrix C from the left. H is represented in the form
@@ -107,7 +106,7 @@ void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
     instead tau.
 
     This routine uses only one SM (block).
- */
+*/
 extern "C" void
 magma_dlarf_sm(
     magma_int_t m, magma_int_t n,
@@ -122,8 +121,9 @@ magma_dlarf_sm(
         <<< blocks, threads, 0, queue->cuda_stream() >>>
         ( m, n, dv, dtau, dc, lddc );
 }
-//==============================================================================
-/*
+
+
+/***************************************************************************//**
     Apply a real elementary reflector H to a real M-by-N
     matrix C from the left. H is represented in the form
           H = I - tau * v * v**H
@@ -132,9 +132,7 @@ magma_dlarf_sm(
 
     To apply H**H (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
-
- */
-
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dlarf_gpu(
     magma_int_t m,  magma_int_t n,
@@ -156,5 +154,3 @@ magma_dlarf_gpu(
 
     return MAGMA_SUCCESS;
 }
-
-//==============================================================================

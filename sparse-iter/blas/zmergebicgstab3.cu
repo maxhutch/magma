@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -93,7 +93,7 @@ magma_zbicgmerge1(
     dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
     magma_zbicgmerge1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( n, skp, v, r, p );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -168,7 +168,7 @@ magma_zbicgmerge2(
 
     magma_zbicgmerge2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( n, skp, r, v, s );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -262,7 +262,7 @@ magma_zbicgmerge3(
     dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
     magma_zbicgmerge3_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( n, skp, p, s, t, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -346,5 +346,5 @@ magma_zbicgmerge4(
     else
         printf("error: no kernel called\n");
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

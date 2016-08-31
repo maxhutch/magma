@@ -4562,7 +4562,7 @@ zheevd_gpu_JN = array([
 	[ 14000,  nan,   92.3358,  nan,  nan,  nan,  nan ],
 	[ 16000,  nan,  134.6948,  nan,  nan,  nan,  nan ],
 	[ 18000,  nan,  188.2464,  nan,  nan,  nan,  nan ],
-	[ 20000,  nan,    0.0004,  nan,  nan,  nan,  nan ],
+	[ 20000,  nan,       nan,  nan,  nan,  nan,  nan ],  # failed to run
 ])
 
 # numactl --interleave=all ../testing/testing_zheevd_gpu -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
@@ -4600,7 +4600,7 @@ zheevd_gpu_JV = array([
 	[ 14000,  nan,  117.6711,  nan,  nan,  nan,  nan ],
 	[ 16000,  nan,  169.1880,  nan,  nan,  nan,  nan ],
 	[ 18000,  nan,  238.5689,  nan,  nan,  nan,  nan ],
-	[ 20000,  nan,    0.0004,  nan,  nan,  nan,  nan ],
+	[ 20000,  nan,       nan,  nan,  nan,  nan,  nan ],  # failed to run
 ])
 
 # ------------------------------------------------------------

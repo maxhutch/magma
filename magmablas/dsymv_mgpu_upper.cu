@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        dsymv_upper.cu is nearly identical to dsymv_upper.cu, just change names and drop MAGMA_D_CONJ.
        
        dsymv_kernel_U (upper) in dsymv_upper.cu is very similar to
        dsymv_kernel_L (lower) in dsymv.cu; diff the two files to compare.
        
-       @generated from magmablas/zhemv_mgpu_upper.cu normal z -> d, Mon May  2 23:30:39 2016
+       @generated from magmablas/zhemv_mgpu_upper.cu, normal z -> d, Tue Aug 30 09:38:36 2016
        
        @author Mark Gates
 */
@@ -26,7 +26,7 @@
 #define half_NB_X    32
 
 
-/*******************************************************************************
+/***************************************************************************//**
     Upper case, compute block multiply, work = A*x, for any size n:
     
            [ (A11*x1 + A12*x2 + A13*x3)     ---                 ---    ]   [ A11    A12    A13 ]   [ x1 ]
@@ -48,7 +48,7 @@
     Columns past the right edge are explicitly ignored when loading.
     x values past the bottom are set to zero, thus, extra columns are zeroed
     when multiplying.
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 dsymv_kernel_U_mgpu(
     int n,
@@ -453,7 +453,7 @@ dsymv_kernel_U_mgpu(
 // end dsymv_kernel_U_mgpu
 
 
-/**************************************************************
+/***************************************************************************//**
     Upper case, sum up partial results per GPU.
     Each block sums one block row; each thread sums one row.
     
@@ -497,7 +497,7 @@ dsymv_kernel_U_mgpu(
                   [ *                 ]
                   [ x + x + x + *     ]
                   [ *                 ]
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 dsymv_kernel_U_mgpu_sum(
     int n,

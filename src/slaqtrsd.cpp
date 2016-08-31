@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from src/dlaqtrsd.cpp normal d -> s, Mon May  2 23:30:22 2016
+       @generated from src/dlaqtrsd.cpp, normal d -> s, Tue Aug 30 09:38:21 2016
 */
 #include "magma_internal.h"
 
@@ -14,7 +14,7 @@
 // Version 2 is MAGMA  slaln2, which is exactly the same, but thread safe.
 #define VERSION 2
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLAQTRSD is used by STREVC to solve one of the (singular) quasi-triangular
@@ -89,8 +89,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -k, the k-th argument had an illegal value
 
-    @ingroup magma_sgeev_aux
-    ********************************************************************/
+    @ingroup magma_laqtrsd
+*******************************************************************************/
 extern "C"
 magma_int_t magma_slaqtrsd(
     magma_trans_t trans, magma_int_t n,
@@ -164,7 +164,7 @@ magma_int_t magma_slaqtrsd(
         }
         smin = max( ulp*(fabsf(wr) + fabsf(wi)), smlnum );
         
-        //printf( "n %d, w %5.2f + %5.2fi\n", n, wr, wi );
+        //printf( "n %lld, w %5.2f + %5.2fi\n", (long long) n, wr, wi );
 
         if ( wi == c_zero ) {
             // ------------------------------------------------------------

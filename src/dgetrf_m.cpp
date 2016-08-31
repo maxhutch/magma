@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgetrf_m.cpp normal z -> d, Mon May  2 23:30:05 2016
+       @generated from src/zgetrf_m.cpp, normal z -> d, Tue Aug 30 09:38:06 2016
 
 */
 #include <cuda_runtime.h>
@@ -15,7 +15,7 @@
 #include "magma_timer.h"
 //#include "../testing/flops.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGETRF_m computes an LU factorization of a general M-by-N matrix A
@@ -76,8 +76,8 @@
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
-    @ingroup magma_dgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgetrf_m(
     magma_int_t ngpu,
@@ -140,8 +140,8 @@ magma_dgetrf_m(
         NB = max( nb, min( NB, atoi(ngr_nb_char) ) );
     //NB = 5*max(nb,32);
 
-    if ( ngpu0 > ceil((double)NB/nb) ) {
-        ngpu = (int)ceil((double)NB/nb);
+    if ( ngpu0 > magma_ceildiv( NB, nb )) {
+        ngpu = magma_ceildiv( NB, nb );
         h = 1+(2+ngpu);
         NB = (magma_int_t)(0.8*freeMem/maxm-h*nb);
     } else {
@@ -160,9 +160,9 @@ magma_dgetrf_m(
         NB = max( nb, (NB / nb) * nb); /* making sure it's devisable by nb (x64) */
     }
 
-    #ifdef CHECK_DGETRF_OOC
-    if ( NB != n ) printf( "      * running in out-core mode (n=%d, NB=%d, nb=%d, freeMem=%.2e).\n", n, NB, nb, (double)freeMem );
-    else           printf( "      * running in in-core mode  (n=%d, NB=%d, nb=%d, freeMem=%.2e).\n", n, NB, nb, (double)freeMem );
+    #ifdef CHECK_DGETRF_OO
+    if ( NB != n ) printf( "      * running in out-core mode (n=%lld, NB=%lld, nb=%lld, freeMem=%.2e).\n", (long long) n, (long long) NB, (long long) nb, (double) freeMem );
+    else           printf( "      * running in in-core mode  (n=%lld, NB=%lld, nb=%lld, freeMem=%.2e).\n", (long long) n, (long long) NB, (long long) nb, (double) freeMem );
     #endif
 
     if ( (nb <= 1) || (nb >= min(m,n)) ) {
@@ -201,8 +201,8 @@ magma_dgetrf_m(
             //s = min( max(m-I,0), N )/nb; /* number of small block-columns in this big panel */
     
             maxm = magma_roundup( M, 32 );
-            if ( ngpu0 > ceil((double)N/nb) ) {
-                ngpu = (int)ceil((double)N/nb);
+            if ( ngpu0 > magma_ceildiv( NB, nb ) ) {
+                ngpu = magma_ceildiv( NB, nb );
             } else {
                 ngpu = ngpu0;
             }
@@ -218,8 +218,8 @@ magma_dgetrf_m(
             
             /* upload the next big panel into GPU, transpose (A->A'), and pivot it */
             timer_start( time );
-            magmablas_dsetmatrix_transpose_mgpu(ngpu, queues, A(0,I), lda,
-                                                dAT, ldn_local, dA, maxm, M, N, nb);
+            magmablas_dsetmatrix_transpose_mgpu(ngpu, M, N, nb, A(0,I), lda,
+                                                dAT, ldn_local, dA, maxm, queues);
             for( d=0; d < ngpu; d++ ) {
                 magma_setdevice(d);
                 magma_queue_sync( queues[d][0] );
@@ -228,8 +228,8 @@ magma_dgetrf_m(
             time_set += timer_stop( time );
     
             timer_start( time );
-            /* == --------------------------------------------------------------- == */
-            /* == loop around the previous big-panels to update the new big-panel == */
+            /* --------------------------------------------------------------- */
+            /* loop around the previous big-panels to update the new big-panel */
             for( offset = 0; offset < min(m,I); offset += NB ) {
                 NBk = min( m-offset, NB );
                 /* start sending the first tile from the previous big-panels to gpus */
@@ -256,7 +256,7 @@ magma_dgetrf_m(
                                         queues[d][1] );
                 }
                 
-                /* == going through each block-column of previous big-panels == */
+                /* going through each block-column of previous big-panels */
                 for( jj=0, ib=offset/nb; jj < NBk; jj += nb, ib++ ) {
                     ii   = offset+jj;
                     rows = maxm - ii;
@@ -322,7 +322,8 @@ magma_dgetrf_m(
     
             /* get the current big panel to CPU from devices */
             timer_start( time );
-            magmablas_dgetmatrix_transpose_mgpu(ngpu, queues, dAT, ldn_local, A(0,I), lda, dA, maxm, M, N, nb);
+            magmablas_dgetmatrix_transpose_mgpu(ngpu, M, N, nb, dAT, ldn_local,
+                                                A(0,I), lda, dA, maxm, queues);
             for( d=0; d < ngpu; d++ ) {
                 magma_setdevice(d);
                 magma_queue_sync( queues[d][0] );
@@ -334,7 +335,7 @@ magma_dgetrf_m(
         //timer_stop( time_total );
         //flops = FLOPS_DGETRF( m, n ) / 1e9;
         //timer_printf(" memory-allocation time: %e\n", time_alloc );
-        //timer_printf(" NB=%d nb=%d\n", (int) NB, (int) nb );
+        //timer_printf(" NB=%lld nb=%lld\n", (long long) NB, (long long) nb );
         //timer_printf(" memcopy and transpose %e seconds\n", time_set );
         //timer_printf(" total time %e seconds\n", time_total );
         //timer_printf(" Performance %f GFlop/s, %f seconds without htod and dtoh\n",     flops / (time_comp),               time_comp               );
@@ -358,7 +359,7 @@ magma_dgetrf_m(
 } /* magma_dgetrf_m */
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" magma_int_t
 magma_dgetrf_piv(
     magma_int_t m, magma_int_t n, magma_int_t NB,
@@ -397,7 +398,7 @@ magma_dgetrf_piv(
 } /* magma_dgetrf_piv */
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" magma_int_t
 magma_dgetrf2_piv(
     magma_int_t m, magma_int_t n, magma_int_t start, magma_int_t end,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -171,7 +171,7 @@ zlange_one_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLANGE  returns the value of the one norm, or the Frobenius norm, or
@@ -235,8 +235,8 @@ zlange_one_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_lange
+*******************************************************************************/
 extern "C" double
 magmablas_zlange_q(
     magma_norm_t norm, magma_int_t m, magma_int_t n,

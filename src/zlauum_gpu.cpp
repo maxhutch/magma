@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hatem Ltaief
        @author Mark Gates
@@ -13,7 +13,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLAUUM computes the product U * U^H or L^H * L, where the triangular
@@ -56,8 +56,8 @@
       -     = 0: successful exit
       -     < 0: if INFO = -k, the k-th argument had an illegal value
 
-    @ingroup magma_zposv_aux
-    ***************************************************************************/
+    @ingroup magma_lauum
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zlauum_gpu(
     magma_uplo_t uplo, magma_int_t n,

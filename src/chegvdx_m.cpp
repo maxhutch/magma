@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from src/zhegvdx_m.cpp normal z -> c, Mon May  2 23:30:21 2016
+       @generated from src/zhegvdx_m.cpp, normal z -> c, Tue Aug 30 09:38:20 2016
 
 */
 #include "magma_internal.h"
@@ -17,7 +17,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHEGVD computes all the eigenvalues, and optionally, the eigenvectors
@@ -42,9 +42,9 @@
     @param[in]
     itype   INTEGER
             Specifies the problem type to be solved:
-            = 1:  A*x = (lambda)*B*x
-            = 2:  A*B*x = (lambda)*x
-            = 3:  B*A*x = (lambda)*x
+      -     = 1:  A*x = (lambda)*B*x
+      -     = 2:  A*B*x = (lambda)*x
+      -     = 3:  B*A*x = (lambda)*x
 
     @param[in]
     jobz    magma_vec_t
@@ -137,9 +137,9 @@
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= max( N + N*NB, 2*N + N**2 ).
+     -      If N <= 1,                      LWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LWORK >= N + N*NB.
+     -      If JOBZ = MagmaVec   and N > 1, LWORK >= max( N + N*NB, 2*N + N**2 ).
             NB can be obtained through magma_get_chetrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
@@ -155,9 +155,9 @@
     @param[in]
     lrwork  INTEGER
             The dimension of the array RWORK.
-            If N <= 1,                      LRWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
-            If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
+     -      If N <= 1,                      LRWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
+     -      If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
     \n
             If LRWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
@@ -172,9 +172,9 @@
     @param[in]
     liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                      LIWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
-            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+     -      If N <= 1,                      LIWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+     -      If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
@@ -210,8 +210,8 @@
     bounds reference to A - reported by Ralf Meyer).  Also corrected the
     description of INFO and the test on ITYPE. Sven, 16 Feb 05.
 
-    @ingroup magma_chegv_driver
-    ********************************************************************/
+    @ingroup magma_hegvdx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chegvdx_m(
     magma_int_t ngpu,
@@ -326,7 +326,7 @@ magma_chegvdx_m(
     if (n <= 128) {
         #ifdef ENABLE_DEBUG
         printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
+        printf("  warning matrix too small N=%lld NB=%lld, calling lapack on CPU\n", (long long) n, (long long) nb );
         printf("--------------------------------------------------------------\n");
         #endif
         lapackf77_chegvd(&itype, jobz_, uplo_,
@@ -389,7 +389,7 @@ magma_chegvdx_m(
                 trans = MagmaConjTrans;
             }
             #ifdef ENABLE_DEBUG
-            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu ---\n");
             #endif
             magmaFloatComplex *dA=NULL, *dB=NULL;
             magma_int_t ldda = magma_roundup( n, 32 );

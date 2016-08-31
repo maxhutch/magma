@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -67,7 +67,7 @@ zlascl_upper(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLASCL multiplies the M by N complex matrix A by the real scalar
@@ -130,8 +130,8 @@ zlascl_upper(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_lascl
+*******************************************************************************/
 extern "C" void
 magmablas_zlascl_q(
     magma_type_t type, magma_int_t kl, magma_int_t ku,

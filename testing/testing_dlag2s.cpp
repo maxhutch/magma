@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlag2c.cpp mixed zc -> ds, Mon May  2 23:31:07 2016
+       @generated from testing/testing_zlag2c.cpp, mixed zc -> ds, Tue Aug 30 09:39:04 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -25,7 +25,8 @@
 */
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     real_Double_t   gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double error, work[1];
@@ -35,7 +36,7 @@ int main( int argc, char** argv )
     magma_int_t ione = 1;
     magma_int_t m, n, lda, ldda, size, info;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
     float   *SA, *SR;
     double   *A,  *R;
     magmaFloat_ptr dSA;
@@ -56,13 +57,13 @@ int main( int argc, char** argv )
             gbytes = (real_Double_t) m*n * (sizeof(double) + sizeof(float)) / 1e9;
             size = ldda*n;  // ldda >= lda
             
-            TESTING_MALLOC_CPU(  SA, float,  size );
-            TESTING_MALLOC_CPU(   A, double, size );
-            TESTING_MALLOC_CPU(  SR, float,  size );
-            TESTING_MALLOC_CPU(   R, double, size );
+            TESTING_CHECK( magma_smalloc_cpu( &SA, size ));
+            TESTING_CHECK( magma_dmalloc_cpu( &A, size ));
+            TESTING_CHECK( magma_smalloc_cpu( &SR, size ));
+            TESTING_CHECK( magma_dmalloc_cpu( &R, size ));
             
-            TESTING_MALLOC_DEV( dSA, float,  size );
-            TESTING_MALLOC_DEV(  dA, double, size );
+            TESTING_CHECK( magma_smalloc( &dSA, size ));
+            TESTING_CHECK( magma_dmalloc( &dA, size ));
             
             lapackf77_dlarnv( &ione, ISEED, &size,  A );
             lapackf77_slarnv( &ione, ISEED, &size, SA );
@@ -78,8 +79,8 @@ int main( int argc, char** argv )
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
             if (info != 0) {
-                printf("lapackf77_dlag2s returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("lapackf77_dlag2s returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             /* ====================================================================
@@ -90,8 +91,8 @@ int main( int argc, char** argv )
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
-                printf("magmablas_dlag2s returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magmablas_dlag2s returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             magma_sgetmatrix( m, n, dSA, ldda, SR, lda, opts.queue );
@@ -103,8 +104,8 @@ int main( int argc, char** argv )
             blasf77_saxpy( &size, &s_neg_one, SA, &ione, SR, &ione );
             serror = lapackf77_slange( "Fro", &m, &n, SR, &lda, swork );
             
-            printf( "dlag2s %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                    (int) m, (int) n,
+            printf( "dlag2s %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                    (long long) m, (long long) n,
                     cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                     serror, (serror == 0 ? "ok" : "failed") );
             status += ! (serror == 0);
@@ -126,8 +127,8 @@ int main( int argc, char** argv )
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
             if (info != 0) {
-                printf("lapackf77_slag2d returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("lapackf77_slag2d returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             /* ====================================================================
@@ -140,8 +141,8 @@ int main( int argc, char** argv )
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0) {
-                printf("magmablas_slag2d returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magmablas_slag2d returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             magma_dgetmatrix( m, n, dA, ldda, R, lda, opts.queue );
@@ -153,19 +154,19 @@ int main( int argc, char** argv )
             blasf77_daxpy( &size, &c_neg_one, A, &ione, R, &ione );
             error = lapackf77_dlange( "Fro", &m, &n, R, &lda, work );
             
-            printf( "slag2d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                    (int) m, (int) n,
+            printf( "slag2d %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                    (long long) m, (long long) n,
                     cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                     error, (error == 0 ? "ok" : "failed") );
             status += ! (error == 0);
             
-            TESTING_FREE_CPU(  SA );
-            TESTING_FREE_CPU(   A );
-            TESTING_FREE_CPU(  SR );
-            TESTING_FREE_CPU(   R );
+            magma_free_cpu( SA );
+            magma_free_cpu( A );
+            magma_free_cpu( SR );
+            magma_free_cpu( R );
             
-            TESTING_FREE_DEV( dSA );
-            TESTING_FREE_DEV(  dA );
+            magma_free( dSA );
+            magma_free( dA );
             printf( "\n" );
             fflush( stdout );
         }
@@ -175,6 +176,6 @@ int main( int argc, char** argv )
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

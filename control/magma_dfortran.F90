@@ -65,9 +65,9 @@ integer function magmaf_get_dsygst_nb( n )
     integer :: n
 end function magmaf_get_dsygst_nb
 
-integer function magmaf_get_dsygst_nb_m( n )
+integer function magmaf_get_dsygst_m_nb( n )
     integer :: n
-end function magmaf_get_dsygst_nb_m
+end function magmaf_get_dsygst_m_nb
 
 integer function magmaf_get_dgebrd_nb( m, n )
     integer :: m, n

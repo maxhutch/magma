@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['sparse_2diter',['Sparse-Iter',['../sparse-iter.html',1,'']]]
+  ['running_20tests',['Running tests',['../testing.html',1,'']]]
 ];

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -15,7 +15,7 @@
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHETRD reduces a complex Hermitian matrix A to real symmetric
@@ -141,8 +141,8 @@
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
 
-    @ingroup magma_zheev_comp
-    ********************************************************************/
+    @ingroup magma_hetrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhetrd_mgpu(
     magma_int_t ngpu,
@@ -464,7 +464,7 @@ magma_zhetrd_mgpu(
     trace_finalize( "zhetrd.svg", "trace.css" );
     
     #ifdef PROFILE_SY2RK
-    printf( " n=%d nb=%d\n", n, nb );
+    printf( " n=%lld nb=%lld\n", (long long) n, (long long) nb );
     printf( " Time in ZLARFG: %.2e seconds\n", times[0] );
     //printf( " Time in ZHEMV : %.2e seconds\n", mv_time );
     printf( " Time in ZHER2K: %.2e seconds\n", up_time );
@@ -489,7 +489,7 @@ CLEANUP:
 } /* magma_zhetrd */
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 // TODO info is unused
 extern "C" magma_int_t
 magma_zhtodhe(
@@ -548,7 +548,7 @@ magma_zhtodhe(
 }
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" void
 magma_zher2k_mgpu(
     magma_int_t ngpu,

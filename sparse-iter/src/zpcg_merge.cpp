@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -122,7 +122,7 @@ magma_zpcg_merge(
         solver_par->res_vec[0] = (real_Double_t)nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }
@@ -148,7 +148,7 @@ magma_zpcg_merge(
     magma_zsetvector( 7, skp_h, 1, skp, 1, queue );
 
     //Chronometry
-    real_Double_t tempo1, tempo2, tempop1, tempop2;
+    real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
     
     solver_par->numiter = 0;
@@ -171,18 +171,15 @@ magma_zpcg_merge(
             CHECK( magma_zpcgmerge_xrbeta1( dofs, x->dval, r.dval, d.dval, z.dval, skp, queue ));
             // computes scalars and updates d
             CHECK( magma_zpcgmerge_xrbeta2( dofs, d1, d2, r.dval, r.dval, d.dval, skp, queue ));
-        } else {
-        
+        }
+        else {
             // updates x, r
             CHECK( magma_zpcgmerge_xrbeta1( dofs, x->dval, r.dval, d.dval, z.dval, skp, queue ));
             
             // preconditioner in between
-            tempop1 = magma_sync_wtime( queue );
             CHECK( magma_z_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
             CHECK( magma_z_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
             //            magma_zcopy( dofs, r.dval, 1, h.dval, 1 );  
-            tempop2 = magma_sync_wtime( queue );
-            precond_par->runtime += tempop2-tempop1;
             
             // computes scalars and updates d
             CHECK( magma_zpcgmerge_xrbeta2( dofs, d1, d2, h.dval, r.dval, d.dval, skp, queue ));

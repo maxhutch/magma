@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlascl_2x2.cu normal z -> s, Mon May  2 23:30:33 2016
+       @generated from magmablas/zlascl_2x2.cu, normal z -> s, Tue Aug 30 09:38:32 2016
 
        @author Ichitaro Yamazaki
 */
@@ -62,7 +62,7 @@ slascl_2x2_upper(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLASCL_2x2 scales the M by M real matrix A by the 2-by-2 pivot.
@@ -107,8 +107,8 @@ slascl_2x2_upper(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_lascl_2x2
+*******************************************************************************/
 extern "C" void
 magmablas_slascl_2x2_q(
     magma_type_t type, magma_int_t m,

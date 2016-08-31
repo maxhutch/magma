@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zpotrf_m.cpp normal z -> c, Mon May  2 23:30:02 2016
+       @generated from src/zpotrf_m.cpp, normal z -> c, Tue Aug 30 09:38:03 2016
 
 */
 #include <cuda_runtime.h>
@@ -15,7 +15,7 @@
 //#include "../testing/flops.h"
 #include "magma_timer.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CPOTRF computes the Cholesky factorization of a complex Hermitian
@@ -74,8 +74,8 @@
                    positive definite, and the factorization could not be
                    completed.
 
-    @ingroup magma_cposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_m(
     magma_int_t ngpu,
@@ -156,8 +156,8 @@ magma_cpotrf_m(
         NB = (NB/nb) * nb;   /* making sure it's devisable by nb   */
     }
     #ifdef CHECK_CPOTRF_OOC
-    if ( NB != n ) printf( "      * running in out-core mode (n=%d, NB=%d, nb=%d, lddla=%d, freeMem=%.2e).\n", n, NB, nb, lddla, (float)freeMem );
-    else           printf( "      * running in in-core mode  (n=%d, NB=%d, nb=%d, lddla=%d, freeMem=%.2e).\n", n, NB, nb, lddla, (float)freeMem );
+    if ( NB != n ) printf( "      * running in out-core mode (n=%lld, NB=%lld, nb=%lld, lddla=%lld, freeMem=%.2e).\n", (long long) n, (long long) NB, (long long) nb, (long long) lddla, (float) freeMem );
+    else           printf( "      * running in in-core mode  (n=%lld, NB=%lld, nb=%lld, lddla=%lld, freeMem=%.2e).\n", (long long) n, (long long) NB, (long long) nb, (long long) lddla, (float) freeMem );
     fflush(stdout);
     #endif
     for (d=0; d < ngpu; d++ ) {
@@ -451,7 +451,7 @@ magma_cpotrf_m(
     }
     magma_setdevice( orig_dev );
     
-    // timer_printf( "\n n=%d NB=%d nb=%d\n", (int) n, (int) NB, (int) nb );
+    // timer_printf( "\n n=%lld NB=%lld nb=%lld\n", (long long) n, (long long) NB, (long long) nb );
     // timer_printf( " Without memory allocation: %f / %f = %f GFlop/s\n",
     //               FLOPS_CPOTRF(n) / 1e9,  time_total,
     //               FLOPS_CPOTRF(n) / 1e9 / time_total );

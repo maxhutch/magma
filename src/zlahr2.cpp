@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -13,7 +13,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLAHR2 reduces the first NB columns of a complex general n-BY-(n-k+1)
@@ -141,8 +141,8 @@
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
 
-    @ingroup magma_zgeev_aux
-    ********************************************************************/
+    @ingroup magma_lahr2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zlahr2(
     magma_int_t n, magma_int_t k, magma_int_t nb,

@@ -1,19 +1,22 @@
 #include <assert.h>
 #include <stdio.h>
 
-#ifdef HAVE_CUBLAS
-#include <cublas_v2.h>
-#endif
-
 #include "magma_types.h"
 
-// ----------------------------------------
-// Convert LAPACK character constants to MAGMA constants.
-// This is a one-to-many mapping, requiring multiple translators
-// (e.g., "N" can be NoTrans or NonUnit or NoVec).
+// =============================================================================
+/// @addtogroup magma_const
+/// Convert LAPACK character constants to MAGMA constants.
+/// This is a one-to-many mapping, requiring multiple translators
+/// (e.g., "N" can be NoTrans or NonUnit or NoVec).
+/// Matching is case-insensitive.
+/// @{
+
 // These functions and cases are in the same order as the constants are
 // declared in magma_types.h
 
+/******************************************************************************/
+/// @retval MagmaFalse if lapack_char = 'N'
+/// @retval MagmaTrue  if lapack_char = 'Y'
 extern "C"
 magma_bool_t   magma_bool_const  ( char lapack_char )
 {
@@ -26,6 +29,9 @@ magma_bool_t   magma_bool_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaRowMajor if lapack_char = 'R'
+/// @retval MagmaColMajor if lapack_char = 'C'
 extern "C"
 magma_order_t  magma_order_const ( char lapack_char )
 {
@@ -38,6 +44,10 @@ magma_order_t  magma_order_const ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaNoTrans   if lapack_char = 'N'
+/// @retval MagmaTrans     if lapack_char = 'T'
+/// @retval MagmaConjTrans if lapack_char = 'C'
 extern "C"
 magma_trans_t  magma_trans_const ( char lapack_char )
 {
@@ -51,6 +61,10 @@ magma_trans_t  magma_trans_const ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaUpper if lapack_char = 'U'
+/// @retval MagmaLower if lapack_char = 'L'
+/// @retval MagmaFull  otherwise
 extern "C"
 magma_uplo_t   magma_uplo_const  ( char lapack_char )
 {
@@ -61,6 +75,9 @@ magma_uplo_t   magma_uplo_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaNonUnit if lapack_char = 'N'
+/// @retval MagmaUnit    if lapack_char = 'U'
 extern "C"
 magma_diag_t   magma_diag_const  ( char lapack_char )
 {
@@ -73,6 +90,10 @@ magma_diag_t   magma_diag_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaLeft      if lapack_char = 'L'
+/// @retval MagmaRight     if lapack_char = 'R'
+/// @retval MagmaBothSides if lapack_char = 'B'
 extern "C"
 magma_side_t   magma_side_const  ( char lapack_char )
 {
@@ -86,6 +107,12 @@ magma_side_t   magma_side_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaOneNorm       if lapack_char = '1' or 'O'
+/// @retval MagmaTwoNorm       if lapack_char = '2'
+/// @retval MagmaFrobeniusNorm if lapack_char = 'F' or 'E'
+/// @retval MagmaInfNorm       if lapack_char = 'I'
+/// @retval MagmaMaxNorm       if lapack_char = 'M'
 extern "C"
 magma_norm_t   magma_norm_const  ( char lapack_char )
 {
@@ -104,6 +131,10 @@ magma_norm_t   magma_norm_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaDistUniform   if lapack_char = 'U'
+/// @retval MagmaDistSymmetric if lapack_char = 'S'
+/// @retval MagmaDistNormal    if lapack_char = 'N'
 extern "C"
 magma_dist_t   magma_dist_const  ( char lapack_char )
 {
@@ -117,6 +148,11 @@ magma_dist_t   magma_dist_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaHermGeev   if lapack_char = 'H'
+/// @retval MagmaHermPoev   if lapack_char = 'P'
+/// @retval MagmaNonsymPosv if lapack_char = 'N'
+/// @retval MagmaSymPosv    if lapack_char = 'S'
 extern "C"
 magma_sym_t    magma_sym_const   ( char lapack_char )
 {
@@ -131,6 +167,15 @@ magma_sym_t    magma_sym_const   ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaNoPacking     if lapack_char = 'N'
+/// @retval MagmaPackSubdiag   if lapack_char = 'U'
+/// @retval MagmaPackSupdiag   if lapack_char = 'L'
+/// @retval MagmaPackColumn    if lapack_char = 'C'
+/// @retval MagmaPackRow       if lapack_char = 'R'
+/// @retval MagmaPackLowerBand if lapack_char = 'B'
+/// @retval MagmaPackUpeprBand if lapack_char = 'Q'
+/// @retval MagmaPackAll       if lapack_char = 'Z'
 extern "C"
 magma_pack_t   magma_pack_const  ( char lapack_char )
 {
@@ -149,6 +194,13 @@ magma_pack_t   magma_pack_const  ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaNoVec        if lapack_char = 'N'
+/// @retval MagmaVec          if lapack_char = 'V'
+/// @retval MagmaIVec         if lapack_char = 'I'
+/// @retval MagmaAllVec       if lapack_char = 'A'
+/// @retval MagmaSomeVec      if lapack_char = 'S'
+/// @retval MagmaOverwriteVec if lapack_char = 'O'
 extern "C"
 magma_vec_t    magma_vec_const   ( char lapack_char )
 {
@@ -165,6 +217,10 @@ magma_vec_t    magma_vec_const   ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaRangeAll if lapack_char = 'A'
+/// @retval MagmaRangeV   if lapack_char = 'V'
+/// @retval MagmaRangeI   if lapack_char = 'I'
 extern "C"
 magma_range_t  magma_range_const ( char lapack_char )
 {
@@ -178,6 +234,9 @@ magma_range_t  magma_range_const ( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaQ if lapack_char = 'Q'
+/// @retval MagmaP if lapack_char = 'P'
 extern "C"
 magma_vect_t magma_vect_const( char lapack_char )
 {
@@ -190,6 +249,9 @@ magma_vect_t magma_vect_const( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaForward  if lapack_char = 'F'
+/// @retval MagmaBackward if lapack_char = 'B'
 extern "C"
 magma_direct_t magma_direct_const( char lapack_char )
 {
@@ -202,6 +264,9 @@ magma_direct_t magma_direct_const( char lapack_char )
     }
 }
 
+/******************************************************************************/
+/// @retval MagmaColumnwise if lapack_char = 'C'
+/// @retval MagmaRowwise    if lapack_char = 'R'
 extern "C"
 magma_storev_t magma_storev_const( char lapack_char )
 {
@@ -214,9 +279,23 @@ magma_storev_t magma_storev_const( char lapack_char )
     }
 }
 
+// =============================================================================
+/// @}
+// end group magma_const
 
-// ----------------------------------------
-// Convert MAGMA constants to LAPACK constants.
+
+// =============================================================================
+/// @addtogroup lapack_const
+/// Convert MAGMA constants to LAPACK constants.
+/// Though LAPACK only cares about the first character,
+/// the string is generally descriptive, such as "Upper".
+/// @{
+
+// The magma2lapack_constants table has an entry for each MAGMA constant,
+// enumerated on the right, with a corresponding LAPACK string.
+// The lapack_*_const() functions return entries from this table.
+// The lapacke_*_const() functions defined in magma_types.h
+// return a single character (e.g., 'U' for "Upper").
 
 const char *magma2lapack_constants[] =
 {
@@ -241,7 +320,7 @@ const char *magma2lapack_constants[] =
     "", "", "", "", "", "", "",              // 114-120
     "Upper",                                 // 121: MagmaUpper
     "Lower",                                 // 122: MagmaLower
-    "GFull",                                 // 123: MagmaFull; see lascl for "G"
+    "General",                               // 123: MagmaFull; see lascl for "G"
     "", "", "", "", "", "", "",              // 124-130
     "Non-unit",                              // 131: MagmaNonUnit
     "Unit",                                  // 132: MagmaUnit
@@ -318,6 +397,8 @@ const char *magma2lapack_constants[] =
     // Remember to add a comma!
 };
 
+/******************************************************************************/
+/// maps any MAGMA constant to its corresponding LAPACK string
 extern "C"
 const char* lapack_const_str( int magma_const )
 {
@@ -326,6 +407,8 @@ const char* lapack_const_str( int magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_bool_const()
 extern "C"
 const char* lapack_bool_const( magma_bool_t magma_const )
 {
@@ -334,6 +417,8 @@ const char* lapack_bool_const( magma_bool_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_order_const()
 extern "C"
 const char* lapack_order_const( magma_order_t magma_const )
 {
@@ -342,6 +427,8 @@ const char* lapack_order_const( magma_order_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_trans_const()
 extern "C"
 const char* lapack_trans_const( magma_trans_t magma_const )
 {
@@ -350,6 +437,8 @@ const char* lapack_trans_const( magma_trans_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_uplo_const()
 extern "C"
 const char* lapack_uplo_const ( magma_uplo_t magma_const )
 {
@@ -358,6 +447,8 @@ const char* lapack_uplo_const ( magma_uplo_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_diag_const()
 extern "C"
 const char* lapack_diag_const ( magma_diag_t magma_const )
 {
@@ -366,6 +457,8 @@ const char* lapack_diag_const ( magma_diag_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_side_const()
 extern "C"
 const char* lapack_side_const ( magma_side_t magma_const )
 {
@@ -374,6 +467,8 @@ const char* lapack_side_const ( magma_side_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_norm_const()
 extern "C"
 const char* lapack_norm_const  ( magma_norm_t   magma_const )
 {
@@ -382,6 +477,8 @@ const char* lapack_norm_const  ( magma_norm_t   magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_dist_const()
 extern "C"
 const char* lapack_dist_const  ( magma_dist_t   magma_const )
 {
@@ -390,6 +487,8 @@ const char* lapack_dist_const  ( magma_dist_t   magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_sym_const()
 extern "C"
 const char* lapack_sym_const   ( magma_sym_t    magma_const )
 {
@@ -398,6 +497,8 @@ const char* lapack_sym_const   ( magma_sym_t    magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_pack_const()
 extern "C"
 const char* lapack_pack_const  ( magma_pack_t   magma_const )
 {
@@ -406,6 +507,8 @@ const char* lapack_pack_const  ( magma_pack_t   magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_vec_const()
 extern "C"
 const char* lapack_vec_const   ( magma_vec_t    magma_const )
 {
@@ -414,6 +517,8 @@ const char* lapack_vec_const   ( magma_vec_t    magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_range_const()
 extern "C"
 const char* lapack_range_const ( magma_range_t  magma_const )
 {
@@ -422,6 +527,8 @@ const char* lapack_range_const ( magma_range_t  magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_vect_const()
 extern "C"
 const char* lapack_vect_const( magma_vect_t magma_const )
 {
@@ -430,6 +537,8 @@ const char* lapack_vect_const( magma_vect_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_direct_const()
 extern "C"
 const char* lapack_direct_const( magma_direct_t magma_const )
 {
@@ -438,6 +547,8 @@ const char* lapack_direct_const( magma_direct_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// inverse of magma_storev_const()
 extern "C"
 const char* lapack_storev_const( magma_storev_t magma_const )
 {
@@ -446,11 +557,22 @@ const char* lapack_storev_const( magma_storev_t magma_const )
     return magma2lapack_constants[ magma_const ];
 }
 
+// =============================================================================
+/// @}
+// end group lapack_const
 
-// ----------------------------------------
-// Convert magma constants to clBLAS constants.
 
 #ifdef HAVE_clBLAS
+// =============================================================================
+/// @addtogroup clblas_const
+/// Convert MAGMA constants to AMD clBLAS constants.
+/// Available if HAVE_clBLAS was defined when MAGMA was compiled.
+/// TODO: we do not currently provide inverse converters (clBLAS => MAGMA).
+/// @{
+
+// The magma2clblas_constants table has an entry for each MAGMA constant,
+// enumerated on the right, with a corresponding clBLAS constant.
+
 const int magma2clblas_constants[] =
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -482,6 +604,9 @@ const int magma2clblas_constants[] =
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
+/******************************************************************************/
+/// @retval clblasRowMajor    if magma_const = MagmaRowMajor
+/// @retval clblasColumnMajor if magma_const = MagmaColMajor
 extern "C"
 clblasOrder       clblas_order_const( magma_order_t magma_const )
 {
@@ -490,6 +615,10 @@ clblasOrder       clblas_order_const( magma_order_t magma_const )
     return (clblasOrder)     magma2clblas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval clblasNoTrans   if magma_const = MagmaNoTrans
+/// @retval clblasTrans     if magma_const = MagmaTrans
+/// @retval clblasConjTrans if magma_const = MagmaConjTrans
 extern "C"
 clblasTranspose   clblas_trans_const( magma_trans_t magma_const )
 {
@@ -498,6 +627,9 @@ clblasTranspose   clblas_trans_const( magma_trans_t magma_const )
     return (clblasTranspose) magma2clblas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval clblasUpper if magma_const = MagmaUpper
+/// @retval clblasLower if magma_const = MagmaLower
 extern "C"
 clblasUplo        clblas_uplo_const ( magma_uplo_t magma_const )
 {
@@ -506,6 +638,9 @@ clblasUplo        clblas_uplo_const ( magma_uplo_t magma_const )
     return (clblasUplo)      magma2clblas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval clblasNonUnit if magma_const = MagmaNonUnit
+/// @retval clblasUnit    if magma_const = MagmaUnit
 extern "C"
 clblasDiag        clblas_diag_const ( magma_diag_t magma_const )
 {
@@ -514,6 +649,9 @@ clblasDiag        clblas_diag_const ( magma_diag_t magma_const )
     return (clblasDiag)      magma2clblas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval clblasLeft  if magma_const = MagmaLeft
+/// @retval clblasRight if magma_const = MagmaRight
 extern "C"
 clblasSide        clblas_side_const ( magma_side_t magma_const )
 {
@@ -521,13 +659,24 @@ clblasSide        clblas_side_const ( magma_side_t magma_const )
     assert( magma_const <= MagmaRight );
     return (clblasSide)      magma2clblas_constants[ magma_const ];
 }
+
+// =============================================================================
+/// @}
+// end group clblas_const
 #endif  // HAVE_clBLAS
 
 
-// ----------------------------------------
-// Convert magma constants to Nvidia CUBLAS constants.
-
 #ifdef HAVE_CUBLAS
+// =============================================================================
+/// @addtogroup cublas_const
+/// Convert MAGMA constants to NVIDIA cuBLAS constants.
+/// Available if HAVE_CUBLAS was defined when MAGMA was compiled.
+/// TODO: we do not currently provide inverse converters (cuBLAS => MAGMA).
+/// @{
+
+// The magma2cublas_constants table has an entry for each MAGMA constant,
+// enumerated on the right, with a corresponding cuBLAS constant.
+
 const int magma2cublas_constants[] =
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -559,6 +708,10 @@ const int magma2cublas_constants[] =
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
+/******************************************************************************/
+/// @retval CUBLAS_OP_N if magma_const = MagmaNoTrans
+/// @retval CUBLAS_OP_T if magma_const = MagmaTrans
+/// @retval CUBLAS_OP_C if magma_const = MagmaConjTrans
 extern "C"
 cublasOperation_t    cublas_trans_const ( magma_trans_t magma_const )
 {
@@ -567,6 +720,9 @@ cublasOperation_t    cublas_trans_const ( magma_trans_t magma_const )
     return (cublasOperation_t)  magma2cublas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval CUBLAS_FILL_MODE_UPPER if magma_const = MagmaUpper
+/// @retval CUBLAS_FILL_MODE_LOWER if magma_const = MagmaLower
 extern "C"
 cublasFillMode_t     cublas_uplo_const  ( magma_uplo_t magma_const )
 {
@@ -575,6 +731,9 @@ cublasFillMode_t     cublas_uplo_const  ( magma_uplo_t magma_const )
     return (cublasFillMode_t)   magma2cublas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval CUBLAS_DIAG_NONUNIT if magma_const = MagmaNonUnit
+/// @retval CUBLAS_DIAG_UNIT    if magma_const = MagmaUnit
 extern "C"
 cublasDiagType_t     cublas_diag_const  ( magma_diag_t magma_const )
 {
@@ -583,6 +742,9 @@ cublasDiagType_t     cublas_diag_const  ( magma_diag_t magma_const )
     return (cublasDiagType_t)   magma2cublas_constants[ magma_const ];
 }
 
+/******************************************************************************/
+/// @retval CUBLAS_SIDE_LEFT  if magma_const = MagmaLeft
+/// @retval CUBLAS_SIDE_RIGHT if magma_const = MagmaRight
 extern "C"
 cublasSideMode_t     cublas_side_const  ( magma_side_t magma_const )
 {
@@ -590,15 +752,26 @@ cublasSideMode_t     cublas_side_const  ( magma_side_t magma_const )
     assert( magma_const <= MagmaRight );
     return (cublasSideMode_t)   magma2cublas_constants[ magma_const ];
 }
+
+// =============================================================================
+/// @}
 #endif  // HAVE_CUBLAS
 
 
-// ----------------------------------------
-// Convert magma constants to CBLAS constants.
-// We assume that magma constants are consistent with cblas constants,
-// so verify that with asserts.
-
 #ifdef HAVE_CBLAS
+// =============================================================================
+/// @addtogroup cblas_const
+/// Convert MAGMA constants to CBLAS constants.
+/// Available if HAVE_CBLAS was defined when MAGMA was compiled.
+/// MAGMA constants have the same value as CBLAS constants,
+/// which these routines verify by asserts.
+/// TODO: we do not currently provide inverse converters (CBLAS => MAGMA),
+/// though it is a trivial cast since the values are the same.
+/// @{
+
+/******************************************************************************/
+/// @retval CblasRowMajor if magma_const = MagmaRowMajor
+/// @retval CblasColMajor if magma_const = MagmaColMajor
 extern "C"
 enum CBLAS_ORDER     cblas_order_const  ( magma_order_t magma_const )
 {
@@ -608,6 +781,10 @@ enum CBLAS_ORDER     cblas_order_const  ( magma_order_t magma_const )
     return (enum CBLAS_ORDER)     magma_const;
 }
 
+/******************************************************************************/
+/// @retval CblasNoTrans   if magma_const = MagmaNoTrans
+/// @retval CblasTrans     if magma_const = MagmaTrans
+/// @retval CblasConjTrans if magma_const = MagmaConjTrans
 extern "C"
 enum CBLAS_TRANSPOSE cblas_trans_const  ( magma_trans_t magma_const )
 {
@@ -617,6 +794,9 @@ enum CBLAS_TRANSPOSE cblas_trans_const  ( magma_trans_t magma_const )
     return (enum CBLAS_TRANSPOSE) magma_const;
 }
 
+/******************************************************************************/
+/// @retval CblasUpper if magma_const = MagmaUpper
+/// @retval CblasLower if magma_const = MagmaLower
 extern "C"
 enum CBLAS_UPLO      cblas_uplo_const   ( magma_uplo_t magma_const )
 {
@@ -626,6 +806,9 @@ enum CBLAS_UPLO      cblas_uplo_const   ( magma_uplo_t magma_const )
     return (enum CBLAS_UPLO)      magma_const;
 }
 
+/******************************************************************************/
+/// @retval CblasNonUnit if magma_const = MagmaNonUnit
+/// @retval CblasUnit    if magma_const = MagmaUnit
 extern "C"
 enum CBLAS_DIAG      cblas_diag_const   ( magma_diag_t magma_const )
 {
@@ -635,6 +818,9 @@ enum CBLAS_DIAG      cblas_diag_const   ( magma_diag_t magma_const )
     return (enum CBLAS_DIAG)      magma_const;
 }
 
+/******************************************************************************/
+/// @retval CblasLeft  if magma_const = MagmaLeft
+/// @retval CblasRight if magma_const = MagmaRight
 extern "C"
 enum CBLAS_SIDE      cblas_side_const   ( magma_side_t magma_const )
 {
@@ -643,4 +829,9 @@ enum CBLAS_SIDE      cblas_side_const   ( magma_side_t magma_const )
     assert( (int)MagmaLeft == CblasLeft );
     return (enum CBLAS_SIDE)      magma_const;
 }
+
+// =============================================================================
+/// @}
+// end group cblas_const
+
 #endif  // HAVE_CBLAS

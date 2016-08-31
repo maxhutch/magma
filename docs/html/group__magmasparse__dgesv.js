@@ -20,6 +20,8 @@ var group__magmasparse__dgesv =
     [ "magma_dpbicgstab_merge", "group__magmasparse__dgesv.html#ga8653c16d136872fc7e66c264d279e89f", null ],
     [ "magma_dpcgs", "group__magmasparse__dgesv.html#ga82a01132ff11e07c410e5e38781a1be1", null ],
     [ "magma_dpcgs_merge", "group__magmasparse__dgesv.html#ga4375af754ee8abea4e9fd75139360e04", null ],
+    [ "magma_dpqmr", "group__magmasparse__dgesv.html#ga84104af9ddaaa9f0aeff163a332e4acf", null ],
+    [ "magma_dpqmr_merge", "group__magmasparse__dgesv.html#ga0a21e27c7b012d055434be78a41ef11a", null ],
     [ "magma_dptfqmr_merge", "group__magmasparse__dgesv.html#ga572d8a9197fc250b6da3e988fbb9b968", null ],
     [ "magma_dqmr", "group__magmasparse__dgesv.html#gaccb1e58036113d87bc36e218e4e1feed", null ],
     [ "magma_dqmr_merge", "group__magmasparse__dgesv.html#ga2ef4133fef99a3f60c998ec2cfc6a497", null ],

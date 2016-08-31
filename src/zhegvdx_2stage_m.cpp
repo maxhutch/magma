@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -19,7 +19,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHEGVDX_2STAGE computes all the eigenvalues, and optionally, the eigenvectors
@@ -45,9 +45,9 @@
     @param[in]
     itype   INTEGER
             Specifies the problem type to be solved:
-            = 1:  A*x = (lambda)*B*x
-            = 2:  A*B*x = (lambda)*x
-            = 3:  B*A*x = (lambda)*x
+      -     = 1:  A*x = (lambda)*B*x
+      -     = 2:  A*B*x = (lambda)*x
+      -     = 3:  B*A*x = (lambda)*x
 
     @param[in]
     jobz    magma_vec_t
@@ -81,8 +81,9 @@
             On exit, if JOBZ = MagmaVec, then if INFO = 0, A contains the
             matrix Z of eigenvectors.  The eigenvectors are normalized
             as follows:
-            if ITYPE = 1 or 2, Z**H*B*Z = I;
-            if ITYPE = 3, Z**H*inv(B)*Z = I.
+      -     If ITYPE = 1 or 2, Z**H * B * Z = I.
+      -     If ITYPE = 3, Z**H * inv(B) * Z = I.
+    \n
             If JOBZ = MagmaNoVec, then on exit the upper triangle (if UPLO=MagmaUpper)
             or the lower triangle (if UPLO=MagmaLower) of A, including the
             diagonal, is destroyed.
@@ -140,14 +141,14 @@
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                      LWORK >= 1.
-            For COMPLEX ([cz]hegvdx):
-                If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
-                If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
-            For REAL ([sd]sygvdx):
-                If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + 2*N + N*NB.
-                If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 1 + 6*N + 2*N**2.
-            where LQ2 is the size needed to store the Q2 matrix
+      -     If N <= 1,                      LWORK >= 1.
+      -     For COMPLEX ([cz]hegvdx):
+        +       If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
+        +       If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
+      -     For REAL ([sd]sygvdx):
+        +       If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + 2*N + N*NB.
+        +       If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 1 + 6*N + 2*N**2.
+      -     where LQ2 is the size needed to store the Q2 matrix
             as returned by magma_bulge_get_lq2.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
@@ -156,28 +157,28 @@
             the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
+*/
 #ifdef COMPLEX
+/**
     @param[out]
     rwork   (workspace) DOUBLE PRECISION array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
-    \n
-            COMPLEX [cz]hegvdx only
 
     @param[in]
     lrwork  INTEGER
             The dimension of the array RWORK.
-            If N <= 1,                      LRWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
-            If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
+     -      If N <= 1,                      LRWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
+     -      If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
     \n
             If LRWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
             and IWORK arrays, returns these values as the first entries
             of the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
-    \n
-            COMPLEX [cz]hegvdx only
-#endif
+*/
+#endif // COMPLEX
+/**
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
@@ -186,9 +187,9 @@
     @param[in]
     liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                      LIWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
-            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+     -      If N <= 1,                      LIWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+     -      If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
@@ -224,8 +225,8 @@
     bounds reference to A - reported by Ralf Meyer).  Also corrected the
     description of INFO and the test on ITYPE. Sven, 16 Feb 05.
 
-    @ingroup magma_zhegv_driver
-    ********************************************************************/
+    @ingroup magma_hegvdx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhegvdx_2stage_m(
     magma_int_t ngpu,
@@ -429,7 +430,7 @@ magma_zhegvdx_2stage_m(
                 trans = MagmaConjTrans;
             }
             #ifdef ENABLE_DEBUG
-            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu ---\n");
             #endif
             magmaDoubleComplex *dA=NULL, *dB=NULL;
             magma_int_t ldda = magma_roundup( n, 32 );

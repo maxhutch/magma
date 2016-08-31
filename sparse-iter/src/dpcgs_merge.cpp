@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zpcgs_merge.cpp normal z -> d, Mon May  2 23:31:00 2016
+       @generated from sparse-iter/src/zpcgs_merge.cpp, normal z -> d, Tue Aug 30 09:38:56 2016
 */
 
 #include "magmasparse_internal.h"
@@ -120,7 +120,7 @@ magma_dpcgs_merge(
     }
 
     //Chronometry
-    real_Double_t tempo1, tempo2, tempop1, tempop2;
+    real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
     
     solver_par->numiter = 0;
@@ -162,11 +162,8 @@ magma_dpcgs_merge(
             // p = r
         }
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, p, &rt, precond_par, queue ));
         CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, rt, &p_hat, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
         
         CHECK( magma_d_spmv( c_one, A, p_hat, c_zero, v_hat, queue ));   // v = A p
         solver_par->spmv_count++;
@@ -185,11 +182,8 @@ magma_dpcgs_merge(
         // t = u + q
         
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, t, &rt, precond_par, queue ));
         CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, rt, &u_hat, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
         
         CHECK( magma_d_spmv( c_one, A, u_hat, c_zero, t, queue ));   // t = A u_hat
         solver_par->spmv_count++;

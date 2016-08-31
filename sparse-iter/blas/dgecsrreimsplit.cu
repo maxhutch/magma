@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zgecsrreimsplit.cu normal z -> d, Mon May  2 23:30:49 2016
+       @generated from sparse-iter/blas/zgecsrreimsplit.cu, normal z -> d, Tue Aug 30 09:38:46 2016
 
 */
 #include "magmasparse_internal.h"
@@ -73,11 +73,9 @@ magma_dgecsrreimsplit(
     magma_d_matrix *ImA,
     magma_queue_t queue )
 {
-    
     magma_dmtransfer( A, ReA, Magma_DEV, Magma_DEV, queue );
     magma_dmtransfer( A, ImA, Magma_DEV, Magma_DEV, queue );
-    
-    
+        
     int m = A.num_rows;
     int n = A.num_cols;
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );

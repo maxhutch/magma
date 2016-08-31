@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -110,55 +109,55 @@ $(document).ready(function(){initNavTree('group__magmasparse__dposv.html','');})
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">double precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__solvers.html">Sparse linear systems</a> &raquo; <a class="el" href="group__sparse__posv.html">Symmetric positive definite solver</a></div></div>  </div>
+<div class="title">double precision<div class="ingroups"><a class="el" href="group__sparse.html">Sparse</a> &raquo; <a class="el" href="group__sparse__solvers.html">Sparse linear systems</a> &raquo; <a class="el" href="group__sparse__posv.html">Symmetric/Hermitian positive definite</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga06efa9871463e7f9556cae40f6b53f02"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga06efa9871463e7f9556cae40f6b53f02">magma_dbpcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga06efa9871463e7f9556cae40f6b53f02"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga06efa9871463e7f9556cae40f6b53f02">magma_dbpcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga06efa9871463e7f9556cae40f6b53f02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga06efa9871463e7f9556cae40f6b53f02">More...</a><br /></td></tr>
 <tr class="separator:ga06efa9871463e7f9556cae40f6b53f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab2c710f7700e0f76d278d9a73de5d865"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gab2c710f7700e0f76d278d9a73de5d865">magma_dcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gab2c710f7700e0f76d278d9a73de5d865"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gab2c710f7700e0f76d278d9a73de5d865">magma_dcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gab2c710f7700e0f76d278d9a73de5d865"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#gab2c710f7700e0f76d278d9a73de5d865">More...</a><br /></td></tr>
 <tr class="separator:gab2c710f7700e0f76d278d9a73de5d865"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga10fb854babe15b89e38840870767737e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga10fb854babe15b89e38840870767737e">magma_dcg_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga10fb854babe15b89e38840870767737e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga10fb854babe15b89e38840870767737e">magma_dcg_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga10fb854babe15b89e38840870767737e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real matrix A.  <a href="#ga10fb854babe15b89e38840870767737e">More...</a><br /></td></tr>
 <tr class="separator:ga10fb854babe15b89e38840870767737e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga131daf8d0e65b19edd502f0687938039"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga131daf8d0e65b19edd502f0687938039">magma_dcg_res</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga131daf8d0e65b19edd502f0687938039"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga131daf8d0e65b19edd502f0687938039">magma_dcg_res</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga131daf8d0e65b19edd502f0687938039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga131daf8d0e65b19edd502f0687938039">More...</a><br /></td></tr>
 <tr class="separator:ga131daf8d0e65b19edd502f0687938039"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gada7026613ae08012af0218790b283876"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gada7026613ae08012af0218790b283876">magma_dcgs_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gada7026613ae08012af0218790b283876"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gada7026613ae08012af0218790b283876">magma_dcgs_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gada7026613ae08012af0218790b283876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#gada7026613ae08012af0218790b283876">More...</a><br /></td></tr>
 <tr class="separator:gada7026613ae08012af0218790b283876"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2c5b11b95c23ed4b81565e7c2e7d287d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga2c5b11b95c23ed4b81565e7c2e7d287d">magma_didr</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga2c5b11b95c23ed4b81565e7c2e7d287d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga2c5b11b95c23ed4b81565e7c2e7d287d">More...</a><br /></td></tr>
+<tr class="memitem:ga2c5b11b95c23ed4b81565e7c2e7d287d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga2c5b11b95c23ed4b81565e7c2e7d287d">magma_didr</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga2c5b11b95c23ed4b81565e7c2e7d287d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A.  <a href="#ga2c5b11b95c23ed4b81565e7c2e7d287d">More...</a><br /></td></tr>
 <tr class="separator:ga2c5b11b95c23ed4b81565e7c2e7d287d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafcb119d0539ec86d27105e44be8dab5b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gafcb119d0539ec86d27105e44be8dab5b">magma_didr_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gafcb119d0539ec86d27105e44be8dab5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#gafcb119d0539ec86d27105e44be8dab5b">More...</a><br /></td></tr>
+<tr class="memitem:gafcb119d0539ec86d27105e44be8dab5b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gafcb119d0539ec86d27105e44be8dab5b">magma_didr_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:gafcb119d0539ec86d27105e44be8dab5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A.  <a href="#gafcb119d0539ec86d27105e44be8dab5b">More...</a><br /></td></tr>
 <tr class="separator:gafcb119d0539ec86d27105e44be8dab5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3221fa1f3d171ee19daf64a8b3346812"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga3221fa1f3d171ee19daf64a8b3346812">magma_didr_strms</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga3221fa1f3d171ee19daf64a8b3346812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga3221fa1f3d171ee19daf64a8b3346812">More...</a><br /></td></tr>
+<tr class="memitem:ga3221fa1f3d171ee19daf64a8b3346812"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga3221fa1f3d171ee19daf64a8b3346812">magma_didr_strms</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga3221fa1f3d171ee19daf64a8b3346812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A.  <a href="#ga3221fa1f3d171ee19daf64a8b3346812">More...</a><br /></td></tr>
 <tr class="separator:ga3221fa1f3d171ee19daf64a8b3346812"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6682994ecc0c4ddcd899868890afef4c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga6682994ecc0c4ddcd899868890afef4c">magma_dpcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga6682994ecc0c4ddcd899868890afef4c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga6682994ecc0c4ddcd899868890afef4c">magma_dpcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga6682994ecc0c4ddcd899868890afef4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga6682994ecc0c4ddcd899868890afef4c">More...</a><br /></td></tr>
 <tr class="separator:ga6682994ecc0c4ddcd899868890afef4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga410fbfe8e318ee1993aa46516ef0471c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga410fbfe8e318ee1993aa46516ef0471c">magma_dpcg_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga410fbfe8e318ee1993aa46516ef0471c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga410fbfe8e318ee1993aa46516ef0471c">magma_dpcg_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga410fbfe8e318ee1993aa46516ef0471c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real matrix A.  <a href="#ga410fbfe8e318ee1993aa46516ef0471c">More...</a><br /></td></tr>
 <tr class="separator:ga410fbfe8e318ee1993aa46516ef0471c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1d0fcafb465d4878df688ff0e449a55b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga1d0fcafb465d4878df688ff0e449a55b">magma_dpidr</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga1d0fcafb465d4878df688ff0e449a55b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga1d0fcafb465d4878df688ff0e449a55b">magma_dpidr</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga1d0fcafb465d4878df688ff0e449a55b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga1d0fcafb465d4878df688ff0e449a55b">More...</a><br /></td></tr>
 <tr class="separator:ga1d0fcafb465d4878df688ff0e449a55b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad1bece0825584a7d81f8f8b3480c945a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gad1bece0825584a7d81f8f8b3480c945a">magma_dpidr_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:gad1bece0825584a7d81f8f8b3480c945a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#gad1bece0825584a7d81f8f8b3480c945a">magma_dpidr_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gad1bece0825584a7d81f8f8b3480c945a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#gad1bece0825584a7d81f8f8b3480c945a">More...</a><br /></td></tr>
 <tr class="separator:gad1bece0825584a7d81f8f8b3480c945a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1d5268117e6446334b1be6c09ddae305"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga1d5268117e6446334b1be6c09ddae305">magma_dpidr_strms</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga1d5268117e6446334b1be6c09ddae305"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga1d5268117e6446334b1be6c09ddae305">magma_dpidr_strms</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga1d5268117e6446334b1be6c09ddae305"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga1d5268117e6446334b1be6c09ddae305">More...</a><br /></td></tr>
 <tr class="separator:ga1d5268117e6446334b1be6c09ddae305"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga58a541ede87484fddf30fd17e49f4742"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga58a541ede87484fddf30fd17e49f4742">magma_dptfqmr</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga58a541ede87484fddf30fd17e49f4742"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga58a541ede87484fddf30fd17e49f4742">magma_dptfqmr</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga58a541ede87484fddf30fd17e49f4742"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga58a541ede87484fddf30fd17e49f4742">More...</a><br /></td></tr>
 <tr class="separator:ga58a541ede87484fddf30fd17e49f4742"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga87c784d1a5f065537cd6ef8b21c8c917"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga87c784d1a5f065537cd6ef8b21c8c917">magma_dqr</a> (magma_int_t m, magma_int_t n, magma_d_matrix A, magma_int_t lda, magma_d_matrix *Q, magma_d_matrix *R, magma_queue_t queue)</td></tr>
+<tr class="memitem:ga87c784d1a5f065537cd6ef8b21c8c917"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga87c784d1a5f065537cd6ef8b21c8c917">magma_dqr</a> (magma_int_t m, magma_int_t n, magma_d_matrix A, magma_int_t lda, magma_d_matrix *Q, magma_d_matrix *R, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga87c784d1a5f065537cd6ef8b21c8c917"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is a wrapper to call MAGMA QR on the data structure of sparse matrices.  <a href="#ga87c784d1a5f065537cd6ef8b21c8c917">More...</a><br /></td></tr>
 <tr class="separator:ga87c784d1a5f065537cd6ef8b21c8c917"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -201,7 +200,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -259,7 +258,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -316,7 +315,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -373,7 +372,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -430,7 +429,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -487,7 +486,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -498,7 +497,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A. </p>
+<p>Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A. </p>
 <p>This is a GPU implementation of the Induced Dimension Reduction method.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -544,7 +543,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -555,7 +554,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A. </p>
+<p>Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A. </p>
 <p>This is a GPU implementation of the Induced Dimension Reduction method applying kernel fusion.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -601,7 +600,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -612,7 +611,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A. </p>
+<p>Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A. </p>
 <p>This is a GPU implementation of the Induced Dimension Reduction method applying kernel fusion and kernel overlap.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -664,7 +663,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -728,7 +727,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -792,7 +791,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -856,7 +855,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -920,7 +919,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -984,7 +983,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1054,7 +1053,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
@@ -1087,7 +1086,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

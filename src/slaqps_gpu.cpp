@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zlaqps_gpu.cpp normal z -> s, Mon May  2 23:30:08 2016
+       @generated from src/zlaqps_gpu.cpp, normal z -> s, Tue Aug 30 09:38:09 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     @deprecated
     
     Purpose
@@ -91,8 +91,8 @@
     lddf    INTEGER
             The leading dimension of the array F. LDDF >= max(1,N).
 
-    @ingroup magma_sgeqp3_aux
-    ********************************************************************/
+    @ingroup magma_laqps
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slaqps_gpu(
     magma_int_t m, magma_int_t n, magma_int_t offset,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zgeadd.cpp normal z -> d, Mon May  2 23:31:07 2016
+       @generated from testing/testing_zgeadd.cpp, normal z -> d, Tue Aug 30 09:39:03 2016
        @author Mark Gates
 */
 // includes, system
@@ -29,7 +29,8 @@ int main( int argc, char** argv)
     #define h_A(i_, j_) (h_A + (i_) + (j_)*lda)
     #define h_B(i_, j_) (h_B + (i_) + (j_)*lda)  // B uses lda
     
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double          Bnorm, error, work[1];
@@ -41,7 +42,7 @@ int main( int argc, char** argv)
     magma_int_t M, N, size, lda, ldda;
     magma_int_t ione = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -66,11 +67,11 @@ int main( int argc, char** argv)
             size   = lda*N;
             gflops = 2.*M*N / 1e9;
             
-            TESTING_MALLOC_CPU( h_A, double, lda *N );
-            TESTING_MALLOC_CPU( h_B, double, lda *N );
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A, lda *N ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_B, lda *N ));
             
-            TESTING_MALLOC_DEV( d_A, double, ldda*N );
-            TESTING_MALLOC_DEV( d_B, double, ldda*N );
+            TESTING_CHECK( magma_dmalloc( &d_A, ldda*N ));
+            TESTING_CHECK( magma_dmalloc( &d_B, ldda*N ));
             
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
@@ -120,17 +121,17 @@ int main( int argc, char** argv)
             Bnorm = lapackf77_dlange( "F", &M, &N, h_B, &lda, work );
             error = lapackf77_dlange( "F", &M, &N, h_A, &lda, work ) / Bnorm;
             
-            printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                   (int) M, (int) N,
+            printf("%5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                   (long long) M, (long long) N,
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    error, (error < tol ? "ok" : "failed"));
             status += ! (error < tol);
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_B );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_B );
             
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_B );
+            magma_free( d_A );
+            magma_free( d_B );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -139,6 +140,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -163,15 +163,17 @@ magma_zcumilusetup(
         precond->U.dval, precond->U.drow, precond->U.dcol, precond->cuinfoU ));
 
 
-    if( precond->maxiter < 50 ){
+    if( precond->trisolver != 0 && precond->trisolver != Magma_CUSOLVE ){
         //prepare for iterative solves
         
         // extract the diagonal of L into precond->d
         CHECK( magma_zjacobisetup_diagscal( precond->L, &precond->d, queue ));
+        // precond->d.memory_location = Magma_DEV;
         CHECK( magma_zvinit( &precond->work1, Magma_DEV, hA.num_rows, 1, MAGMA_Z_ZERO, queue ));
         
         // extract the diagonal of U into precond->d2
         CHECK( magma_zjacobisetup_diagscal( precond->U, &precond->d2, queue ));
+        // precond->d2.memory_location = Magma_DEV;
         CHECK( magma_zvinit( &precond->work2, Magma_DEV, hA.num_rows, 1, MAGMA_Z_ZERO, queue ));
     }
 
@@ -373,7 +375,7 @@ magma_zcumilugeneratesolverinfo(
         precond->U.dval, precond->U.drow, precond->U.dcol, precond->cuinfoU ));
 
     
-    if( precond->maxiter < 50 ){
+    if( precond->trisolver != 0 && precond->trisolver != Magma_CUSOLVE ){
         //prepare for iterative solves
 
         // extract the diagonal of L into precond->d
@@ -832,7 +834,7 @@ magma_zcumiccsetup(
         precond->M.nnz, descrU,
         precond->M.dval, precond->M.drow, precond->M.dcol, precond->cuinfoU ));
 
-    if( precond->maxiter < 50 ){
+    if( precond->trisolver != 0 && precond->trisolver != Magma_CUSOLVE ){
         //prepare for iterative solves
         
         // copy the matrix to precond->L and (transposed) to precond->U

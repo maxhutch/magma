@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgerfs_nopiv_gpu.cpp normal z -> c, Mon May  2 23:30:02 2016
+       @generated from src/zgerfs_nopiv_gpu.cpp, normal z -> c, Tue Aug 30 09:38:04 2016
 
 */
 #include "magma_internal.h"
@@ -13,7 +13,7 @@
 #define BWDMAX 1.0
 #define ITERMAX 30
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGERFS improves the computed solution to a system of linear equations.
@@ -106,8 +106,8 @@
                   but the factor U is exactly singular, so the solution
                   could not be computed.
 
-    @ingroup magma_cgesv_comp
-    ********************************************************************/
+    @ingroup magma_gerfs_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgerfs_nopiv_gpu(
     magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
@@ -167,7 +167,7 @@ magma_cgerfs_nopiv_gpu(
     
     eps  = lapackf77_slamch("Epsilon");
     Anrm = magmablas_clange( MagmaInfNorm, n, n, dA, ldda, (magmaFloat_ptr)dworkd, n*nrhs, queue );
-    cte  = Anrm * eps * magma_ssqrt( n ) * BWDMAX;
+    cte  = Anrm * eps * magma_ssqrt( (float) n ) * BWDMAX;
     
     // residual dR = dB - dA*dX in real
     magmablas_clacpy( MagmaFull, n, nrhs, dB, lddb, dR, lddr, queue );

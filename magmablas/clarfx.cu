@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlarfx.cu normal z -> c, Mon May  2 23:30:32 2016
+       @generated from magmablas/zlarfx.cu, normal z -> c, Tue Aug 30 09:38:31 2016
 
 */
 #include "magma_internal.h"
@@ -19,8 +19,7 @@
 #define BLOCK_SIZEy  16
 
 
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void magma_clarfx_kernel( int m, magmaFloatComplex *v, magmaFloatComplex *tau,
                          magmaFloatComplex *c, int ldc, float *xnorm,
@@ -80,7 +79,8 @@ void magma_clarfx_kernel( int m, magmaFloatComplex *v, magmaFloatComplex *tau,
     }
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_ctrmv_kernel(const magmaFloatComplex *T, int ldt, magmaFloatComplex *t)
@@ -101,6 +101,8 @@ void magma_ctrmv_kernel(const magmaFloatComplex *T, int ldt, magmaFloatComplex *
     t[tx] = res;
 }
 
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_ctrmv_kernel2(const magmaFloatComplex *T, int ldt, magmaFloatComplex *t, 
@@ -123,7 +125,8 @@ void magma_ctrmv_kernel2(const magmaFloatComplex *T, int ldt, magmaFloatComplex 
     }
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *t, magmaFloatComplex *y)
@@ -142,8 +145,8 @@ void magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *t, ma
         y[blockIdx.x] = sum[0];
 }
 
-//==============================================================================
 
+/******************************************************************************/
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
@@ -157,7 +160,7 @@ void magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *t, ma
     The norms of v(:, 1:n) are given as input in xnorm(1:n). On exit, the norms
     are adjusted to hold the norms of v(2:m,2:n). This is a difference with the 
     LAPACK's clarf routine. 
- */
+*/
 extern "C" void
 magma_clarfx_gpu_q(
     magma_int_t m, magma_int_t n,
@@ -191,4 +194,3 @@ magma_clarfx_gpu_q(
             ( dT, N, work, dT+iter*N, tau );
     }
 }
-//==============================================================================

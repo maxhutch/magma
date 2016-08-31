@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
@@ -12,7 +12,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZUNMLQ overwrites the general complex M-by-N matrix C with
@@ -109,8 +109,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_zgelqf_comp
-    ********************************************************************/
+    @ingroup magma_unmlq
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zunmlq(
     magma_side_t side, magma_trans_t trans,

@@ -1,21 +1,20 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Tingxing Dong
        @author Azzam Haidar
 
 */
-
-
 #ifndef MAGMABLAS_GEMV_TEMPLATE_H
 #define MAGMABLAS_GEMV_TEMPLATE_H
 
 #include "gemm_template_device_defs.cuh"// use make_FloatingPoint
 
+/******************************************************************************/
 // op<trans>( x ) returns x or conj(x).
 template< const magma_trans_t conjugate, typename T >
 __host__ __device__ static inline
@@ -29,6 +28,7 @@ T op( T& x )
 }
 
 
+/******************************************************************************/
 template<typename T, const int DIM_X, const int DIM_Y, const int TILE_SIZE> 
 static __device__ void
 gemvn_template_device(
@@ -117,12 +117,7 @@ gemvn_template_device(
 }
 
 
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
+/******************************************************************************/
 template<typename T, const int DIM_X, const int DIM_Y, const int TILE_SIZE,  magma_trans_t trans> 
 static __device__ void
 gemvc_template_device(

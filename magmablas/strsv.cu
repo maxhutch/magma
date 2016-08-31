@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/ztrsv.cu normal z -> s, Mon May  2 23:30:37 2016
+       @generated from magmablas/ztrsv.cu, normal z -> s, Tue Aug 30 09:38:35 2016
 */
 
 #include "magma_internal.h"
@@ -16,8 +16,6 @@
 
 
 #define PRECISION_s
-
-
 
 #define NB 256  //NB is the 1st level blocking in recursive blocking, NUM_THREADS is the 2ed level, NB=256, NUM_THREADS=64 is optimal for batched
 
@@ -38,9 +36,10 @@
 extern __shared__ float shared_data[];
 
 
-
-//==============================================================================
-template< const int BLOCK_SIZE, const int DIM_X, const int DIM_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag>
+/******************************************************************************/
+template< const int BLOCK_SIZE, const int DIM_X, const int DIM_Y,
+          const int TILE_SIZE, const int flag, const magma_uplo_t uplo,
+          const magma_trans_t trans, const magma_diag_t diag >
 __global__ void
 strsv_notrans_kernel_outplace(
     int n,
@@ -52,8 +51,10 @@ strsv_notrans_kernel_outplace(
 }
 
 
-//==============================================================================
-template<const int BLOCK_SIZE, const int DIM_X, const int DIM_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag>
+/******************************************************************************/
+template< const int BLOCK_SIZE, const int DIM_X, const int DIM_Y,
+          const int TILE_SIZE, const int flag, const magma_uplo_t uplo,
+          const magma_trans_t trans, const magma_diag_t diag >
 __global__ void
 strsv_trans_kernel_outplace(
     int n,
@@ -63,9 +64,9 @@ strsv_trans_kernel_outplace(
 {
     strsv_trans_device< BLOCK_SIZE, DIM_X, DIM_Y, TILE_SIZE, flag, uplo, trans, diag >( n, A, lda, b, incb, x);
 }
- 
-//==============================================================================
 
+
+/******************************************************************************/
 extern "C" void
 magmablas_strsv_outofplace(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
@@ -291,6 +292,7 @@ magmablas_strsv_outofplace(
 }
 
 
+/******************************************************************************/
 /*
     README: flag decides if the strsv_outplace see an updated x or not. 0: No; other: Yes
     In recursive, flag must be nonzero except the 1st call
@@ -380,10 +382,7 @@ magmablas_strsv_recursive_outofplace(
 }
 
 
-
-//==============================================================================
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     strsv solves one of the matrix equations on gpu
@@ -460,8 +459,8 @@ magmablas_strsv_recursive_outofplace(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_sblas2
-    ********************************************************************/
+    @ingroup magma_trsv
+*******************************************************************************/
 extern "C" void
 magmablas_strsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,

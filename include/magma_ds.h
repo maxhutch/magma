@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magma_zc.h mixed zc -> ds, Mon May  2 23:31:25 2016
+       @generated from include/magma_zc.h, mixed zc -> ds, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMA_DS_H
@@ -39,6 +39,16 @@ magma_dsgetrs_gpu(
     magmaDouble_ptr dX, magma_int_t lddx,
     magmaFloat_ptr dSX,
     magma_int_t *info );
+
+magma_int_t
+magma_dssysv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr dB, magma_int_t lddb,
+    magmaDouble_ptr dX, magma_int_t lddx,
+    magmaDouble_ptr dworkd, magmaFloat_ptr dworks,
+    magma_int_t *iter,
+    magma_int_t *info);
 
 magma_int_t
 magma_dsposv_gpu(

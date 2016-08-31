@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zherk_batched.cpp normal z -> c, Mon May  2 23:30:42 2016
+       @generated from magmablas/zherk_batched.cpp, normal z -> c, Tue Aug 30 09:38:39 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -27,10 +27,7 @@
 
 #define PRECISION_c
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHERK performs one of the Hermitian rank k operations
@@ -139,8 +136,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cblas3
-    ********************************************************************/
+    @ingroup magma_herk_batched
+*******************************************************************************/
 extern "C" void
 magma_cherk_batched(
     magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
@@ -155,5 +152,3 @@ magma_cherk_batched(
     beta, dC_array, lddc, 
     batchCount, queue );
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////

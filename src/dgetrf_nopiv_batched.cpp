@@ -1,22 +1,21 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from src/zgetrf_nopiv_batched.cpp normal z -> d, Mon May  2 23:30:26 2016
+   @generated from src/zgetrf_nopiv_batched.cpp, normal z -> d, Tue Aug 30 09:38:24 2016
  */
 #include <cuda_runtime.h>
 
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
-///////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGETRF computes an LU factorization of a general M-by-N matrix A without pivoting
@@ -71,8 +70,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_dgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf_nopiv_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgetrf_nopiv_batched(
         magma_int_t m, magma_int_t n,
@@ -105,9 +104,10 @@ magma_dgetrf_nopiv_batched(
 
     if ( m >  2048 || n > 2048 ) {
         #ifndef MAGMA_NOWARNING
-        printf("=========================================================================================\n");
-        printf("   WARNING batched routines are designed for small sizes it might be better to use the\n   Native/Hybrid classical routines if you want performance\n");
-        printf("=========================================================================================\n");
+        printf("=========================================================================================\n"
+               "   WARNING batched routines are designed for small sizes. It might be better to use the\n"
+               "   Native/Hybrid classical routines if you want good performance.\n"
+               "=========================================================================================\n");
         #endif
     }
 
@@ -135,7 +135,7 @@ magma_dgetrf_nopiv_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, DTRTRI_BATCHED_NB )*DTRTRI_BATCHED_NB;
     magma_int_t dwork_msize = max(m,n)*nb;
     double* dinvA      = NULL;
     double* dwork      = NULL; // dinvA and dwork are workspace in dtrsm
@@ -166,7 +166,7 @@ magma_dgetrf_nopiv_batched(
     magmablas_dlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, invA_msize, queue );
     magmablas_dlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, dwork_msize, queue );
     magma_dset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
-    magma_dset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+    magma_dset_pointer( dinvA_array, dinvA, DTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
     magma_int_t streamid;
     const magma_int_t nbstreams=10;
@@ -244,7 +244,7 @@ magma_dgetrf_nopiv_batched(
 
                 if (use_stream)
                 { 
-                    //printf("caling streamed dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
+                    //printf("caling streamed dgemm %lld %lld %lld\n", (long long)(m-i-ib), (long long)(n-i-ib), (long long) ib );
 
                     // since it use different queue I need to wait the TRSM and swap.
                     magma_queue_sync(queue); 
@@ -273,7 +273,7 @@ magma_dgetrf_nopiv_batched(
                     magma_ddisplace_pointers(dA_displ, dA_array,  ldda, i+ib,    i, batchCount, queue);
                     magma_ddisplace_pointers(dW1_displ, dA_array, ldda,    i, i+ib, batchCount, queue);
                     magma_ddisplace_pointers(dW2_displ, dA_array, ldda, i+ib, i+ib, batchCount, queue);
-                    //printf("caling batched dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
+                    //printf("caling batched dgemm %lld %lld %lld\n", (long long)(m-i-ib), (long long)(n-i-ib), (long long) ib );
                     magma_dgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-ib, n-i-ib, ib, 
                                          c_neg_one, dA_displ,  ldda, 
                                                     dW1_displ, ldda, 

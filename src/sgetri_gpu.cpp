@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgetri_gpu.cpp normal z -> s, Mon May  2 23:30:03 2016
+       @generated from src/zgetri_gpu.cpp, normal z -> s, Tue Aug 30 09:38:04 2016
 
 */
 #include "magma_internal.h"
@@ -15,7 +15,7 @@
 #define magma_strsm magmablas_strsm
 // === End defining what BLAS to use ======================================
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGETRI computes the inverse of a matrix using the LU factorization
@@ -66,8 +66,8 @@
       -     > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
                   singular and its cannot be computed.
 
-    @ingroup magma_sgesv_comp
-    ********************************************************************/
+    @ingroup magma_getri
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgetri_gpu(
     magma_int_t n,

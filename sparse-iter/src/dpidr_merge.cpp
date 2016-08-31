@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
        @author Eduardo Ponce
        @author Moritz Kreutzer
 
-       @generated from sparse-iter/src/zpidr_merge.cpp normal z -> d, Mon May  2 23:31:00 2016
+       @generated from sparse-iter/src/zpidr_merge.cpp, normal z -> d, Tue Aug 30 09:38:57 2016
 */
 
 #include "magmasparse_internal.h"
@@ -445,7 +445,6 @@ magma_dpidr_merge(
                 // f(k+1:s) = f(k+1:s) - beta * M(k+1:s,k)
                 magma_daxpy( sk-1, -hbeta.val[k], &dM.dval[k*dM.ld+(k+1)], 1, &df.dval[k+1], 1, queue );
             }
-
         }
 
         // smoothing disabled

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Tingxing Dong
        @author Azzam Haidar
@@ -21,7 +21,7 @@
 #define version(s,v) s ## _V_ ## v
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEMV performs one of the matrix-vector operations
@@ -97,10 +97,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_dblas2
-    ********************************************************************/
-
-
+    @ingroup magma_gemv_batched
+*******************************************************************************/
 extern "C" void
 magmablas_zgemv_batched(
     magma_trans_t trans, magma_int_t m, magma_int_t n, 
@@ -250,4 +248,3 @@ magmablas_zgemv_batched(
         }        
      }                   
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////

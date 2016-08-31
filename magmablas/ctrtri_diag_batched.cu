@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/ztrtri_diag_batched.cu normal z -> c, Mon May  2 23:30:42 2016
+       @generated from magmablas/ztrtri_diag_batched.cu, normal z -> c, Tue Aug 30 09:38:39 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -17,10 +17,12 @@
 */
 
 #include "magma_internal.h"
+
+#define TRTRI_BATCHED
 #include "ctrtri.cuh"
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CTRTRI_DIAG inverts the NB x NB diagonal blocks of a triangular matrix.
@@ -84,8 +86,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cblas3
-    ********************************************************************/
+    @ingroup magma_trtri_diag_batched
+*******************************************************************************/
 extern "C" void
 magmablas_ctrtri_diag_batched(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,

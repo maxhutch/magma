@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zherk.cpp normal z -> d, Mon May  2 23:31:05 2016
+       @generated from testing/testing_zherk.cpp, normal z -> d, Tue Aug 30 09:39:01 2016
        @author Chongxiao Cao
 */
 // includes, system
@@ -18,6 +18,7 @@
 #include "flops.h"
 #include "magma_v2.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 #define REAL
@@ -28,10 +29,19 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    #ifdef HAVE_clBLAS
+    #define dA(i_, j_)  dA, ((i_) + (j_)*ldda)
+    #define dC(i_, j_)  dC, ((i_) + (j_)*lddc)
+    #else
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #define dC(i_, j_) (dC + (i_) + (j_)*lddc)
+    #endif
+    
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
-    real_Double_t   gflops, cublas_perf, cublas_time, cpu_perf, cpu_time;
-    double          cublas_error, Cnorm, work[1];
+    real_Double_t   gflops, dev_perf, dev_time, cpu_perf, cpu_time;
+    double          dev_error, work[1];
     magma_int_t N, K;
     magma_int_t Ak, An;
     magma_int_t sizeA, sizeC;
@@ -39,18 +49,20 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     
-    double *h_A, *h_C, *h_Ccublas;
-    magmaDouble_ptr d_A, d_C;
+    double *hA, *hC, *hCdev;
+    magmaDouble_ptr dA, dC;
     double c_neg_one = MAGMA_D_NEG_ONE;
     double alpha = MAGMA_D_MAKE(  0.29, -0.86 );
     double beta  = MAGMA_D_MAKE( -0.48,  0.38 );
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    double tol = opts.tolerance * lapackf77_dlamch("E");
+    // See testing_dgemm about tolerance.
+    double eps = lapackf77_dlamch("E");
+    double tol = 3*eps;
     
     #ifdef COMPLEX
     if (opts.transA == MagmaTrans) {
@@ -87,37 +99,35 @@ int main( int argc, char** argv)
             sizeA = lda*Ak;
             sizeC = ldc*N;
             
-            TESTING_MALLOC_CPU( h_A,       double, lda*Ak );
-            TESTING_MALLOC_CPU( h_C,       double, ldc*N  );
-            TESTING_MALLOC_CPU( h_Ccublas, double, ldc*N  );
+            TESTING_CHECK( magma_dmalloc_cpu( &hA,    lda*Ak ));
+            TESTING_CHECK( magma_dmalloc_cpu( &hC,    ldc*N  ));
+            TESTING_CHECK( magma_dmalloc_cpu( &hCdev, ldc*N  ));
             
-            TESTING_MALLOC_DEV( d_A, double, ldda*Ak );
-            TESTING_MALLOC_DEV( d_C, double, lddc*N  );
+            TESTING_CHECK( magma_dmalloc( &dA, ldda*Ak ));
+            TESTING_CHECK( magma_dmalloc( &dC, lddc*N  ));
             
             /* Initialize the matrices */
-            lapackf77_dlarnv( &ione, ISEED, &sizeA, h_A );
-            lapackf77_dlarnv( &ione, ISEED, &sizeC, h_C );
+            lapackf77_dlarnv( &ione, ISEED, &sizeA, hA );
+            lapackf77_dlarnv( &ione, ISEED, &sizeC, hC );
+            
+            // for error checks
+            double Anorm = lapackf77_dlange( "F", &An, &Ak, hA, &lda, work );
+            double Cnorm = safe_lapackf77_dlansy( "F", lapack_uplo_const(opts.uplo), &N, hC, &ldc, work );
             
             /* =====================================================================
-               Performs operation using CUBLAS
+               Performs operation using cuBLAS / clBLAS
                =================================================================== */
-            magma_dsetmatrix( An, Ak, h_A, lda, d_A, ldda, opts.queue );
-            magma_dsetmatrix( N, N, h_C, ldc, d_C, lddc, opts.queue );
+            magma_dsetmatrix( An, Ak, hA, lda, dA(0,0), ldda, opts.queue );
+            magma_dsetmatrix( N, N, hC, ldc, dC(0,0), lddc, opts.queue );
 
-            cublas_time = magma_sync_wtime( opts.queue );
-            #ifdef HAVE_CUBLAS
-                cublasDsyrk( opts.handle, cublas_uplo_const(opts.uplo), cublas_trans_const(opts.transA), N, K,
-                             &alpha, d_A, ldda,
-                             &beta,  d_C, lddc );
-            #else
-                magma_dsyrk( opts.uplo, opts.transA, N, K,
-                             alpha, d_A, 0, ldda,
-                             beta,  d_C, 0, lddc, opts.queue );
-            #endif
-            cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
-            cublas_perf = gflops / cublas_time;
+            dev_time = magma_sync_wtime( opts.queue );
+            magma_dsyrk( opts.uplo, opts.transA, N, K,
+                         alpha, dA(0,0), ldda,
+                         beta,  dC(0,0), lddc, opts.queue );
+            dev_time = magma_sync_wtime( opts.queue ) - dev_time;
+            dev_perf = gflops / dev_time;
             
-            magma_dgetmatrix( N, N, d_C, lddc, h_Ccublas, ldc, opts.queue );
+            magma_dgetmatrix( N, N, dC(0,0), lddc, hCdev, ldc, opts.queue );
             
             /* =====================================================================
                Performs operation using CPU BLAS
@@ -125,8 +135,8 @@ int main( int argc, char** argv)
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
                 blasf77_dsyrk( lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), &N, &K,
-                               &alpha, h_A, &lda,
-                               &beta,  h_C, &ldc );
+                               &alpha, hA, &lda,
+                               &beta,  hC, &ldc );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
             }
@@ -135,32 +145,31 @@ int main( int argc, char** argv)
                Check the result
                =================================================================== */
             if ( opts.lapack ) {
-                // compute relative error for both magma & cublas, relative to lapack,
-                // |C_magma - C_lapack| / |C_lapack|
-                blasf77_daxpy( &sizeC, &c_neg_one, h_C, &ione, h_Ccublas, &ione );
-                Cnorm        = safe_lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_C,       &ldc, work );
-                cublas_error = safe_lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_Ccublas, &ldc, work )
-                             / Cnorm;
+                // See testing_dgemm for formula.
+                blasf77_daxpy( &sizeC, &c_neg_one, hC, &ione, hCdev, &ione );
+                dev_error = safe_lapackf77_dlansy( "F", lapack_uplo_const(opts.uplo), &N, hCdev, &ldc, work )
+                            / (sqrt(double(K+2))*fabs(alpha)*Anorm*Anorm + 2*fabs(beta)*Cnorm);
                 
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e   %s\n",
-                       (int) N, (int) K,
-                       cublas_perf, 1000.*cublas_time,
-                       cpu_perf,    1000.*cpu_time,
-                       cublas_error, (cublas_error < tol ? "ok" : "failed"));
-                status += ! (cublas_error < tol);
+                bool okay = (dev_error < tol);
+                status += ! okay;
+                printf("%5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e   %s\n",
+                       (long long) N, (long long) K,
+                       dev_perf, 1000.*dev_time,
+                       cpu_perf, 1000.*cpu_time,
+                       dev_error, (okay ? "ok" : "failed"));
             }
             else {
-                printf("%5d %5d   %7.2f (%7.2f)    ---   (  ---  )    ---     ---\n",
-                       (int) N, (int) K,
-                       cublas_perf, 1000.*cublas_time);
+                printf("%5lld %5lld   %7.2f (%7.2f)    ---   (  ---  )    ---     ---\n",
+                       (long long) N, (long long) K,
+                       dev_perf, 1000.*dev_time);
             }
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_C );
-            TESTING_FREE_CPU( h_Ccublas );
+            magma_free_cpu( hA );
+            magma_free_cpu( hC );
+            magma_free_cpu( hCdev );
             
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_C );
+            magma_free( dA );
+            magma_free( dC );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -169,6 +178,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

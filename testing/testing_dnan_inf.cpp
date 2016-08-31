@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
   
-       @generated from testing/testing_znan_inf.cpp normal z -> d, Mon May  2 23:31:09 2016
+       @generated from testing/testing_znan_inf.cpp, normal z -> d, Tue Aug 30 09:39:05 2016
        @author Mark Gates
 */
 // includes, system
@@ -26,7 +26,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     #define hA(i,j) (hA + (i) + (j)*lda)
     
@@ -37,7 +38,7 @@ int main( int argc, char** argv)
     magma_int_t M, N, lda, ldda, size;
     magma_int_t *ii, *jj;
     magma_int_t i, j, cnt, tmp;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -141,8 +142,8 @@ int main( int argc, char** argv)
             size  = lda*N;
 
             /* Allocate memory for the matrix */
-            TESTING_MALLOC_CPU( hA, double, lda *N );
-            TESTING_MALLOC_DEV( dA, double, ldda*N );
+            TESTING_CHECK( magma_dmalloc_cpu( &hA, lda *N ));
+            TESTING_CHECK( magma_dmalloc( &dA, ldda*N ));
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &size, hA );
@@ -157,8 +158,8 @@ int main( int argc, char** argv)
             assert( total <= M*N );
             
             // fill in indices
-            TESTING_MALLOC_CPU( ii, magma_int_t, size );
-            TESTING_MALLOC_CPU( jj, magma_int_t, size );
+            TESTING_CHECK( magma_imalloc_cpu( &ii, size ));
+            TESTING_CHECK( magma_imalloc_cpu( &jj, size ));
             for( cnt=0; cnt < size; ++cnt ) {
                 ii[cnt] = cnt % M;
                 jj[cnt] = cnt / M;
@@ -224,25 +225,25 @@ int main( int argc, char** argv)
                      && ( c_gpu_nan == cnt_nan )
                      && ( c_gpu_inf == cnt_inf );
             
-            printf( "%4c %5d %5d   %10d + %-10d   %10d + %-10d   %10d + %-10d  %s\n",
-                    lapacke_uplo_const( uplo[iuplo] ), (int) M, (int) N,
-                    (int) c_cpu_nan, (int) c_cpu_inf,
-                    (int) c_gpu_nan, (int) c_gpu_inf,
-                    (int) cnt_nan,   (int) cnt_inf,
+            printf( "%4c %5lld %5lld   %10lld + %-10lld   %10lld + %-10lld   %10lld + %-10lld  %s\n",
+                    lapacke_uplo_const( uplo[iuplo] ), (long long) M, (long long) N,
+                    (long long) c_cpu_nan, (long long) c_cpu_inf,
+                    (long long) c_gpu_nan, (long long) c_gpu_inf,
+                    (long long) cnt_nan,   (long long) cnt_inf,
                     (okay ? "ok" : "failed"));
             status += ! okay;
             
-            TESTING_FREE_CPU( hA );
-            TESTING_FREE_DEV( dA );
+            magma_free_cpu( hA );
+            magma_free( dA );
             
-            TESTING_FREE_CPU( ii );
-            TESTING_FREE_CPU( jj );
+            magma_free_cpu( ii );
+            magma_free_cpu( jj );
         }
       }
       printf( "\n" );
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

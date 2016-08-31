@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEBRD reduces a general complex M-by-N matrix A to upper or lower
@@ -141,8 +141,8 @@
     denotes an element of the vector defining H(i), and ui an element of
     the vector defining G(i).
 
-    @ingroup magma_zgesvd_comp
-    ********************************************************************/
+    @ingroup magma_gebrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgebrd(
     magma_int_t m, magma_int_t n,

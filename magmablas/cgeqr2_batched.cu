@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgeqr2_batched.cu normal z -> c, Mon May  2 23:30:42 2016
+       @generated from magmablas/zgeqr2_batched.cu, normal z -> c, Tue Aug 30 09:38:38 2016
 */
 
 #include "magma_internal.h"
@@ -23,11 +23,11 @@
 
 #include "clarfg_devicesfunc.cuh"
 
-//==============================================================================
-
+/******************************************************************************/
 static __device__
-void clarfx_device( int m, int n,  magmaFloatComplex *v, magmaFloatComplex *tau,
-                         magmaFloatComplex *dc, magma_int_t ldc, magmaFloatComplex* sum)
+void clarfx_device(
+    int m, int n,  magmaFloatComplex *v, magmaFloatComplex *tau,
+    magmaFloatComplex *dc, magma_int_t ldc, magmaFloatComplex* sum)
 {
     if (n <= 0) return;
     if (MAGMA_C_EQUAL(*tau, MAGMA_C_ZERO) )  return; // check singularity
@@ -69,8 +69,7 @@ void clarfx_device( int m, int n,  magmaFloatComplex *v, magmaFloatComplex *tau,
 }
 
 
-//==============================================================================
-
+/******************************************************************************/
 static __device__
 void cgeqr2_device( magma_int_t m, magma_int_t n,
                                magmaFloatComplex* dA, magma_int_t lda,
@@ -92,11 +91,12 @@ void cgeqr2_device( magma_int_t m, magma_int_t n,
     __syncthreads();
 }
 
-//==============================================================================
 
+/******************************************************************************/
 extern __shared__ magmaFloatComplex shared_data[];
 
 
+/******************************************************************************/
 __global__
 void cgeqr2_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
                                magmaFloatComplex **dtau_array)
@@ -149,12 +149,7 @@ void cgeqr2_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma
 }
 
 
-
-
-
-
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void cgeqr2_column_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
                                magmaFloatComplex **dtau_array)
@@ -203,6 +198,7 @@ void cgeqr2_column_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array
 }
 
 
+/******************************************************************************/
 __global__
 void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
                                magmaFloatComplex **dtau_array)
@@ -232,10 +228,7 @@ void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_in
 }
 
 
-//==============================================================================
-
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEQR2 computes a QR factorization of a complex m by n matrix A:
@@ -304,9 +297,8 @@ void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_in
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_cgeqrf_aux
-    ********************************************************************/
-
+    @ingroup magma_geqr2_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgeqr2_batched(magma_int_t m, magma_int_t n, 
                      magmaFloatComplex **dA_array, magma_int_t ldda, 
@@ -357,7 +349,3 @@ magma_cgeqr2_batched(magma_int_t m, magma_int_t n,
 
     return arginfo;
 }
-
-
-
-//==============================================================================

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zcgesv_gpu.cpp mixed zc -> ds, Mon May  2 23:30:02 2016
+       @generated from src/zcgesv_gpu.cpp, mixed zc -> ds, Tue Aug 30 09:38:03 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DSGESV computes the solution to a real system of linear equations
@@ -18,16 +18,16 @@
     where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
 
     DSGESV first attempts to factorize the matrix in real SINGLE PRECISION
-    and use this factorization within an iterative refinement procedure
-    to produce a solution with real DOUBLE PRECISION norm-wise backward error
+    and use this factorization within an iterative refinement procedure 
+    to produce a solution with real DOUBLE PRECISION norm-wise backward error 
     quality (see below). If the approach fails the method switches to a
     real DOUBLE PRECISION factorization and solve.
 
     The iterative refinement is not going to be a winning strategy if
     the ratio real SINGLE PRECISION performance over real DOUBLE PRECISION
-    performance is too small. A reasonable strategy should take the
-    number of right-hand sides and the size of the matrix into account.
-    This might be done with a call to ILAENV in the future. Up to now, we
+    performance is too small. A reasonable strategy should take the 
+    number of right-hand sides and the size of the matrix into account. 
+    This might be done with a call to ILAENV in the future. Up to now, we 
     always try iterative refinement.
     
     The iterative refinement process is stopped if
@@ -138,8 +138,8 @@
                   but the factor U is exactly singular, so the solution
                   could not be computed.
 
-    @ingroup magma_dgesv_driver
-    ********************************************************************/
+    @ingroup magma_gesv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dsgesv_gpu(
     magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
@@ -206,7 +206,7 @@ magma_dsgesv_gpu(
     
     eps  = lapackf77_dlamch("Epsilon");
     Anrm = magmablas_dlange( MagmaInfNorm, n, n, dA, ldda, (double*)dworkd, n*nrhs, queue );
-    cte  = Anrm * eps * magma_dsqrt( n ) * BWDMAX;
+    cte  = Anrm * eps * magma_dsqrt( (double) n ) * BWDMAX;
     
     /*
      * Convert to single precision

@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zcgs_merge.cpp normal z -> s, Mon May  2 23:30:59 2016
+       @generated from sparse-iter/src/zcgs_merge.cpp, normal z -> s, Tue Aug 30 09:38:56 2016
 */
 
 #include "magmasparse_internal.h"
@@ -202,7 +202,6 @@ magma_scgs_merge(
         if ( res/nomb <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
-
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
     

@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zgeqrf2_gpu.cpp normal z -> s, Mon May  2 23:30:06 2016
+       @generated from src/zgeqrf2_gpu.cpp, normal z -> s, Tue Aug 30 09:38:07 2016
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGEQRF computes a QR factorization of a real M-by-N matrix A:
@@ -74,8 +74,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_sgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgeqrf2_gpu(
     magma_int_t m, magma_int_t n,

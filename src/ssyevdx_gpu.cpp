@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from src/dsyevdx_gpu.cpp normal d -> s, Mon May  2 23:30:13 2016
+       @generated from src/dsyevdx_gpu.cpp, normal d -> s, Tue Aug 30 09:38:14 2016
 
 */
 #include "magma_internal.h"
@@ -19,7 +19,7 @@
 #define REAL
 #define FAST_SYMV
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SSYEVDX computes selected eigenvalues and, optionally, eigenvectors
@@ -117,9 +117,9 @@
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
+     -      If N <= 1,                      LWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
+     -      If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
             NB can be obtained through magma_get_ssytrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
@@ -135,9 +135,9 @@
     @param[in]
     liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                      LIWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
-            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+     -      If N <= 1,                      LIWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+     -      If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK and
@@ -165,8 +165,8 @@
 
     Modified description of INFO. Sven, 16 Feb 05.
 
-    @ingroup magma_ssyev_driver
-    ********************************************************************/
+    @ingroup magma_heevdx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_ssyevdx_gpu(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,

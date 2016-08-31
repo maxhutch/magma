@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zhetrd_gpu.cpp normal z -> d, Mon May  2 23:31:18 2016
+       @generated from testing/testing_zhetrd_gpu.cpp, normal z -> d, Tue Aug 30 09:39:13 2016
 
 */
 
@@ -33,7 +33,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t    gflops, gpu_perf, cpu_perf, gpu_time, cpu_time;
     double           eps;
@@ -47,7 +48,7 @@ int main( int argc, char** argv)
     magma_int_t itwo     = 2;
     magma_int_t ithree   = 3;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
     
     #ifdef COMPLEX
     double *rwork;
@@ -64,7 +65,7 @@ int main( int argc, char** argv)
     printf("%% 1 - magma_dsytrd_gpu:   uses DSYMV from CUBLAS (default)\n");
     printf("%% 2 - magma_dsytrd2_gpu:  uses DSYMV from MAGMA BLAS that requires extra space\n\n");
 
-    printf("%% uplo = %s, version %d\n", lapack_uplo_const(opts.uplo), int(opts.version) );
+    printf("%% uplo = %s, version %lld\n", lapack_uplo_const(opts.uplo), (long long) opts.version);
     printf("%% N     CPU Gflop/s (sec)   GPU Gflop/s (sec)   |A-QHQ^H|/N|A|   |I-QQ^H|/N\n");
     printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -78,16 +79,16 @@ int main( int argc, char** argv)
             gflops = FLOPS_DSYTRD( N ) / 1e9;
             ldwork = ldda*magma_ceildiv(N,64) + 2*ldda*nb;
             
-            TESTING_MALLOC_CPU( h_A,     double, lda*N );
-            TESTING_MALLOC_CPU( tau,     double, N     );
-            TESTING_MALLOC_CPU( diag,    double, N   );
-            TESTING_MALLOC_CPU( offdiag, double, N-1 );
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A,     lda*N ));
+            TESTING_CHECK( magma_dmalloc_cpu( &tau,     N     ));
+            TESTING_CHECK( magma_dmalloc_cpu( &diag,    N   ));
+            TESTING_CHECK( magma_dmalloc_cpu( &offdiag, N-1 ));
             
-            TESTING_MALLOC_PIN( h_R,     double, lda*N );
-            TESTING_MALLOC_PIN( h_work,  double, lwork );
+            TESTING_CHECK( magma_dmalloc_pinned( &h_R,     lda*N ));
+            TESTING_CHECK( magma_dmalloc_pinned( &h_work,  lwork ));
             
-            TESTING_MALLOC_DEV( d_R,     double, ldda*N );
-            TESTING_MALLOC_DEV( dwork,   double, ldwork );
+            TESTING_CHECK( magma_dmalloc( &d_R,     ldda*N ));
+            TESTING_CHECK( magma_dmalloc( &dwork,   ldwork ));
             
             /* ====================================================================
                Initialize the matrix
@@ -111,18 +112,18 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0) {
-                printf("magma_dsytrd_gpu returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_dsytrd_gpu returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             /* =====================================================================
                Check the factorization
                =================================================================== */
             if ( opts.check ) {
-                TESTING_MALLOC_CPU( h_Q,  double, lda*N );
-                TESTING_MALLOC_CPU( work, double, 2*N*N );
+                TESTING_CHECK( magma_dmalloc_cpu( &h_Q,  lda*N ));
+                TESTING_CHECK( magma_dmalloc_cpu( &work, 2*N*N ));
                 #ifdef COMPLEX
-                TESTING_MALLOC_CPU( rwork, double, N );
+                TESTING_CHECK( magma_dmalloc_cpu( &rwork, N ));
                 #endif
                 
                 magma_dgetmatrix( N, N, d_R, ldda, h_R, lda, opts.queue );
@@ -149,10 +150,10 @@ int main( int argc, char** argv)
                 result[0] *= eps;
                 result[1] *= eps;
                 
-                TESTING_FREE_CPU( h_Q  );
-                TESTING_FREE_CPU( work );
+                magma_free_cpu( h_Q  );
+                magma_free_cpu( work );
                 #ifdef COMPLEX
-                TESTING_FREE_CPU( rwork );
+                magma_free_cpu( rwork );
                 #endif
             }
                         
@@ -166,8 +167,8 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_dsytrd returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_dsytrd returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
             }
             
@@ -175,11 +176,11 @@ int main( int argc, char** argv)
                Print performance and error.
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
-                       (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
+                printf("%5lld   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (long long) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
             } else {
-                printf("%5d     ---   (  ---  )   %7.2f (%7.2f)",
-                       (int) N, gpu_perf, gpu_time );
+                printf("%5lld     ---   (  ---  )   %7.2f (%7.2f)",
+                       (long long) N, gpu_perf, gpu_time );
             }
             if ( opts.check ) {
                 printf("   %8.2e        %8.2e   %s\n", result[0], result[1],
@@ -189,16 +190,16 @@ int main( int argc, char** argv)
                 printf("     ---             ---\n");
             }
             
-            TESTING_FREE_CPU( h_A     );
-            TESTING_FREE_CPU( tau     );
-            TESTING_FREE_CPU( diag    );
-            TESTING_FREE_CPU( offdiag );
+            magma_free_cpu( h_A     );
+            magma_free_cpu( tau     );
+            magma_free_cpu( diag    );
+            magma_free_cpu( offdiag );
             
-            TESTING_FREE_PIN( h_R    );
-            TESTING_FREE_PIN( h_work );
+            magma_free_pinned( h_R    );
+            magma_free_pinned( h_work );
             
-            TESTING_FREE_DEV( d_R   );
-            TESTING_FREE_DEV( dwork );
+            magma_free( d_R   );
+            magma_free( dwork );
             
             fflush( stdout );
         }
@@ -208,6 +209,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

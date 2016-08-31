@@ -1,18 +1,21 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
        @precisions normal z -> s d c
 */
 #include "magma_internal.h"
 
-// -------------------------
-// Put 0s in the upper triangular part of a panel and 1s on the diagonal.
-// Stores previous values in work array, to be restored later with magma_zq_to_panel.
+/***************************************************************************//**
+    Put 0s in the upper triangular part of a panel and 1s on the diagonal.
+    Stores previous values in work array, to be restored later with magma_zq_to_panel().
+    
+    @ingroup magma_panel2q
+*******************************************************************************/
 extern "C"
 void magma_zpanel_to_q(magma_uplo_t uplo, magma_int_t ib, magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *work)
 {
@@ -51,8 +54,11 @@ void magma_zpanel_to_q(magma_uplo_t uplo, magma_int_t ib, magmaDoubleComplex *A,
 }
 
 
-// -------------------------
-// Restores a panel, after call to magma_zpanel_to_q.
+/***************************************************************************//**
+    Restores a panel, after call to magma_zpanel_to_q().
+    
+    @ingroup magma_panel2q
+*******************************************************************************/
 extern "C"
 void magma_zq_to_panel(magma_uplo_t uplo, magma_int_t ib, magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *work)
 {

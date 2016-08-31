@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -13,7 +13,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZUNMTR overwrites the general complex M-by-N matrix C with
@@ -22,9 +22,10 @@
     TRANS = MagmaNoTrans:       Q * C               C * Q
     TRANS = Magma_ConjTrans:    Q**H * C            C * Q**H
 
-    where Q is a complex unitary matrix of order nq, with nq = m if
-    SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
-    nq-1 elementary reflectors, as returned by SSYTRD:
+    where Q is a complex unitary matrix of order nq,
+    with nq = m if SIDE = MagmaLeft
+    and  nq = n if SIDE = MagmaRight. Q is defined as the product of
+    nq-1 elementary reflectors, as returned by ZHETRD:
 
     if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);
 
@@ -44,9 +45,9 @@
     @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper: Upper triangle of A contains elementary reflectors
-                   from SSYTRD;
+                   from ZHETRD;
       -     = MagmaLower: Lower triangle of A contains elementary reflectors
-                   from SSYTRD.
+                   from ZHETRD.
 
     @param[in]
     trans   magma_trans_t
@@ -66,19 +67,20 @@
                                  (LDA,M) if SIDE = MagmaLeft
                                  (LDA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
-            returned by SSYTRD.
+            returned by ZHETRD.
 
     @param[in]
     lda     INTEGER
             The leading dimension of the array A.
-            LDA >= max(1,M) if SIDE = MagmaLeft; LDA >= max(1,N) if SIDE = MagmaRight.
+            LDA >= max(1,M) if SIDE = MagmaLeft;
+            LDA >= max(1,N) if SIDE = MagmaRight.
 
     @param[in]
     tau     COMPLEX_16 array, dimension
                                  (M-1) if SIDE = MagmaLeft
                                  (N-1) if SIDE = MagmaRight
             TAU(i) must contain the scalar factor of the elementary
-            reflector H(i), as returned by SSYTRD.
+            reflector H(i), as returned by ZHETRD.
 
     @param[in,out]
     C       COMPLEX_16 array, dimension (LDC,N)
@@ -112,8 +114,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_zheev_comp
-    ********************************************************************/
+    @ingroup magma_unmtr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zunmtr_m(
     magma_int_t ngpu,
@@ -196,7 +198,7 @@ magma_zunmtr_m(
     }
 
     if (upper) {
-        /* Q was determined by a call to SSYTRD with UPLO = MagmaUpper */
+        /* Q was determined by a call to ZHETRD with UPLO = MagmaUpper */
         i__2 = nq - 1;
         // TODO: upper case is not yet implemented for multiple GPUs -- see above
         // for now use one GPU
@@ -208,7 +210,7 @@ magma_zunmtr_m(
                        C, ldc, work, lwork, &iinfo);
     }
     else {
-        /* Q was determined by a call to SSYTRD with UPLO = MagmaLower */
+        /* Q was determined by a call to ZHETRD with UPLO = MagmaLower */
         if (left) {
             i1 = 1;
             i2 = 0;

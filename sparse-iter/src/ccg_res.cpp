@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zcg_res.cpp normal z -> c, Mon May  2 23:30:55 2016
+       @generated from sparse-iter/src/zcg_res.cpp, normal z -> c, Tue Aug 30 09:38:51 2016
 */
 
 #include "magmasparse_internal.h"
@@ -67,7 +67,7 @@ magma_ccg_res(
     
     // solver variables
     magmaFloatComplex alpha, beta;
-    float nom, nom0, r0,  res, nomb;
+    float nom0, r0,  res, nomb;
     magmaFloatComplex den, gammanew, gammaold = MAGMA_C_MAKE(1.0,0.0);
     // local variables
     magmaFloatComplex c_zero = MAGMA_C_ZERO, c_one = MAGMA_C_ONE;
@@ -85,7 +85,6 @@ magma_ccg_res(
     CHECK(  magma_cresidualvec( A, b, *x, &r, &nom0, queue));
 
     magma_ccopy( dofs, r.dval, 1, p.dval, 1, queue );                    // p = h
-    nom = MAGMA_C_ABS( magma_cdotc( dofs, r.dval, 1, r.dval, 1, queue) );
     CHECK( magma_c_spmv( c_one, A, p, c_zero, q, queue ));             // q = A p
     solver_par->spmv_count++;
     den =  magma_cdotc( dofs, p.dval, 1, q.dval, 1, queue ); // den = p dot q
@@ -104,7 +103,7 @@ magma_ccg_res(
         solver_par->res_vec[0] = (real_Double_t)nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }

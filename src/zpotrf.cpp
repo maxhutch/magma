@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -15,7 +15,7 @@
     #define magma_ztrsm magmablas_ztrsm
 // === End defining what BLAS to use ======================================
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPOTRF computes the Cholesky factorization of a complex Hermitian
@@ -72,8 +72,8 @@
                   positive definite, and the factorization could not be
                   completed.
 
-    @ingroup magma_zposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrf(
     magma_uplo_t uplo, magma_int_t n,

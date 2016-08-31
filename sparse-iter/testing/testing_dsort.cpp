@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/testing/testing_zsort.cpp normal z -> d, Mon May  2 23:31:24 2016
+       @generated from sparse-iter/testing/testing_zsort.cpp, normal z -> d, Tue Aug 30 09:39:20 2016
        @author Hartwig Anzt
 */
 
@@ -16,14 +16,11 @@
 #include <math.h>
 #include <time.h>
 
-
 // includes, project
-#include "flops.h"
 #include "magma_v2.h"
-#include "magma_lapack.h"
+#include "magmasparse.h"
+#include "magma_operators.h"
 #include "testings.h"
-#include "magmasparse_internal.h"
-
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -33,7 +30,8 @@ int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
     /* Initialize */
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     magma_queue_t queue=NULL;
     magma_queue_create( 0, &queue );
 
@@ -43,7 +41,7 @@ int main(  int argc, char** argv )
     
     magma_d_matrix A={Magma_CSR};
 
-    CHECK( magma_index_malloc_cpu( &x, n ));
+    TESTING_CHECK( magma_index_malloc_cpu( &x, n ));
     printf("unsorted:\n");
     srand(time(NULL));
     for(i = 0; i < n; i++ ){
@@ -54,7 +52,7 @@ int main(  int argc, char** argv )
     printf("\n\n");
     
     printf("sorting...");
-    CHECK( magma_dindexsort(x, 0, n-1, queue ));
+    TESTING_CHECK( magma_dindexsort(x, 0, n-1, queue ));
     printf("done.\n\n");
     
     printf("sorted:\n");
@@ -66,20 +64,20 @@ int main(  int argc, char** argv )
     magma_free_cpu( x );
     
     
-    CHECK( magma_dmalloc_cpu( &y, n ));
+    TESTING_CHECK( magma_dmalloc_cpu( &y, n ));
     printf("unsorted:\n");
     srand(time(NULL));
     for(i = 0; i < n; i++ ){
         double r = (double) rand()/(double) 10.;
         y[i] = MAGMA_D_MAKE( r, 0.0);
-        if(i%5==0)
+        if (i % 5 == 0)
             y[i] = - y[i];
         printf("%2.2f + %2.2f  ", MAGMA_D_REAL(y[i]), MAGMA_D_IMAG(y[i]) );
     }
     printf("\n\n");
     
     printf("sorting...");
-    CHECK( magma_dsort(y, 0, n-1, queue ));
+    TESTING_CHECK( magma_dsort(y, 0, n-1, queue ));
     printf("done.\n\n");
     
     printf("sorted:\n");
@@ -95,21 +93,21 @@ int main(  int argc, char** argv )
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
-            CHECK( magma_dm_5stencil(  laplace_size, &A, queue ));
+            TESTING_CHECK( magma_dm_5stencil(  laplace_size, &A, queue ));
         } else {                        // file-matrix test
-            CHECK( magma_d_csr_mtx( &A,  argv[i], queue ));
+            TESTING_CHECK( magma_d_csr_mtx( &A,  argv[i], queue ));
         }
 
-        printf( "\n# matrix info: %d-by-%d with %d nonzeros\n\n",
-                            int(A.num_rows), int(A.num_cols), int(A.nnz) );
+        printf( "\n# matrix info: %lld-by-%lld with %lld nonzeros\n\n",
+                (long long) A.num_rows, (long long) A.num_cols, (long long) A.nnz);
     
-        CHECK( magma_index_malloc_cpu( &x, A.num_rows*10 ));
+        TESTING_CHECK( magma_index_malloc_cpu( &x, A.num_rows*10 ));
         magma_int_t num_ind = 0;
 
-        CHECK( magma_ddomainoverlap( A.num_rows, &num_ind, A.row, A.col, x, queue ));
+        TESTING_CHECK( magma_ddomainoverlap( A.num_rows, &num_ind, A.row, A.col, x, queue ));
                 printf("domain overlap indices:\n");
-        for(magma_int_t j = 0; j<num_ind; j++ ){
-            printf("%d  ", int(x[j]) );
+        for(magma_int_t j = 0; j < num_ind; j++ ){
+            printf("%d  ", x[j] );
         }
         printf("\n\n");
         magma_free_cpu( x );
@@ -118,8 +116,6 @@ int main(  int argc, char** argv )
         i++;
     }
 
-cleanup:
-    magma_dmfree(&A, queue );
     magma_queue_destroy( queue );
     magma_finalize();
     return info;

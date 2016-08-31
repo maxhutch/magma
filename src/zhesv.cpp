@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
 
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHESV computes the solution to a complex system of linear equations
@@ -91,8 +91,8 @@
                  has been completed, but the block diagonal matrix D is
                  exactly singular, so the solution could not be computed.
 
-    @ingroup magma_zhesv_driver
-    ********************************************************************/
+    @ingroup magma_hesv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhesv(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,

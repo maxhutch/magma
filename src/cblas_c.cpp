@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
  
        @author Mark Gates
-       @generated from src/cblas_z.cpp normal z -> c, Mon May  2 23:29:59 2016
+       @generated from src/cblas_z.cpp, normal z -> c, Tue Aug 30 09:38:00 2016
 
     Wrappers around a few CBLAS functions.
     
@@ -29,11 +29,9 @@
 
 #define COMPLEX
 
-// ========================================
-// Level 1 BLAS
-
-// --------------------
-/** Returns the sum of absolute values of vector x; i.e., one norm.
+/***************************************************************************//**
+    @return Sum of absolute values of vector x;
+            \f$ \sum_i | real(x_i) | + | imag(x_i) | \f$.
 
     To avoid dependence on CBLAS and incompatability issues between BLAS
     libraries, MAGMA uses its own implementation, following BLAS reference.
@@ -48,8 +46,8 @@
     @param[in]
     incx    Stride between consecutive elements of x. incx > 0.
 
-    @ingroup magma_cblas1
-*/
+    @ingroup magma_asum
+*******************************************************************************/
 extern "C"
 float magma_cblas_scasum(
     magma_int_t n,
@@ -74,8 +72,10 @@ float magma_cblas_scasum(
 }
 
 
-// --------------------
-/** Returns 2-norm of vector x. Avoids unnecesary over/underflow.
+static inline float sqr( float x ) { return x*x; }
+
+/***************************************************************************//**
+    Returns 2-norm of vector x. Avoids unnecesary over/underflow.
 
     To avoid dependence on CBLAS and incompatability issues between BLAS
     libraries, MAGMA uses its own implementation, following BLAS reference.
@@ -90,10 +90,8 @@ float magma_cblas_scasum(
     @param[in]
     incx    Stride between consecutive elements of x. incx > 0.
 
-    @ingroup magma_cblas1
-*/
-static inline float sqr( float x ) { return x*x; }
-
+    @ingroup magma_nrm2
+*******************************************************************************/
 extern "C"
 float magma_cblas_scnrm2(
     magma_int_t n,
@@ -137,8 +135,9 @@ float magma_cblas_scnrm2(
 }
 
 
-// --------------------
-/** Returns dot product of vectors x and y; \f$ x^H y \f$.
+#ifdef COMPLEX
+/***************************************************************************//**
+    Returns dot product of vectors x and y; \f$ x^H y \f$.
 
     To avoid dependence on CBLAS and incompatability issues between BLAS
     libraries, MAGMA uses its own implementation, following BLAS reference.
@@ -160,8 +159,8 @@ float magma_cblas_scnrm2(
     @param[in]
     incy    Stride between consecutive elements of dy. incy > 0.
 
-    @ingroup magma_cblas1
-*/
+    @ingroup magma__dot
+*******************************************************************************/
 extern "C"
 magmaFloatComplex magma_cblas_cdotc(
     magma_int_t n,
@@ -188,11 +187,11 @@ magmaFloatComplex magma_cblas_cdotc(
     }
     return value;
 }
+#endif  // COMPLEX
 
 
-#ifdef COMPLEX
-// --------------------
-/** Returns dot product (unconjugated) of vectors x and y; \f$ x^T y \f$.
+/***************************************************************************//**
+    @return dot product (unconjugated) of vectors x and y; \f$ x^T y \f$.
 
     To avoid dependence on CBLAS and incompatability issues between BLAS
     libraries, MAGMA uses its own implementation, following BLAS reference.
@@ -214,8 +213,8 @@ magmaFloatComplex magma_cblas_cdotc(
     @param[in]
     incy    Stride between consecutive elements of dy. incy > 0.
 
-    @ingroup magma_cblas1
-*/
+    @ingroup magma__dot
+*******************************************************************************/
 extern "C"
 magmaFloatComplex magma_cblas_cdotu(
     magma_int_t n,
@@ -242,6 +241,5 @@ magmaFloatComplex magma_cblas_cdotu(
     }
     return value;
 }
-#endif
 
 #undef COMPLEX

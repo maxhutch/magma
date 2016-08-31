@@ -1,19 +1,18 @@
-
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
-#ifndef COMMON_CUDA_KERNEL_NB_H
-#define COMMON_CUDA_KERNEL_NB_H
+#ifndef BATCHED_KERNEL_PARAM_H
+#define BATCHED_KERNEL_PARAM_H
 
 #define MAX_NTHREADS        1024     // 1024 is max threads for 2.x cards
 #define MAX_SHARED_ALLOWED    44
 
-#define zamax 256
+#define zamax            256
 #define DOTC_MAX_BS      512     // 512 is max threads for 1.x cards
 
 
@@ -21,7 +20,7 @@
 #define POTF2_NB           8     // blocking size in panel factorization
 #define POTF2_TILE_SIZE   32
 #define MAX_POTF2_SM     128
-#define               VERSION20
+#define VERSION20
 
 
 #define BATRF_NB         128
@@ -36,4 +35,14 @@
 #define TRI_NB           128        // ztrsm_nb should match the NB in BATRF_NB
 #define TRI_BLOCK_SIZE    16
 
-#endif /* COMMON_CUDA_KERNEL_NB_H */
+// TRSM tuning parameters 
+#define STRTRI_BATCHED_NB         (64)
+#define STRTRI_BATCHED_BLOCK_SIZE (16)
+#define DTRTRI_BATCHED_NB         (64)
+#define DTRTRI_BATCHED_BLOCK_SIZE (16)
+#define CTRTRI_BATCHED_NB         (32)
+#define CTRTRI_BATCHED_BLOCK_SIZE (16)
+#define ZTRTRI_BATCHED_NB         (128)
+#define ZTRTRI_BATCHED_BLOCK_SIZE (16)
+
+#endif        //  #ifndef BATCHED_KERNEL_PARAM_H

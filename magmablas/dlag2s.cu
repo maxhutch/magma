@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlag2c.cu mixed zc -> ds, Mon May  2 23:30:31 2016
+       @generated from magmablas/zlag2c.cu, mixed zc -> ds, Tue Aug 30 09:38:30 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
 
+// mixed precision generation has issues with SINGLE PRECISION, so use PRECISION_z
 #define PRECISION_d
 
 #define BLK_X 64
@@ -79,7 +80,7 @@ void dlag2s_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLAG2S converts a double-real matrix, A,
@@ -128,8 +129,8 @@ void dlag2s_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_lag2
+*******************************************************************************/
 extern "C" void
 magmablas_dlag2s_q(
     magma_int_t m, magma_int_t n,

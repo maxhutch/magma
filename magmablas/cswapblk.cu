@@ -1,21 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zswapblk.cu normal z -> c, Mon May  2 23:30:35 2016
+       @generated from magmablas/zswapblk.cu, normal z -> c, Tue Aug 30 09:38:33 2016
 
 */
 #include "magma_internal.h"
 
 #define BLOCK_SIZE 64
 
-/*********************************************************/
-/*
- *  Blocked version: swap several pairs of lines
- */
 typedef struct {
     magmaFloatComplex *A;
     magmaFloatComplex *B;
@@ -23,6 +19,8 @@ typedef struct {
     short ipiv[BLOCK_SIZE];
 } magmagpu_cswapblk_params_t;
 
+
+/******************************************************************************/
 __global__ void magmagpu_cswapblkrm( magmagpu_cswapblk_params_t params )
 {
     unsigned int y = threadIdx.x + blockDim.x*blockIdx.x;
@@ -44,6 +42,8 @@ __global__ void magmagpu_cswapblkrm( magmagpu_cswapblk_params_t params )
     }
 }
 
+
+/******************************************************************************/
 __global__ void magmagpu_cswapblkcm( magmagpu_cswapblk_params_t params )
 {
     unsigned int y = threadIdx.x + blockDim.x*blockIdx.x;
@@ -69,9 +69,11 @@ __global__ void magmagpu_cswapblkcm( magmagpu_cswapblk_params_t params )
 }
 
 
-/**
-    @ingroup magma_cblas2
-    ********************************************************************/
+/***************************************************************************//**
+    Blocked version: swap several pairs of lines.
+    Used in magma_ctstrf() and magma_cssssm().
+    @ingroup magma_swapblk
+*******************************************************************************/
 extern "C" void 
 magmablas_cswapblk_q(
     magma_order_t order, magma_int_t n, 

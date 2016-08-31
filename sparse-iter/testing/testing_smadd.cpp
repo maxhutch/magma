@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/testing/testing_zmadd.cpp normal z -> s, Mon May  2 23:31:25 2016
+       @generated from sparse-iter/testing/testing_zmadd.cpp, normal z -> s, Tue Aug 30 09:39:21 2016
        @author Hartwig Anzt
 */
 
@@ -16,12 +16,9 @@
 #include <math.h>
 
 // includes, project
-#include "flops.h"
 #include "magma_v2.h"
-#include "magma_lapack.h"
+#include "magmasparse.h"
 #include "testings.h"
-#include "magmasparse_internal.h"
-
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -30,7 +27,8 @@
 int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     magma_queue_t queue=NULL;
     magma_queue_create( 0, &queue );
@@ -47,56 +45,52 @@ int main(  int argc, char** argv )
     if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
         i++;
         magma_int_t laplace_size = atoi( argv[i] );
-        CHECK( magma_sm_5stencil(  laplace_size, &A, queue ));
+        TESTING_CHECK( magma_sm_5stencil(  laplace_size, &A, queue ));
     } else {                        // file-matrix test
-        CHECK( magma_s_csr_mtx( &A,  argv[i], queue ));
+        TESTING_CHECK( magma_s_csr_mtx( &A,  argv[i], queue ));
     }
-    printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                        int(A.num_rows), int(A.num_cols), int(A.nnz) );
+    printf("%% matrix info: %lld-by-%lld with %lld nonzeros\n",
+            (long long) A.num_rows, (long long) A.num_cols, (long long) A.nnz );
     i++;
 
     if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
         i++;
         magma_int_t laplace_size = atoi( argv[i] );
-        CHECK( magma_sm_5stencil(  laplace_size, &B, queue ));
+        TESTING_CHECK( magma_sm_5stencil(  laplace_size, &B, queue ));
     } else {                        // file-matrix test
-        CHECK( magma_s_csr_mtx( &B,  argv[i], queue ));
+        TESTING_CHECK( magma_s_csr_mtx( &B,  argv[i], queue ));
     }
-    printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                        int(B.num_rows), int(B.num_cols), int(B.nnz) );
+    printf("%% matrix info: %lld-by-%lld with %lld nonzeros\n",
+            (long long) B.num_rows, (long long) B.num_cols, (long long) B.nnz );
 
 
-    CHECK( magma_smtransfer( A, &A_d, Magma_CPU, Magma_DEV, queue ));
-    CHECK( magma_smtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
+    TESTING_CHECK( magma_smtransfer( A, &A_d, Magma_CPU, Magma_DEV, queue ));
+    TESTING_CHECK( magma_smtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
 
-    CHECK( magma_scuspaxpy( &one, A_d, &one, B_d, &C_d, queue ));
+    TESTING_CHECK( magma_scuspaxpy( &one, A_d, &one, B_d, &C_d, queue ));
 
     magma_smfree(&B_d, queue );
 
-    CHECK( magma_scuspaxpy( &mone, A_d, &one, C_d, &B_d, queue ));
+    TESTING_CHECK( magma_scuspaxpy( &mone, A_d, &one, C_d, &B_d, queue ));
     
-    CHECK( magma_smtransfer( B_d, &B2, Magma_DEV, Magma_CPU, queue ));
+    TESTING_CHECK( magma_smtransfer( B_d, &B2, Magma_DEV, Magma_CPU, queue ));
 
     magma_smfree(&A_d, queue );
     magma_smfree(&B_d, queue );
     magma_smfree(&C_d, queue );
 
     // check difference
-    CHECK( magma_smdiff( B, B2, &res, queue ));
+    TESTING_CHECK( magma_smdiff( B, B2, &res, queue ));
     printf("%% ||A-B||_F = %8.2e\n", res);
     if ( res < .000001 )
         printf("%% tester matrix add:  ok\n");
     else
         printf("%% tester matrix add:  failed\n");
 
-cleanup:
-    magma_smfree(&A_d, queue );
-    magma_smfree(&B_d, queue );
-    magma_smfree(&C_d, queue );
     magma_smfree(&A, queue );
     magma_smfree(&B, queue );
     magma_smfree(&B2, queue );
     magma_queue_destroy( queue );
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return info;
 }

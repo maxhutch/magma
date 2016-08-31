@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd2_gpu.cpp normal z -> c, Mon May  2 23:30:14 2016
+       @generated from src/zhetrd2_gpu.cpp, normal z -> c, Tue Aug 30 09:38:14 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHETRD2_GPU reduces a complex Hermitian matrix A to real symmetric
@@ -152,8 +152,8 @@
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
 
-    @ingroup magma_cheev_comp
-    ********************************************************************/
+    @ingroup magma_hetrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chetrd2_gpu(
     magma_uplo_t uplo, magma_int_t n,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -24,16 +24,92 @@
 
 #define version(s,v) s ## _V_ ## v
 
-/**
+/******************************************************************************/
+extern "C" void
+magmablas_dsyrk_internal_batched(
+    magma_uplo_t uplo, magma_trans_t trans, 
+    magma_int_t n, magma_int_t k,
+    double alpha,
+    double const * const * dA_array, magma_int_t ldda,
+    double const * const * dB_array, magma_int_t lddb,
+    double beta,
+    double **dC_array, magma_int_t lddc, 
+    magma_int_t batchCount, magma_queue_t queue )
+{
+    double cbeta  = MAGMA_D_MAKE( beta, 0. );
+    double calpha = MAGMA_D_MAKE( alpha, 0. );
+
+    // --------------------
+    // CUDA ARCH 2.x (Fermi) version
+    if ( n <= 0 || k <= 0 )
+        return;
+
+    // we have two shapes only (nt or tn)
+    magma_int_t shape = 0;
+    if      (trans == MagmaNoTrans)   { shape = 0; } // nt
+    else                              { shape = 1; } // tn
+    
+    switch(shape)
+    {
+        case 0: // nt
+            {
+                if (k < 128)
+                {
+                    herk_template_batched_nt<double, version(NT,160), 0, 0>
+                    (uplo, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, calpha, cbeta, batchCount, queue);
+                }
+                else
+                {
+                    if (n < 256)
+                    {
+                        herk_template_batched_nt<double, version(NT,160), 0, 0>
+                        (uplo, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, calpha, cbeta, batchCount, queue);
+                    }
+                    else
+                    {
+                        herk_template_batched_nt<double, version(NT,190), 0, 0>
+                        (uplo, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, calpha, cbeta, batchCount, queue);
+                    }
+                }
+            }
+            break;
+        case 1: // tn
+            {
+                if (k < 64)
+                {
+                    herk_template_batched_tn<double, version(TN,207), 0, 0>
+                    (uplo, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, calpha, cbeta, batchCount, queue);
+                }
+                else
+                {
+                    if (n < 256)
+                    {
+                        herk_template_batched_tn<double, version(TN,207), 0, 0>
+                        (uplo, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, calpha, cbeta, batchCount, queue);
+                    }
+                    else
+                    {
+                        herk_template_batched_tn<double, version(TN,209), 0, 0>
+                        (uplo, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, calpha, cbeta, batchCount, queue);
+                    }
+                }
+            }
+            break;
+        default:; // propose something
+    }
+}
+
+
+/***************************************************************************//**
     Purpose
     -------
     DSYRK performs one of the symmetric rank k operations
 
-    C := alpha*A*A**T + beta*C,
+    C := alpha*A*A**H + beta*C,
 
     or
 
-    C := alpha*A**T*A + beta*C,
+    C := alpha*A**H*A + beta*C,
 
     where alpha and beta are real scalars, C is an n by n symmetric
     matrix and A is an n by k matrix in the first case and a k by n
@@ -59,11 +135,9 @@
             On entry, trans specifies the operation to be performed as
             follows:
 
-            trans = MagmaNoTrans,   C := alpha*A*A**T + beta*C.
+            trans = MagmaNoTrans C := alpha*A*A**H + beta*C.
 
-            trans = MagmaTrans,     C := alpha*A**T*A + beta*C.
-
-            trans = MagmaConjTrans, C := alpha*A**T*A + beta*C.
+            trans = MagmaTrans   C := alpha*A**H*A + beta*C.
 
     @param[in]
     n       INTEGER.
@@ -135,9 +209,9 @@
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_dblas3
-    ********************************************************************/
-void
+    @ingroup magma_syrk_batched
+*******************************************************************************/
+extern "C" void
 magmablas_dsyrk_batched(
     magma_uplo_t uplo, magma_trans_t trans, 
     magma_int_t n, magma_int_t k,
@@ -147,13 +221,10 @@ magmablas_dsyrk_batched(
     double **dC_array, magma_int_t lddc, 
     magma_int_t batchCount, magma_queue_t queue )
 {
-    double cbeta  = MAGMA_D_MAKE( beta, 0. );
-    double calpha = MAGMA_D_MAKE( alpha, 0. );
-
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    else if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
+    else if ( trans != MagmaNoTrans && trans != MagmaTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;
@@ -171,53 +242,9 @@ magmablas_dsyrk_batched(
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
-        fprintf( stderr, "%s: CUDA arch < 200 not supported\n", __func__ ); // TODO call cublas
+        printf("not supported \n"); // TODO call cublas
         return;
     }
     
-    // --------------------
-    // CUDA ARCH 2.x (Fermi) version
-    if ( n <= 0 || k <= 0 )
-        return;
-
-    //TODO: probably the texture init code should be placed here
-
-    size_t offsetA = 0;
-    size_t offsetB = 0;
-    offsetA = offsetA/sizeof(double);
-    offsetB = offsetB/sizeof(double);
-    
-    if (trans == MagmaNoTrans) {
-        if (k < 128) {
-            herk_template_batched_nt<double, version(NT,160), 0, 0>
-                (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-        }
-        else {
-            if (n < 256) {
-                herk_template_batched_nt<double, version(NT,160), 0, 0>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-            }
-            else {
-                herk_template_batched_nt<double, version(NT,190), 0, 0>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-            }
-        }
-    }
-    else {
-        // Trans, ConjTrans
-        if (k < 64) {
-            herk_template_batched_tn<double, version(TN,207), 0, 0>
-                (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-        }
-        else {
-            if (n < 256) {
-                herk_template_batched_tn<double, version(TN,207), 0, 0>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-            }
-            else {
-                herk_template_batched_tn<double, version(TN,209), 0, 0>
-                    (uplo, n, k, dA_array, ldda, dC_array, lddc, calpha, cbeta, offsetA, offsetB, batchCount, queue);
-            }
-        }
-    }
+    magmablas_dsyrk_internal_batched(uplo, trans, n, k, alpha, dA_array, ldda, dA_array, ldda, beta, dC_array, lddc, batchCount, queue );
 }

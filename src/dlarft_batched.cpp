@@ -1,24 +1,23 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Ahmad Abdelfattah
        
-       @generated from src/zlarft_batched.cpp normal z -> d, Mon May  2 23:30:28 2016
+       @generated from src/zlarft_batched.cpp, normal z -> d, Tue Aug 30 09:38:26 2016
 */
 #include "magma_internal.h"
+
 #define  max_shared_bsiz 32
 
 #define RFT_MAG_GEM
 
 
-//===================================================================================================================
-//===================================================================================================================
-//===================================================================================================================
+/******************************************************************************/
 extern "C" void
 magma_dlarft_sm32x32_batched(magma_int_t n, magma_int_t k, 
                     double **v_array, magma_int_t ldv,
@@ -75,12 +74,7 @@ magma_dlarft_sm32x32_batched(magma_int_t n, magma_int_t k,
 }
 
 
-
-
-
-//===================================================================================================================
-//===================================================================================================================
-//===================================================================================================================
+/******************************************************************************/
 extern "C" magma_int_t
 magma_dlarft_batched(magma_int_t n, magma_int_t k, magma_int_t stair_T, 
                 double **v_array, magma_int_t ldv,
@@ -96,17 +90,18 @@ magma_dlarft_batched(magma_int_t n, magma_int_t k, magma_int_t stair_T,
 
     magma_int_t maxnb = max_shared_bsiz;
 
-    if ( lwork < k*ldt) 
-    {
-        magma_xerbla( __func__, -(10) );
-        return -10;
+    magma_int_t info = 0;
+    if (stair_T > 0 && stair_T > maxnb) {
+        info = -3;
+    }
+    else if (lwork < k*ldt) {
+        info = -10;
+    }
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;
     }
 
-    if ( stair_T > 0 && stair_T > maxnb)
-    { 
-        magma_xerbla( __func__, -(3) );
-        return -3;
-    }
     magma_int_t DEBUG=0;
     magma_int_t nb = stair_T == 0 ? min(k,maxnb) : stair_T;
 
@@ -175,8 +170,8 @@ magma_dlarft_batched(magma_int_t n, magma_int_t k, magma_int_t stair_T,
         // note that myrow = prev_n + mycol;
         if (prev_n > 0 && mycol > 0) {
             if (DEBUG == 3) {
-                printf("doing gemm on the rectangular portion of size %d %d of T(%d,%d)\n",
-                        (int) prev_n, (int) mycol, 0, (int) j );
+                printf("doing gemm on the rectangular portion of size %lld %lld of T(%lld,%lld)\n",
+                        (long long) prev_n, (long long) mycol, (long long) 0, (long long) j );
             }
 
             magma_ddisplace_pointers(dW1_displ, dTstep_array, ldtstep, 0, j, batchCount, queue);
@@ -196,8 +191,8 @@ magma_dlarft_batched(magma_int_t n, magma_int_t k, magma_int_t stair_T,
             {
                 rows = min(nb,prev_n-i);
                 if (DEBUG == 3) {
-                    printf("        doing recdtrmv on the rectangular portion of size %d %d of T(%d,%d)\n",
-                            (int) rows, (int) mycol, (int) i, (int) j );
+                    printf("        doing recdtrmv on the rectangular portion of size %lld %lld of T(%lld,%lld)\n",
+                            (long long) rows, (long long) mycol, (long long) i, (long long) j );
                 }
 
                 if (rows > 0 && mycol > 0)
@@ -211,8 +206,8 @@ magma_dlarft_batched(magma_int_t n, magma_int_t k, magma_int_t stair_T,
         // the upper rectangular protion is updated, now if needed update the triangular portion
         if (stair_T == 0) {
             if (DEBUG == 3) {
-                printf("doing dtrmv on the triangular portion of size %d %d of T(%d,%d)\n",
-                        (int) mycol, (int) mycol, (int) j, (int) j );
+                printf("doing dtrmv on the triangular portion of size %lld %lld of T(%lld,%lld)\n",
+                        (long long) mycol, (long long) mycol, (long long) j, (long long) j );
             }
 
             if (mycol > 0)
@@ -232,6 +227,3 @@ magma_dlarft_batched(magma_int_t n, magma_int_t k, magma_int_t stair_T,
 
     return 0;
 }
-
-
-/*===============================================================================================================================*/

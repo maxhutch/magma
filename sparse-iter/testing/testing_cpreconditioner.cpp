@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/testing/testing_zpreconditioner.cpp normal z -> c, Mon May  2 23:31:25 2016
+       @generated from sparse-iter/testing/testing_zpreconditioner.cpp, normal z -> c, Tue Aug 30 09:39:21 2016
        @author Hartwig Anzt
 */
 
@@ -16,12 +16,9 @@
 #include <math.h>
 
 // includes, project
-#include "flops.h"
 #include "magma_v2.h"
-#include "magma_lapack.h"
+#include "magmasparse.h"
 #include "testings.h"
-#include "magmasparse_internal.h"
-
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -30,7 +27,8 @@
 int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     magma_copts zopts;
     magma_queue_t queue=NULL;
@@ -46,48 +44,48 @@ int main(  int argc, char** argv )
     real_Double_t tempo1, tempo2;
     
     int i=1;
-    CHECK( magma_cparse_opts( argc, argv, &zopts, &i, queue ));
+    TESTING_CHECK( magma_cparse_opts( argc, argv, &zopts, &i, queue ));
 
     B.blocksize = zopts.blocksize;
     B.alignment = zopts.alignment;
 
-    CHECK( magma_csolverinfo_init( &zopts.solver_par, &zopts.precond_par, queue ));
+    TESTING_CHECK( magma_csolverinfo_init( &zopts.solver_par, &zopts.precond_par, queue ));
 
     while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
-            CHECK( magma_cm_5stencil(  laplace_size, &A, queue ));
+            TESTING_CHECK( magma_cm_5stencil(  laplace_size, &A, queue ));
         } else {                        // file-matrix test
-            CHECK( magma_c_csr_mtx( &A,  argv[i], queue ));
+            TESTING_CHECK( magma_c_csr_mtx( &A,  argv[i], queue ));
         }
 
-        printf( "\n%% matrix info: %d-by-%d with %d nonzeros\n\n",
-                            int(A.num_rows), int(A.num_cols), int(A.nnz) );
+        printf( "\n%% matrix info: %lld-by-%lld with %lld nonzeros\n\n",
+                (long long) A.num_rows, (long long) A.num_cols, (long long) A.nnz );
 
 
         // for the eigensolver case
         zopts.solver_par.ev_length = A.num_rows;
-        CHECK( magma_ceigensolverinfo_init( &zopts.solver_par, queue ));
+        TESTING_CHECK( magma_ceigensolverinfo_init( &zopts.solver_par, queue ));
 
         // scale matrix
-        CHECK( magma_cmscale( &A, zopts.scaling, queue ));
+        TESTING_CHECK( magma_cmscale( &A, zopts.scaling, queue ));
 
-        CHECK( magma_cmconvert( A, &B, Magma_CSR, zopts.output_format, queue ));
-        CHECK( magma_cmtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
+        TESTING_CHECK( magma_cmconvert( A, &B, Magma_CSR, zopts.output_format, queue ));
+        TESTING_CHECK( magma_cmtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
 
         // vectors and initial guess
-        CHECK( magma_cvinit( &b, Magma_DEV, A.num_cols, 1, one, queue ));
-        CHECK( magma_cvinit( &x, Magma_DEV, A.num_cols, 1, zero, queue ));
-        CHECK( magma_cvinit( &t, Magma_DEV, A.num_cols, 1, zero, queue ));
-        CHECK( magma_cvinit( &x1, Magma_DEV, A.num_cols, 1, zero, queue ));
-        CHECK( magma_cvinit( &x2, Magma_DEV, A.num_cols, 1, zero, queue ));
+        TESTING_CHECK( magma_cvinit( &b, Magma_DEV, A.num_cols, 1, one, queue ));
+        TESTING_CHECK( magma_cvinit( &x, Magma_DEV, A.num_cols, 1, zero, queue ));
+        TESTING_CHECK( magma_cvinit( &t, Magma_DEV, A.num_cols, 1, zero, queue ));
+        TESTING_CHECK( magma_cvinit( &x1, Magma_DEV, A.num_cols, 1, zero, queue ));
+        TESTING_CHECK( magma_cvinit( &x2, Magma_DEV, A.num_cols, 1, zero, queue ));
                         
         //preconditioner
-        CHECK( magma_c_precondsetup( B_d, b, &zopts.solver_par, &zopts.precond_par, queue ) );
+        TESTING_CHECK( magma_c_precondsetup( B_d, b, &zopts.solver_par, &zopts.precond_par, queue ) );
         
         float residual;
-        CHECK( magma_cresidual( B_d, b, x, &residual, queue ));
+        TESTING_CHECK( magma_cresidual( B_d, b, x, &residual, queue ));
         zopts.solver_par.init_res = residual;
         printf("data = [\n");
         
@@ -96,10 +94,10 @@ int main(  int argc, char** argv )
         info = magma_c_applyprecond_left( MagmaNoTrans, B_d, b, &x1, &zopts.precond_par, queue ); 
         tempo2 = magma_sync_wtime( queue );
         if( info != 0 ){
-            printf("error: preconditioner returned: %s (%d).\n",
-                magma_strerror( info ), int(info) );
+            printf("error: preconditioner returned: %s (%lld).\n",
+                    magma_strerror( info ), (long long) info );
         }
-        CHECK( magma_cresidual( B_d, b, x1, &residual, queue ));
+        TESTING_CHECK( magma_cresidual( B_d, b, x1, &residual, queue ));
         printf("%.8e  %.8e\n", tempo2-tempo1, residual );
         
         printf("%%runtime right preconditioner:\n");
@@ -107,10 +105,10 @@ int main(  int argc, char** argv )
         info = magma_c_applyprecond_right( MagmaNoTrans, B_d, b, &x2, &zopts.precond_par, queue ); 
         tempo2 = magma_sync_wtime( queue );
         if( info != 0 ){
-            printf("error: preconditioner returned: %s (%d).\n",
-                magma_strerror( info ), int(info) );
+            printf("error: preconditioner returned: %s (%lld).\n",
+                    magma_strerror( info ), (long long) info );
         }
-        CHECK( magma_cresidual( B_d, b, x2, &residual, queue ));
+        TESTING_CHECK( magma_cresidual( B_d, b, x2, &residual, queue ));
         printf("%.8e  %.8e\n", tempo2-tempo1, residual );
         
         
@@ -120,7 +118,7 @@ int main(  int argc, char** argv )
         info = magma_c_applyprecond_right( MagmaNoTrans, B_d, t, &x, &zopts.precond_par, queue ); 
 
                 
-        CHECK( magma_cresidual( B_d, b, x, &residual, queue ));
+        TESTING_CHECK( magma_cresidual( B_d, b, x, &residual, queue ));
         zopts.solver_par.final_res = residual;
         
         magma_csolverinfo( &zopts.solver_par, &zopts.precond_par, queue );
@@ -137,17 +135,7 @@ int main(  int argc, char** argv )
         i++;
     }
 
-cleanup:
-    magma_cmfree(&B_d, queue );
-    magma_cmfree(&B, queue );
-    magma_cmfree(&A, queue );
-    magma_cmfree(&x, queue );
-    magma_cmfree(&x1, queue );
-    magma_cmfree(&x2, queue );
-    magma_cmfree(&b, queue );
-    magma_cmfree(&t, queue );
-    magma_csolverinfo_free( &zopts.solver_par, &zopts.precond_par, queue );
     magma_queue_destroy( queue );
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return info;
 }

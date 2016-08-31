@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -66,7 +66,7 @@ zsymmetrize_tiles_upper( int m, magmaDoubleComplex *dA, int ldda, int mstride, i
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     
@@ -114,8 +114,8 @@ zsymmetrize_tiles_upper( int m, magmaDoubleComplex *dA, int ldda, int mstride, i
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_symmetrize_batched
+*******************************************************************************/
 extern "C" void
 magmablas_zsymmetrize_tiles_q(
     magma_uplo_t uplo, magma_int_t m,

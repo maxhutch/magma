@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
@@ -21,7 +21,7 @@ void magma_zscal_zgeru(
 
 
 // TODO: this function could be in .cpp file -- it has no CUDA code in it.
-/**
+/***************************************************************************//**
     ZGETF2 computes an LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
@@ -73,8 +73,8 @@ void magma_zscal_zgeru(
                  singular, and division by zero will occur if it is used
                  to solve a system of equations.
 
-    @ingroup magma_zgesv_aux
-    ********************************************************************/
+    @ingroup magma_getf2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgetf2_gpu(
     magma_int_t m, magma_int_t n,
@@ -140,6 +140,7 @@ magma_zgetf2_gpu(
 // TODO: use standard BLAS magma_zswap?
 #define zswap_bs 64
 
+/******************************************************************************/
 __global__
 void kernel_zswap(int n, magmaDoubleComplex *x, int i, int j, int incx)
 {
@@ -153,6 +154,7 @@ void kernel_zswap(int n, magmaDoubleComplex *x, int i, int j, int incx)
 }
 
 
+/******************************************************************************/
 void magma_zgetf2_swap(
     magma_int_t n, magmaDoubleComplex *x, magma_int_t i, magma_int_t j, magma_int_t incx,
     magma_queue_t queue )
@@ -166,11 +168,13 @@ void magma_zgetf2_swap(
 }
 
 
-// ===========================================================================
+/******************************************************************************/
 // dynamically allocated shared memory, set to size n when the kernel is launched.
 // See CUDA Guide B.2.3
 extern __shared__ magmaDoubleComplex shared_data[];
 
+
+/******************************************************************************/
 __global__
 void kernel_zscal_zgeru(int m, int n, magmaDoubleComplex *A, int lda)
 {
@@ -201,6 +205,7 @@ void kernel_zscal_zgeru(int m, int n, magmaDoubleComplex *A, int lda)
 }
 
 
+/******************************************************************************/
 void magma_zscal_zgeru(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,

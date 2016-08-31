@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
        @author Eduardo Ponce
@@ -23,7 +23,7 @@
 
     Solves a system of linear equations
        A * X = B
-    where A is a complex Hermitian N-by-N positive definite matrix A.
+    where A is a general complex N-by-N matrix A.
     This is a GPU implementation of the Induced Dimension Reduction method.
 
     Arguments
@@ -378,7 +378,6 @@ magma_zidr(
                 // f(k+1:s) = f(k+1:s) - beta * M(k+1:s,k)
                 magma_zaxpy( sk-1, -hbeta.val[k], &dM.dval[k*dM.ld+(k+1)], 1, &df.dval[k+1], 1, queue );
             }
-
         }
 
         // smoothing disabled

@@ -1,9 +1,27 @@
 var group__magmasparse__zblas =
 [
-    [ "magma_z_spmm", "group__magmasparse__zblas.html#gadad5bf7f7d90e545626ea732a30ca333", null ],
-    [ "magma_z_spmv", "group__magmasparse__zblas.html#gaaf2cfc7dde081ea84002eff1738a47ac", null ],
-    [ "magma_z_spmv_shift", "group__magmasparse__zblas.html#ga71f8e840d72ffa24fe683b46afb16cd8", null ],
     [ "magma_zcuspaxpy", "group__magmasparse__zblas.html#gab21ccc1ae2306de3ed8a3e910df3628d", null ],
     [ "magma_zcuspmm", "group__magmasparse__zblas.html#gab4481047f065e14cfd2e67a1acd148cf", null ],
-    [ "magma_zcustomspmv", "group__magmasparse__zblas.html#ga3b563ff11bfe803c91d91c1b20ec5d41", null ]
+    [ "magma_zcustomspmv", "group__magmasparse__zblas.html#ga3b563ff11bfe803c91d91c1b20ec5d41", null ],
+    [ "magma_z_spmv", "group__magmasparse__zblas.html#gaaf2cfc7dde081ea84002eff1738a47ac", null ],
+    [ "magma_z_spmv_shift", "group__magmasparse__zblas.html#ga71f8e840d72ffa24fe683b46afb16cd8", null ],
+    [ "magma_z_spmm", "group__magmasparse__zblas.html#gadad5bf7f7d90e545626ea732a30ca333", null ],
+    [ "magma_zgeaxpy", "group__magmasparse__zblas.html#ga741b0bc4f8d37b82b5ad76eba93ff7a5", null ],
+    [ "magma_zgecsrmv", "group__magmasparse__zblas.html#gac14d734d6b2422aa932deddd827bd472", null ],
+    [ "magma_zgecsrmv_shift", "group__magmasparse__zblas.html#ga45cb89617dbeaecf5c95338841ab21b5", null ],
+    [ "magma_zgecsrreimsplit", "group__magmasparse__zblas.html#gaa4baac7cbb4fd0dfa3865e3623e4bfc2", null ],
+    [ "magma_zgedensereimsplit", "group__magmasparse__zblas.html#ga949e133ba54376b8f625a34601ee7bfc", null ],
+    [ "magma_zgeellmv", "group__magmasparse__zblas.html#ga5e0ec153fd915f2c7c8297046abe2673", null ],
+    [ "magma_zgeellmv_shift", "group__magmasparse__zblas.html#gae5440df69bdef87f2ba5855d41796a84", null ],
+    [ "magma_zgeellrtmv", "group__magmasparse__zblas.html#ga66164b53245337179638da422d590ed5", null ],
+    [ "magma_zgeelltmv_shift", "group__magmasparse__zblas.html#gaeaba56ac4ee978ca3d9d89937f73a1be", null ],
+    [ "magma_zmdotc", "group__magmasparse__zblas.html#ga1cf41149770acc2464cbf42a23f248f7", null ],
+    [ "magma_zgesellpmv", "group__magmasparse__zblas.html#ga63cadeadf0407434ab4d2c98ccd72d51", null ],
+    [ "magma_zgesellcmv", "group__magmasparse__zblas.html#ga55fa0864f9d99ddde413cb3d736cc29c", null ],
+    [ "magma_zmdotc_shfl", "group__magmasparse__zblas.html#gae0b5866daa241ca422259006e8f9b907", null ],
+    [ "magma_zmdotc4", "group__magmasparse__zblas.html#gadef536a2cf4bb90dbaecabae054f9e34", null ],
+    [ "magma_zmgecsrmv", "group__magmasparse__zblas.html#gaedbc8ed87222aa65aa4edb005f8fe295", null ],
+    [ "magma_zmgeellmv", "group__magmasparse__zblas.html#ga4ea08bd56ae6d03dd84d62823dc812b6", null ],
+    [ "magma_zmgeelltmv", "group__magmasparse__zblas.html#ga8f62ad40b3b7c9444b51653a3a9a8cfd", null ],
+    [ "magma_zmgesellpmv", "group__magmasparse__zblas.html#gaf0df97324b941b380c5dcbc71a11f34d", null ]
 ];

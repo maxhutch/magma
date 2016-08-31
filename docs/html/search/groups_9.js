@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['non_2dsymmetric_20eigenvalue',['Non-symmetric eigenvalue',['../group__magma__geev.html',1,'']]],
-  ['non_2dsymmetric_20eigenvalue_3a_20auxiliary',['Non-symmetric eigenvalue: auxiliary',['../group__magma__geev__aux.html',1,'']]],
-  ['non_2dsymmetric_20eigenvalue_3a_20computational',['Non-symmetric eigenvalue: computational',['../group__magma__geev__comp.html',1,'']]],
-  ['non_2dsymmetric_20eigenvalue_3a_20driver',['Non-symmetric eigenvalue: driver',['../group__magma__geev__driver.html',1,'']]]
+  ['iamax_3a_20find_20max_20element',['iamax: Find max element',['../group__magma__iamax.html',1,'']]],
+  ['iamax_3a_20find_20max_20element',['iamax: Find max element',['../group__magma__iamax__batched.html',1,'']]],
+  ['iamin_3a_20find_20min_20element',['iamin: Find min element',['../group__magma__iamin.html',1,'']]],
+  ['iamin_3a_20find_20min_20element',['iamin: Find min element',['../group__magma__iamin__batched.html',1,'']]],
+  ['initialize_2ffinalize',['Initialize/finalize',['../group__magma__init.html',1,'']]],
+  ['internal_20routines',['Internal routines',['../group__magma__internal.html',1,'']]]
 ];

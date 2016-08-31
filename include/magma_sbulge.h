@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magma_zbulge.h normal z -> s, Mon May  2 23:31:25 2016
+       @generated from include/magma_zbulge.h, normal z -> s, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMA_SBULGE_H
@@ -131,7 +131,7 @@ magma_ssbtype3cb(magma_int_t n, magma_int_t nb,
 
 
 magma_int_t
-magma_sormqr_gpu_2stages(
+magma_sormqr_2stage_gpu(
     magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dC, magma_int_t lddc,

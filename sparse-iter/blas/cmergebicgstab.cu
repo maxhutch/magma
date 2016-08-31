@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmergebicgstab.cu normal z -> c, Mon May  2 23:30:47 2016
+       @generated from sparse-iter/blas/zmergebicgstab.cu, normal z -> c, Tue Aug 30 09:38:44 2016
        @author Hartwig Anzt
 
 */
@@ -99,7 +99,7 @@ magma_cbicgstab_1(
     magma_cbicgstab_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, omega,
                      r, v, p );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -180,7 +180,7 @@ magma_cbicgstab_2(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cbicgstab_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, r, v, s );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -283,7 +283,7 @@ magma_cbicgstab_3(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cbicgstab_3_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, omega, p, s, t, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -390,6 +390,5 @@ magma_cbicgstab_4(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_cbicgstab_4_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, omega, y, z, s, t, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-

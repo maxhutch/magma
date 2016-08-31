@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
 
-       @generated from src/core_zhbtype3cb.cpp normal z -> d, Mon May  2 23:30:20 2016
+       @generated from src/core_zhbtype3cb.cpp, normal z -> d, Tue Aug 30 09:38:19 2016
 
 */
 #include "magma_internal.h"
@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup magma_double
+ * @ingroup magma_hbtype3cb
  *
  *  magma_dsbtype3cb is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel apply a left+right update on the symmetric
@@ -53,6 +53,9 @@
  *          double array, dimension 2*n if eigenvalue only
  *          requested or (ldv*blkcnt*Vblksiz) if Eigenvectors requested
  *          The Householder reflectors are stored in this array.
+ *
+ * @param[in] ldv
+ *          The leading dimension of the matrix V. ldv >= TODO.
  *
  * @param[in] TAU
  *          double array, dimension (n).
@@ -89,9 +92,9 @@
  *
  ******************************************************************************/
 
-/***************************************************************************//**
- *          TYPE 3-BAND Lower-columnwise-Householder
- ***************************************************************************/
+// -----------------------------------------------------------------------------
+// TYPE 3-BAND Lower-columnwise-Householder
+
 extern "C" void
 magma_dsbtype3cb(magma_int_t n, magma_int_t nb,
                 double *A, magma_int_t lda,
@@ -105,7 +108,6 @@ magma_dsbtype3cb(magma_int_t n, magma_int_t nb,
     magma_int_t vpos, taupos;
     //magma_int_t blkid, tpos;
 
-
     if ( wantz == 0 ) {
         vpos   = (sweep%2)*n + st;
         taupos = (sweep%2)*n + st;
@@ -117,9 +119,8 @@ magma_dsbtype3cb(magma_int_t n, magma_int_t nb,
     len = ed-st+1;
     /* Apply left and right on A(st:ed,st:ed)*/
     magma_dlarfy(len, A(st,st), lda-1, V(vpos), TAU(taupos), work);
-    return;
 }
-/***************************************************************************/
+
 #undef A
 #undef V
 #undef TAU

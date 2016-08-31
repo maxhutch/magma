@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from src/zgeqrf_expert_batched.cpp normal z -> d, Mon May  2 23:30:29 2016
+       @generated from src/zgeqrf_expert_batched.cpp, normal z -> d, Tue Aug 30 09:38:27 2016
 */
 #include <cuda_runtime.h>
 
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEQRF computes a QR factorization of a real M-by-N matrix A:
@@ -119,10 +119,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
-
-
+    @ingroup magma_geqrf_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqrf_expert_batched(
     magma_int_t m, magma_int_t n, 
@@ -132,7 +130,7 @@ magma_dgeqrf_expert_batched(
     double **dtau_array, magma_int_t provide_RT,
     magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
 {
-#define dA(i, j)  (dA + (i) + (j)*ldda)   // A(i, j) means at i row, j column
+    #define dA(i, j)  (dA + (i) + (j)*ldda)
     
     /* Local Parameter */
     magma_int_t nb = magma_get_dgeqrf_batched_nb(m);
@@ -224,6 +222,9 @@ magma_dgeqrf_expert_batched(
 
     magma_ddisplace_pointers(dR_displ, dR_array, lddr, 0, 0, batchCount, queue); 
     magma_ddisplace_pointers(dT_displ, dT_array, lddt, 0, 0, batchCount, queue); 
+    // set dwork to zero because our GEMM routine does propagate NAN when C=betaC+alphaA*B and beta=0
+    magmablas_dlaset_q( MagmaFull, 2*nb, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, 2*nb, queue );
+
     // set dR and dT to zero. if provide_RT == 0 only a tile of size nbxnb is used and overwritten at each step
     magmablas_dlaset_batched( MagmaFull, lddr, (provide_RT > 0 ? n:min(min_mn,nb)), MAGMA_D_ZERO, MAGMA_D_ZERO, dR_displ, lddr, batchCount, queue ); 
     magmablas_dlaset_batched( MagmaFull, lddt, (provide_RT > 0 ? n:min(min_mn,nb)), MAGMA_D_ZERO, MAGMA_D_ZERO, dT_displ, lddt, batchCount, queue );

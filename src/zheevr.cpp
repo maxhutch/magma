@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
 
@@ -12,7 +12,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHEEVR computes selected eigenvalues and, optionally, eigenvectors
@@ -232,8 +232,8 @@
        Ken Stanley, Computer Science Division, University of
          California at Berkeley, USA
 
-    @ingroup magma_zheev_driver
-    ********************************************************************/
+    @ingroup magma_heevr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zheevr(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
@@ -343,7 +343,7 @@ magma_zheevr(
     if (n <= 128) {
         #ifdef ENABLE_DEBUG
         printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
+        printf("  warning matrix too small N=%lld NB=%lld, calling lapack on CPU\n", (long long) n, (long long) nb );
         printf("--------------------------------------------------------------\n");
         #endif
         lapackf77_zheevr(jobz_, range_, uplo_,

@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgelqf_gpu.cpp normal z -> d, Mon May  2 23:30:05 2016
+       @generated from src/zgelqf_gpu.cpp, normal z -> d, Tue Aug 30 09:38:06 2016
 
 */
 #include "magma_internal.h"
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGELQF computes an LQ factorization of a DOUBLE PRECISION M-by-N matrix dA:
@@ -84,8 +84,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:n) is stored on exit in A(i,i+1:n),
     and tau in TAU(i).
 
-    @ingroup magma_dgelqf_comp
-    ********************************************************************/
+    @ingroup magma_gelqf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgelqf_gpu(
     magma_int_t m, magma_int_t n,

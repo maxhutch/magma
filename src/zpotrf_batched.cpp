@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -16,8 +16,7 @@
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
-///////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPOTRF computes the Cholesky factorization of a complex Hermitian
@@ -79,8 +78,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrf_lg_batched(
     magma_uplo_t uplo, magma_int_t n,
@@ -95,12 +94,12 @@ magma_zpotrf_lg_batched(
 
     if ( n > 2048 ) {
         #ifndef MAGMA_NOWARNING
-        printf("=========================================================================================\n");
-        printf("   WARNING batched routines are designed for small sizes it might be better to use the\n   Native/Hybrid classical routines if you want performance\n");
-        printf("=========================================================================================\n");
+        printf("=========================================================================================\n"
+               "   WARNING batched routines are designed for small sizes. It might be better to use the\n"
+               "   Native/Hybrid classical routines if you want good performance.\n"
+               "=========================================================================================\n");
         #endif
     }
-
 
     magma_int_t j, k, ib, use_stream;
     magma_int_t nb, recnb;
@@ -124,7 +123,7 @@ magma_zpotrf_lg_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array,    batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, ZTRTRI_BATCHED_NB )*ZTRTRI_BATCHED_NB;
     magma_int_t dwork_msize = n*nb;
     magmaDoubleComplex* dinvA      = NULL;
     magmaDoubleComplex* dwork      = NULL; // dinvA and dwork are workspace in ztrsm
@@ -154,7 +153,7 @@ magma_zpotrf_lg_batched(
     magmablas_zlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA, invA_msize, queue );
     magmablas_zlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork, dwork_msize, queue );
     magma_zset_pointer( dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue );
-    magma_zset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+    magma_zset_pointer( dinvA_array, dinvA, ZTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
 
     magma_int_t streamid;
@@ -168,7 +167,7 @@ magma_zpotrf_lg_batched(
     magma_getvector( batchCount, sizeof(magmaDoubleComplex*), dA_array, 1, cpuAarray, 1, queue);
 
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        printf("Upper side is unavailable\n");
         goto fin;
     }
     else {
@@ -180,7 +179,7 @@ magma_zpotrf_lg_batched(
             //===============================================
             magma_zdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount, queue);
             magma_zset_pointer( dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue );
-            magma_zset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+            magma_zset_pointer( dinvA_array, dinvA, ZTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
 
             if (recnb == nb)
@@ -212,7 +211,7 @@ magma_zpotrf_lg_batched(
 #endif            
 #if 1
             //real_Double_t gpu_time;
-            //gpu_time = magma_sync_wtime(NULL);
+            //gpu_time = magma_sync_wtime(queue);
             if ( (n-j-ib) > 0) {
                 use_stream = magma_zrecommend_cublas_gemm_stream(MagmaNoTrans, MagmaConjTrans, n-j-ib, n-j-ib, ib);
                 if (use_stream)
@@ -254,10 +253,11 @@ magma_zpotrf_lg_batched(
                                           batchCount, queue );
                 }
             } 
-            //gpu_time = magma_sync_wtime(NULL) - gpu_time;
+            //gpu_time = magma_sync_wtime(queue) - gpu_time;
             //real_Double_t flops = (n-j-ib) * (n-j-ib) * ib / 1e9 * batchCount;
             //real_Double_t gpu_perf = flops / gpu_time;
-            //printf("Rows= %d, Colum=%d, herk time = %7.2fms, Gflops= %7.2f\n", n-j-ib, ib, gpu_time*1000, gpu_perf);
+            //printf("Rows= %lld, Colum=%lld, herk time = %7.2fms, Gflops= %7.2f\n",
+            //       (long long)(n-j-ib), (long long) ib, gpu_time*1000, gpu_perf);
 #endif
         }
     }
@@ -282,8 +282,9 @@ fin:
 
     return arginfo;
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrf_batched(
     magma_uplo_t uplo, magma_int_t n,

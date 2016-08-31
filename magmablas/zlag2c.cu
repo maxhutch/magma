@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
 */
 #include "magma_internal.h"
 
+// mixed precision generation has issues with COMPLEX, so use PRECISION_z
 #define PRECISION_z
 
 #define BLK_X 64
@@ -79,7 +80,7 @@ void zlag2c_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLAG2C converts a double-complex matrix, A,
@@ -128,8 +129,8 @@ void zlag2c_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_lag2
+*******************************************************************************/
 extern "C" void
 magmablas_zlag2c_q(
     magma_int_t m, magma_int_t n,

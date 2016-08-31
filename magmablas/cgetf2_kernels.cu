@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgetf2_kernels.cu normal z -> c, Mon May  2 23:30:41 2016
+       @generated from magmablas/zgetf2_kernels.cu, normal z -> c, Tue Aug 30 09:38:38 2016
 */
 
 #include "magma_internal.h"
@@ -16,15 +16,10 @@
 #include "magma_templates.h"
 
 /*
-
     Purpose
     -------
     These are internal routines that might have many assumption.
-    They are used in cgetf2_batched.cpp   
-    No documentation is available today.
-
-    @ingroup magma_cgesv_aux
-
+    They are used in cgetf2_batched.cpp
 */
 
 
@@ -32,14 +27,14 @@
 
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
-//////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern __shared__ magmaFloatComplex shared_data[];
 extern __shared__ float sdata[];
 extern __shared__ int int_sdata[];
 
-//////////////////////////////////////////////////////////////////////////////////////////
 
-__device__ int 
+/******************************************************************************/
+__device__ int
 icamax_devfunc(int length, const magmaFloatComplex *x, int incx, float *shared_x, int *shared_idx)
 {
     int tx = threadIdx.x;
@@ -57,13 +52,13 @@ icamax_devfunc(int length, const magmaFloatComplex *x, int incx, float *shared_x
     {
         if ( (tx + s * zamax < length) && (tx < zamax) )
         {
-            res = x[(tx + s * zamax) * incx];                   
+            res = x[(tx + s * zamax) * incx];
             res1 = fabs(MAGMA_C_REAL(res)) + fabs(MAGMA_C_IMAG(res));
-            
+
             if ( res1  > shared_x[tx] )
             {
                 shared_x[tx] = res1;
-                shared_idx[tx] = tx + s * zamax;   
+                shared_idx[tx] = tx + s * zamax;
             }
         }
         __syncthreads();
@@ -77,22 +72,22 @@ icamax_devfunc(int length, const magmaFloatComplex *x, int incx, float *shared_x
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-__global__ void 
-icamax_kernel_batched(int length, int chunk, magmaFloatComplex **x_array, int incx, 
+/******************************************************************************/
+__global__ void
+icamax_kernel_batched(int length, int chunk, magmaFloatComplex **x_array, int incx,
                    int step, int lda, magma_int_t** ipiv_array, magma_int_t *info_array, int gbstep)
 {
     magmaFloatComplex *x_start = x_array[blockIdx.z];
-    const magmaFloatComplex *x = &(x_start[step + step * lda]); 
+    const magmaFloatComplex *x = &(x_start[step + step * lda]);
 
     magma_int_t *ipiv = ipiv_array[blockIdx.z];
     int tx = threadIdx.x;
 
-    float *shared_x = sdata;     
+    float *shared_x = sdata;
     int *shared_idx = (int*)(shared_x + zamax);
-    
+
     icamax_devfunc(length, x, incx, shared_x, shared_idx);
-    
+
     if (tx == 0) {
         ipiv[step]  = shared_idx[0] + step + 1; // Fortran Indexing
         if (shared_x[0] == MAGMA_D_ZERO) {
@@ -101,16 +96,15 @@ icamax_kernel_batched(int length, int chunk, magmaFloatComplex **x_array, int in
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+/******************************************************************************/
 __global__ void
-tree_icamax_kernel_batched(int length, magmaFloatComplex **x_array, int incx, 
-                   int step, int lda, magma_int_t** ipiv_array, magma_int_t *info_array, int gbstep, 
+tree_icamax_kernel_batched(int length, magmaFloatComplex **x_array, int incx,
+                   int step, int lda, magma_int_t** ipiv_array, magma_int_t *info_array, int gbstep,
                    float** data_pool_array, magma_int_t** id_pool_array)
 {
     magmaFloatComplex *x_start = x_array[blockIdx.z];
-    const magmaFloatComplex *x = &(x_start[step + step * lda]); 
+    const magmaFloatComplex *x = &(x_start[step + step * lda]);
 
     float *data_pool = data_pool_array[blockIdx.z];
     magma_int_t *id_pool = id_pool_array[blockIdx.z];
@@ -121,16 +115,16 @@ tree_icamax_kernel_batched(int length, magmaFloatComplex **x_array, int incx,
 
     __shared__ float shared_x[zamax];
     __shared__ int    shared_idx[zamax];
-    
+
     x += zamax * blockIdx.x * incx;
 
     icamax_devfunc(min(zamax, length-blockIdx.x * zamax), x, incx, shared_x, shared_idx);
-  
-    if (tx == 0) 
+
+    if (tx == 0)
     {
         local_max_id = shared_idx[0] + zamax * blockIdx.x; // add the offset
 
-        if (gridDim.x == 1) 
+        if (gridDim.x == 1)
         {
             ipiv[step]  = local_max_id + step + 1; // Fortran Indexing
             if (shared_x[0] == MAGMA_D_ZERO)
@@ -139,14 +133,14 @@ tree_icamax_kernel_batched(int length, magmaFloatComplex **x_array, int incx,
         else
         {
             // put each thread block local max and its index in workspace
-            data_pool[blockIdx.x] = shared_x[0]; 
+            data_pool[blockIdx.x] = shared_x[0];
             id_pool[blockIdx.x] = local_max_id;
         }
-    } 
+    }
 }
 
 
-
+/******************************************************************************/
 __global__ void
 tree_icamax_kernel2_batched(int n, int step,  magma_int_t** ipiv_array, magma_int_t *info_array, int gbstep, float** data_pool_array, magma_int_t** id_pool_array)
 {
@@ -165,50 +159,49 @@ tree_icamax_kernel2_batched(int n, int step,  magma_int_t** ipiv_array, magma_in
     if ( tx < n)
     {
         shared_x[tx] = data_pool[tx];
-        shared_idx[tx] = id_pool[tx]; 
-    } 
+        shared_idx[tx] = id_pool[tx];
+    }
     else
     {
         shared_x[tx] = 0.0;
-        shared_idx[tx] = -2; 
+        shared_idx[tx] = -2;
     }
- 
+
     __syncthreads();
-    
+
     // compute local result inside each thread block
     magma_getidmax<zamax>(tx, shared_x, shared_idx);
 
 
-    if (tx == 0 ) 
+    if (tx == 0 )
     {
         ipiv[step]  = shared_idx[0] + step + 1; // Fortran Indexing
         if (shared_x[0] == MAGMA_D_ZERO)
             info_array[blockIdx.z] = shared_idx[0] + step + gbstep + 1;
-    } 
+    }
 }
 
 
-
-
+/******************************************************************************/
 magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_array, magma_int_t incx, magma_int_t step,  magma_int_t lda,
         magma_int_t** ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 
 {
     if (length == 1) return 0;
     if (incx < 0) return 1;
-    
-    float* data_pool; 
+
+    float* data_pool;
     magma_int_t* id_pool;
 
-    float** data_pool_array = NULL;  
+    float** data_pool_array = NULL;
     magma_int_t** id_pool_array = NULL;
- 
+
     magma_int_t num_blocks = (length-1)/(zamax) + 1;
 
     // creat pools(data and index) to store the result of each thread blocks
     magma_smalloc(&data_pool, num_blocks * batchCount);
     magma_imalloc(&id_pool,   num_blocks * batchCount);
- 
+
     magma_malloc((void**)&data_pool_array, batchCount * sizeof(*data_pool_array));
     magma_malloc((void**)&id_pool_array, batchCount * sizeof(*id_pool_array));
 
@@ -216,15 +209,15 @@ magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_ar
     magma_sset_pointer( data_pool_array, data_pool, 1, 0, 0, num_blocks, batchCount, queue );
 #else
     magma_sset_pointer( data_pool_array, data_pool, 1, 0, 0, num_blocks, batchCount, queue );
-#endif 
+#endif
 
     magma_iset_pointer( id_pool_array, id_pool, 1, 0, 0, num_blocks, batchCount, queue );
 
 
-    if ( num_blocks > zamax) 
+    if ( num_blocks > zamax)
     {
-        fprintf( stderr, "%s: length(=%d), num_blocks(=%d) is too big > zamax(=%d), the second layer reduction can not be launched, Plz incread zamax\n",
-                 __func__, int(length), int(num_blocks), int(zamax));
+        fprintf( stderr, "%s: length(=%lld), num_blocks(=%lld) is too big > zamax(=%lld), the second layer reduction can not be launched, Plz incread zamax\n",
+                 __func__, (long long) length, (long long) num_blocks, (long long) zamax);
     }
     else
     {
@@ -257,13 +250,11 @@ magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_ar
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
 
-    ICAMAX find the index of max absolute value of elements in x and store the index in ipiv 
+    ICAMAX find the index of max absolute value of elements in x and store the index in ipiv
 
     This is an internal routine that might have many assumption.
 
@@ -320,14 +311,13 @@ magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_ar
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cgesv_aux
-    ********************************************************************/
-
-extern "C"
-magma_int_t magma_icamax_batched(magma_int_t length, 
-                                 magmaFloatComplex **x_array, magma_int_t incx, 
+    @ingroup magma_iamax_batched
+*******************************************************************************/
+extern "C" magma_int_t
+magma_icamax_batched(magma_int_t length,
+                                 magmaFloatComplex **x_array, magma_int_t incx,
                                  magma_int_t step,  magma_int_t lda,
-                                 magma_int_t** ipiv_array, magma_int_t *info_array, 
+                                 magma_int_t** ipiv_array, magma_int_t *info_array,
                                  magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 {
     if (length == 0 ) return 0;
@@ -344,7 +334,7 @@ magma_int_t magma_icamax_batched(magma_int_t length,
 #else
     // the magma_icamax_lg_batched is faster but when cuda launch it as 2 kernels the white space time between these 2 kernels and the next kernel is larger than using the icamax_kernel for that today we are using only icamax_kernel
     if ( length <= 10 * zamax )
-    {  
+    {
         int chunk = magma_ceildiv( length, zamax );
         icamax_kernel_batched<<< grid, threads, zamax * (sizeof(float) + sizeof(magma_int_t)), queue->cuda_stream() >>>
             (length, chunk, x_array, incx, step, lda, ipiv_array, info_array, gbstep);
@@ -359,7 +349,7 @@ magma_int_t magma_icamax_batched(magma_int_t length,
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__
 void cswap_kernel_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, magma_int_t step, magma_int_t** ipiv_array)
 {
@@ -367,14 +357,14 @@ void cswap_kernel_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_
     magma_int_t *ipiv = ipiv_array[blockIdx.z];
 
     __shared__ int jp;
-    
-    if (threadIdx.x == 0) 
+
+    if (threadIdx.x == 0)
     {
         jp = ipiv[step] - 1;
         //if (blockIdx.z == 1) printf("jp=%d", jp);
-    } 
+    }
     __syncthreads();
- 
+
     if (jp == step)  return; // no pivot
 
     int id = threadIdx.x;
@@ -387,9 +377,7 @@ void cswap_kernel_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
 
@@ -433,20 +421,20 @@ void cswap_kernel_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cgesv_aux
-    ********************************************************************/
-
-extern "C"
-magma_int_t magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, 
-                                magma_int_t step, magma_int_t** ipiv_array, 
+    @ingroup magma_swap_batched
+*******************************************************************************/
+extern "C" magma_int_t
+magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx,
+                                magma_int_t step, magma_int_t** ipiv_array,
                                 magma_int_t batchCount, magma_queue_t queue)
 {
     /*
     cswap two row: (ipiv[step]-1)th and step th
     */
-    if ( n  > MAX_NTHREADS) 
+    if ( n  > MAX_NTHREADS)
     {
-        fprintf( stderr, "%s nb=%d > %d, not supported\n", __func__, int(n), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s nb=%lld > %lld, not supported\n",
+                 __func__, (long long) n, (long long) MAX_NTHREADS );
         return -15;
     }
     dim3 grid(1,1, batchCount);
@@ -459,7 +447,7 @@ magma_int_t magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magm
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__
 void cscal_cgeru_kernel_batched(int m, int n, int step, magmaFloatComplex **dA_array, int lda, magma_int_t *info_array, int gbstep)
 {
@@ -467,7 +455,7 @@ void cscal_cgeru_kernel_batched(int m, int n, int step, magmaFloatComplex **dA_a
     if (info_array[blockIdx.z] != 0 ) return;
 
     magmaFloatComplex *A_start = dA_array[blockIdx.z];
-    magmaFloatComplex *A = &(A_start[step + step * lda]); 
+    magmaFloatComplex *A = &(A_start[step + step * lda]);
     magmaFloatComplex *shared_y = shared_data;
 
     int tx  = threadIdx.x;
@@ -478,7 +466,7 @@ void cscal_cgeru_kernel_batched(int m, int n, int step, magmaFloatComplex **dA_a
     }
     __syncthreads();
     if (shared_y[0] == MAGMA_C_ZERO) {
-        info_array[blockIdx.z] = step + gbstep + 1; 
+        info_array[blockIdx.z] = step + gbstep + 1;
         return;
     }
 
@@ -497,24 +485,24 @@ void cscal_cgeru_kernel_batched(int m, int n, int step, magmaFloatComplex **dA_a
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/******************************************************************************/
 extern "C"
 magma_int_t magma_cscal_cgeru_batched(magma_int_t m, magma_int_t n, magma_int_t step,
                                       magmaFloatComplex **dA_array, magma_int_t lda,
-                                      magma_int_t *info_array, magma_int_t gbstep, 
+                                      magma_int_t *info_array, magma_int_t gbstep,
                                       magma_int_t batchCount, magma_queue_t queue)
 {
     /*
     Specialized kernel which merged cscal and cgeru the two kernels
     1) cscale the first column vector A(1:M-1,0) with 1/A(0,0);
-    2) Performe a cgeru Operation for trailing matrix of A(1:M-1,1:N-1) += alpha*x*y**T, where 
+    2) Performe a cgeru Operation for trailing matrix of A(1:M-1,1:N-1) += alpha*x*y**T, where
        alpha := -1.0; x := A(1:M-1,0) and y:= A(0,1:N-1);
     */
     if ( n == 0) return 0;
-    if ( n > MAX_NTHREADS ) 
+    if ( n > MAX_NTHREADS )
     {
-        fprintf( stderr, "%s nb=%d, > %d, not supported\n", __func__, int(n), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s nb=%lld, > %lld, not supported\n",
+                 __func__, (long long) n, (long long) MAX_NTHREADS );
         return -15;
     }
 
@@ -531,18 +519,18 @@ magma_int_t magma_cscal_cgeru_batched(magma_int_t m, magma_int_t n, magma_int_t 
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__
 void cgetf2trsm_kernel_batched(int ib, int n, magmaFloatComplex **dA_array, int step, int lda)
 {
     /*
         this kernel does the safe nonblocked TRSM operation
         B = A^-1 * B
-    */ 
+    */
 
     magmaFloatComplex *A_start = dA_array[blockIdx.z];
-    magmaFloatComplex *A = &(A_start[step + step * lda]); 
-    magmaFloatComplex *B = &(A_start[step + (step+ib) * lda]); 
+    magmaFloatComplex *A = &(A_start[step + step * lda]);
+    magmaFloatComplex *B = &(A_start[step + (step+ib) * lda]);
     magmaFloatComplex *shared_a = shared_data;
     magmaFloatComplex *shared_b = shared_data+ib*ib;
 
@@ -551,8 +539,8 @@ void cgetf2trsm_kernel_batched(int ib, int n, magmaFloatComplex **dA_array, int 
 
 
     // Read A and B at the same time to the shared memory (shared_a shared_b)
-    // note that shared_b = shared_a+ib*ib so its contiguous 
-    // I can make it in one loop reading  
+    // note that shared_b = shared_a+ib*ib so its contiguous
+    // I can make it in one loop reading
     if ( tid < ib) {
         #pragma unroll
         for (i=0; i < n+ib; i++) {
@@ -581,9 +569,7 @@ void cgetf2trsm_kernel_batched(int ib, int n, magmaFloatComplex **dA_array, int 
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
 
@@ -592,8 +578,8 @@ void cgetf2trsm_kernel_batched(int ib, int n, magmaFloatComplex **dA_array, int 
      B = C^-1 * B
 
     where C, B are part of the matrix A in dA_array,
-  
-    This version load C, B into shared memory and solve it 
+
+    This version load C, B into shared memory and solve it
     and copy back to GPU device memory.
     This is an internal routine that might have many assumption.
 
@@ -630,17 +616,13 @@ void cgetf2trsm_kernel_batched(int ib, int n, magmaFloatComplex **dA_array, int 
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cgesv_aux
-    ********************************************************************/
-
+    @ingroup magma_getf2_batched
+*******************************************************************************/
 extern "C" void
-magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_array, 
+magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_array,
                          magma_int_t step, magma_int_t ldda,
                          magma_int_t batchCount, magma_queue_t queue)
 {
-    /*
-    
-    */
     if ( n == 0 || ib == 0 ) return;
     size_t shared_size = sizeof(magmaFloatComplex)*(ib*(ib+n));
 
@@ -660,13 +642,12 @@ magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_a
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static __device__ void 
+/******************************************************************************/
+static __device__ void
 zupdate_device(int m, int step, magmaFloatComplex* x, int ldx,  magmaFloatComplex *A, int lda)
 {
     int tid = threadIdx.x;
-    int nchunk = magma_ceildiv( m, MAX_NTHREADS );    
+    int nchunk = magma_ceildiv( m, MAX_NTHREADS );
     int indx;
     //magmaFloatComplex reg = MAGMA_C_ZERO;
 
@@ -688,12 +669,12 @@ zupdate_device(int m, int step, magmaFloatComplex* x, int ldx,  magmaFloatComple
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-static __device__ void 
+/******************************************************************************/
+static __device__ void
 cscal5_device(int m, magmaFloatComplex* x, magmaFloatComplex alpha)
 {
     int tid = threadIdx.x;
-    int nchunk = magma_ceildiv( m, MAX_NTHREADS );    
+    int nchunk = magma_ceildiv( m, MAX_NTHREADS );
 
     for (int s=0; s < nchunk; s++)
     {
@@ -709,15 +690,15 @@ cscal5_device(int m, magmaFloatComplex* x, magmaFloatComplex alpha)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-__global__ void 
+/******************************************************************************/
+__global__ void
 zcomputecolumn_kernel_shared_batched(int m, int paneloffset, int step, magmaFloatComplex **dA_array, int lda, magma_int_t **ipiv_array, magma_int_t *info_array, int gbstep)
 {
     int gboff = paneloffset+step;
     magma_int_t *ipiv                   = ipiv_array[blockIdx.z];
     magmaFloatComplex *A_start = dA_array[blockIdx.z];
-    magmaFloatComplex *A0j     = &(A_start[paneloffset + (paneloffset+step) * lda]); 
-    magmaFloatComplex *A00     = &(A_start[paneloffset + paneloffset * lda]); 
+    magmaFloatComplex *A0j     = &(A_start[paneloffset + (paneloffset+step) * lda]);
+    magmaFloatComplex *A00     = &(A_start[paneloffset + paneloffset * lda]);
 
     magmaFloatComplex *shared_A = shared_data;
     __shared__ float  shared_x[zamax];
@@ -729,7 +710,7 @@ zcomputecolumn_kernel_shared_batched(int m, int paneloffset, int step, magmaFloa
     if (info_array[blockIdx.z] != 0 ) return;
 
 
-    int nchunk = magma_ceildiv( m, MAX_NTHREADS );    
+    int nchunk = magma_ceildiv( m, MAX_NTHREADS );
     // read the current column from dev to shared memory
     for (int s=0; s < nchunk; s++)
     {
@@ -743,7 +724,7 @@ zcomputecolumn_kernel_shared_batched(int m, int paneloffset, int step, magmaFloa
         __syncthreads();
     }
 
-    // if ( tid < (m-step) ) // DO NO TPUT THE IF CONDITION HERE SINCE icamax_devfunc HAS __syncthreads INSIDE. 
+    // if ( tid < (m-step) ) // DO NO TPUT THE IF CONDITION HERE SINCE icamax_devfunc HAS __syncthreads INSIDE.
     // So let all htreads call this routine it will handle correctly based on the size
     // note that icamax need only 128 threads, s
     icamax_devfunc(m-step, shared_A+step, 1, shared_x, shared_idx);
@@ -762,7 +743,7 @@ zcomputecolumn_kernel_shared_batched(int m, int paneloffset, int step, magmaFloa
     // DO NO PUT THE IF CONDITION HERE SINCE icamax_devfunc HAS __syncthreads INSIDE.
     cscal5_device( m-step, shared_A+step, alpha);
 
-    // put back the pivot that has been scaled with itself menaing =1 
+    // put back the pivot that has been scaled with itself menaing =1
     if (tid == 0)  shared_A[shared_idx[0] + step] = alpha;
     __syncthreads();
 
@@ -773,24 +754,24 @@ zcomputecolumn_kernel_shared_batched(int m, int paneloffset, int step, magmaFloa
         {
             A0j[tid + s * MAX_NTHREADS] = shared_A[tid + s * MAX_NTHREADS];
             //printf("@ step %d tid %d updating A=x*alpha after A= %5.3f\n",step,tid,shared_A[tid]);
-        }            
+        }
     }
     __syncthreads();
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C"
-magma_int_t magma_ccomputecolumn_batched(magma_int_t m, magma_int_t paneloffset, magma_int_t step, 
+magma_int_t magma_ccomputecolumn_batched(magma_int_t m, magma_int_t paneloffset, magma_int_t step,
                                         magmaFloatComplex **dA_array,  magma_int_t lda,
-                                        magma_int_t **ipiv_array, 
-                                        magma_int_t *info_array, magma_int_t gbstep, 
+                                        magma_int_t **ipiv_array,
+                                        magma_int_t *info_array, magma_int_t gbstep,
                                         magma_int_t batchCount, magma_queue_t queue)
 {
     /*
     Specialized kernel which merged cscal and cgeru the two kernels
     1) cscale the first column vector A(1:M-1,0) with 1/A(0,0);
-    2) Performe a cgeru Operation for trailing matrix of A(1:M-1,1:N-1) += alpha*x*y**T, where 
+    2) Performe a cgeru Operation for trailing matrix of A(1:M-1,1:N-1) += alpha*x*y**T, where
        alpha := -1.0; x := A(1:M-1,0) and y:= A(0,1:N-1);
     */
     if ( m == 0) return 0;
@@ -814,8 +795,7 @@ magma_int_t magma_ccomputecolumn_batched(magma_int_t m, magma_int_t paneloffset,
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void
 kernel_cgetf2_sm_batched(
     magma_int_t m, magma_int_t ib,
@@ -887,15 +867,15 @@ kernel_cgetf2_sm_batched(
         if (tx == 0)
         {
             jp = shared_idx[0];
-           
-           
+
+
             if (shared_A[jp + offset] == 0.0) printf("error, A(jp,j) == 0.0\n");
-           
-            ipiv[j]  = j + (jp + 1); // Fortran Indexing 
+
+            ipiv[j]  = j + (jp + 1); // Fortran Indexing
             //if (blockIdx.x == 1) printf("jp=%d   ", jp + j + 1);
         }
         __syncthreads();
-        
+
         //======================================
         if ( jp != 0) //swap
         {
@@ -914,16 +894,16 @@ kernel_cgetf2_sm_batched(
         if (tx < length && tx > 0)
         {
             res = shared_A[tx + offset];
-           
+
             res *= MAGMA_C_DIV(MAGMA_C_ONE, shared_A[0 + offset]); // scaling
-           
+
             shared_A[tx + offset] = res;
-           
+
             #pragma unroll 8
-            for (int i=1; i < ib-j; i++) 
+            for (int i=1; i < ib-j; i++)
             {
                 shared_A[tx + i*m + offset] += (MAGMA_C_NEG_ONE) * shared_A[i*m + offset] * res;
-           
+
                 //printf("res= %f, shared_A=%f\n", res, shared_A[i*m + offset]);
             }
         }
@@ -943,9 +923,7 @@ kernel_cgetf2_sm_batched(
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGETF2_SM computes an LU factorization of a general M-by-N matrix A
@@ -962,7 +940,7 @@ kernel_cgetf2_sm_batched(
     This is a batched version that factors batchCount M-by-N matrices in parallel.
     dA, ipiv, and info become arrays with one entry per matrix.
 
-    This version load entire matrix (m*ib) into shared memory and factorize it 
+    This version load entire matrix (m*ib) into shared memory and factorize it
     with pivoting and copy back to GPU device memory.
 
     Arguments
@@ -1010,15 +988,14 @@ kernel_cgetf2_sm_batched(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cgesv_aux
-    ********************************************************************/
-
-extern "C"
-magma_int_t  magma_cgetf2_sm_batched(
+    @ingroup magma_getf2_batched
+*******************************************************************************/
+extern "C" magma_int_t
+magma_cgetf2_sm_batched(
     magma_int_t m, magma_int_t ib,
     magmaFloatComplex **dA_array, magma_int_t ldda,
     magma_int_t **ipiv_array,
-    magma_int_t *info_array, 
+    magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue)
 {
     /*
@@ -1028,7 +1005,8 @@ magma_int_t  magma_cgetf2_sm_batched(
 
     if (shared_size > 47000)
     {
-        fprintf( stderr, "%s: shared memory = %d, exceeds 48K, kernel cannot run\n", __func__, int(shared_size) );
+        fprintf( stderr, "%s: shared memory = %lld, exceeds 48K, kernel cannot run\n",
+                 __func__, (long long) shared_size );
         return 1;
     }
 

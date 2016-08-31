@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
 
-       @generated from src/zgetrs_nopiv_batched.cpp normal z -> c, Mon May  2 23:30:26 2016
+       @generated from src/zgetrs_nopiv_batched.cpp, normal z -> c, Tue Aug 30 09:38:25 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     CGETRS solves a system of linear equations
@@ -83,8 +83,8 @@
             Queue to execute in.
 
 
-    @ingroup magma_cgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrs_nopiv_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgetrs_nopiv_batched(
                   magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
@@ -140,7 +140,7 @@ magma_cgetrs_nopiv_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, CTRTRI_BATCHED_NB )*CTRTRI_BATCHED_NB;
     magma_int_t dwork_msize = n*nrhs;
     magmaFloatComplex* dinvA      = NULL;
     magmaFloatComplex* dwork      = NULL; // dinvA and dwork are workspace in ctrsm
@@ -168,7 +168,7 @@ magma_cgetrs_nopiv_batched(
     magmablas_claset_q( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
     magmablas_claset_q( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
     magma_cset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
-    magma_cset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+    magma_cset_pointer( dinvA_array, dinvA, CTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
     magma_cdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
     magma_cdisplace_pointers(dB_displ, dB_array, lddb, 0, 0, batchCount, queue);

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Ichitaro Yamazaki
        @author Mark Gates
 
-       @generated from src/zlatrd_mgpu.cpp normal z -> s, Mon May  2 23:30:16 2016
+       @generated from src/zlatrd_mgpu.cpp, normal z -> s, Tue Aug 30 09:38:16 2016
 
 */
 #include "magma_internal.h"
@@ -18,7 +18,7 @@
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLATRD reduces NB rows and columns of a real symmetric matrix A to
@@ -108,31 +108,50 @@
             The leading dimension of the array W. LDW >= max(1,N).
 
     @param
-    dA
+    dA      REAL array of pointers on the GPU, dimension (ngpu)
+            On entry, the symmetric matrix dA distributed over GPUs
+            (d_lA[d] points to the local matrix on the d-th GPU).
+            It is distributed in 1D block column or row cyclic (with the
+            block size of nb) if UPLO = MagmaUpper or MagmaLower, respectively.
+            If UPLO = MagmaUpper, the leading N-by-N upper triangular
+            part of dA contains the upper triangular part of the matrix dA,
+            and the strictly lower triangular part of dA is not referenced.
+            If UPLO = MagmaLower, the leading N-by-N lower triangular part
+            of dA contains the lower triangular part of the matrix dA, and
+            the strictly upper triangular part of dA is not referenced.
+    \n
+            On exit, the current panel is factorized.
 
     @param[in]
-    ldda
+    ldda    INTEGER
+            The leading dimension of the array dA[d]. LDDA >= max(1,M).
 
     @param[in]
-    offset
+    offset  INTEGER
+            The offset to the current panel.
 
     @param
-    dW
+    dW      REAL array on the GPU, dimension (ngpu*lddw*(3*nb)).
+            On exit, it stores two block columns/rows needed for the
+            trailing submatrix update, V and W.
 
     @param[in]
-    lddw
+    lddw    INTEGER
+            The leading dimension of the array dW[d]. LDDW >= max(1,M).
 
     @param
-    hwork
+    hwork   (workspace) REAL array on the CPU, dimension (lhwork)
 
     @param[in]
-    lhwork
+    lhwork  INTEGER
+            The dimension of the array HWORK. 
 
     @param
-    dwork
+    dwork   (workspace) REAL array on the GPU, dimension (ldwork)
 
     @param[in]
-    ldwork
+    ldwork  INTEGER
+            The dimension of the array DORK. 
              
     @param[in]
     queues  magma_queue_t array of dimension (ngpu).
@@ -186,8 +205,8 @@
     an element of the original matrix that is unchanged, and vi denotes
     an element of the vector defining H(i).
 
-    @ingroup magma_ssyev_aux
-    ********************************************************************/
+    @ingroup magma_latrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slatrd_mgpu(
     magma_int_t ngpu,

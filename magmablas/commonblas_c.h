@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/commonblas_z.h normal z -> c, Mon May  2 23:31:25 2016
+       @generated from magmablas/commonblas_z.h, normal z -> c, Tue Aug 30 09:39:22 2016
 */
 
 #ifndef COMMONBLAS_C_H
@@ -15,9 +15,8 @@
 extern "C" {
 #endif
 
-/* ======================================================================
- * Internal prototypes
- */
+// =============================================================================
+// Internal prototypes
 
 // Tesla GEMM kernels
 #define MAGMABLAS_CGEMM( name ) \

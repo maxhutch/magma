@@ -1,10 +1,15 @@
 var searchData=
 [
-  ['read_5fc_5fcsr_5ffrom_5fmtx',['read_c_csr_from_mtx',['../group__magmasparse__caux.html#ga19cd828c60545fd67ece53613a281923',1,'magma_cmio.cpp']]],
-  ['read_5fd_5fcsr_5ffrom_5fmtx',['read_d_csr_from_mtx',['../group__magmasparse__daux.html#ga484c399e5d1d217eeeef78c3114f951d',1,'magma_dmio.cpp']]],
-  ['read_5fs_5fcsr_5ffrom_5fmtx',['read_s_csr_from_mtx',['../group__magmasparse__saux.html#gafbf0e95165ae43451504a6546cff3510',1,'magma_smio.cpp']]],
-  ['read_5fz_5fcsr_5ffrom_5fmtx',['read_z_csr_from_mtx',['../group__magmasparse__zaux.html#ga14fb23322b3d3db68eefb8ba45339b94',1,'magma_zmio.cpp']]],
-  ['routine_20names',['Routine names',['../routines.html',1,'']]],
-  ['run_5ftests_2epy',['run_tests.py',['../run__tests_8py.html',1,'']]],
-  ['running_20tests',['Running tests',['../testing.html',1,'']]]
+  ['non_2dsymmetric_20eigenvalues',['Non-symmetric eigenvalues',['../group__group__geev.html',1,'']]],
+  ['no_20pivoting_20variant',['No pivoting variant',['../group__group__gesv__nopiv.html',1,'']]],
+  ['no_20pivoting_20variant',['No pivoting variant',['../group__group__gesv__nopiv__batched.html',1,'']]],
+  ['no_20pivoting_20variant',['No pivoting variant',['../group__group__hesv__nopiv.html',1,'']]],
+  ['no_20pivoting_20variant',['No pivoting variant',['../group__group__sysv__nopiv.html',1,'']]],
+  ['nan_20and_20inf_20checks',['NAN and INF checks',['../group__magma__nan__inf.html',1,'']]],
+  ['nrm2_3a_20_20vector_202_20norm',['nrm2:  Vector 2 norm',['../group__magma__nrm2.html',1,'']]],
+  ['nrm2_5fadjust_3a_20_20_20_20_20_20_20_20_20_20_20auxiliary_20for_20geqp3',['nrm2_adjust:           auxiliary for geqp3',['../group__magma__nrm2__adjust.html',1,'']]],
+  ['nrm2_3a_20_20vector_202_20norm',['nrm2:  Vector 2 norm',['../group__magma__nrm2__batched.html',1,'']]],
+  ['nrm2_5fcheck_3a_20_20_20_20_20_20_20_20_20_20_20_20auxiliary_20for_20geqp3',['nrm2_check:            auxiliary for geqp3',['../group__magma__nrm2__check.html',1,'']]],
+  ['nrm2_5fcols_3a_20_20_20_20_20_20_20_20_20_20_20_20_20auxiliary_20for_20geqp3',['nrm2_cols:             auxiliary for geqp3',['../group__magma__nrm2__cols.html',1,'']]],
+  ['nrm2_5frow_5fcheck_5fadjust_3a_20auxiliary_20for_20geqp3',['nrm2_row_check_adjust: auxiliary for geqp3',['../group__magma__nrm2__row__check__adjust.html',1,'']]]
 ];

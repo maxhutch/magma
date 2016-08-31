@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.2) --
+#   -- MAGMA (version 2.1.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2016
+#      @date August 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -12,9 +12,13 @@ cdir      := testing
 # ----------------------------------------------------------------------
 
 
+hdr += \
+	$(cdir)/testing_z.h		\
+
+
 # ----------
 # BLAS and auxiliary
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zgemm.cpp	\
 	$(cdir)/testing_zgemv.cpp	\
 	$(cdir)/testing_zhemv.cpp	\
@@ -59,7 +63,7 @@ testing_zsrc += \
 
 # ----------
 # Cholesky, GPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zcposv_gpu.cpp	\
 	\
 	$(cdir)/testing_zposv_gpu.cpp	\
@@ -71,7 +75,7 @@ testing_zsrc += \
 	$(cdir)/testing_zpotrf_mgpu.cpp	\
 
 # Cholesky, CPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zposv.cpp	\
 	$(cdir)/testing_zpotrf.cpp	\
 	$(cdir)/testing_zpotri.cpp	\
@@ -79,7 +83,7 @@ testing_zsrc += \
 
 # ----------
 # Symmetric indefinite, CPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zhesv.cpp	\
 	$(cdir)/testing_zhesv_nopiv_gpu.cpp	\
 	$(cdir)/testing_zsysv_nopiv_gpu.cpp	\
@@ -87,7 +91,7 @@ testing_zsrc += \
 
 # ----------
 # LU, GPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zcgesv_gpu.cpp	\
 	\
 	$(cdir)/testing_zgesv_gpu.cpp	\
@@ -98,14 +102,14 @@ testing_zsrc += \
 	$(cdir)/testing_zgetrf_mgpu.cpp	\
 
 # LU, CPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zgesv.cpp	\
 	$(cdir)/testing_zgesv_rbt.cpp	\
 	$(cdir)/testing_zgetrf.cpp	\
 
 # ----------
 # QR and least squares, GPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zcgeqrsv_gpu.cpp	\
 	\
 	$(cdir)/testing_zgegqr_gpu.cpp	\
@@ -124,7 +128,7 @@ testing_zsrc += \
 	$(cdir)/testing_zgeqrf_mgpu.cpp	\
 
 # QR, CPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zgelqf.cpp	\
 	$(cdir)/testing_zgels.cpp       \
 	$(cdir)/testing_zgeqlf.cpp	\
@@ -138,20 +142,20 @@ testing_zsrc += \
 
 # ----------
 # symmetric eigenvalues, GPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zheevd_gpu.cpp	\
 	$(cdir)/testing_zhetrd_gpu.cpp	\
 	\
 	$(cdir)/testing_zhetrd_mgpu.cpp	\
 
 # symmetric eigenvalues, CPU interface
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zheevd.cpp	\
 	$(cdir)/testing_zhetrd.cpp	\
 	$(cdir)/testing_zheevdx_2stage.cpp	\
 
 # generalized symmetric eigenvalues
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zhegst.cpp	\
 	$(cdir)/testing_zhegst_gpu.cpp	\
 	$(cdir)/testing_zhegvd.cpp	\
@@ -160,14 +164,14 @@ testing_zsrc += \
 
 # ----------
 # non-symmetric eigenvalues
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_dgeev.cpp	\
 	$(cdir)/testing_zgeev.cpp	\
 	$(cdir)/testing_zgehrd.cpp	\
 
 # ----------
 # SVD
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zgesdd.cpp	\
 	$(cdir)/testing_zgesvd.cpp	\
 	$(cdir)/testing_zgebrd.cpp	\
@@ -176,12 +180,14 @@ testing_zsrc += \
 
 # ----------
 # batched BLAS, QR, LU, Cholesky
-testing_zsrc += \
+testing_src += \
 	$(cdir)/testing_zgeadd_batched.cpp	\
 	$(cdir)/testing_zgemm_batched.cpp	\
 	$(cdir)/testing_zgemv_batched.cpp	\
 	$(cdir)/testing_zherk_batched.cpp	\
+	$(cdir)/testing_zher2k_batched.cpp	\
 	$(cdir)/testing_zlacpy_batched.cpp	\
+	$(cdir)/testing_zsyr2k_batched.cpp	\
 	$(cdir)/testing_ztrsm_batched.cpp	\
 	$(cdir)/testing_ztrsv_batched.cpp	\
 	\
@@ -195,20 +201,26 @@ testing_zsrc += \
 	\
 	$(cdir)/testing_zposv_batched.cpp	\
 	$(cdir)/testing_zpotrf_batched.cpp	\
-
+	
+# ----------
+# vbatched BLAS, QR, LU, Cholesky
+testing_src += \
+	$(cdir)/testing_zgemm_vbatched.cpp	\
+	$(cdir)/testing_zgemv_vbatched.cpp	\
+	$(cdir)/testing_zherk_vbatched.cpp	\
+	$(cdir)/testing_zher2k_vbatched.cpp	\
+	$(cdir)/testing_zsyrk_vbatched.cpp	\
+	$(cdir)/testing_zsyr2k_vbatched.cpp	\
+	
 # ----------
 # fortran.c and fortran_thunking.c are provided by NVIDIA in $(CUDADIR)/src
 ifeq ($(FORT), pgfortran)
+	#	$(cdir)/fortran_thunking.$(o_ext)
 	testing_src += \
-		$(cdir)/fortran_thunking.$(o_ext)
-	
-	testing_zsrc += \
 		$(cdir)/testing_zgetrf_gpu_f.cuf
 else
+	#	$(cdir)/fortran.$(o_ext)
 	testing_src += \
-		$(cdir)/fortran.$(o_ext)
-	
-	testing_zsrc += \
 		$(cdir)/testing_zgetrf_gpu_f.F90	\
 		$(cdir)/testing_zgetrf_f.f90
 endif
@@ -227,9 +239,10 @@ $(cdir)/fortran_thunking.$(o_ext) : $(CUDADIR)/src/fortran_thunking.c
 
 # ----------------------------------------
 # utilities library
-libtest_zsrc := \
+libtest_src := \
 	$(cdir)/magma_util.cpp		\
 	$(cdir)/magma_zutil.cpp		\
+	$(cdir)/magma_zgesvd_check.cpp	\
 
 
 # ----------------------------------------------------------------------

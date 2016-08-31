@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Tingxing Dong
 
-       @generated from magmablas/zlarfg_devicesfunc.cuh normal z -> s, Mon May  2 23:31:25 2016
+       @generated from magmablas/zlarfg_devicesfunc.cuh, normal z -> s, Tue Aug 30 09:39:22 2016
 */
 
 #include "magma_templates.h"
@@ -17,14 +17,12 @@
 
 #define REAL
 
+/******************************************************************************/
 /*
-
-       //lapack slarfg, compute the norm, scale and generate the householder vector   
-       //assume swork, sscale, scale are already allocated in shared memory
-       //BLOCK_SIZE is set outside, the size of swork is BLOCK_SIZE
-      
+    lapack slarfg, compute the norm, scale and generate the householder vector   
+    assume swork, sscale, scale are already allocated in shared memory
+    BLOCK_SIZE is set outside, the size of swork is BLOCK_SIZE
 */
-
 static __device__ void
 slarfg_device(
     magma_int_t n,
@@ -57,7 +55,7 @@ slarfg_device(
             #else
             swork[tx] = max( swork[tx], fabs(tmp) );
             #endif
-         }
+        }
     }
 
     magma_max_reduce<BLOCK_SIZE>( tx, swork );
@@ -111,6 +109,5 @@ slarfg_device(
         }
     }
 }
-
 
 #endif /* MAGMABLAS_SLARFG_DEVICES_Z_H  */

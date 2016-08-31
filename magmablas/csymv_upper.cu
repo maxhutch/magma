@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        csymv_upper.cu is nearly identical to chemv_upper.cu, just change names and drop MAGMA_C_CONJ.
        
@@ -11,7 +11,7 @@
        csymv_kernel_L (lower) in csymv.cu; diff the two files to compare.
        
        Note: [ds] precisions generated from chemv_upper.cu
-       @generated from magmablas/zsymv_upper.cu normal z -> c, Mon May  2 23:30:35 2016
+       @generated from magmablas/zsymv_upper.cu, normal z -> c, Tue Aug 30 09:38:34 2016
        
        @author Mark Gates
 */
@@ -27,7 +27,7 @@
 #define half_NB_X    32
 
 
-/*******************************************************************************
+/***************************************************************************//**
     Upper case, compute block multiply, work = A*x, for any size n:
     
            [ (A11*x1 + A12*x2 + A13*x3)     ---                 ---    ]   [ A11    A12    A13 ]   [ x1 ]
@@ -49,7 +49,7 @@
     Columns past the right edge are explicitly ignored when loading.
     x values past the bottom are set to zero, thus, extra columns are zeroed
     when multiplying.
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 csymv_kernel_U(
     int n,
@@ -442,7 +442,7 @@ csymv_kernel_U(
 // end csymv_kernel_U
 
 
-/**************************************************************
+/***************************************************************************//**
     Upper case, sum up final results
     Each block sums one block row; each thread sums one row.
     
@@ -455,7 +455,7 @@ csymv_kernel_U(
               [ (A11*x1 + A12*x2 + A13*x3)         ]
     y = alpha*[ (A12^H*x1) + (A22*x2 + A23*x3)     ] + beta*y
               [ (A13^H*x1) + (A23^H*x2) + (A33*x3) ]
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 csymv_kernel_U_sum(
     int n,

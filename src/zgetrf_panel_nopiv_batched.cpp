@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Adrien Remy
@@ -13,15 +13,7 @@
 
 #include "magma_internal.h"
 
-/**
-    Purpose
-    -------
-    this is an internal routine that might have many assumption.
-    No documentation is available today.
-
-    @ingroup magma_zgesv_comp
-    ********************************************************************/
-
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zgetrf_panel_nopiv_batched(
     magma_int_t m, magma_int_t nb,    
@@ -39,7 +31,7 @@ magma_zgetrf_panel_nopiv_batched(
     //  panel factorization
     //===============================================
     if (m < nb) {
-        printf("magma_zgetrf_panel_nopiv_batched_q m < nb %d < %d \n",(int) m, (int) nb);
+        printf("magma_zgetrf_panel_nopiv_batched_q m < nb %lld < %lld\n", (long long) m, (long long) nb );
         return -101;
     }
 
@@ -75,11 +67,7 @@ magma_zgetrf_panel_nopiv_batched(
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zgetrf_recpanel_nopiv_batched(
     magma_int_t m, magma_int_t n, magma_int_t min_recpnb,    
@@ -177,6 +165,3 @@ magma_zgetrf_recpanel_nopiv_batched(
     magma_free(dA_displ);
     return 0;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////

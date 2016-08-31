@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zgemvmdot.cu normal z -> d, Mon May  2 23:30:45 2016
+       @generated from sparse-iter/blas/zgemvmdot.cu, normal z -> d, Tue Aug 30 09:38:43 2016
        @author Hartwig Anzt
 
 */
@@ -476,7 +476,6 @@ magma_dmdotc(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -540,7 +539,7 @@ magma_dmdotc(
 
     magma_dcopyvector_async( k, aux1, n, skp, 1, queue );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /**
@@ -618,5 +617,5 @@ magma_dgemvmdot(
     magma_dmdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset, queue ); 
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

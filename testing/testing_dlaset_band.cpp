@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zlaset_band.cpp normal z -> d, Mon May  2 23:31:08 2016
+       @generated from testing/testing_zlaset_band.cpp, normal z -> d, Tue Aug 30 09:39:04 2016
        @author Mark Gates
 */
 
@@ -26,7 +26,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     #define h_A(i_,j_) (h_A + (i_) + (j_)*lda)
     #define d_A(i_,j_) (d_A + (i_) + (j_)*ldda)
@@ -43,7 +44,7 @@ int main( int argc, char** argv)
     double offdiag = MAGMA_D_MAKE( 1.2000, 6.7000 );
     double diag    = MAGMA_D_MAKE( 3.1415, 2.7183 );
     magma_int_t i, j, k, M, N, nb, cnt, size, lda, ldda;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -52,7 +53,7 @@ int main( int argc, char** argv)
 
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper, MagmaFull };
     
-    printf("%% K = nb = %d\n", (int) nb );
+    printf("%% K = nb = %lld\n", (long long) nb );
     printf("%% uplo      M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
     printf("%%=================================================================\n");
     for( int iuplo = 0; iuplo < 2; ++iuplo ) {
@@ -65,10 +66,10 @@ int main( int argc, char** argv)
             ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             size   = lda*N;
             
-            TESTING_MALLOC_CPU( h_A, double, size   );
-            TESTING_MALLOC_CPU( h_R, double, size   );
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A, size   ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_R, size   ));
             
-            TESTING_MALLOC_DEV( d_A, double, ldda*N );
+            TESTING_CHECK( magma_dmalloc( &d_A, ldda*N ));
             
             /* Initialize the matrix */
             for( j = 0; j < N; ++j ) {
@@ -130,16 +131,16 @@ int main( int argc, char** argv)
             blasf77_daxpy(&size, &c_neg_one, h_A, &ione, h_R, &ione);
             error = lapackf77_dlange("f", &M, &N, h_R, &lda, work);
             
-            printf("%4c   %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
-                   lapacke_uplo_const( uplo[iuplo] ), (int) M, (int) N,
+            printf("%4c   %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
+                   lapacke_uplo_const( uplo[iuplo] ), (long long) M, (long long) N,
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    (error == 0. ? "ok" : "failed") );
             status += ! (error == 0.);
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_R );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_R );
             
-            TESTING_FREE_DEV( d_A );
+            magma_free( d_A );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -150,6 +151,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

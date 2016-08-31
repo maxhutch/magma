@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgetrf_mgpu.cpp normal z -> s, Mon May  2 23:30:03 2016
+       @generated from src/zgetrf_mgpu.cpp, normal z -> s, Tue Aug 30 09:38:05 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGETRF computes an LU factorization of a general M-by-N matrix A
@@ -66,8 +66,8 @@
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
-    @ingroup magma_sgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgetrf_mgpu(
     magma_int_t ngpu,
@@ -126,8 +126,8 @@ magma_sgetrf_mgpu(
         magma_getdevice( &orig_dev );
         
         maxm = magma_roundup( m, 32 );
-        if ( ngpu > ceil((float)n/nb) ) {
-            printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) ngpu );
+        if ( ngpu > magma_ceildiv( n, nb )) {
+            printf( " * too many GPUs for the matrix size, using %lld GPUs\n", (long long) ngpu );
             *info = -1;
             return *info;
         }

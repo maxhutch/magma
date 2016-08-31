@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 */
@@ -49,7 +49,8 @@ void zgeadd(
 */
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, magma_perf, magma_time=0;  //, cpu_perf=0, cpu_time=0;
     double          magma_error, norm_invA, work[1];
@@ -62,7 +63,7 @@ int main( int argc, char** argv )
     magmaDoubleComplex *h_A, *h_dinvA;
     magmaDoubleComplex_ptr d_A, d_dinvA;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -86,13 +87,13 @@ int main( int argc, char** argv )
             nblock = magma_ceildiv( N, nb );
             gflops = nblock * FLOPS_ZTRTRI( nb ) / 1e9;
             
-            TESTING_MALLOC_CPU( h_A,    magmaDoubleComplex, lda*N );
-            TESTING_MALLOC_CPU( ipiv,   magma_int_t,        N     );
+            TESTING_CHECK( magma_zmalloc_cpu( &h_A,    lda*N ));
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv,   N     ));
             
             size_inv = nblock*nb*nb;
-            TESTING_MALLOC_DEV( d_A,    magmaDoubleComplex, ldda*N );
-            TESTING_MALLOC_DEV( d_dinvA, magmaDoubleComplex, size_inv );
-            TESTING_MALLOC_CPU( h_dinvA, magmaDoubleComplex, size_inv );
+            TESTING_CHECK( magma_zmalloc( &d_A,    ldda*N ));
+            TESTING_CHECK( magma_zmalloc( &d_dinvA, size_inv ));
+            TESTING_CHECK( magma_zmalloc_cpu( &h_dinvA, size_inv ));
             
             /* Initialize the matrices */
             /* Factor A into LU to get well-conditioned triangular matrix.
@@ -120,9 +121,9 @@ int main( int argc, char** argv )
             magma_zgetvector( size_inv, d_dinvA, 1, h_dinvA, 1, opts.queue );
             
             if ( opts.verbose ) {
-                printf( "A%d=", (int) N );
+                printf( "A%lld=", (long long) N );
                 magma_zprint( N, N, h_A, lda );
-                printf( "d_dinvA%d=", (int) N );
+                printf( "d_dinvA%lld=", (long long) N );
                 magma_zprint( min(N+4, nb), min(N+4, nblock*nb), h_dinvA, nb );
             }
             
@@ -155,8 +156,8 @@ int main( int argc, char** argv )
                 
                 // CPU is doing N-by-N inverse, while GPU is doing (N/NB) NB-by-NB inverses.
                 // So don't compare performance.
-                printf("%5d   %7.2f (%7.2f)   %8.2e   %s\n",
-                        (int) N,
+                printf("%5lld   %7.2f (%7.2f)   %8.2e   %s\n",
+                        (long long) N,
                         magma_perf,  1000.*magma_time,
                         //cpu_perf,    1000.*cpu_time,
                         magma_error,
@@ -164,17 +165,17 @@ int main( int argc, char** argv )
                 status += ! (magma_error < tol);
             }
             else {
-                printf("%5d   %7.2f (%7.2f)      ---\n",
-                        (int) N,
+                printf("%5lld   %7.2f (%7.2f)      ---\n",
+                        (long long) N,
                         magma_perf,  1000.*magma_time );
             }
             
-            TESTING_FREE_CPU( h_A     );
-            TESTING_FREE_CPU( ipiv    );
+            magma_free_cpu( h_A     );
+            magma_free_cpu( ipiv    );
             
-            TESTING_FREE_DEV( d_A     );
-            TESTING_FREE_DEV( d_dinvA );
-            TESTING_FREE_CPU( h_dinvA );
+            magma_free( d_A     );
+            magma_free( d_dinvA );
+            magma_free_cpu( h_dinvA );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -183,6 +184,6 @@ int main( int argc, char** argv )
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

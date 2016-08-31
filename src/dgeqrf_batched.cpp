@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from src/zgeqrf_batched.cpp normal z -> d, Mon May  2 23:30:28 2016
+       @generated from src/zgeqrf_batched.cpp, normal z -> d, Tue Aug 30 09:38:27 2016
 */
 #include <cuda_runtime.h>
 
@@ -16,7 +16,7 @@
 #include "batched_kernel_param.h"
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEQRF computes a QR factorization of a real M-by-N matrix A:
@@ -83,10 +83,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
-
-
+    @ingroup magma_geqrf_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqrf_batched(
     magma_int_t m, magma_int_t n,
@@ -95,8 +93,7 @@ magma_dgeqrf_batched(
     double **dtau_array,
     magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
 {
-#define dA(i, j)  (dA + (i) + (j)*ldda)   // A(i, j) means at i row, j column
-
+    #define dA(i, j)  (dA + (i) + (j)*ldda)
 
     /* Local Parameter */
     magma_int_t nb = magma_get_dgeqrf_batched_nb(m);

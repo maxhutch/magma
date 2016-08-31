@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
 
-       @generated from src/core_zhbtype1cb.cpp normal z -> c, Mon May  2 23:30:20 2016
+       @generated from src/core_zhbtype1cb.cpp, normal z -> c, Tue Aug 30 09:38:19 2016
 
 */
 #include "magma_internal.h"
@@ -19,7 +19,7 @@
 
 /***************************************************************************//**
  *
- * @ingroup magma_magmaFloatComplex
+ * @ingroup magma_hbtype1cb
  *
  *  magma_chbtype1cb is a kernel that will operate on a region (triangle) of data
  *  bounded by st and ed. This kernel eliminate a column by an column-wise
@@ -53,6 +53,9 @@
  *          magmaFloatComplex array, dimension 2*n if eigenvalue only
  *          requested or (ldv*blkcnt*Vblksiz) if Eigenvectors requested
  *          The Householder reflectors are stored in this array.
+ *
+ * @param[in] ldv
+ *          The leading dimension of the matrix V. ldv >= TODO.
  *
  * @param[out] TAU
  *          magmaFloatComplex array, dimension (n).
@@ -88,9 +91,10 @@
  *          \retval < 0 if -i, the i-th argument had an illegal value
  *
  ******************************************************************************/
-/***************************************************************************
- *          TYPE 1-BAND Lower-columnwise-Householder
- ***************************************************************************/
+
+// -----------------------------------------------------------------------------
+// TYPE 1-BAND Lower-columnwise-Householder
+
 extern "C" void
 magma_chbtype1cb(magma_int_t n, magma_int_t nb,
                 magmaFloatComplex *A, magma_int_t lda,
@@ -132,10 +136,8 @@ magma_chbtype1cb(magma_int_t n, magma_int_t nb,
 
     /* Apply left and right on A(st:ed,st:ed) */
     magma_clarfy(len, A(st,st), lda-1, V(vpos), TAU(taupos), work);
-
-    return;
 }
-/***************************************************************************/
+
 #undef A
 #undef V
 #undef TAU

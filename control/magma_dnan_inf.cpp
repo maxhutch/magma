@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from control/magma_znan_inf.cpp normal z -> d, Mon May  2 23:29:59 2016
+       @generated from control/magma_znan_inf.cpp, normal z -> d, Tue Aug 30 09:38:00 2016
 
 */
 #include <limits>
@@ -24,7 +24,12 @@ const double MAGMA_D_INF
     = MAGMA_D_MAKE( std::numeric_limits<double>::infinity(),
                     std::numeric_limits<double>::infinity() );
 
-/** @return true if either real(x) or imag(x) is NAN. */
+
+/***************************************************************************//**
+    @param[in] x    Scalar to test.
+    @return true if either real(x) or imag(x) is NAN.
+    @ingroup magma_nan_inf
+*******************************************************************************/
 int magma_d_isnan( double x )
 {
 #ifdef COMPLEX
@@ -36,7 +41,11 @@ int magma_d_isnan( double x )
 }
 
 
-/** @return true if either real(x) or imag(x) is INF. */
+/***************************************************************************//**
+    @param[in] x    Scalar to test.
+    @return true if either real(x) or imag(x) is INF.
+    @ingroup magma_nan_inf
+*******************************************************************************/
 int magma_d_isinf( double x )
 {
 #ifdef COMPLEX
@@ -48,7 +57,11 @@ int magma_d_isinf( double x )
 }
 
 
-/** @return true if either real(x) or imag(x) is NAN or INF. */
+/***************************************************************************//**
+    @param[in] x    Scalar to test.
+    @return true if either real(x) or imag(x) is NAN or INF.
+    @ingroup magma_nan_inf
+*******************************************************************************/
 int magma_d_isnan_inf( double x )
 {
 #ifdef COMPLEX
@@ -62,10 +75,9 @@ int magma_d_isnan_inf( double x )
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
-
     magma_dnan_inf checks a matrix that is located on the CPU host
     for NAN (not-a-number) and INF (infinity) values.
     
@@ -110,8 +122,8 @@ int magma_d_isnan_inf( double x )
       -     <  0:  If it returns -i, the i-th argument had an illegal value,
                    or another error occured, such as memory allocation failed.
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_nan_inf
+*******************************************************************************/
 extern "C"
 magma_int_t magma_dnan_inf(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -171,10 +183,9 @@ magma_int_t magma_dnan_inf(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
-
     magma_dnan_inf checks a matrix that is located on the CPU host
     for NAN (not-a-number) and INF (infinity) values.
     
@@ -219,8 +230,8 @@ magma_int_t magma_dnan_inf(
       -     <  0:  If it returns -i, the i-th argument had an illegal value,
                    or another error occured, such as memory allocation failed.
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_nan_inf
+*******************************************************************************/
 extern "C"
 magma_int_t magma_dnan_inf_gpu(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,

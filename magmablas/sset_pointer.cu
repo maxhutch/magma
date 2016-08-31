@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
-       @generated from magmablas/zset_pointer.cu normal z -> s, Mon May  2 23:30:41 2016
+       @generated from magmablas/zset_pointer.cu, normal z -> s, Tue Aug 30 09:38:39 2016
        @author Azzam Haidar
        @author Tingxing Dong
 
 */
 
 #include "magma_internal.h"
-///////////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************/
 __global__ void kernel_sset_pointer(
     float **output_array,
     float *input,
@@ -24,8 +25,9 @@ __global__ void kernel_sset_pointer(
     //printf("==> kernel_set_pointer input_array %p output_array %p  \n",input+ blockIdx.x * batch_offset,output_array[blockIdx.x]);
 }
 
-/*
-   Purpose
+
+/***************************************************************************//**
+    Purpose
     -------
 
     convert consecutive stored variable to array stored
@@ -36,7 +38,7 @@ __global__ void kernel_sset_pointer(
     ----------
 
     @param[out]
-    output_array 	Array of pointers, dimension (batchCount).
+    output_array  Array of pointers, dimension (batchCount).
              Each is a REAL array A of DIMENSION ( lda, column ) on the GPU
    
     @param[in]
@@ -66,9 +68,7 @@ __global__ void kernel_sset_pointer(
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-
-*/
-
+*******************************************************************************/
 extern "C"
 void magma_sset_pointer(
     float **output_array,
@@ -84,9 +84,8 @@ void magma_sset_pointer(
         (output_array, input, lda,  row, column, batch_offset);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
 
-
+/******************************************************************************/
 __global__ void zdisplace_pointers_kernel(float **output_array,
                float **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column)
@@ -96,8 +95,8 @@ __global__ void zdisplace_pointers_kernel(float **output_array,
 }
 
 
-/*
-   Purpose
+/***************************************************************************//**
+    Purpose
     -------
 
     compute the offset for all the matrices and save the displacment of the new pointer on output_array.
@@ -108,11 +107,11 @@ __global__ void zdisplace_pointers_kernel(float **output_array,
     ----------
 
     @param[out]
-    output_array 	Array of pointers, dimension (batchCount).
+    output_array    Array of pointers, dimension (batchCount).
              Each pointer points to the new displacement of array A in input_array on the GPU
    
     @param[in]
-    input_array 	Array of pointers, dimension (batchCount).
+    input_array     Array of pointers, dimension (batchCount).
              Each is a REAL array A of DIMENSION ( lda, column ) on the GPU
 
     @param[in]
@@ -138,9 +137,7 @@ __global__ void zdisplace_pointers_kernel(float **output_array,
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
-
-*/
-
+*******************************************************************************/
 extern "C"
 void magma_sdisplace_pointers(float **output_array,
                float **input_array, magma_int_t lda,

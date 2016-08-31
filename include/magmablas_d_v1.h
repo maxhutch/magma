@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magmablas_z_v1.h normal z -> d, Mon May  2 23:31:25 2016
+       @generated from include/magmablas_z_v1.h, normal z -> d, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMABLAS_D_V1_H
@@ -561,7 +561,7 @@ magmablas_dtrsm_work(
    * These wrap CUBLAS or AMD OpenCL BLAS functions.
    */
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set  copies host   to device
 // get  copies device to host
@@ -603,7 +603,7 @@ magma_dcopyvector_internal(
 { magma_copyvector_internal( n, sizeof(double), dx_src, incx, dy_dst, incy, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 
 #define magma_dsetmatrix(           m, n, hA_src, lda,  dB_dst, lddb ) \
@@ -640,7 +640,7 @@ magma_dcopymatrix_internal(
 { magma_copymatrix_internal( m, n, sizeof(double), dA_src, ldda, dB_dst, lddb, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // Level 1 BLAS (alphabetical order)
 
 // in cublas_v2, result returned through output argument
@@ -741,7 +741,7 @@ magma_dswap(
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy );
 
-// ========================================
+// =============================================================================
 // Level 2 BLAS (alphabetical order)
 
 void
@@ -811,7 +811,7 @@ magma_dtrsv(
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr       dx, magma_int_t incx );
 
-// ========================================
+// =============================================================================
 // Level 3 BLAS (alphabetical order)
 
 void

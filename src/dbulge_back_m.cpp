@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
        
-       @generated from src/zbulge_back_m.cpp normal z -> d, Mon May  2 23:30:19 2016
+       @generated from src/zbulge_back_m.cpp, normal z -> d, Tue Aug 30 09:38:18 2016
 
  */
 #include "magma_internal.h"
@@ -26,21 +26,24 @@
 static void *magma_dapplyQ_m_parallel_section(void *arg);
 
 static void magma_dtile_bulge_applyQ(
-    magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc,
+    magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
     double *E, magma_int_t lde,
     double *V, magma_int_t ldv,
     double *TAU,
     double *T, magma_int_t ldt);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/******************************************************************************/
 class magma_dapplyQ_m_data
 {
 public:
 
-    magma_dapplyQ_m_data(magma_int_t ngpu_, magma_int_t threads_num_, magma_int_t n_, magma_int_t ne_, magma_int_t n_gpu_,
-                         magma_int_t nb_, magma_int_t Vblksiz_, double *E_, magma_int_t lde_,
-                         double *V_, magma_int_t ldv_, double *TAU_,
+    magma_dapplyQ_m_data(magma_int_t ngpu_, magma_int_t threads_num_,
+                         magma_int_t n_, magma_int_t ne_, magma_int_t n_gpu_,
+                         magma_int_t nb_, magma_int_t Vblksiz_,
+                         double *E_, magma_int_t lde_,
+                         double *V_, magma_int_t ldv_,
+                         double *TAU_,
                          double *T_, magma_int_t ldt_)
     :
     ngpu(ngpu_),
@@ -63,7 +66,7 @@ public:
         if (threads_num > 1)
             --count;
 
-        pthread_barrier_init(&barrier, NULL, count);
+        pthread_barrier_init(&barrier, NULL, (unsigned)count);
     }
 
     ~magma_dapplyQ_m_data()
@@ -91,6 +94,8 @@ private:
     magma_dapplyQ_m_data(magma_dapplyQ_m_data& data); // disable copy
 };
 
+
+/******************************************************************************/
 class magma_dapplyQ_m_id_data
 {
 public:
@@ -107,8 +112,8 @@ public:
     magma_dapplyQ_m_data* data;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************/
 extern "C" magma_int_t
 magma_dbulge_back_m(
     magma_int_t ngpu,
@@ -126,15 +131,14 @@ magma_dbulge_back_m(
     magma_set_lapack_numthreads(1);
 
     real_Double_t timeaplQ2=0.0;
-
     double f= 1.;
     magma_int_t n_gpu = ne;
 
-//#ifdef REAL
-//    double gpu_cpu_perf = 32; //gpu over cpu performance
-//#else
-//    double gpu_cpu_perf = 32;  // gpu over cpu performance
-//#endif
+    //#ifdef REAL
+    //    double gpu_cpu_perf = 32;  // gpu over cpu performance
+    //#else
+    //    double gpu_cpu_perf = 32;  // gpu over cpu performance
+    //#endif
 
     double perf_temp= .85;
     double perf_temp2= perf_temp;
@@ -146,26 +150,20 @@ magma_dbulge_back_m(
         n_gpu = (magma_int_t)(f*ne);
     }
 
-
-
-
-
-
-    /****************************************************
+    /* --------------------------------------------------
      *  apply V2 from left to the eigenvectors Z. dZ = (I-V2*T2*V2')*Z
-     * **************************************************/
-
+     * -------------------------------------------------- */
     timeaplQ2 = magma_wtime();
 
     /*============================
      *  use GPU+CPU's
      *==========================*/
-n_gpu = ne;
+    n_gpu = ne;
     if (n_gpu < ne) {
         // define the size of Q to be done on CPU's and the size on GPU's
         // note that GPU use Q(1:N_GPU) and CPU use Q(N_GPU+1:N)
         #ifdef ENABLE_DEBUG
-        printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %d     N_GPU %d   N_CPU %d\n",ne, n_gpu, ne-n_gpu);
+        printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %lld     N_GPU %lld   N_CPU %lld\n",ne, n_gpu, ne-n_gpu);
         #endif
         magma_dapplyQ_m_data data_applyQ(ngpu, threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt);
 
@@ -183,7 +181,7 @@ n_gpu = ne;
         // Set one thread per core
         pthread_attr_init(&thread_attr);
         pthread_attr_setscope(&thread_attr, PTHREAD_SCOPE_SYSTEM);
-        pthread_setconcurrency(threads);
+        pthread_setconcurrency( (unsigned)threads );
 
         // Launch threads
         for (magma_int_t thread = 1; thread < threads; thread++) {
@@ -216,7 +214,8 @@ n_gpu = ne;
     return MAGMA_SUCCESS;
 }
 
-//##################################################################################################
+
+/******************************************************************************/
 static void *magma_dapplyQ_m_parallel_section(void *arg)
 {
     magma_int_t my_core_id     = ((magma_dapplyQ_m_id_data*)arg) -> id;
@@ -331,14 +330,18 @@ static void *magma_dapplyQ_m_parallel_section(void *arg)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************/
 #define E(m,n)   &(E[(m) + lde*(n)])
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)     &(T[(m)])
+
+/******************************************************************************/
+// TODO: this is identical to function in dbulge_back.cpp
 static void magma_dtile_bulge_applyQ(
-    magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc,
+    magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
     double *E, magma_int_t lde,
     double *V, magma_int_t ldv,
     double *TAU,
@@ -397,9 +400,9 @@ static void magma_dtile_bulge_applyQ(
      *            IN parallel E is splitten in horizontal block over the threads  */
     #ifdef ENABLE_DEBUG
     if ((core_id == 0) || (core_id == 1))
-        printf("  APPLY Q2_cpu dbulge_back_m   N %d  N_loc %d  nbchunk %d  NB %d  Vblksiz %d  SIDE %c \n", n, n_loc, nbchunk, nb, Vblksiz, side);
+        printf("  APPLY Q2_cpu dbulge_back_m   N %lld  N_loc %lld  nbchunk %lld  NB %lld  Vblksiz %lld  SIDE %c\n", n, n_loc, nbchunk, nb, Vblksiz, side);
     #endif
-   
+
     for (magma_int_t i = 0; i < nbchunk; i++) {
         magma_int_t ib_loc = min(nb_loc, (n_loc - i*nb_loc));
 
@@ -431,7 +434,7 @@ static void magma_dtile_bulge_applyQ(
                         lapackf77_dlarfb( "L", "N", "F", "C", &vlen, &ib_loc, &vnb, V(vpos), &ldv, T(tpos), &ldt, E(fst,i*nb_loc), &lde, work, &ib_loc);
                     }
                     if (INFO != 0)
-                        printf("ERROR DORMQR INFO %d \n", (int) INFO);
+                        printf("ERROR DORMQR INFO %lld\n", (long long) INFO );
                 }
             }
         } else if (side == MagmaRight) {
@@ -464,15 +467,15 @@ static void magma_dtile_bulge_applyQ(
                 }
             }
         } else {
-            printf("ERROR SIDE %d \n",side);
+            printf("ERROR SIDE %d\n", side);
         }
     } // END loop over the chunks
 
     magma_free_cpu(work);
     magma_free_cpu(work2);
 }
+
 #undef E
 #undef V
 #undef TAU
 #undef T
-////////////////////////////////////////////////////////////////////////////////////////////////////

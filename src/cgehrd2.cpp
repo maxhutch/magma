@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgehrd2.cpp normal z -> c, Mon May  2 23:30:22 2016
+       @generated from src/zgehrd2.cpp, normal z -> c, Tue Aug 30 09:38:21 2016
        
        @author Stan Tomov
        @author Mark Gates
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEHRD2 reduces a COMPLEX general matrix A to upper Hessenberg form H by
@@ -114,8 +114,8 @@
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
 
-    @ingroup magma_cgeev_comp
-    ********************************************************************/
+    @ingroup magma_gehrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgehrd2(
     magma_int_t n, magma_int_t ilo, magma_int_t ihi,

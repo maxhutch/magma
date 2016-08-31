@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zheevdx_2stage.cpp normal z -> s, Mon May  2 23:31:19 2016
+       @generated from testing/testing_zheevdx_2stage.cpp, normal z -> s, Tue Aug 30 09:39:14 2016
 
 */
 
@@ -23,7 +23,8 @@
 #include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "magma_threadsetting.h"
+
+#include "../control/magma_threadsetting.h"  // internal header
 
 #define REAL
 
@@ -36,7 +37,8 @@ static magma_int_t check_solution(magma_int_t N, float *E1, float *E2, float eps
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t gpu_time;
 
@@ -55,7 +57,7 @@ int main( int argc, char** argv)
     magma_int_t info_ortho     = 0;
     magma_int_t info_solution  = 0;
     magma_int_t info_reduction = 0;
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -67,9 +69,9 @@ int main( int argc, char** argv)
     // pass ngpu = -1 to test multi-GPU code using 1 gpu
     magma_int_t abs_ngpu = abs( opts.ngpu );
     
-    printf("%% jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu %d\n",
+    printf("%% jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu %lld\n",
            lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
-           opts.fraction, int(abs_ngpu) );
+           opts.fraction, (long long) abs_ngpu);
 
     printf("%%   N     M  GPU Time (sec)   ||I-Q^H Q||/N   ||A-QDQ^H||/(||A||N)   |D-D_magma|/(|D| * N)\n");
     printf("%%=========================================================================================\n");
@@ -103,15 +105,15 @@ int main( int argc, char** argv)
                                      &liwork);
             
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC_CPU( h_A,   float, n2 );
-            TESTING_MALLOC_CPU( w1,    float, N );
-            TESTING_MALLOC_CPU( w2,    float, N );
-            TESTING_MALLOC_CPU( iwork, magma_int_t, liwork );
+            TESTING_CHECK( magma_smalloc_cpu( &h_A,   n2 ));
+            TESTING_CHECK( magma_smalloc_cpu( &w1,    N ));
+            TESTING_CHECK( magma_smalloc_cpu( &w2,    N ));
+            TESTING_CHECK( magma_imalloc_cpu( &iwork, liwork ));
             
-            TESTING_MALLOC_PIN( h_R,    float, n2    );
-            TESTING_MALLOC_PIN( h_work, float, lwork );
+            TESTING_CHECK( magma_smalloc_pinned( &h_R,    n2    ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_work, lwork ));
             #ifdef COMPLEX
-            TESTING_MALLOC_PIN( rwork, float, lrwork );
+            TESTING_CHECK( magma_smalloc_pinned( &rwork, lrwork ));
             #endif
 
             /* Initialize the matrix */
@@ -136,7 +138,7 @@ int main( int argc, char** argv)
                                           iwork, liwork, 
                                           &info );
                 } else {
-                    //printf("calling ssyevdx_2stage_m %d GPU\n", (int) opts.ngpu);
+                    //printf("calling ssyevdx_2stage_m %lld GPU\n", (long long) opts.ngpu);
                     magma_ssyevdx_2stage_m( abs_ngpu, opts.jobz, range, opts.uplo, N, 
                                             h_R, lda, 
                                             vl, vu, il, iu, 
@@ -168,7 +170,7 @@ int main( int argc, char** argv)
                                       iwork, liwork, 
                                       &info );
             } else {
-                //printf("calling ssyevdx_2stage_m %d GPU\n", (int) opts.ngpu);
+                //printf("calling ssyevdx_2stage_m %lld GPU\n", (long long) opts.ngpu);
                 magma_ssyevdx_2stage_m( abs_ngpu, opts.jobz, range, opts.uplo, N, 
                                         h_R, lda, 
                                         vl, vu, il, iu, 
@@ -182,12 +184,12 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0) {
-                printf("magma_ssyevdx_2stage returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_ssyevdx_2stage returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
-            printf("%5d %5d  %7.2f      ",
-                   (int) N, (int) m1, gpu_time );
+            printf("%5lld %5lld  %7.2f      ",
+                   (long long) N, (long long) m1, gpu_time );
 
             if ( opts.check ) {
                 info_solution  = 0;
@@ -219,15 +221,15 @@ int main( int argc, char** argv)
             }
             printf("\n");
 
-            TESTING_FREE_CPU( h_A   );
-            TESTING_FREE_CPU( w1    );
-            TESTING_FREE_CPU( w2    );
-            TESTING_FREE_CPU( iwork );
+            magma_free_cpu( h_A   );
+            magma_free_cpu( w1    );
+            magma_free_cpu( w2    );
+            magma_free_cpu( iwork );
             
-            TESTING_FREE_PIN( h_R    );
-            TESTING_FREE_PIN( h_work );
+            magma_free_pinned( h_R    );
+            magma_free_pinned( h_work );
             #ifdef COMPLEX
-            TESTING_FREE_PIN( rwork  );
+            magma_free_pinned( rwork  );
             #endif
             fflush( stdout );
         }
@@ -237,7 +239,7 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }
 
@@ -256,11 +258,11 @@ static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, float *Q, m
     magma_int_t     info_ortho;
     magma_int_t     minMN = min(M, N);
     float *work;
-    TESTING_MALLOC_CPU( work, float, minMN );
+    TESTING_CHECK( magma_smalloc_cpu( &work, minMN ));
 
     /* Build the idendity matrix */
     float *Id;
-    TESTING_MALLOC_CPU( Id, float, minMN*minMN );
+    TESTING_CHECK( magma_smalloc_cpu( &Id, minMN*minMN ));
     lapackf77_slaset("A", &minMN, &minMN, &c_zero, &c_one, Id, &minMN);
 
     /* Perform Id - Q^H Q */
@@ -281,8 +283,8 @@ static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, float *Q, m
     else {
         info_ortho = 0;
     }
-    TESTING_FREE_CPU( work );
-    TESTING_FREE_CPU( Id   );
+    magma_free_cpu( work );
+    magma_free_cpu( Id   );
     
     return info_ortho;
 }
@@ -302,9 +304,9 @@ static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t
     magma_int_t i;
     magma_int_t ione=1;
 
-    TESTING_MALLOC_CPU( TEMP,     float, N*N );
-    TESTING_MALLOC_CPU( Residual, float, N*N );
-    TESTING_MALLOC_CPU( work,     float, N );
+    TESTING_CHECK( magma_smalloc_cpu( &TEMP,     N*N ));
+    TESTING_CHECK( magma_smalloc_cpu( &Residual, N*N ));
+    TESTING_CHECK( magma_smalloc_cpu( &work,     N ));
     
     /* Compute TEMP =  Q * LAMBDA */
     lapackf77_slacpy("A", &N, &N, Q, &LDA, TEMP, &N);        
@@ -337,9 +339,9 @@ static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t
         info_reduction = 0;
     }
 
-    TESTING_FREE_CPU( TEMP     );
-    TESTING_FREE_CPU( Residual );
-    TESTING_FREE_CPU( work     );
+    magma_free_cpu( TEMP     );
+    magma_free_cpu( Residual );
+    magma_free_cpu( work     );
 
     return info_reduction;
 }

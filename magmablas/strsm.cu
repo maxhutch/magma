@@ -1,20 +1,22 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/ztrsm.cu normal z -> s, Mon May  2 23:30:36 2016
+       @generated from magmablas/ztrsm.cu, normal z -> s, Tue Aug 30 09:38:34 2016
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
 */
 #include "magma_internal.h"
+
+#define TRTRI_NONBATCHED
 #include "strtri.cuh"  // get NB from strtri
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     strsm_outofplace solves one of the matrix equations on gpu
@@ -138,8 +140,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_sblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C"
 void magmablas_strsm_outofplace_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -379,13 +381,13 @@ void magmablas_strsm_outofplace_q(
 }
 
 
-/**
-    Similar to magmablas_strsm_outofplace, but copies result dX back to dB,
+/***************************************************************************//**
+    Similar to magmablas_strsm_outofplace(), but copies result dX back to dB,
     as in classical strsm interface.
     
     @see magmablas_strsm_outofplace
-    @ingroup magma_sblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C"
 void magmablas_strsm_work_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
@@ -406,14 +408,14 @@ void magmablas_strsm_work_q(
 }
 
 
-/**
-    Similar to magmablas_strsm_outofplace, but allocates dX and d_dinvA
+/***************************************************************************//**
+    Similar to magmablas_strsm_outofplace(), but allocates dX and d_dinvA
     internally. This makes it a synchronous call, whereas
-    magmablas_strsm_outofplace and magmablas_strsm_work are asynchronous.
+    magmablas_strsm_outofplace() and magmablas_strsm_work() are asynchronous.
     
     @see magmablas_strsm_work
-    @ingroup magma_sblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C"
 void magmablas_strsm_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,

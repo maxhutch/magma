@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
-       @generated from testing/testing_dgeev.cpp normal d -> s, Mon May  2 23:31:20 2016
+       @generated from testing/testing_dgeev.cpp, normal d -> s, Tue Aug 30 09:39:15 2016
 
 */
 
@@ -67,7 +67,8 @@ float magma_szlapy2(magmaFloatComplex x)
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gpu_time, cpu_time;
     float *h_A, *h_R, *VL, *VR, *h_work, *w1, *w2;
@@ -79,7 +80,7 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     float ulp, ulpinv, error;
-    magma_int_t status = 0;
+    int status = 0;
     
     ulp = lapackf77_slamch( "P" );
     ulpinv = 1./ulp;
@@ -103,9 +104,9 @@ int main( int argc, char** argv)
     // pass ngpu = -1 to test multi-GPU code using 1 gpu
     magma_int_t abs_ngpu = abs( opts.ngpu );
     
-    printf("%% jobvl = %s, jobvr = %s, ngpu = %d\n",
+    printf("%% jobvl = %s, jobvr = %s, ngpu = %lld\n",
            lapack_vec_const(opts.jobvl), lapack_vec_const(opts.jobvr),
-           int(abs_ngpu) );
+           (long long) abs_ngpu );
     
     printf("%%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
     printf("%%==========================================================================\n");
@@ -122,18 +123,18 @@ int main( int argc, char** argv)
             // generous workspace - required by sget22
             lwork2 = max( lwork, N*(5 + 2*N) );
             
-            TESTING_MALLOC_CPU( w1copy, magmaFloatComplex, N );
-            TESTING_MALLOC_CPU( w2copy, magmaFloatComplex, N );
-            TESTING_MALLOC_CPU( w1,  float, N  );
-            TESTING_MALLOC_CPU( w2,  float, N  );
-            TESTING_MALLOC_CPU( w1i, float, N  );
-            TESTING_MALLOC_CPU( w2i, float, N  );
-            TESTING_MALLOC_CPU( h_A, float, n2 );
+            TESTING_CHECK( magma_cmalloc_cpu( &w1copy, N ));
+            TESTING_CHECK( magma_cmalloc_cpu( &w2copy, N ));
+            TESTING_CHECK( magma_smalloc_cpu( &w1,  N  ));
+            TESTING_CHECK( magma_smalloc_cpu( &w2,  N  ));
+            TESTING_CHECK( magma_smalloc_cpu( &w1i, N  ));
+            TESTING_CHECK( magma_smalloc_cpu( &w2i, N  ));
+            TESTING_CHECK( magma_smalloc_cpu( &h_A, n2 ));
             
-            TESTING_MALLOC_PIN( h_R, float, n2 );
-            TESTING_MALLOC_PIN( VL,  float, n2 );
-            TESTING_MALLOC_PIN( VR,  float, n2 );
-            TESTING_MALLOC_PIN( h_work, float, lwork2 );
+            TESTING_CHECK( magma_smalloc_pinned( &h_R, n2 ));
+            TESTING_CHECK( magma_smalloc_pinned( &VL,  n2 ));
+            TESTING_CHECK( magma_smalloc_pinned( &VR,  n2 ));
+            TESTING_CHECK( magma_smalloc_pinned( &h_work, lwork2 ));
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -157,8 +158,8 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0) {
-                printf("magma_sgeev returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_sgeev returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
 
             /* =====================================================================
@@ -301,7 +302,7 @@ int main( int argc, char** argv)
                 // more extensive tests
                 // this is really slow because it calls magma_sgeev multiple times
                 float *LRE, DUM;
-                TESTING_MALLOC_PIN( LRE, float, n2 );
+                TESTING_CHECK( magma_smalloc_pinned( &LRE, n2 ));
                 
                 lapackf77_slarnv( &ione, ISEED, &n2, h_A );
                 lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
@@ -321,8 +322,8 @@ int main( int argc, char** argv)
                                    h_work, lwork, &info );
                 }
                 if (info != 0) {
-                    printf("magma_sgeev (case V, V) returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("magma_sgeev (case V, V) returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 // ----------
@@ -342,8 +343,8 @@ int main( int argc, char** argv)
                 //                   h_work, lwork, &info );
                 //}
                 //if (info != 0) {
-                //    printf("magma_sgeev (case N, N) returned error %d: %s.\n",
-                //           (int) info, magma_strerror( info ));
+                //    printf("magma_sgeev (case N, N) returned error %lld: %s.\n",
+                //           (long long) info, magma_strerror( info ));
                 //}
                 //
                 //// Do test 5: W(full) = W(partial, W only)
@@ -368,8 +369,8 @@ int main( int argc, char** argv)
                                    h_work, lwork, &info );
                 }
                 if (info != 0) {
-                    printf("magma_sgeev (case N, V) returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("magma_sgeev (case N, V) returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 // Do test 6: W(full) = W(partial, W and VR)
@@ -401,8 +402,8 @@ int main( int argc, char** argv)
                                    h_work, lwork, &info );
                 }
                 if (info != 0) {
-                    printf("magma_sgeev (case V, N) returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("magma_sgeev (case V, N) returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 // Do test 7: W(full) = W(partial, W and VL)
@@ -418,7 +419,7 @@ int main( int argc, char** argv)
                         if ( ! MAGMA_S_EQUAL( VL[j+jj*lda], LRE[j+jj*lda] ))
                             result[8] = 0;
                 
-                TESTING_FREE_PIN( LRE );
+                magma_free_pinned( LRE );
             }
             
             /* =====================================================================
@@ -433,8 +434,8 @@ int main( int argc, char** argv)
                                  h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_sgeev returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_sgeev returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 // check | W_magma - W_lapack | / | W |
@@ -466,14 +467,14 @@ int main( int argc, char** argv)
                 error  = magma_cblas_scnrm2( N, w1copy, 1 );
                 error /= magma_cblas_scnrm2( N, w2copy, 1 );
                 
-                printf("%5d   %7.2f          %7.2f          %8.2e   %s\n",
-                       (int) N, cpu_time, gpu_time,
+                printf("%5lld   %7.2f          %7.2f          %8.2e   %s\n",
+                       (long long) N, cpu_time, gpu_time,
                        error, (error < tolulp ? "ok" : "failed"));
                 status += ! (error < tolulp);
             }
             else {
-                printf("%5d     ---            %7.2f\n",
-                       (int) N, gpu_time);
+                printf("%5lld     ---            %7.2f\n",
+                       (long long) N, gpu_time);
             }
             if ( opts.check ) {
                 // -1 indicates test was not run
@@ -502,18 +503,18 @@ int main( int argc, char** argv)
                 }
             }
             
-            TESTING_FREE_CPU( w1copy );
-            TESTING_FREE_CPU( w2copy );
-            TESTING_FREE_CPU( w1  );
-            TESTING_FREE_CPU( w2  );
-            TESTING_FREE_CPU( w1i );
-            TESTING_FREE_CPU( w2i );
-            TESTING_FREE_CPU( h_A );
+            magma_free_cpu( w1copy );
+            magma_free_cpu( w2copy );
+            magma_free_cpu( w1  );
+            magma_free_cpu( w2  );
+            magma_free_cpu( w1i );
+            magma_free_cpu( w2i );
+            magma_free_cpu( h_A );
             
-            TESTING_FREE_PIN( h_R );
-            TESTING_FREE_PIN( VL  );
-            TESTING_FREE_PIN( VR  );
-            TESTING_FREE_PIN( h_work );
+            magma_free_pinned( h_R );
+            magma_free_pinned( VL  );
+            magma_free_pinned( VR  );
+            magma_free_pinned( h_work );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -522,6 +523,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

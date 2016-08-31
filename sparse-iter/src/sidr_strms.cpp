@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
        @author Eduardo Ponce
        @author Moritz Kreutzer
 
-       @generated from sparse-iter/src/zidr_strms.cpp normal z -> s, Mon May  2 23:30:58 2016
+       @generated from sparse-iter/src/zidr_strms.cpp, normal z -> s, Tue Aug 30 09:38:55 2016
 */
 
 #include "magmasparse_internal.h"
@@ -25,7 +25,7 @@
 
     Solves a system of linear equations
        A * X = B
-    where A is a real symmetric N-by-N positive definite matrix A.
+    where A is a general real N-by-N matrix A.
     This is a GPU implementation of the Induced Dimension Reduction
     method applying kernel fusion and kernel overlap.
 

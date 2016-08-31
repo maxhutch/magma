@@ -225,7 +225,7 @@
 *     ..
       DSDOT = SB
       IF (N.LE.0) THEN
-         SDSDOT = DSDOT
+         SDSDOT = REAL(DSDOT)
          RETURN
       END IF   
       IF (INCX.EQ.INCY .AND. INCX.GT.0) THEN
@@ -250,6 +250,6 @@
             KY = KY + INCY
          END DO
       END IF
-      SDSDOT = DSDOT
+      SDSDOT = REAL(DSDOT)
       RETURN
       END

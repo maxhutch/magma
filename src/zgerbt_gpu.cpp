@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Adrien REMY
@@ -11,6 +11,7 @@
 #include "magma_internal.h"
 
 
+/******************************************************************************/
 static void
 init_butterfly(
         magma_int_t n,
@@ -19,15 +20,15 @@ init_butterfly(
     magma_int_t i;
     double u1, v1;
     for (i=0; i < n; ++i) {
-        u1 = exp( (rand()/double(RAND_MAX) - 0.5)/10 );
-        v1 = exp( (rand()/double(RAND_MAX) - 0.5)/10 );
+        u1 = exp( (rand()/(double)RAND_MAX - 0.5)/10 );
+        v1 = exp( (rand()/(double)RAND_MAX - 0.5)/10 );
         u[i] = MAGMA_Z_MAKE( u1, u1 );
         v[i] = MAGMA_Z_MAKE( v1, v1 );
     }
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGERBT solves a system of linear equations
@@ -96,8 +97,8 @@ init_butterfly(
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
 
-    @ingroup magma_zgesv_comp
-    ********************************************************************/
+    @ingroup magma_gerbt
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgerbt_gpu(
     magma_bool_t gen, magma_int_t n, magma_int_t nrhs,

@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @generated from testing/testing_cblas_z.cpp normal z -> c, Mon May  2 23:31:07 2016
+       @generated from testing/testing_cblas_z.cpp, normal z -> c, Tue Aug 30 09:39:03 2016
        @author Mark Gates
        
        These tests ensure that the MAGMA implementations of CBLAS routines
@@ -84,8 +84,8 @@ void output(
                 (error_inline < gTol);
     gStatus += ! okay;
     
-    printf( "%5d %5d %5d %5d %5d   %-8s",
-            int(m), int(n), int(k), int(incx), int(incy), routine );
+    printf( "%5lld %5lld %5lld %5lld %5lld   %-8s",
+            (long long) m, (long long) n, (long long) k, (long long) incx, (long long) incy, routine );
     
     if ( error_cblas == SKIPPED_FLAG )
         printf( "   %8s", "n/a" );
@@ -104,7 +104,8 @@ void output(
 // ----------------------------------------
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     //real_Double_t   t_m, t_c, t_f;
     magma_int_t ione = 1;
@@ -177,8 +178,8 @@ int main( int argc, char** argv )
         maxn = max( max( m, n ), k ) * maxinc;
         ld = max( 1, maxn );
         size = ld*maxn;
-        TESTING_MALLOC_CPU( A, magmaFloatComplex, size );
-        TESTING_MALLOC_CPU( B, magmaFloatComplex, size );
+        TESTING_CHECK( magma_cmalloc_cpu( &A, size ));
+        TESTING_CHECK( magma_cmalloc_cpu( &B, size ));
         
         // initialize matrices
         lapackf77_clarnv( &ione, ISEED, &size, A );
@@ -383,12 +384,12 @@ int main( int argc, char** argv )
         }
         
         // cleanup
-        TESTING_FREE_CPU( A );
-        TESTING_FREE_CPU( B );
+        magma_free_cpu( A );
+        magma_free_cpu( B );
         fflush( stdout );
     }  // itest, incx, incy
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return gStatus;
 }

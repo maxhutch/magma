@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/ztrsv_template_device.cuh normal z -> s, Mon May  2 23:31:25 2016
+       @generated from magmablas/ztrsv_template_device.cuh, normal z -> s, Tue Aug 30 09:39:22 2016
 */
 
 
@@ -21,16 +21,12 @@
 
 #include "gemv_template_kernel_batched.cuh"
 
-
-
-
-
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
 extern __shared__ float shared_data[];
 
 
-//==============================================================================
+/******************************************************************************/
 /*
     used in upper nontranspose and lower transpose
 */
@@ -90,11 +86,10 @@ strsv_backwards_tri_device( int n,
     }
 }
 
-//==============================================================================
+/******************************************************************************/
 /*
     used in lower nontranspose and upper transpose
 */
-
 template<magma_trans_t transA, magma_diag_t diag>
 static __device__ void
 strsv_forwards_tri_device(int n,
@@ -152,7 +147,7 @@ strsv_forwards_tri_device(int n,
 }
 
 
-//==============================================================================
+/******************************************************************************/
 template<const int BLOCK_SIZE, const int BLK_X, const int BLK_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag>
 static __device__ void
 strsv_notrans_device(
@@ -220,9 +215,7 @@ strsv_notrans_device(
 }
 
 
-
-//==============================================================================
-
+/******************************************************************************/
 template<const int BLOCK_SIZE, const int BLK_X, const int BLK_Y,  const int TILE_SIZE, const int flag, const magma_uplo_t uplo, const magma_trans_t trans, const magma_diag_t diag >
 static __device__ void
 strsv_trans_device(
@@ -286,6 +279,5 @@ strsv_trans_device(
     }
     __syncthreads();
 }
-
 
 #endif // MAGMABLAS_TRSV_TEMPLATE_H

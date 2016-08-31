@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -73,11 +73,9 @@ magma_zgedensereimsplit(
     magma_z_matrix *ImA,
     magma_queue_t queue )
 {
-    
     magma_zmtransfer( A, ReA, Magma_DEV, Magma_DEV, queue );
     magma_zmtransfer( A, ImA, Magma_DEV, Magma_DEV, queue );
-    
-    
+        
     int m = A.num_rows;
     int n = A.num_cols;
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );

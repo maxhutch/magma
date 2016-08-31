@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zbajac_csr_overlap.cu normal z -> s, Mon May  2 23:30:43 2016
+       @generated from sparse-iter/blas/zbajac_csr_overlap.cu, normal z -> s, Tue Aug 30 09:38:41 2016
 
 */
 #include "magmasparse_internal.h"
@@ -22,7 +22,7 @@ __global__ void magma_sk_testLocking(unsigned int* locks, int n) {
             leaveLoop = true;
             atomicExch(&(locks[id]),0u);
         }
-    } 
+    }
 }
 
 /*
@@ -96,7 +96,7 @@ printf("bdx:%d idx:%d  start:%d  end:%d\n", blockIdx.x, threadIdx.x, start, end)
 
      // add more local iterations            
 
-     local_x[threadIdx.x] = x[index] ; //+ ( v - tmp); // / (valD[start]);
+     local_x[threadIdx.x] = x[index]; //+ ( v - tmp); // / (valD[start]);
      __syncthreads();
 
      #pragma unroll
@@ -112,7 +112,7 @@ printf("bdx:%d idx:%d  start:%d  end:%d\n", blockIdx.x, threadIdx.x, start, end)
      if( threadIdx.x > overlap ) { // RAS
          x[index] = local_x[threadIdx.x];
      }
-    }   
+    }
 }
 
 */
@@ -181,7 +181,7 @@ magma_sbajac_csr_o_ls_kernel1(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 
@@ -264,7 +264,7 @@ magma_sbajac_csr_o_ls_kernel2(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 
@@ -343,7 +343,7 @@ magma_sbajac_csr_o_ls_kernel4(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 
@@ -435,7 +435,7 @@ magma_sbajac_csr_o_ls_kernel8(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 
@@ -470,22 +470,22 @@ magma_sbajac_csr_o_ls_kernel16(int localiters, int n,
     float *valR, *valD;
     magma_index_t *colR, *rowR, *colD, *rowD;
     
-          if( blockIdx.x%matrices==0  ) {        valR = valR15; valD = valD15; colR = colR15; rowR = rowR15; colD = colD15; rowD = rowD15;        }
-    else if ( blockIdx.x%matrices==1  ) {        valR = valR14; valD = valD14; colR = colR14; rowR = rowR14; colD = colD14; rowD = rowD14;        }
-    else if ( blockIdx.x%matrices==2  ) {        valR = valR13; valD = valD13; colR = colR13; rowR = rowR13; colD = colD13; rowD = rowD13;        }
-    else if ( blockIdx.x%matrices==3  ) {        valR = valR12; valD = valD12; colR = colR12; rowR = rowR12; colD = colD12; rowD = rowD12;        }
-    else if ( blockIdx.x%matrices==4  ) {        valR = valR11; valD = valD11; colR = colR11; rowR = rowR11; colD = colD11; rowD = rowD11;        }
-    else if ( blockIdx.x%matrices==5  ) {        valR = valR10; valD = valD10; colR = colR10; rowR = rowR10; colD = colD10; rowD = rowD10;        }
-    else if ( blockIdx.x%matrices==6  ) {        valR = valR9 ; valD = valD9 ; colR = colR9 ; rowR = rowR9 ; colD = colD9 ; rowD = rowD9 ;        }
-    else if ( blockIdx.x%matrices==7  ) {        valR = valR8 ; valD = valD8 ; colR = colR8 ; rowR = rowR8 ; colD = colD8 ; rowD = rowD8 ;        }
-    else if ( blockIdx.x%matrices==8  ) {        valR = valR7 ; valD = valD7 ; colR = colR7 ; rowR = rowR7 ; colD = colD7 ; rowD = rowD7 ;        }
-    else if ( blockIdx.x%matrices==9  ) {        valR = valR6 ; valD = valD6 ; colR = colR6 ; rowR = rowR6 ; colD = colD6 ; rowD = rowD6 ;        }
-    else if ( blockIdx.x%matrices==10 ) {        valR = valR5 ; valD = valD5 ; colR = colR5 ; rowR = rowR5 ; colD = colD5 ; rowD = rowD5 ;        }
-    else if ( blockIdx.x%matrices==11 ) {        valR = valR4 ; valD = valD4 ; colR = colR4 ; rowR = rowR4 ; colD = colD4 ; rowD = rowD4 ;        }
-    else if ( blockIdx.x%matrices==12 ) {        valR = valR3 ; valD = valD3 ; colR = colR3 ; rowR = rowR3 ; colD = colD3 ; rowD = rowD3 ;        }
-    else if ( blockIdx.x%matrices==13 ) {        valR = valR2 ; valD = valD2 ; colR = colR2 ; rowR = rowR2 ; colD = colD2 ; rowD = rowD2 ;        }
-    else if ( blockIdx.x%matrices==14 ) {        valR = valR1 ; valD = valD1 ; colR = colR1 ; rowR = rowR1 ; colD = colD1 ; rowD = rowD1 ;        }
-    else if ( blockIdx.x%matrices==15 ) {        valR = valR0 ; valD = valD0 ; colR = colR0 ; rowR = rowR0 ; colD = colD0 ; rowD = rowD0 ;        }
+         if ( blockIdx.x%matrices==0  ) { valR = valR15; valD = valD15; colR = colR15; rowR = rowR15; colD = colD15; rowD = rowD15; }
+    else if ( blockIdx.x%matrices==1  ) { valR = valR14; valD = valD14; colR = colR14; rowR = rowR14; colD = colD14; rowD = rowD14; }
+    else if ( blockIdx.x%matrices==2  ) { valR = valR13; valD = valD13; colR = colR13; rowR = rowR13; colD = colD13; rowD = rowD13; }
+    else if ( blockIdx.x%matrices==3  ) { valR = valR12; valD = valD12; colR = colR12; rowR = rowR12; colD = colD12; rowD = rowD12; }
+    else if ( blockIdx.x%matrices==4  ) { valR = valR11; valD = valD11; colR = colR11; rowR = rowR11; colD = colD11; rowD = rowD11; }
+    else if ( blockIdx.x%matrices==5  ) { valR = valR10; valD = valD10; colR = colR10; rowR = rowR10; colD = colD10; rowD = rowD10; }
+    else if ( blockIdx.x%matrices==6  ) { valR = valR9;  valD = valD9;  colR = colR9;  rowR = rowR9;  colD = colD9;  rowD = rowD9;  }
+    else if ( blockIdx.x%matrices==7  ) { valR = valR8;  valD = valD8;  colR = colR8;  rowR = rowR8;  colD = colD8;  rowD = rowD8;  }
+    else if ( blockIdx.x%matrices==8  ) { valR = valR7;  valD = valD7;  colR = colR7;  rowR = rowR7;  colD = colD7;  rowD = rowD7;  }
+    else if ( blockIdx.x%matrices==9  ) { valR = valR6;  valD = valD6;  colR = colR6;  rowR = rowR6;  colD = colD6;  rowD = rowD6;  }
+    else if ( blockIdx.x%matrices==10 ) { valR = valR5;  valD = valD5;  colR = colR5;  rowR = rowR5;  colD = colD5;  rowD = rowD5;  }
+    else if ( blockIdx.x%matrices==11 ) { valR = valR4;  valD = valD4;  colR = colR4;  rowR = rowR4;  colD = colD4;  rowD = rowD4;  }
+    else if ( blockIdx.x%matrices==12 ) { valR = valR3;  valD = valD3;  colR = colR3;  rowR = rowR3;  colD = colD3;  rowD = rowD3;  }
+    else if ( blockIdx.x%matrices==13 ) { valR = valR2;  valD = valD2;  colR = colR2;  rowR = rowR2;  colD = colD2;  rowD = rowD2;  }
+    else if ( blockIdx.x%matrices==14 ) { valR = valR1;  valD = valD1;  colR = colR1;  rowR = rowR1;  colD = colD1;  rowD = rowD1;  }
+    else if ( blockIdx.x%matrices==15 ) { valR = valR0;  valD = valD0;  colR = colR0;  rowR = rowR0;  colD = colD0;  rowD = rowD0;  }
 
 
     if ( index>-1 && index < n ) {
@@ -533,7 +533,7 @@ magma_sbajac_csr_o_ls_kernel16(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 __global__ void
@@ -583,38 +583,38 @@ magma_sbajac_csr_o_ls_kernel32(int localiters, int n,
     float *valR, *valD;
     magma_index_t *colR, *rowR, *colD, *rowD;
     
-          if( blockIdx.x%matrices==0  ) {        valR = valR31; valD = valD31; colR = colR31; rowR = rowR31; colD = colD31; rowD = rowD31;        }
-    else if ( blockIdx.x%matrices==1  ) {        valR = valR30; valD = valD30; colR = colR30; rowR = rowR30; colD = colD30; rowD = rowD30;        }
-    else if ( blockIdx.x%matrices==2  ) {        valR = valR29; valD = valD29; colR = colR29; rowR = rowR29; colD = colD29; rowD = rowD29;        }
-    else if ( blockIdx.x%matrices==3  ) {        valR = valR28; valD = valD28; colR = colR28; rowR = rowR28; colD = colD28; rowD = rowD28;        }
-    else if ( blockIdx.x%matrices==4  ) {        valR = valR27; valD = valD27; colR = colR27; rowR = rowR27; colD = colD27; rowD = rowD27;        }
-    else if ( blockIdx.x%matrices==5  ) {        valR = valR26; valD = valD26; colR = colR26; rowR = rowR26; colD = colD26; rowD = rowD26;        }
-    else if ( blockIdx.x%matrices==6  ) {        valR = valR25; valD = valD25; colR = colR25; rowR = rowR25; colD = colD25; rowD = rowD25;        }
-    else if ( blockIdx.x%matrices==7  ) {        valR = valR24; valD = valD24; colR = colR24; rowR = rowR24; colD = colD24; rowD = rowD24;        }
-    else if ( blockIdx.x%matrices==8  ) {        valR = valR23; valD = valD23; colR = colR23; rowR = rowR23; colD = colD23; rowD = rowD23;        }
-    else if ( blockIdx.x%matrices==9  ) {        valR = valR22; valD = valD22; colR = colR22; rowR = rowR22; colD = colD22; rowD = rowD22;        }
-    else if ( blockIdx.x%matrices==10 ) {        valR = valR21; valD = valD21; colR = colR21; rowR = rowR21; colD = colD21; rowD = rowD21;        }
-    else if ( blockIdx.x%matrices==11 ) {        valR = valR20; valD = valD20; colR = colR20; rowR = rowR20; colD = colD20; rowD = rowD20;        }
-    else if ( blockIdx.x%matrices==12 ) {        valR = valR19; valD = valD19; colR = colR19; rowR = rowR19; colD = colD19; rowD = rowD19;        }
-    else if ( blockIdx.x%matrices==13 ) {        valR = valR18; valD = valD18; colR = colR18; rowR = rowR18; colD = colD18; rowD = rowD18;        }
-    else if ( blockIdx.x%matrices==14 ) {        valR = valR17; valD = valD17; colR = colR17; rowR = rowR17; colD = colD17; rowD = rowD17;        }
-    else if ( blockIdx.x%matrices==15 ) {        valR = valR16; valD = valD16; colR = colR16; rowR = rowR16; colD = colD16; rowD = rowD16;        }
-    else if ( blockIdx.x%matrices==16 ) {        valR = valR15; valD = valD15; colR = colR15; rowR = rowR15; colD = colD15; rowD = rowD15;        }
-    else if ( blockIdx.x%matrices==17 ) {        valR = valR14; valD = valD14; colR = colR14; rowR = rowR14; colD = colD14; rowD = rowD14;        }
-    else if ( blockIdx.x%matrices==18 ) {        valR = valR13; valD = valD13; colR = colR13; rowR = rowR13; colD = colD13; rowD = rowD13;        }
-    else if ( blockIdx.x%matrices==19 ) {        valR = valR12; valD = valD12; colR = colR12; rowR = rowR12; colD = colD12; rowD = rowD12;        }
-    else if ( blockIdx.x%matrices==20 ) {        valR = valR11; valD = valD11; colR = colR11; rowR = rowR11; colD = colD11; rowD = rowD11;        }
-    else if ( blockIdx.x%matrices==21 ) {        valR = valR10; valD = valD10; colR = colR10; rowR = rowR10; colD = colD10; rowD = rowD10;        }
-    else if ( blockIdx.x%matrices==22 ) {        valR = valR9 ; valD = valD9 ; colR = colR9 ; rowR = rowR9 ; colD = colD9 ; rowD = rowD9 ;        }
-    else if ( blockIdx.x%matrices==23 ) {        valR = valR8 ; valD = valD8 ; colR = colR8 ; rowR = rowR8 ; colD = colD8 ; rowD = rowD8 ;        }
-    else if ( blockIdx.x%matrices==24 ) {        valR = valR7 ; valD = valD7 ; colR = colR7 ; rowR = rowR7 ; colD = colD7 ; rowD = rowD7 ;        }
-    else if ( blockIdx.x%matrices==25 ) {        valR = valR6 ; valD = valD6 ; colR = colR6 ; rowR = rowR6 ; colD = colD6 ; rowD = rowD6 ;        }
-    else if ( blockIdx.x%matrices==26 ) {        valR = valR5 ; valD = valD5 ; colR = colR5 ; rowR = rowR5 ; colD = colD5 ; rowD = rowD5 ;        }
-    else if ( blockIdx.x%matrices==27 ) {        valR = valR4 ; valD = valD4 ; colR = colR4 ; rowR = rowR4 ; colD = colD4 ; rowD = rowD4 ;        }
-    else if ( blockIdx.x%matrices==28 ) {        valR = valR3 ; valD = valD3 ; colR = colR3 ; rowR = rowR3 ; colD = colD3 ; rowD = rowD3 ;        }
-    else if ( blockIdx.x%matrices==29 ) {        valR = valR2 ; valD = valD2 ; colR = colR2 ; rowR = rowR2 ; colD = colD2 ; rowD = rowD2 ;        }
-    else if ( blockIdx.x%matrices==30 ) {        valR = valR1 ; valD = valD1 ; colR = colR1 ; rowR = rowR1 ; colD = colD1 ; rowD = rowD1 ;        }
-    else if ( blockIdx.x%matrices==31 ) {        valR = valR0 ; valD = valD0 ; colR = colR0 ; rowR = rowR0 ; colD = colD0 ; rowD = rowD0 ;        }
+         if ( blockIdx.x%matrices==0  ) { valR = valR31; valD = valD31; colR = colR31; rowR = rowR31; colD = colD31; rowD = rowD31; }
+    else if ( blockIdx.x%matrices==1  ) { valR = valR30; valD = valD30; colR = colR30; rowR = rowR30; colD = colD30; rowD = rowD30; }
+    else if ( blockIdx.x%matrices==2  ) { valR = valR29; valD = valD29; colR = colR29; rowR = rowR29; colD = colD29; rowD = rowD29; }
+    else if ( blockIdx.x%matrices==3  ) { valR = valR28; valD = valD28; colR = colR28; rowR = rowR28; colD = colD28; rowD = rowD28; }
+    else if ( blockIdx.x%matrices==4  ) { valR = valR27; valD = valD27; colR = colR27; rowR = rowR27; colD = colD27; rowD = rowD27; }
+    else if ( blockIdx.x%matrices==5  ) { valR = valR26; valD = valD26; colR = colR26; rowR = rowR26; colD = colD26; rowD = rowD26; }
+    else if ( blockIdx.x%matrices==6  ) { valR = valR25; valD = valD25; colR = colR25; rowR = rowR25; colD = colD25; rowD = rowD25; }
+    else if ( blockIdx.x%matrices==7  ) { valR = valR24; valD = valD24; colR = colR24; rowR = rowR24; colD = colD24; rowD = rowD24; }
+    else if ( blockIdx.x%matrices==8  ) { valR = valR23; valD = valD23; colR = colR23; rowR = rowR23; colD = colD23; rowD = rowD23; }
+    else if ( blockIdx.x%matrices==9  ) { valR = valR22; valD = valD22; colR = colR22; rowR = rowR22; colD = colD22; rowD = rowD22; }
+    else if ( blockIdx.x%matrices==10 ) { valR = valR21; valD = valD21; colR = colR21; rowR = rowR21; colD = colD21; rowD = rowD21; }
+    else if ( blockIdx.x%matrices==11 ) { valR = valR20; valD = valD20; colR = colR20; rowR = rowR20; colD = colD20; rowD = rowD20; }
+    else if ( blockIdx.x%matrices==12 ) { valR = valR19; valD = valD19; colR = colR19; rowR = rowR19; colD = colD19; rowD = rowD19; }
+    else if ( blockIdx.x%matrices==13 ) { valR = valR18; valD = valD18; colR = colR18; rowR = rowR18; colD = colD18; rowD = rowD18; }
+    else if ( blockIdx.x%matrices==14 ) { valR = valR17; valD = valD17; colR = colR17; rowR = rowR17; colD = colD17; rowD = rowD17; }
+    else if ( blockIdx.x%matrices==15 ) { valR = valR16; valD = valD16; colR = colR16; rowR = rowR16; colD = colD16; rowD = rowD16; }
+    else if ( blockIdx.x%matrices==16 ) { valR = valR15; valD = valD15; colR = colR15; rowR = rowR15; colD = colD15; rowD = rowD15; }
+    else if ( blockIdx.x%matrices==17 ) { valR = valR14; valD = valD14; colR = colR14; rowR = rowR14; colD = colD14; rowD = rowD14; }
+    else if ( blockIdx.x%matrices==18 ) { valR = valR13; valD = valD13; colR = colR13; rowR = rowR13; colD = colD13; rowD = rowD13; }
+    else if ( blockIdx.x%matrices==19 ) { valR = valR12; valD = valD12; colR = colR12; rowR = rowR12; colD = colD12; rowD = rowD12; }
+    else if ( blockIdx.x%matrices==20 ) { valR = valR11; valD = valD11; colR = colR11; rowR = rowR11; colD = colD11; rowD = rowD11; }
+    else if ( blockIdx.x%matrices==21 ) { valR = valR10; valD = valD10; colR = colR10; rowR = rowR10; colD = colD10; rowD = rowD10; }
+    else if ( blockIdx.x%matrices==22 ) { valR = valR9;  valD = valD9;  colR = colR9;  rowR = rowR9;  colD = colD9;  rowD = rowD9;  }
+    else if ( blockIdx.x%matrices==23 ) { valR = valR8;  valD = valD8;  colR = colR8;  rowR = rowR8;  colD = colD8;  rowD = rowD8;  }
+    else if ( blockIdx.x%matrices==24 ) { valR = valR7;  valD = valD7;  colR = colR7;  rowR = rowR7;  colD = colD7;  rowD = rowD7;  }
+    else if ( blockIdx.x%matrices==25 ) { valR = valR6;  valD = valD6;  colR = colR6;  rowR = rowR6;  colD = colD6;  rowD = rowD6;  }
+    else if ( blockIdx.x%matrices==26 ) { valR = valR5;  valD = valD5;  colR = colR5;  rowR = rowR5;  colD = colD5;  rowD = rowD5;  }
+    else if ( blockIdx.x%matrices==27 ) { valR = valR4;  valD = valD4;  colR = colR4;  rowR = rowR4;  colD = colD4;  rowD = rowD4;  }
+    else if ( blockIdx.x%matrices==28 ) { valR = valR3;  valD = valD3;  colR = colR3;  rowR = rowR3;  colD = colD3;  rowD = rowD3;  }
+    else if ( blockIdx.x%matrices==29 ) { valR = valR2;  valD = valD2;  colR = colR2;  rowR = rowR2;  colD = colD2;  rowD = rowD2;  }
+    else if ( blockIdx.x%matrices==30 ) { valR = valR1;  valD = valD1;  colR = colR1;  rowR = rowR1;  colD = colD1;  rowD = rowD1;  }
+    else if ( blockIdx.x%matrices==31 ) { valR = valR0;  valD = valD0;  colR = colR0;  rowR = rowR0;  colD = colD0;  rowD = rowD0;  }
     
 
     if ( index>-1 && index < n ) {
@@ -662,7 +662,7 @@ magma_sbajac_csr_o_ls_kernel32(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 __global__ void
@@ -744,70 +744,70 @@ magma_sbajac_csr_o_ls_kernel64(int localiters, int n,
     float *valR, *valD;
     magma_index_t *colR, *rowR, *colD, *rowD;
     
-          if( blockIdx.x%matrices==0  ) {        valR = valR63; valD = valD63; colR = colR63; rowR = rowR63; colD = colD63; rowD = rowD63;        }
-    else if ( blockIdx.x%matrices==1  ) {        valR = valR62; valD = valD62; colR = colR62; rowR = rowR62; colD = colD62; rowD = rowD62;        }
-    else if ( blockIdx.x%matrices==2  ) {        valR = valR61; valD = valD61; colR = colR61; rowR = rowR61; colD = colD61; rowD = rowD61;        }
-    else if ( blockIdx.x%matrices==3  ) {        valR = valR60; valD = valD60; colR = colR60; rowR = rowR60; colD = colD60; rowD = rowD60;        }
-    else if ( blockIdx.x%matrices==4  ) {        valR = valR59; valD = valD59; colR = colR59; rowR = rowR59; colD = colD59; rowD = rowD59;        }
-    else if ( blockIdx.x%matrices==5  ) {        valR = valR58; valD = valD58; colR = colR58; rowR = rowR58; colD = colD58; rowD = rowD58;        }
-    else if ( blockIdx.x%matrices==6  ) {        valR = valR57; valD = valD57; colR = colR57; rowR = rowR57; colD = colD57; rowD = rowD57;        }
-    else if ( blockIdx.x%matrices==7  ) {        valR = valR56; valD = valD56; colR = colR56; rowR = rowR56; colD = colD56; rowD = rowD56;        }
-    else if ( blockIdx.x%matrices==8  ) {        valR = valR55; valD = valD55; colR = colR55; rowR = rowR55; colD = colD55; rowD = rowD55;        }
-    else if ( blockIdx.x%matrices==9  ) {        valR = valR54; valD = valD54; colR = colR54; rowR = rowR54; colD = colD54; rowD = rowD54;        }
-    else if ( blockIdx.x%matrices==10 ) {        valR = valR53; valD = valD53; colR = colR53; rowR = rowR53; colD = colD53; rowD = rowD53;        }
-    else if ( blockIdx.x%matrices==11 ) {        valR = valR52; valD = valD52; colR = colR52; rowR = rowR52; colD = colD52; rowD = rowD52;        }
-    else if ( blockIdx.x%matrices==12 ) {        valR = valR51; valD = valD51; colR = colR51; rowR = rowR51; colD = colD51; rowD = rowD51;        }
-    else if ( blockIdx.x%matrices==13 ) {        valR = valR50; valD = valD50; colR = colR50; rowR = rowR50; colD = colD50; rowD = rowD50;        }
-    else if ( blockIdx.x%matrices==14 ) {        valR = valR49; valD = valD49; colR = colR49; rowR = rowR49; colD = colD49; rowD = rowD49;        }
-    else if ( blockIdx.x%matrices==15 ) {        valR = valR48; valD = valD48; colR = colR48; rowR = rowR48; colD = colD48; rowD = rowD48;        }
-    else if ( blockIdx.x%matrices==16 ) {        valR = valR47; valD = valD47; colR = colR47; rowR = rowR47; colD = colD47; rowD = rowD47;        }
-    else if ( blockIdx.x%matrices==17 ) {        valR = valR46; valD = valD46; colR = colR46; rowR = rowR46; colD = colD46; rowD = rowD46;        }
-    else if ( blockIdx.x%matrices==18 ) {        valR = valR45; valD = valD45; colR = colR45; rowR = rowR45; colD = colD45; rowD = rowD45;        }
-    else if ( blockIdx.x%matrices==19 ) {        valR = valR44; valD = valD44; colR = colR44; rowR = rowR44; colD = colD44; rowD = rowD44;        }
-    else if ( blockIdx.x%matrices==20 ) {        valR = valR43; valD = valD43; colR = colR43; rowR = rowR43; colD = colD43; rowD = rowD43;        }
-    else if ( blockIdx.x%matrices==21 ) {        valR = valR42; valD = valD42; colR = colR42; rowR = rowR42; colD = colD42; rowD = rowD42;        }
-    else if ( blockIdx.x%matrices==22 ) {        valR = valR41; valD = valD41; colR = colR41; rowR = rowR41; colD = colD41; rowD = rowD41;        }
-    else if ( blockIdx.x%matrices==23 ) {        valR = valR40; valD = valD40; colR = colR40; rowR = rowR40; colD = colD40; rowD = rowD40;        }
-    else if ( blockIdx.x%matrices==24 ) {        valR = valR39; valD = valD39; colR = colR39; rowR = rowR39; colD = colD39; rowD = rowD39;        }
-    else if ( blockIdx.x%matrices==25 ) {        valR = valR38; valD = valD38; colR = colR38; rowR = rowR38; colD = colD38; rowD = rowD38;        }
-    else if ( blockIdx.x%matrices==26 ) {        valR = valR37; valD = valD37; colR = colR37; rowR = rowR37; colD = colD37; rowD = rowD37;        }
-    else if ( blockIdx.x%matrices==27 ) {        valR = valR36; valD = valD36; colR = colR36; rowR = rowR36; colD = colD36; rowD = rowD36;        }
-    else if ( blockIdx.x%matrices==28 ) {        valR = valR35; valD = valD35; colR = colR35; rowR = rowR35; colD = colD35; rowD = rowD35;        }
-    else if ( blockIdx.x%matrices==29 ) {        valR = valR34; valD = valD34; colR = colR34; rowR = rowR34; colD = colD34; rowD = rowD34;        }
-    else if ( blockIdx.x%matrices==30 ) {        valR = valR33; valD = valD33; colR = colR33; rowR = rowR33; colD = colD33; rowD = rowD33;        }
-    else if ( blockIdx.x%matrices==31 ) {        valR = valR32; valD = valD32; colR = colR32; rowR = rowR32; colD = colD32; rowD = rowD32;        }
-    else if ( blockIdx.x%matrices==32 ) {        valR = valR31; valD = valD31; colR = colR31; rowR = rowR31; colD = colD31; rowD = rowD31;        }
-    else if ( blockIdx.x%matrices==33 ) {        valR = valR30; valD = valD30; colR = colR30; rowR = rowR30; colD = colD30; rowD = rowD30;        }
-    else if ( blockIdx.x%matrices==34 ) {        valR = valR29; valD = valD29; colR = colR29; rowR = rowR29; colD = colD29; rowD = rowD29;        }
-    else if ( blockIdx.x%matrices==35 ) {        valR = valR28; valD = valD28; colR = colR28; rowR = rowR28; colD = colD28; rowD = rowD28;        }
-    else if ( blockIdx.x%matrices==36 ) {        valR = valR27; valD = valD27; colR = colR27; rowR = rowR27; colD = colD27; rowD = rowD27;        }
-    else if ( blockIdx.x%matrices==37 ) {        valR = valR26; valD = valD26; colR = colR26; rowR = rowR26; colD = colD26; rowD = rowD26;        }
-    else if ( blockIdx.x%matrices==38 ) {        valR = valR25; valD = valD25; colR = colR25; rowR = rowR25; colD = colD25; rowD = rowD25;        }
-    else if ( blockIdx.x%matrices==39 ) {        valR = valR24; valD = valD24; colR = colR24; rowR = rowR24; colD = colD24; rowD = rowD24;        }
-    else if ( blockIdx.x%matrices==40 ) {        valR = valR23; valD = valD23; colR = colR23; rowR = rowR23; colD = colD23; rowD = rowD23;        }
-    else if ( blockIdx.x%matrices==41 ) {        valR = valR22; valD = valD22; colR = colR22; rowR = rowR22; colD = colD22; rowD = rowD22;        }
-    else if ( blockIdx.x%matrices==42 ) {        valR = valR21; valD = valD21; colR = colR21; rowR = rowR21; colD = colD21; rowD = rowD21;        }
-    else if ( blockIdx.x%matrices==43 ) {        valR = valR20; valD = valD20; colR = colR20; rowR = rowR20; colD = colD20; rowD = rowD20;        }
-    else if ( blockIdx.x%matrices==44 ) {        valR = valR19; valD = valD19; colR = colR19; rowR = rowR19; colD = colD19; rowD = rowD19;        }
-    else if ( blockIdx.x%matrices==45 ) {        valR = valR18; valD = valD18; colR = colR18; rowR = rowR18; colD = colD18; rowD = rowD18;        }
-    else if ( blockIdx.x%matrices==46 ) {        valR = valR17; valD = valD17; colR = colR17; rowR = rowR17; colD = colD17; rowD = rowD17;        }
-    else if ( blockIdx.x%matrices==47 ) {        valR = valR16; valD = valD16; colR = colR16; rowR = rowR16; colD = colD16; rowD = rowD16;        }
-    else if ( blockIdx.x%matrices==48 ) {        valR = valR15; valD = valD15; colR = colR15; rowR = rowR15; colD = colD15; rowD = rowD15;        }
-    else if ( blockIdx.x%matrices==49 ) {        valR = valR14; valD = valD14; colR = colR14; rowR = rowR14; colD = colD14; rowD = rowD14;        }
-    else if ( blockIdx.x%matrices==50 ) {        valR = valR13; valD = valD13; colR = colR13; rowR = rowR13; colD = colD13; rowD = rowD13;        }
-    else if ( blockIdx.x%matrices==51 ) {        valR = valR12; valD = valD12; colR = colR12; rowR = rowR12; colD = colD12; rowD = rowD12;        }
-    else if ( blockIdx.x%matrices==52 ) {        valR = valR11; valD = valD11; colR = colR11; rowR = rowR11; colD = colD11; rowD = rowD11;        }
-    else if ( blockIdx.x%matrices==53 ) {        valR = valR10; valD = valD10; colR = colR10; rowR = rowR10; colD = colD10; rowD = rowD10;        }
-    else if ( blockIdx.x%matrices==54 ) {        valR = valR9 ; valD = valD9 ; colR = colR9 ; rowR = rowR9 ; colD = colD9 ; rowD = rowD9 ;        }
-    else if ( blockIdx.x%matrices==55 ) {        valR = valR8 ; valD = valD8 ; colR = colR8 ; rowR = rowR8 ; colD = colD8 ; rowD = rowD8 ;        }
-    else if ( blockIdx.x%matrices==56 ) {        valR = valR7 ; valD = valD7 ; colR = colR7 ; rowR = rowR7 ; colD = colD7 ; rowD = rowD7 ;        }
-    else if ( blockIdx.x%matrices==57 ) {        valR = valR6 ; valD = valD6 ; colR = colR6 ; rowR = rowR6 ; colD = colD6 ; rowD = rowD6 ;        }
-    else if ( blockIdx.x%matrices==58 ) {        valR = valR5 ; valD = valD5 ; colR = colR5 ; rowR = rowR5 ; colD = colD5 ; rowD = rowD5 ;        }
-    else if ( blockIdx.x%matrices==59 ) {        valR = valR4 ; valD = valD4 ; colR = colR4 ; rowR = rowR4 ; colD = colD4 ; rowD = rowD4 ;        }
-    else if ( blockIdx.x%matrices==60 ) {        valR = valR3 ; valD = valD3 ; colR = colR3 ; rowR = rowR3 ; colD = colD3 ; rowD = rowD3 ;        }
-    else if ( blockIdx.x%matrices==61 ) {        valR = valR2 ; valD = valD2 ; colR = colR2 ; rowR = rowR2 ; colD = colD2 ; rowD = rowD2 ;        }
-    else if ( blockIdx.x%matrices==62 ) {        valR = valR1 ; valD = valD1 ; colR = colR1 ; rowR = rowR1 ; colD = colD1 ; rowD = rowD1 ;        }
-    else if ( blockIdx.x%matrices==63 ) {        valR = valR0 ; valD = valD0 ; colR = colR0 ; rowR = rowR0 ; colD = colD0 ; rowD = rowD0 ;        }
+         if ( blockIdx.x%matrices==0  ) { valR = valR63; valD = valD63; colR = colR63; rowR = rowR63; colD = colD63; rowD = rowD63; }
+    else if ( blockIdx.x%matrices==1  ) { valR = valR62; valD = valD62; colR = colR62; rowR = rowR62; colD = colD62; rowD = rowD62; }
+    else if ( blockIdx.x%matrices==2  ) { valR = valR61; valD = valD61; colR = colR61; rowR = rowR61; colD = colD61; rowD = rowD61; }
+    else if ( blockIdx.x%matrices==3  ) { valR = valR60; valD = valD60; colR = colR60; rowR = rowR60; colD = colD60; rowD = rowD60; }
+    else if ( blockIdx.x%matrices==4  ) { valR = valR59; valD = valD59; colR = colR59; rowR = rowR59; colD = colD59; rowD = rowD59; }
+    else if ( blockIdx.x%matrices==5  ) { valR = valR58; valD = valD58; colR = colR58; rowR = rowR58; colD = colD58; rowD = rowD58; }
+    else if ( blockIdx.x%matrices==6  ) { valR = valR57; valD = valD57; colR = colR57; rowR = rowR57; colD = colD57; rowD = rowD57; }
+    else if ( blockIdx.x%matrices==7  ) { valR = valR56; valD = valD56; colR = colR56; rowR = rowR56; colD = colD56; rowD = rowD56; }
+    else if ( blockIdx.x%matrices==8  ) { valR = valR55; valD = valD55; colR = colR55; rowR = rowR55; colD = colD55; rowD = rowD55; }
+    else if ( blockIdx.x%matrices==9  ) { valR = valR54; valD = valD54; colR = colR54; rowR = rowR54; colD = colD54; rowD = rowD54; }
+    else if ( blockIdx.x%matrices==10 ) { valR = valR53; valD = valD53; colR = colR53; rowR = rowR53; colD = colD53; rowD = rowD53; }
+    else if ( blockIdx.x%matrices==11 ) { valR = valR52; valD = valD52; colR = colR52; rowR = rowR52; colD = colD52; rowD = rowD52; }
+    else if ( blockIdx.x%matrices==12 ) { valR = valR51; valD = valD51; colR = colR51; rowR = rowR51; colD = colD51; rowD = rowD51; }
+    else if ( blockIdx.x%matrices==13 ) { valR = valR50; valD = valD50; colR = colR50; rowR = rowR50; colD = colD50; rowD = rowD50; }
+    else if ( blockIdx.x%matrices==14 ) { valR = valR49; valD = valD49; colR = colR49; rowR = rowR49; colD = colD49; rowD = rowD49; }
+    else if ( blockIdx.x%matrices==15 ) { valR = valR48; valD = valD48; colR = colR48; rowR = rowR48; colD = colD48; rowD = rowD48; }
+    else if ( blockIdx.x%matrices==16 ) { valR = valR47; valD = valD47; colR = colR47; rowR = rowR47; colD = colD47; rowD = rowD47; }
+    else if ( blockIdx.x%matrices==17 ) { valR = valR46; valD = valD46; colR = colR46; rowR = rowR46; colD = colD46; rowD = rowD46; }
+    else if ( blockIdx.x%matrices==18 ) { valR = valR45; valD = valD45; colR = colR45; rowR = rowR45; colD = colD45; rowD = rowD45; }
+    else if ( blockIdx.x%matrices==19 ) { valR = valR44; valD = valD44; colR = colR44; rowR = rowR44; colD = colD44; rowD = rowD44; }
+    else if ( blockIdx.x%matrices==20 ) { valR = valR43; valD = valD43; colR = colR43; rowR = rowR43; colD = colD43; rowD = rowD43; }
+    else if ( blockIdx.x%matrices==21 ) { valR = valR42; valD = valD42; colR = colR42; rowR = rowR42; colD = colD42; rowD = rowD42; }
+    else if ( blockIdx.x%matrices==22 ) { valR = valR41; valD = valD41; colR = colR41; rowR = rowR41; colD = colD41; rowD = rowD41; }
+    else if ( blockIdx.x%matrices==23 ) { valR = valR40; valD = valD40; colR = colR40; rowR = rowR40; colD = colD40; rowD = rowD40; }
+    else if ( blockIdx.x%matrices==24 ) { valR = valR39; valD = valD39; colR = colR39; rowR = rowR39; colD = colD39; rowD = rowD39; }
+    else if ( blockIdx.x%matrices==25 ) { valR = valR38; valD = valD38; colR = colR38; rowR = rowR38; colD = colD38; rowD = rowD38; }
+    else if ( blockIdx.x%matrices==26 ) { valR = valR37; valD = valD37; colR = colR37; rowR = rowR37; colD = colD37; rowD = rowD37; }
+    else if ( blockIdx.x%matrices==27 ) { valR = valR36; valD = valD36; colR = colR36; rowR = rowR36; colD = colD36; rowD = rowD36; }
+    else if ( blockIdx.x%matrices==28 ) { valR = valR35; valD = valD35; colR = colR35; rowR = rowR35; colD = colD35; rowD = rowD35; }
+    else if ( blockIdx.x%matrices==29 ) { valR = valR34; valD = valD34; colR = colR34; rowR = rowR34; colD = colD34; rowD = rowD34; }
+    else if ( blockIdx.x%matrices==30 ) { valR = valR33; valD = valD33; colR = colR33; rowR = rowR33; colD = colD33; rowD = rowD33; }
+    else if ( blockIdx.x%matrices==31 ) { valR = valR32; valD = valD32; colR = colR32; rowR = rowR32; colD = colD32; rowD = rowD32; }
+    else if ( blockIdx.x%matrices==32 ) { valR = valR31; valD = valD31; colR = colR31; rowR = rowR31; colD = colD31; rowD = rowD31; }
+    else if ( blockIdx.x%matrices==33 ) { valR = valR30; valD = valD30; colR = colR30; rowR = rowR30; colD = colD30; rowD = rowD30; }
+    else if ( blockIdx.x%matrices==34 ) { valR = valR29; valD = valD29; colR = colR29; rowR = rowR29; colD = colD29; rowD = rowD29; }
+    else if ( blockIdx.x%matrices==35 ) { valR = valR28; valD = valD28; colR = colR28; rowR = rowR28; colD = colD28; rowD = rowD28; }
+    else if ( blockIdx.x%matrices==36 ) { valR = valR27; valD = valD27; colR = colR27; rowR = rowR27; colD = colD27; rowD = rowD27; }
+    else if ( blockIdx.x%matrices==37 ) { valR = valR26; valD = valD26; colR = colR26; rowR = rowR26; colD = colD26; rowD = rowD26; }
+    else if ( blockIdx.x%matrices==38 ) { valR = valR25; valD = valD25; colR = colR25; rowR = rowR25; colD = colD25; rowD = rowD25; }
+    else if ( blockIdx.x%matrices==39 ) { valR = valR24; valD = valD24; colR = colR24; rowR = rowR24; colD = colD24; rowD = rowD24; }
+    else if ( blockIdx.x%matrices==40 ) { valR = valR23; valD = valD23; colR = colR23; rowR = rowR23; colD = colD23; rowD = rowD23; }
+    else if ( blockIdx.x%matrices==41 ) { valR = valR22; valD = valD22; colR = colR22; rowR = rowR22; colD = colD22; rowD = rowD22; }
+    else if ( blockIdx.x%matrices==42 ) { valR = valR21; valD = valD21; colR = colR21; rowR = rowR21; colD = colD21; rowD = rowD21; }
+    else if ( blockIdx.x%matrices==43 ) { valR = valR20; valD = valD20; colR = colR20; rowR = rowR20; colD = colD20; rowD = rowD20; }
+    else if ( blockIdx.x%matrices==44 ) { valR = valR19; valD = valD19; colR = colR19; rowR = rowR19; colD = colD19; rowD = rowD19; }
+    else if ( blockIdx.x%matrices==45 ) { valR = valR18; valD = valD18; colR = colR18; rowR = rowR18; colD = colD18; rowD = rowD18; }
+    else if ( blockIdx.x%matrices==46 ) { valR = valR17; valD = valD17; colR = colR17; rowR = rowR17; colD = colD17; rowD = rowD17; }
+    else if ( blockIdx.x%matrices==47 ) { valR = valR16; valD = valD16; colR = colR16; rowR = rowR16; colD = colD16; rowD = rowD16; }
+    else if ( blockIdx.x%matrices==48 ) { valR = valR15; valD = valD15; colR = colR15; rowR = rowR15; colD = colD15; rowD = rowD15; }
+    else if ( blockIdx.x%matrices==49 ) { valR = valR14; valD = valD14; colR = colR14; rowR = rowR14; colD = colD14; rowD = rowD14; }
+    else if ( blockIdx.x%matrices==50 ) { valR = valR13; valD = valD13; colR = colR13; rowR = rowR13; colD = colD13; rowD = rowD13; }
+    else if ( blockIdx.x%matrices==51 ) { valR = valR12; valD = valD12; colR = colR12; rowR = rowR12; colD = colD12; rowD = rowD12; }
+    else if ( blockIdx.x%matrices==52 ) { valR = valR11; valD = valD11; colR = colR11; rowR = rowR11; colD = colD11; rowD = rowD11; }
+    else if ( blockIdx.x%matrices==53 ) { valR = valR10; valD = valD10; colR = colR10; rowR = rowR10; colD = colD10; rowD = rowD10; }
+    else if ( blockIdx.x%matrices==54 ) { valR = valR9;  valD = valD9;  colR = colR9;  rowR = rowR9;  colD = colD9;  rowD = rowD9;  }
+    else if ( blockIdx.x%matrices==55 ) { valR = valR8;  valD = valD8;  colR = colR8;  rowR = rowR8;  colD = colD8;  rowD = rowD8;  }
+    else if ( blockIdx.x%matrices==56 ) { valR = valR7;  valD = valD7;  colR = colR7;  rowR = rowR7;  colD = colD7;  rowD = rowD7;  }
+    else if ( blockIdx.x%matrices==57 ) { valR = valR6;  valD = valD6;  colR = colR6;  rowR = rowR6;  colD = colD6;  rowD = rowD6;  }
+    else if ( blockIdx.x%matrices==58 ) { valR = valR5;  valD = valD5;  colR = colR5;  rowR = rowR5;  colD = colD5;  rowD = rowD5;  }
+    else if ( blockIdx.x%matrices==59 ) { valR = valR4;  valD = valD4;  colR = colR4;  rowR = rowR4;  colD = colD4;  rowD = rowD4;  }
+    else if ( blockIdx.x%matrices==60 ) { valR = valR3;  valD = valD3;  colR = colR3;  rowR = rowR3;  colD = colD3;  rowD = rowD3;  }
+    else if ( blockIdx.x%matrices==61 ) { valR = valR2;  valD = valD2;  colR = colR2;  rowR = rowR2;  colD = colD2;  rowD = rowD2;  }
+    else if ( blockIdx.x%matrices==62 ) { valR = valR1;  valD = valD1;  colR = colR1;  rowR = rowR1;  colD = colD1;  rowD = rowD1;  }
+    else if ( blockIdx.x%matrices==63 ) { valR = valR0;  valD = valD0;  colR = colR0;  rowR = rowR0;  colD = colD0;  rowD = rowD0;  }
     
 
     if ( index>-1 && index < n ) {
@@ -855,7 +855,7 @@ magma_sbajac_csr_o_ls_kernel64(int localiters, int n,
         if( threadIdx.x >= overlap ) { // only write back the lower subdomain
             x[index] = local_x[threadIdx.x];
         }
-    }   
+    }
 }
 
 
@@ -927,20 +927,17 @@ magma_sbajac_csr_overlap(
     magma_s_matrix *x,
     magma_queue_t queue )
 {
-    
-    
     int blocksize1 = BLOCKSIZE;
     int blocksize2 = 1;
     int size = D[0].num_rows;
     int min_nnz=100;
-    
-    
+        
     for(int i=0; i<matrices; i++){
        min_nnz = min(min_nnz, R[i].nnz);   
     }
     
-    if( min_nnz > -1 ){ 
-        if( matrices == 1 ){
+    if ( min_nnz > -1 ){ 
+        if ( matrices == 1 ){
             int dimgrid1 = magma_ceildiv( size  , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -950,8 +947,8 @@ magma_sbajac_csr_overlap(
             ( localiters, size, matrices, overlap,
             D[0].dval, D[0].drow, D[0].dcol, R[0].dval, R[0].drow, R[0].dcol, 
             b.dval, x->dval );  
-            
-        } else if (matrices == 2){
+        }
+        else if (matrices == 2) {
             int dimgrid1 = magma_ceildiv( size * blocksize1/(blocksize1-overlap) , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -964,8 +961,8 @@ magma_sbajac_csr_overlap(
                     b.dval, x->dval );  
                //magma_sbajac_csr_o_ls_kernel<<< grid, block, 0, queue->cuda_stream() >>>
                // ( localiters, size, matrices, overlap, D, R, b.dval, x->dval );
-               
-        } else if (matrices == 4){
+        }
+        else if (matrices == 4){
             int dimgrid1 = magma_ceildiv( size * blocksize1/(blocksize1-overlap) , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -980,7 +977,8 @@ magma_sbajac_csr_overlap(
                     b.dval, x->dval );  
                //magma_sbajac_csr_o_ls_kernel<<< grid, block, 0, queue->cuda_stream() >>>
                // ( localiters, size, matrices, overlap, D, R, b.dval, x->dval );
-           } else if (matrices == 8){
+        }
+        else if (matrices == 8) {
             int dimgrid1 = magma_ceildiv( size * blocksize1/(blocksize1-overlap) , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -999,7 +997,8 @@ magma_sbajac_csr_overlap(
                     b.dval, x->dval );  
                //magma_sbajac_csr_o_ls_kernel<<< grid, block, 0, queue->cuda_stream() >>>
                // ( localiters, size, matrices, overlap, D, R, b.dval, x->dval );
-            } else if (matrices == 16){
+        }
+        else if (matrices == 16) {
             int dimgrid1 = magma_ceildiv( size * blocksize1/(blocksize1-overlap) , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -1024,7 +1023,8 @@ magma_sbajac_csr_overlap(
                     D[14].dval, D[14].drow, D[14].dcol, R[14].dval, R[14].drow, R[14].dcol,
                     D[15].dval, D[15].drow, D[15].dcol, R[15].dval, R[15].drow, R[15].dcol,
                     b.dval, x->dval );  
-            } else if (matrices == 32){
+        }
+        else if (matrices == 32) {
             int dimgrid1 = magma_ceildiv( size * blocksize1/(blocksize1-overlap) , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -1065,7 +1065,8 @@ magma_sbajac_csr_overlap(
                     D[30].dval, D[30].drow, D[30].dcol, R[30].dval, R[30].drow, R[30].dcol,
                     D[31].dval, D[31].drow, D[31].dcol, R[31].dval, R[31].drow, R[31].dcol,
                     b.dval, x->dval );  
-            } else if (matrices == 64){
+        }
+        else if (matrices == 64) {
             int dimgrid1 = magma_ceildiv( size * blocksize1/(blocksize1-overlap) , blocksize1 );
             int dimgrid2 = 1;
             int dimgrid3 = 1;
@@ -1140,11 +1141,10 @@ magma_sbajac_csr_overlap(
                     b.dval, x->dval );  
                //magma_sbajac_csr_o_ls_kernel<<< grid, block, 0, queue->cuda_stream() >>>
                // ( localiters, size, matrices, overlap, D, R, b.dval, x->dval );
-        } else{
+        }
+        else {
            printf("error: invalid matrix count.\n");
         }
-
-
     }
     else {
             printf("error: all elements in diagonal block.\n");

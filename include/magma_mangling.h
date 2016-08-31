@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #ifndef MAGMA_MANGLING_H
 #define MAGMA_MANGLING_H
 
-#include "mangling.h"
+#include "magma_mangling_cmake.h"
 
 /* Define how to name mangle Fortran names.
- * If using CMake, it defines MAGMA_GLOBAL in mangling.h
+ * If using CMake, it defines MAGMA_GLOBAL in magma_mangling_cmake.h
  * Otherwise, the make.inc file should have one of -DADD_, -DNOCHANGE, or -DUPCASE.
  * If using outside of MAGMA, put one of those in your compiler flags (e.g., CFLAGS).
  * These macros are used in:

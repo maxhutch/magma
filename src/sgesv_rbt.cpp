@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgesv_rbt.cpp normal z -> s, Mon May  2 23:30:04 2016
+       @generated from src/zgesv_rbt.cpp, normal z -> s, Tue Aug 30 09:38:05 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGESV_RBT solves a system of linear equations
@@ -66,8 +66,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_sgesv_driver
- ********************************************************************/
+    @ingroup magma_gesv_rbt
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgesv_rbt(
     magma_bool_t refine, magma_int_t n, magma_int_t nrhs,
@@ -162,7 +162,7 @@ magma_sgesv_rbt(
     if (refine == MagmaTrue) {
         magma_sgerfs_nopiv_gpu( MagmaNoTrans, nn, nrhs, dAo, nn, dBo, nn, dB, nn, dwork, dA, &iter, info );
     }
-    //printf("iter = %d\n", iter );
+    //printf("iter = %lld\n", (long long) iter );
 
     /* The solution of A.x = b is Vy computed on the GPU */
     if (MAGMA_SUCCESS != magma_smalloc( &dv, 2*nn )) {

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/ztrtri.cuh normal z -> c, Mon May  2 23:31:25 2016
+       @generated from magmablas/ztrtri.cuh, normal z -> c, Tue Aug 30 09:39:22 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -18,10 +18,18 @@
 #ifndef CTRTRI_H
 #define CTRTRI_H
 
-// TODO this IB is a half warp -- that seems really ineffficient!
-#define IB 16   // inner blocking size, <= 32
-#define NB 128  // outer blocking size, > IB
+#define PRECISION_c 
 
+#include "batched_kernel_param.h"
+#if   defined(TRTRI_BATCHED)
+#define IB    (CTRTRI_BATCHED_BLOCK_SIZE)
+#define NB    (CTRTRI_BATCHED_NB)
+#elif defined(TRTRI_NONBATCHED)
+#define IB    (16)
+#define NB    (128)
+#else
+#error "One of {TRTRI_BATCHED, TRTRI_NONBATCHED} must be defined."
+#endif
 
 /*
  * caxpy16 computes c += alpha*b, where b and c are 16-element vectors.
@@ -289,18 +297,5 @@ triple_cgemm_above64_part2_upper_kernel_batched(
 __global__ void
 triple_cgemm_above64_part3_upper_kernel_batched(
     int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif        //  #ifndef CTRTRI_H

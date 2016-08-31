@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['blas_20and_20auxiliary',['BLAS and auxiliary',['../group___b_l_a_s.html',1,'']]]
+  ['2_2dstage_20variant',['2-stage variant',['../group__group__heev__2stage.html',1,'']]]
 ];

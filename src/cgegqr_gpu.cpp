@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
-       @generated from src/zgegqr_gpu.cpp normal z -> c, Mon May  2 23:30:06 2016
+       @generated from src/zgegqr_gpu.cpp, normal z -> c, Tue Aug 30 09:38:07 2016
 
 */
 #include "magma_internal.h"
@@ -18,7 +18,7 @@
 #define magma_ctrsm magmablas_ctrsm
 // === End defining what BLAS to use ======================================
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEGQR orthogonalizes the N vectors given by a complex M-by-N matrix A:
@@ -86,8 +86,8 @@
                   positive definite, so the factorization could not be
                   completed, and the solution has not been computed.
 
-    @ingroup magma_cgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_gegqr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgegqr_gpu(
     magma_int_t ikind, magma_int_t m, magma_int_t n,
@@ -126,7 +126,7 @@ magma_cgegqr_gpu(
     magma_queue_create( cdev, &queue );
 
     if (ikind == 1) {
-        // === Iterative, based on SVD ============================================================
+        // === Iterative, based on SVD =========================================
         magmaFloatComplex *U, *VT, *vt, *R, *G, *hwork, *tau;
         float *S;
 
@@ -195,35 +195,35 @@ magma_cgegqr_gpu(
             if (mins > 0.00001f)
                 cn = maxs/mins;
             
-            //fprintf( stderr, "Iteration %d, cond num = %f \n", i, cn );
+            //fprintf( stderr, "Iteration %lld, cond num = %f\n", (long long) i, cn );
         } while (cn > 10.f);
         
         magma_free_cpu( hwork );
         #ifdef COMPLEX
         magma_free_cpu( rwork );
         #endif
-        // ================== end of ikind == 1 ===================================================
+        // ================== end of ikind == 1 ================================
     }
     else if (ikind == 2) {
-        // ================== LAPACK based      ===================================================
+        // ================== LAPACK based      ================================
         magma_int_t min_mn = min(m, n);
         magma_int_t nb = n;
 
         magmaFloatComplex_ptr dtau = dwork + 2*n*n;
-        magmaFloatComplex_ptr d_T  = dwork;
+        magmaFloatComplex_ptr dT   = dwork;
         magmaFloatComplex_ptr ddA  = dwork + n*n;
         magmaFloatComplex *tau  = work+n*n;
 
-        magmablas_claset( MagmaFull, n, n, c_zero, c_zero, d_T, n, queue );
-        magma_cgeqr2x3_gpu( m, n, dA, ldda, dtau, d_T, ddA,
-                            (float*)(dwork+min_mn+2*n*n), info );
+        magmablas_claset( MagmaFull, n, n, c_zero, c_zero, dT, n, queue );
+        magma_cgeqr2x3_gpu( m, n, dA, ldda, dtau, dT, ddA,
+                            (float*)(dwork + min_mn + 2*n*n), info );
         magma_cgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn, queue );
         magma_cgetmatrix( n, n, ddA, n, work, n, queue );
-        magma_cungqr_gpu( m, n, n, dA, ldda, tau, d_T, nb, info );
-        // ================== end of ikind == 2 ===================================================
+        magma_cungqr_gpu( m, n, n, dA, ldda, tau, dT, nb, info );
+        // ================== end of ikind == 2 ================================
     }
     else if (ikind == 3) {
-        // ================== MGS               ===================================================
+        // ================== MGS               ================================
         for (j = 0; j < n; j++) {
             for (i = 0; i < j; i++) {
                 *work(i, j) = magma_cdotc( m, dA(0,i), 1, dA(0,j), 1, queue );
@@ -237,10 +237,10 @@ magma_cgegqr_gpu(
             *work(j,j) = MAGMA_C_MAKE( sqrt(MAGMA_C_REAL( *work(j,j) )), 0. );
             magma_cscal( m, 1./ *work(j,j), dA(0,j), 1, queue );
         }
-        // ================== end of ikind == 3 ===================================================
+        // ================== end of ikind == 3 ================================
     }
     else if (ikind == 4) {
-        // ================== Cholesky QR       ===================================================
+        // ================== Cholesky QR       ================================
         magma_cgemm( MagmaConjTrans, MagmaNoTrans, n, n, m, c_one,
                      dA, ldda, dA, ldda, c_zero, dwork, n, queue );
         magma_cgetmatrix( n, n, dwork, n, work, n, queue );
@@ -248,7 +248,7 @@ magma_cgegqr_gpu(
         magma_csetmatrix( n, n, work, n, dwork, n, queue );
         magma_ctrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                      m, n, c_one, dwork, n, dA, ldda, queue );
-        // ================== end of ikind == 4 ===================================================
+        // ================== end of ikind == 4 ================================
     }
              
     magma_queue_destroy( queue );

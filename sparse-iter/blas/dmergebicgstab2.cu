@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmergebicgstab2.cu normal z -> d, Mon May  2 23:30:46 2016
+       @generated from sparse-iter/blas/zmergebicgstab2.cu, normal z -> d, Tue Aug 30 09:38:43 2016
        @author Hartwig Anzt
 
 */
@@ -227,7 +227,6 @@ magma_dbicgmerge_spmv1(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-
     int n = A.num_rows;
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -261,7 +260,7 @@ magma_dbicgmerge_spmv1(
     dim3 Gs2( 1 );
     magma_dbicgstab_alphakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -519,7 +518,6 @@ magma_dbicgmerge_spmv2(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-
     int n = A.num_rows;
     int local_block_size=256;
     dim3 Bs( local_block_size );
@@ -553,7 +551,7 @@ magma_dbicgmerge_spmv2(
     dim3 Gs2( 1 );
     magma_dbicgstab_omegakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -749,7 +747,6 @@ magma_dbicgmerge_xrbeta(
     magmaDouble_ptr skp,
     magma_queue_t queue )
 {
-
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( magma_ceildiv( n, local_block_size ) );
@@ -779,7 +776,7 @@ magma_dbicgmerge_xrbeta(
     dim3 Gs2( 1 );
     magma_dbicgstab_betakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */

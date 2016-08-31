@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -59,7 +59,7 @@ magma_zcustomicsetup(
     char preconditionermatrix[255];
     
     snprintf( preconditionermatrix, sizeof(preconditionermatrix),
-                "precondL.mtx" );
+                "/Users/hanzt0114cl306/work/matrices/ani/ani7_crop_ichol.mtx" );
     
     CHECK( magma_z_csr_mtx( &hA, preconditionermatrix , queue) );
     

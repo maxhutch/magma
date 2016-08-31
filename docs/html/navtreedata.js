@@ -1,24 +1,24 @@
 var NAVTREE =
 [
   [ "MAGMA", "index.html", [
-    [ "MAGMA User Guide", "index.html", null ],
+    [ "MAGMA Users' Guide", "index.html", null ],
     [ "Collaborators", "authors.html", null ],
     [ "Installing MAGMA", "installing.html", null ],
     [ "Running tests", "testing.html", null ],
     [ "Example", "example.html", null ],
-    [ "Routine names", "routines.html", [
+    [ "Overview", "routines.html", [
       [ "Driver routines  ", "routines.html#driver", null ],
       [ "Computational routines  ", "routines.html#comp", null ],
       [ "BLAS routines  ", "routines.html#blas", null ],
       [ "Auxiliary routines  ", "routines.html#aux", null ],
-      [ "Utility routines  ", "routines.html#util", null ]
+      [ "Utility routines  ", "routines.html#util", null ],
+      [ "Data types & complex numbers ", "routines.html#types", null ],
+      [ "Conventions for variables ", "routines.html#variables", null ],
+      [ "Constants ", "routines.html#constants", null ],
+      [ "Errors ", "routines.html#errors", null ],
+      [ "Methodology ", "routines.html#methodology", null ]
     ] ],
-    [ "Data types & complex numbers", "types.html", null ],
-    [ "Conventions for variables", "variables.html", null ],
-    [ "Constants", "constants.html", null ],
-    [ "Errors", "errors.html", null ],
-    [ "Methodology", "methodology.html", null ],
-    [ "Sparse-Iter", "sparse-iter.html", [
+    [ "Sparse Overview", "sparse-iter.html", [
       [ "Sparse Data Structures ", "sparse-iter.html#datastructures", null ],
       [ "Sparse I/O ", "sparse-iter.html#io", null ],
       [ "Matrix Formats ", "sparse-iter.html#formats", null ],
@@ -26,22 +26,13 @@ var NAVTREE =
       [ "Iterative Solvers ", "sparse-iter.html#sparsesolvers", null ],
       [ "Example ", "sparse-iter.html#sparseexample", null ]
     ] ],
-    [ "Contributor's Guide", "contributors-guide.html", [
+    [ "Contributors' Guide", "contributors-guide.html", [
       [ "Coding Style ", "contributors-guide.html#style", null ],
       [ "Naming Conventions ", "contributors-guide.html#naming", null ],
       [ "Coding Practices ", "contributors-guide.html#coding", null ]
     ] ],
     [ "Deprecated List", "deprecated.html", null ],
-    [ "Modules", "modules.html", "modules" ],
-    [ "Classes", "annotated.html", [
-      [ "Class List", "annotated.html", "annotated_dup" ],
-      [ "Class Index", "classes.html", null ],
-      [ "Class Members", "functions.html", [
-        [ "All", "functions.html", null ],
-        [ "Functions", "functions_func.html", null ],
-        [ "Related Functions", "functions_rela.html", null ]
-      ] ]
-    ] ],
+    [ "Routines", "modules.html", "modules" ],
     [ "Files", null, [
       [ "File List", "files.html", "files" ]
     ] ]
@@ -50,15 +41,19 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"annotated.html",
-"group__magma__cgesv__comp.html",
-"group__magma__dblas3.html#gabff79d613d25334cf102fc44959f2133",
-"group__magma__saux2.html#ga88950c443035867025477660f5fd444b",
-"group__magma__ssyev__aux.html#gac313c402f8f19855ac34f5817a0cc36c",
-"group__magma__zgeqp3__comp.html#gacc2058c3bb2e1e2bc8b4685a2712c233",
-"group__magmasparse__cgepr.html#ga32c85e0651e86655523cd9e53a90c85d",
-"group__magmasparse__saux.html#ga3b655f209e98658d95768ab2f46377b1",
-"group__magmasparse__zgesv.html#ga96b7ec1f8315f777d55a4b95f9879877"
+"authors.html",
+"group__magma__error__internal.html#gaa53d2690becbc16deb33f972450b3aaf",
+"group__magma__gesdd.html#gabdfa5370c04558dc13a6431907fe0c05",
+"group__magma__heevr.html#gae13bb322dc89a67187bc40ae05dd187d",
+"group__magma__lacpy.html",
+"group__magma__nan__inf.html#ga117db4cd7cc94424a7e858f69c8b2725",
+"group__magma__swap__batched.html",
+"group__magma__tuning.html#ga2d1fbc1b7fc7adaf36b0056fc577d6ee",
+"group__magmasparse__caux.html#ga42c856528a2584b0cdf5301611eeba1a",
+"group__magmasparse__daux.html#ga27c924715674d7fb2e1617d3dcb7446b",
+"group__magmasparse__saux.html#ga31834a84e9e1af93041ff3736293b272",
+"group__magmasparse__zaux.html#ga5bc35fd955e7a1daacc083a77ce88d15",
+"sparse-iter.html#formats"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

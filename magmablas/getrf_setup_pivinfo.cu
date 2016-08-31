@@ -1,9 +1,9 @@
     /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -12,17 +12,10 @@
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
+// =============================================================================
+// Auxiliary routine to compute piv final destination for the current step
 
-
-//=================================================================================================
-//=================================================================================================
-// AUXILIARY ROUTINE TO COMPUTE PIV FINAL DESTINATION FOR THE CURRENT STEP
-//=================================================================================================
-//=================================================================================================
-
-
-
-//=================================================================================================
+/******************************************************************************/
 static __device__ void setup_pivinfo_devfunc(magma_int_t *pivinfo, magma_int_t *ipiv, int m, int nb)
 {
     int tid = threadIdx.x;   
@@ -49,7 +42,7 @@ static __device__ void setup_pivinfo_devfunc(magma_int_t *pivinfo, magma_int_t *
 }
 
 
-//=================================================================================================
+/******************************************************************************/
 __global__ void setup_pivinfo_kernel_batched(magma_int_t **pivinfo_array, magma_int_t **ipiv_array, int m, int nb)
 {
     int batchid = blockIdx.x;
@@ -57,19 +50,14 @@ __global__ void setup_pivinfo_kernel_batched(magma_int_t **pivinfo_array, magma_
 }
 
 
-//=================================================================================================
+/******************************************************************************/
 __global__ void setup_pivinfo_kernel(magma_int_t *pivinfo, magma_int_t *ipiv, int m, int nb)
 {
     setup_pivinfo_devfunc(pivinfo, ipiv, m, nb);
 }
-//=================================================================================================
 
 
-
-
-
-//TODO add description
-//=================================================================================================
+/******************************************************************************/
 extern "C" void
 setup_pivinfo_batched( magma_int_t **pivinfo_array, magma_int_t **ipiv_array, 
                          magma_int_t m, magma_int_t nb, 
@@ -83,12 +71,7 @@ setup_pivinfo_batched( magma_int_t **pivinfo_array, magma_int_t **ipiv_array,
 }
 
 
-
-//=================================================================================================
-
-
-//TODO add description
-//=================================================================================================
+/******************************************************************************/
 extern "C" void
 setup_pivinfo( magma_int_t *pivinfo, magma_int_t *ipiv, 
                  magma_int_t m, magma_int_t nb, 
@@ -99,21 +82,12 @@ setup_pivinfo( magma_int_t *pivinfo, magma_int_t *ipiv,
         <<< 1, min(m, MAX_NTHREADS), 0, queue->cuda_stream() >>>
         (pivinfo, ipiv, m, nb);
 }
-//=================================================================================================
 
 
+// =============================================================================
+// Auxiliary routine to adjust ipiv
 
-
-//=================================================================================================
-//=================================================================================================
-// AUXILIARY ROUTINE TO ADJUST IPIV
-//=================================================================================================
-//=================================================================================================
-
-
-
-
-//=================================================================================================
+/******************************************************************************/
 static __device__ void adjust_ipiv_devfunc(magma_int_t *ipiv, int m, int offset)
 {
     int tid = threadIdx.x;
@@ -124,7 +98,7 @@ static __device__ void adjust_ipiv_devfunc(magma_int_t *ipiv, int m, int offset)
 }
 
 
-//=================================================================================================
+/******************************************************************************/
 __global__ void adjust_ipiv_kernel_batched(magma_int_t **ipiv_array, int m, int offset)
 {
     int batchid = blockIdx.x;
@@ -132,15 +106,14 @@ __global__ void adjust_ipiv_kernel_batched(magma_int_t **ipiv_array, int m, int 
 }
 
 
-//=================================================================================================
+/******************************************************************************/
 __global__ void adjust_ipiv_kernel(magma_int_t *ipiv, int m, int offset)
 {
     adjust_ipiv_devfunc(ipiv, m, offset);
 }
-//=================================================================================================
 
-//TODO add description
-//=================================================================================================
+
+/******************************************************************************/
 extern "C" void
 adjust_ipiv_batched( magma_int_t **ipiv_array, 
                          magma_int_t m, magma_int_t offset, 
@@ -149,7 +122,8 @@ adjust_ipiv_batched( magma_int_t **ipiv_array,
     if (offset == 0 ) return;
     if ( m  > MAX_NTHREADS) 
     {
-        fprintf( stderr, "%s: m=%d > %d, not supported\n", __func__, int(m), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s: m=%lld > %lld, not supported\n",
+                 __func__, (long long) m, (long long) MAX_NTHREADS );
         return;
     }
     adjust_ipiv_kernel_batched
@@ -158,15 +132,7 @@ adjust_ipiv_batched( magma_int_t **ipiv_array,
 }
 
 
-
-//=================================================================================================
-
-
-
-
-
-//TODO add description
-//=================================================================================================
+/******************************************************************************/
 extern "C" void
 adjust_ipiv( magma_int_t *ipiv, 
                  magma_int_t m, magma_int_t offset, 
@@ -175,7 +141,8 @@ adjust_ipiv( magma_int_t *ipiv,
     if (offset == 0 ) return;
     if ( m  > 1024) 
     {
-        fprintf( stderr, "%s: m=%d > %d, not supported\n", __func__, int(m), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s: m=%lld > %lld, not supported\n",
+                 __func__, (long long) m, (long long) MAX_NTHREADS );
         return;
     }
     adjust_ipiv_kernel

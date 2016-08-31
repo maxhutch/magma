@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhetrd_mgpu.cpp normal z -> d, Mon May  2 23:30:16 2016
+       @generated from src/zhetrd_mgpu.cpp, normal z -> d, Tue Aug 30 09:38:16 2016
 
 */
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DSYTRD reduces a real symmetric matrix A to real symmetric
@@ -141,8 +141,8 @@
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
 
-    @ingroup magma_dsyev_comp
-    ********************************************************************/
+    @ingroup magma_hetrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dsytrd_mgpu(
     magma_int_t ngpu,
@@ -464,7 +464,7 @@ magma_dsytrd_mgpu(
     trace_finalize( "dsytrd.svg", "trace.css" );
     
     #ifdef PROFILE_SY2RK
-    printf( " n=%d nb=%d\n", n, nb );
+    printf( " n=%lld nb=%lld\n", (long long) n, (long long) nb );
     printf( " Time in DLARFG: %.2e seconds\n", times[0] );
     //printf( " Time in DSYMV : %.2e seconds\n", mv_time );
     printf( " Time in DSYR2K: %.2e seconds\n", up_time );
@@ -489,7 +489,7 @@ CLEANUP:
 } /* magma_dsytrd */
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 // TODO info is unused
 extern "C" magma_int_t
 magma_dhtodhe(
@@ -548,7 +548,7 @@ magma_dhtodhe(
 }
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" void
 magma_dsyr2k_mgpu(
     magma_int_t ngpu,

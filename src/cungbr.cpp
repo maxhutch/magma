@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 
-       @generated from src/zungbr.cpp normal z -> c, Mon May  2 23:30:24 2016
+       @generated from src/zungbr.cpp, normal z -> c, Tue Aug 30 09:38:23 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CUNGBR generates one of the complex unitary matrices Q or P**H
@@ -101,8 +101,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_cgesvd_comp
-    ********************************************************************/
+    @ingroup magma_ungbr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cungbr(
     magma_vect_t vect, magma_int_t m, magma_int_t n, magma_int_t k,
@@ -116,15 +116,16 @@ magma_cungbr(
     // Constants
     const magmaFloatComplex c_zero = MAGMA_C_ZERO;
     const magmaFloatComplex c_one  = MAGMA_C_ONE;
+    const magma_int_t ineg_one = -1;
     
     // Local variables
     bool lquery, wantq;
-    magma_int_t i, iinfo, j, lwkopt, mn;
+    magma_int_t i, iinfo, j, lwkmin, lwkopt, min_mn;
     
     // Test the input arguments
     *info = 0;
     wantq = (vect == MagmaQ);
-    mn = min( m, n );
+    min_mn = min( m, n );
     lquery = (lwork == -1);
     if ( ! wantq && vect != MagmaP ) {
         *info = -1;
@@ -146,12 +147,15 @@ magma_cungbr(
                 // magma_cungqr takes dT instead of work
                 // magma_cungqr2 doesn't take work
                 //magma_cungqr2( m, n, k, A, lda, tau, work, -1, &iinfo );
-                work[0] = c_one;
+                lapackf77_cungqr( &m, &n, &k, A, &lda, tau, work, &ineg_one, &iinfo );
             }
             else if (m > 1) {
                 //magma_cungqr2( m-1, m-1, m-1, A(1,1), lda, tau, work, -1, &iinfo );
-                work[0] = c_one;
+                magma_int_t m1 = m-1;
+                lapackf77_cungqr( &m1, &m1, &m1, A(1,1), &lda, tau, work, &ineg_one, &iinfo );
             }
+            lwkopt = MAGMA_C_REAL( work[0] );
+            lwkmin = min_mn;
         }
         else {
             if (k < n) {
@@ -160,10 +164,10 @@ magma_cungbr(
             else if (n > 1) {
                 magma_cunglq( n-1, n-1, n-1, A(1,1), lda, tau, work, -1, &iinfo );
             }
+            lwkopt = MAGMA_C_REAL( work[0] );
+            lwkmin = lwkopt;
         }
-        lwkopt = MAGMA_C_REAL( work[0] );
-        lwkopt = max( lwkopt, mn );
-        if (lwork < lwkopt && ! lquery) {
+        if (lwork < lwkmin && ! lquery) {
             *info = -9;
         }
     }

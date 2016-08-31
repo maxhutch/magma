@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
@@ -23,11 +23,11 @@
 
 #include "zlarfg_devicesfunc.cuh"
 
-//==============================================================================
-
+/******************************************************************************/
 static __device__
-void zlarfx_device( int m, int n,  magmaDoubleComplex *v, magmaDoubleComplex *tau,
-                         magmaDoubleComplex *dc, magma_int_t ldc, magmaDoubleComplex* sum)
+void zlarfx_device(
+    int m, int n,  magmaDoubleComplex *v, magmaDoubleComplex *tau,
+    magmaDoubleComplex *dc, magma_int_t ldc, magmaDoubleComplex* sum)
 {
     if (n <= 0) return;
     if (MAGMA_Z_EQUAL(*tau, MAGMA_Z_ZERO) )  return; // check singularity
@@ -69,8 +69,7 @@ void zlarfx_device( int m, int n,  magmaDoubleComplex *v, magmaDoubleComplex *ta
 }
 
 
-//==============================================================================
-
+/******************************************************************************/
 static __device__
 void zgeqr2_device( magma_int_t m, magma_int_t n,
                                magmaDoubleComplex* dA, magma_int_t lda,
@@ -92,11 +91,12 @@ void zgeqr2_device( magma_int_t m, magma_int_t n,
     __syncthreads();
 }
 
-//==============================================================================
 
+/******************************************************************************/
 extern __shared__ magmaDoubleComplex shared_data[];
 
 
+/******************************************************************************/
 __global__
 void zgeqr2_sm_kernel_batched( int m, int n, magmaDoubleComplex** dA_array, magma_int_t lda,
                                magmaDoubleComplex **dtau_array)
@@ -149,12 +149,7 @@ void zgeqr2_sm_kernel_batched( int m, int n, magmaDoubleComplex** dA_array, magm
 }
 
 
-
-
-
-
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void zgeqr2_column_sm_kernel_batched( int m, int n, magmaDoubleComplex** dA_array, magma_int_t lda,
                                magmaDoubleComplex **dtau_array)
@@ -203,6 +198,7 @@ void zgeqr2_column_sm_kernel_batched( int m, int n, magmaDoubleComplex** dA_arra
 }
 
 
+/******************************************************************************/
 __global__
 void zgeqr2_kernel_batched( int m, int n, magmaDoubleComplex** dA_array, magma_int_t lda,
                                magmaDoubleComplex **dtau_array)
@@ -232,10 +228,7 @@ void zgeqr2_kernel_batched( int m, int n, magmaDoubleComplex** dA_array, magma_i
 }
 
 
-//==============================================================================
-
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEQR2 computes a QR factorization of a complex m by n matrix A:
@@ -304,9 +297,8 @@ void zgeqr2_kernel_batched( int m, int n, magmaDoubleComplex** dA_array, magma_i
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_zgeqrf_aux
-    ********************************************************************/
-
+    @ingroup magma_geqr2_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgeqr2_batched(magma_int_t m, magma_int_t n, 
                      magmaDoubleComplex **dA_array, magma_int_t ldda, 
@@ -357,7 +349,3 @@ magma_zgeqr2_batched(magma_int_t m, magma_int_t n,
 
     return arginfo;
 }
-
-
-
-//==============================================================================

@@ -1,15 +1,15 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Mark gates
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zgesv_batched.cpp normal z -> s, Mon May  2 23:31:22 2016
+   @generated from testing/testing_zgesv_batched.cpp, normal z -> s, Tue Aug 30 09:39:17 2016
  */
 // includes, system
 #include <stdio.h>
@@ -22,9 +22,10 @@
 #include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
+
 #if defined(_OPENMP)
 #include <omp.h>
-#include "magma_threadsetting.h"
+#include "../control/magma_threadsetting.h"  // internal header
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,8 @@
 */
 int main(int argc, char **argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, cpu_perf, cpu_time, gpu_perf, gpu_time;
     float          error, Rnorm, Anorm, Xnorm, *work;
@@ -45,7 +47,7 @@ int main(int argc, char **argv)
     magma_int_t N, nrhs, lda, ldb, ldda, lddb, info, sizeA, sizeB;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
     magma_int_t batchCount;
 
     float **dA_array = NULL;
@@ -74,21 +76,21 @@ int main(int argc, char **argv)
             sizeA = lda*N*batchCount;
             sizeB = ldb*nrhs*batchCount;
 
-            TESTING_MALLOC_CPU( h_A, float, sizeA );
-            TESTING_MALLOC_CPU( h_B, float, sizeB );
-            TESTING_MALLOC_CPU( h_X, float, sizeB );
-            TESTING_MALLOC_CPU( work, float,      N);
-            TESTING_MALLOC_CPU( ipiv, magma_int_t, batchCount*N);
-            TESTING_MALLOC_CPU( cpu_info, magma_int_t, batchCount);
+            TESTING_CHECK( magma_smalloc_cpu( &h_A, sizeA ));
+            TESTING_CHECK( magma_smalloc_cpu( &h_B, sizeB ));
+            TESTING_CHECK( magma_smalloc_cpu( &h_X, sizeB ));
+            TESTING_CHECK( magma_smalloc_cpu( &work, N ));
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv, batchCount*N ));
+            TESTING_CHECK( magma_imalloc_cpu( &cpu_info, batchCount ));
             
-            TESTING_MALLOC_DEV( d_A, float, ldda*N*batchCount    );
-            TESTING_MALLOC_DEV( d_B, float, lddb*nrhs*batchCount );
-            TESTING_MALLOC_DEV( dipiv, magma_int_t, N * batchCount );
-            TESTING_MALLOC_DEV( dinfo_array, magma_int_t, batchCount );
+            TESTING_CHECK( magma_smalloc( &d_A, ldda*N*batchCount    ));
+            TESTING_CHECK( magma_smalloc( &d_B, lddb*nrhs*batchCount ));
+            TESTING_CHECK( magma_imalloc( &dipiv, N * batchCount ));
+            TESTING_CHECK( magma_imalloc( &dinfo_array, batchCount ));
 
-            TESTING_MALLOC_DEV( dA_array, float*, batchCount );
-            TESTING_MALLOC_DEV( dB_array, float*, batchCount );
-            TESTING_MALLOC_DEV( dipiv_array, magma_int_t*,     batchCount );
+            TESTING_CHECK( magma_malloc( (void**) &dA_array,    batchCount * sizeof(float*) ));
+            TESTING_CHECK( magma_malloc( (void**) &dB_array,    batchCount * sizeof(float*) ));
+            TESTING_CHECK( magma_malloc( (void**) &dipiv_array, batchCount * sizeof(magma_int_t*) ));
 
             /* Initialize the matrices */
             lapackf77_slarnv( &ione, ISEED, &sizeA, h_A );
@@ -114,12 +116,13 @@ int main(int argc, char **argv)
             for (int i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
-                    printf("magma_sgesv_batched matrix %d returned internal error %d\n", i, int(cpu_info[i]) );
+                    printf("magma_sgesv_batched matrix %lld returned internal error %lld\n",
+                            (long long) i, (long long) cpu_info[i] );
                 }
             }
             if (info != 0) {
-                printf("magma_sgesv_batched returned argument error %d: %s.\n",
-                        int(info), magma_strerror( info ));
+                printf("magma_sgesv_batched returned argument error %lld: %s.\n",
+                        (long long) info, magma_strerror( info ));
             }
             
             //=====================================================================
@@ -167,8 +170,8 @@ int main(int argc, char **argv)
                     magma_int_t locinfo;
                     lapackf77_sgesv( &N, &nrhs, h_A + s * lda * N, &lda, ipiv + s * N, h_B + s * ldb * nrhs, &ldb, &locinfo );
                     if (locinfo != 0) {
-                        printf("lapackf77_sgesv matrix %d returned error %d: %s.\n",
-                                int(s), int(locinfo), magma_strerror( locinfo ));
+                        printf("lapackf77_sgesv matrix %lld returned error %lld: %s.\n",
+                                (long long) s, (long long) locinfo, magma_strerror( locinfo ));
                     }
                 }
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
@@ -176,32 +179,34 @@ int main(int argc, char **argv)
                 #endif
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                printf( "%10d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                        int(batchCount), int(N), int(nrhs), cpu_perf, cpu_time, gpu_perf, gpu_time,
+                printf( "%10lld %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                        (long long) batchCount, (long long) N, (long long) nrhs,
+                        cpu_perf, cpu_time, gpu_perf, gpu_time,
                         error, (okay ? "ok" : "failed"));
             }
             else {
-                printf( "%10d %5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e   %s\n",
-                        int(batchCount), int(N), int(nrhs), gpu_perf, gpu_time,
+                printf( "%10lld %5lld %5lld     ---   (  ---  )   %7.2f (%7.2f)   %8.2e   %s\n",
+                        (long long) batchCount, (long long) N, (long long) nrhs,
+                        gpu_perf, gpu_time,
                         error, (okay ? "ok" : "failed"));
             }
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_B );
-            TESTING_FREE_CPU( h_X );
-            TESTING_FREE_CPU( work );
-            TESTING_FREE_CPU( ipiv );
-            TESTING_FREE_CPU( cpu_info );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_B );
+            magma_free_cpu( h_X );
+            magma_free_cpu( work );
+            magma_free_cpu( ipiv );
+            magma_free_cpu( cpu_info );
             
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_B );
+            magma_free( d_A );
+            magma_free( d_B );
 
-            TESTING_FREE_DEV( dipiv );
-            TESTING_FREE_DEV( dinfo_array );
+            magma_free( dipiv );
+            magma_free( dinfo_array );
 
-            TESTING_FREE_DEV( dA_array );
-            TESTING_FREE_DEV( dB_array );
-            TESTING_FREE_DEV( dipiv_array );
+            magma_free( dA_array );
+            magma_free( dB_array );
+            magma_free( dipiv_array );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -210,6 +215,6 @@ int main(int argc, char **argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

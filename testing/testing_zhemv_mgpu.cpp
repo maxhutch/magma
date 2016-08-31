@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        
@@ -28,7 +28,18 @@
 // --------------------
 int main(int argc, char **argv)
 {
-    TESTING_INIT();
+    #ifdef HAVE_clBLAS
+    #define dA(i_, j_)  dA, ((i_) + (j_)*ldda)
+    #define dX(i_)      dX, ((i_))
+    #define dY(i_)      dY, ((i_))
+    #else
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #define dX(i_)     (dX + (i_))
+    #define dY(i_)     (dY + (i_))
+    #endif
+    
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t gflops, cpu_time=0, cpu_perf=0, gpu_time, gpu_perf, mgpu_time, mgpu_perf, cuda_time, cuda_perf;
     double      Ynorm, error=0, error2=0, work[1];
@@ -42,13 +53,13 @@ int main(int argc, char **argv)
 
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  1.5, -2.3 );
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );
-    magmaDoubleComplex *A, *X, *Y, *Ylapack, *Ycublas, *Ymagma, *Ymagma1, *hwork;
+    magmaDoubleComplex *A, *X, *Y, *Ylapack, *Ydev, *Ymagma, *Ymagma1, *hwork;
     magmaDoubleComplex_ptr dA, dX, dY;
     magmaDoubleComplex_ptr d_lA[MagmaMaxGPUs], dwork[MagmaMaxGPUs];
 
     magma_device_t dev;
     magma_queue_t queues[MagmaMaxGPUs];
-    magma_int_t     status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -68,8 +79,8 @@ int main(int argc, char **argv)
     magma_int_t offsets[] = { 0, 1, 31, 32, 33, 63, 64, 65, 100, 200 };
     magma_int_t noffsets = sizeof(offsets) / sizeof(*offsets);
     
-    printf("%% uplo = %s, ngpu %d, block size = %d, offset %d\n",
-            lapack_uplo_const(opts.uplo), (int) opts.ngpu, (int) nb, (int) offset );
+    printf("%% uplo = %s, ngpu %lld, block size = %lld, offset %lld\n",
+            lapack_uplo_const(opts.uplo), (long long) opts.ngpu, (long long) nb, (long long) offset );
     printf( "%%                 BLAS                CUBLAS              MAGMA 1 GPU         MAGMA MGPU       Error rel  Error rel\n"
             "%%   N  offset     Gflop/s (msec)      Gflop/s (msec)      Gflop/s (msec)      Gflop/s (msec)   to CUBLAS  to LAPACK\n"
             "%%==================================================================================================================\n" );
@@ -92,20 +103,20 @@ int main(int argc, char **argv)
             lhwork = N*opts.ngpu;
             ldwork = ldda*(blocks + 1);
 
-            TESTING_MALLOC_CPU( A,       magmaDoubleComplex, matsize );
-            TESTING_MALLOC_CPU( Y,       magmaDoubleComplex, vecsize );
-            TESTING_MALLOC_CPU( Ycublas, magmaDoubleComplex, vecsize );
-            TESTING_MALLOC_CPU( Ymagma,  magmaDoubleComplex, vecsize );
-            TESTING_MALLOC_CPU( Ymagma1, magmaDoubleComplex, vecsize );
-            TESTING_MALLOC_CPU( Ylapack, magmaDoubleComplex, vecsize );
+            TESTING_CHECK( magma_zmalloc_cpu( &A,       matsize ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Y,       vecsize ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Ydev,    vecsize ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Ymagma,  vecsize ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Ymagma1, vecsize ));
+            TESTING_CHECK( magma_zmalloc_cpu( &Ylapack, vecsize ));
 
-            TESTING_MALLOC_PIN( X,       magmaDoubleComplex, vecsize );
-            TESTING_MALLOC_PIN( hwork,   magmaDoubleComplex, lhwork  );
+            TESTING_CHECK( magma_zmalloc_pinned( &X,       vecsize ));
+            TESTING_CHECK( magma_zmalloc_pinned( &hwork,   lhwork  ));
             
             magma_setdevice( opts.device );
-            TESTING_MALLOC_DEV( dA, magmaDoubleComplex, matsize );
-            TESTING_MALLOC_DEV( dX, magmaDoubleComplex, vecsize );
-            TESTING_MALLOC_DEV( dY, magmaDoubleComplex, vecsize );
+            TESTING_CHECK( magma_zmalloc( &dA, matsize ));
+            TESTING_CHECK( magma_zmalloc( &dX, vecsize ));
+            TESTING_CHECK( magma_zmalloc( &dY, vecsize ));
             
             // TODO make magma_zmalloc_bcyclic helper function?
             for( dev=0; dev < opts.ngpu; dev++ ) {
@@ -116,8 +127,8 @@ int main(int argc, char **argv)
                     n_local[dev] += Noffset % nb;
                 
                 magma_setdevice( dev );
-                TESTING_MALLOC_DEV( d_lA[dev],  magmaDoubleComplex, ldda*n_local[dev] );
-                TESTING_MALLOC_DEV( dwork[dev], magmaDoubleComplex, ldwork );
+                TESTING_CHECK( magma_zmalloc( &d_lA[dev],  ldda*n_local[dev] ));
+                TESTING_CHECK( magma_zmalloc( &dwork[dev], ldwork ));
             }
             
             //////////////////////////////////////////////////////////////////////////
@@ -130,7 +141,7 @@ int main(int argc, char **argv)
             lapackf77_zlarnv( &ione, ISEED, &vecsize, Y );
             
             /* =====================================================================
-               Performs operation using CUBLAS
+               Performs operation using cuBLAS / clBLAS
                =================================================================== */
             magma_setdevice( opts.device );
             magma_zsetmatrix( Noffset, Noffset, A, lda, dA, ldda, opts.queue );
@@ -138,14 +149,14 @@ int main(int argc, char **argv)
             magma_zsetvector( Noffset, Y, incx, dY, incx, opts.queue );
             
             cuda_time = magma_sync_wtime(0);
-            cublasZhemv( opts.handle, cublas_uplo_const(opts.uplo), N,
-                         &alpha, dA + offset + offset*ldda, ldda,
-                                 dX + offset, incx,
-                         &beta,  dY + offset, incx );
+            magma_zhemv( opts.uplo, N,
+                         alpha, dA(offset, offset), ldda,
+                                dX(offset), incx,
+                         beta,  dY(offset), incx, opts.queue );
             cuda_time = magma_sync_wtime(0) - cuda_time;
             cuda_perf = gflops / cuda_time;
             
-            magma_zgetvector( Noffset, dY, incx, Ycublas, incx, opts.queue );
+            magma_zgetvector( Noffset, dY, incx, Ydev, incx, opts.queue );
             
             /* =====================================================================
                Performs operation using MAGMABLAS (1 GPU)
@@ -156,9 +167,9 @@ int main(int argc, char **argv)
             gpu_time = magma_sync_wtime( opts.queue );
             
             magmablas_zhemv_work( opts.uplo, N,
-                                  alpha, dA + offset + offset*ldda, ldda,
-                                         dX + offset, incx,
-                                  beta,  dY + offset, incx, dwork[ opts.device ], ldwork,
+                                  alpha, dA(offset, offset), ldda,
+                                         dX(offset), incx,
+                                  beta,  dY(offset), incx, dwork[ opts.device ], ldwork,
                                   opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
@@ -168,7 +179,7 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using MAGMABLAS (multi-GPU)
                =================================================================== */
-            magma_zsetmatrix_1D_col_bcyclic( Noffset, Noffset, A, lda, d_lA, ldda, opts.ngpu, nb, queues );
+            magma_zsetmatrix_1D_col_bcyclic( opts.ngpu, Noffset, Noffset, nb, A, lda, d_lA, ldda, queues );
             blasf77_zcopy( &Noffset, Y, &incx, Ymagma, &incx );
             
             // workspaces do NOT need to be zero -- set to NAN to prove
@@ -192,8 +203,8 @@ int main(int argc, char **argv)
                 dwork, ldwork,
                 opts.ngpu, nb, queues );
             if (info != 0) {
-                printf("magmablas_zhemv_mgpu returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magmablas_zhemv_mgpu returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             info = magmablas_zhemv_mgpu_sync(
@@ -207,8 +218,8 @@ int main(int argc, char **argv)
                 dwork, ldwork,
                 opts.ngpu, nb, queues );
             if (info != 0) {
-                printf("magmablas_zhemv_sync returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magmablas_zhemv_sync returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             mgpu_time = magma_sync_wtime(0) - mgpu_time;
@@ -237,17 +248,17 @@ int main(int argc, char **argv)
             }
             
             /* =====================================================================
-               Compute the Difference Cublas vs. Magma
+               Compute the Difference cuBLAS vs. Magma
                =================================================================== */
-            Ynorm = lapackf77_zlange( "F", &Noffset, &ione, Ycublas, &Noffset, work );
-            blasf77_zaxpy( &Noffset, &c_neg_one, Ymagma, &incx, Ycublas, &incx );
-            error = lapackf77_zlange( "F", &Noffset, &ione, Ycublas, &Noffset, work ) / Ynorm;
+            Ynorm = lapackf77_zlange( "F", &Noffset, &ione, Ydev, &Noffset, work );
+            blasf77_zaxpy( &Noffset, &c_neg_one, Ymagma, &incx, Ydev, &incx );
+            error = lapackf77_zlange( "F", &Noffset, &ione, Ydev, &Noffset, work ) / Ynorm;
             
             bool okay = (error < tol && error2 < tol);
             status += ! okay;
             if ( opts.lapack ) {
-                printf( "%5d  %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %s\n",
-                        (int) N, (int) offset,
+                printf( "%5lld  %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %s\n",
+                        (long long) N, (long long) offset,
                          cpu_perf,  cpu_time*1000.,
                         cuda_perf, cuda_time*1000.,
                          gpu_perf,  gpu_time*1000.,
@@ -255,8 +266,8 @@ int main(int argc, char **argv)
                         error, error2, (okay ? "ok" : "failed") );
             }
             else {
-                printf( "%5d  %5d     ---   (  ---  )   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e     ---      %s\n",
-                        (int) N, (int) offset,
+                printf( "%5lld  %5lld     ---   (  ---  )   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e     ---      %s\n",
+                        (long long) N, (long long) offset,
                         cuda_perf, cuda_time*1000.,
                          gpu_perf,  gpu_time*1000.,
                         mgpu_perf, mgpu_time*1000.,
@@ -264,25 +275,25 @@ int main(int argc, char **argv)
             }
             
             /* Free Memory */
-            TESTING_FREE_CPU( A );
-            TESTING_FREE_CPU( Y );
-            TESTING_FREE_CPU( Ycublas );
-            TESTING_FREE_CPU( Ymagma  );
-            TESTING_FREE_CPU( Ymagma1 );
-            TESTING_FREE_CPU( Ylapack );
+            magma_free_cpu( A );
+            magma_free_cpu( Y );
+            magma_free_cpu( Ydev );
+            magma_free_cpu( Ymagma  );
+            magma_free_cpu( Ymagma1 );
+            magma_free_cpu( Ylapack );
 
-            TESTING_FREE_PIN( X );
-            TESTING_FREE_PIN( hwork   );
+            magma_free_pinned( X );
+            magma_free_pinned( hwork   );
             
             magma_setdevice( opts.device );
-            TESTING_FREE_DEV( dA );
-            TESTING_FREE_DEV( dX );
-            TESTING_FREE_DEV( dY );
+            magma_free( dA );
+            magma_free( dX );
+            magma_free( dY );
             
             for( dev=0; dev < opts.ngpu; dev++ ) {
                 magma_setdevice( dev );
-                TESTING_FREE_DEV( d_lA[dev]  );
-                TESTING_FREE_DEV( dwork[dev] );
+                magma_free( d_lA[dev]  );
+                magma_free( dwork[dev] );
             }
             fflush( stdout );
         }
@@ -300,6 +311,6 @@ int main(int argc, char **argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

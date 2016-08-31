@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Adrien REMY
 
-       @generated from src/zgetrs_nopiv_gpu.cpp normal z -> c, Mon May  2 23:30:03 2016
+       @generated from src/zgetrs_nopiv_gpu.cpp, normal z -> c, Tue Aug 30 09:38:05 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGETRS solves a system of linear equations
@@ -62,8 +62,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_cgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrs_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgetrs_nopiv_gpu(
     magma_trans_t trans, magma_int_t n, magma_int_t nrhs,

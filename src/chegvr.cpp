@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
     
        @author Raffaele Solca
     
-       @generated from src/zhegvr.cpp normal z -> c, Mon May  2 23:30:21 2016
+       @generated from src/zhegvr.cpp, normal z -> c, Tue Aug 30 09:38:20 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHEGVR computes all the eigenvalues, and optionally, the eigenvectors
@@ -260,8 +260,8 @@
        Ken Stanley, Computer Science Division, University of
          California at Berkeley, USA
 
-    @ingroup magma_chegv_driver
-    ********************************************************************/
+    @ingroup magma_hegvr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chegvr(
     magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,

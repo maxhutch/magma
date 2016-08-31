@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
 
@@ -11,7 +11,8 @@
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     ZGESV solves a system of linear equations
@@ -86,9 +87,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zgesv_driver
-    ********************************************************************/
-
+    @ingroup magma_gesv_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgesv_batched(
                   magma_int_t n, magma_int_t nrhs,
@@ -133,7 +133,7 @@ magma_zgesv_batched(
     for (magma_int_t i=0; i < batchCount; i++)
     {
         if (cpu_info[i] != 0 ) {
-            printf("magma_zgetrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );
+            printf("magma_zgetrf_batched matrix %lld returned error %lld\n", (long long) i, (long long) cpu_info[i] );
             info = cpu_info[i];
             magma_free_cpu (cpu_info);
             return info;

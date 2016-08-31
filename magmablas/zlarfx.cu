@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -19,8 +19,7 @@
 #define BLOCK_SIZEy  16
 
 
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
                          magmaDoubleComplex *c, int ldc, double *xnorm,
@@ -80,7 +79,8 @@ void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
     }
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_ztrmv_kernel(const magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t)
@@ -101,6 +101,8 @@ void magma_ztrmv_kernel(const magmaDoubleComplex *T, int ldt, magmaDoubleComplex
     t[tx] = res;
 }
 
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_ztrmv_kernel2(const magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
@@ -123,7 +125,8 @@ void magma_ztrmv_kernel2(const magmaDoubleComplex *T, int ldt, magmaDoubleComple
     }
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, magmaDoubleComplex *y)
@@ -142,8 +145,8 @@ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
         y[blockIdx.x] = sum[0];
 }
 
-//==============================================================================
 
+/******************************************************************************/
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
@@ -157,7 +160,7 @@ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
     The norms of v(:, 1:n) are given as input in xnorm(1:n). On exit, the norms
     are adjusted to hold the norms of v(2:m,2:n). This is a difference with the 
     LAPACK's zlarf routine. 
- */
+*/
 extern "C" void
 magma_zlarfx_gpu_q(
     magma_int_t m, magma_int_t n,
@@ -191,4 +194,3 @@ magma_zlarfx_gpu_q(
             ( dT, N, work, dT+iter*N, tau );
     }
 }
-//==============================================================================

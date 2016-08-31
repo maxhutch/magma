@@ -1,20 +1,18 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from src/zgeqrf_panel_batched.cpp normal z -> s, Mon May  2 23:30:28 2016
-   */
+   @generated from src/zgeqrf_panel_batched.cpp, normal z -> s, Tue Aug 30 09:38:27 2016
+*/
 #include "magma_internal.h"
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_sgeqrf_panel_batched(
         magma_int_t m, magma_int_t n, magma_int_t nb,    
@@ -60,7 +58,6 @@ magma_sgeqrf_panel_batched(
         magma_sdisplace_pointers(dW0_displ, dA_array, ldda, j, j, batchCount, queue); 
         magmablas_slaset_batched( MagmaUpper, jb, jb, MAGMA_S_ZERO, MAGMA_S_ONE, dW0_displ, ldda, batchCount, queue ); 
 
-
         if ( (n-j-jb) > 0) //update the trailing matrix inside the panel
         {
             magma_slarft_sm32x32_batched(m-j, jb,
@@ -96,9 +93,5 @@ magma_sgeqrf_panel_batched(
     magma_sdisplace_pointers(dW0_displ, dA_array, ldda, 0, 0, batchCount, queue); 
     magmablas_slaset_batched( MagmaUpper, minmn, n, MAGMA_S_ZERO, MAGMA_S_ONE, dW0_displ, ldda, batchCount, queue ); 
 
-
     return MAGMA_SUCCESS;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////

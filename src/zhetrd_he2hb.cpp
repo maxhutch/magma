@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -17,7 +17,7 @@
 #include "trace.h"
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHETRD_HE2HB reduces a complex Hermitian matrix A to real symmetric
@@ -140,8 +140,8 @@
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
 
-    @ingroup magma_zheev_2stage
-    ********************************************************************/
+    @ingroup magma_hetrd_he2hb
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhetrd_he2hb(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
@@ -298,7 +298,7 @@ magma_zhetrd_he2hb(
                Prepare the V and T matrices.
                ==========================================================  */
             #ifdef TRACING
-            snprintf( buf, sizeof(buf), "panel %d", i );
+            snprintf( buf, sizeof(buf), "panel %lld", (long long) i );
             #endif
             trace_cpu_start( 0, "geqrf", buf );
             lapackf77_zgeqrf(&pm, &pn, A(indi, indj), &lda,

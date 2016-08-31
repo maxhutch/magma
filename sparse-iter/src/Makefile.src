@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.2) --
+#   -- MAGMA (version 2.1.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2016
+#      @date August 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -19,13 +19,13 @@ cdir      := sparse-iter/src
 # in ZSRC, despite the name.
 
 # Krylov space linear solvers
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/zcg.cpp                       \
 	$(cdir)/zcg_res.cpp                   \
 	$(cdir)/zcg_merge.cpp                 \
 	$(cdir)/zpcg_merge.cpp                \
 	$(cdir)/zbicgstab.cpp                 \
-	$(cdir)/zbicg.cpp		      \
+	$(cdir)/zbicg.cpp                     \
 	$(cdir)/zpbicg.cpp                    \
 	$(cdir)/zbicgstab_merge.cpp           \
 	$(cdir)/zbicgstab_merge2.cpp          \
@@ -35,12 +35,15 @@ libsparse_zsrc += \
 	$(cdir)/ztfqmr.cpp                    \
 	$(cdir)/ztfqmr_unrolled.cpp           \
 	$(cdir)/ztfqmr_merge.cpp              \
+	$(cdir)/zpqmr.cpp                     \
+	$(cdir)/zpqmr_merge.cpp               \
 	$(cdir)/zptfqmr.cpp                   \
 	$(cdir)/zptfqmr_merge.cpp             \
 	$(cdir)/zidr.cpp                      \
 	$(cdir)/zidr_merge.cpp                \
 	$(cdir)/zidr_strms.cpp                \
 	$(cdir)/ziterref.cpp                  \
+	$(cdir)/zftjacobi.cpp                 \
 	$(cdir)/zjacobi.cpp                   \
 	$(cdir)/zbaiter.cpp                   \
 	$(cdir)/zbaiter_overlap.cpp           \
@@ -57,27 +60,25 @@ libsparse_zsrc += \
 	$(cdir)/zpidr_strms.cpp               \
 	$(cdir)/zbombard.cpp                  \
 	$(cdir)/zbombard_merge.cpp            \
-        $(cdir)/zpbicgstab_merge.cpp          \
+    $(cdir)/zpbicgstab_merge.cpp          \
 
 # Krylov space eigen-solvers
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/zlobpcg.cpp                   \
-#	$(cdir)/zcgeig.cpp                    \
-#	$(cdir)/zlancsoz.cpp                  \
 
 # Krylov space least squares
-libsparse_zsrc += \
-	$(cdir)/zlsqr.cpp                   \
+libsparse_src += \
+	$(cdir)/zlsqr.cpp                     \
 
 # Mixed-precision solvers
-#libsparse_zsrc += \
+#libsparse_src += \
 #	$(cdir)/zcpbicgstab.cpp               \
 #	$(cdir)/zcpgmres.cpp                  \
 #	$(cdir)/zciterref.cpp                 \
 #	$(cdir)/zcpir.cpp                     \
 
 # QR and least squares, GPU interface
-#libsparse_zsrc += \
+#libsparse_src += \
 #	$(cdir)/zungqr_lapack.cpp             \
 #	$(cdir)/zungqr_cgs.cpp                \
 #	$(cdir)/zungqr_mgs.cpp                \
@@ -85,37 +86,49 @@ libsparse_zsrc += \
 #	$(cdir)/zungqr_iter.cpp               \
 
 # iterative ILU
-libsparse_zsrc += \
-	$(cdir)/zdummy.cpp                  \
+libsparse_src += \
 	$(cdir)/ziterilu.cpp                  \
 	$(cdir)/zcustomic.cpp                 \
 	$(cdir)/zcustomilu.cpp                \
+#	$(cdir)/zparilut.cpp                  \
+#	$(cdir)/zparict.cpp                   \
+#	$(cdir)/zdummy.cpp                    \
+
+# incomplete sparse approximate inverse
+libsparse_src += \
+#   $(cdir)/zgeisai.cpp                   \
+#   $(cdir)/zsyisai.cpp                   \
+
+# dummy to compensate for routines not included in release
+libsparse_src += \
+	$(cdir)/zdummy.cpp                    \
+
 
 # orthogonalization schemes and wrappers to dense MAGMA
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/magma_zqr_wrapper.cpp         \
 #	$(cdir)/zorthomgs.cpp                 \
 
 # backward communication for SpMV and Preconditioner
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/magma_zcustomspmv.cpp         \
 	$(cdir)/magma_zcustomprecond.cpp      \
 
 # Wrappers to cusparse functions
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/zcumilu.cpp                   \
 	$(cdir)/magma_zcuspmm.cpp             \
 	$(cdir)/magma_zcuspaxpy.cpp           \
 
 # Wrappers, tools etc
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/magma_z_precond_wrapper.cpp   \
 	$(cdir)/magma_z_solver_wrapper.cpp    \
 	$(cdir)/zresidual.cpp                 \
 	$(cdir)/zresidualvec.cpp              \
 
 # research functions
-libsparse_zsrc += \
+libsparse_src += \
 	$(cdir)/zjacobidomainoverlap.cpp      \
 
 

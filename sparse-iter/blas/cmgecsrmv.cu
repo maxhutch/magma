@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zmgecsrmv.cu normal z -> c, Mon May  2 23:30:47 2016
+       @generated from sparse-iter/blas/zmgecsrmv.cu, normal z -> c, Tue Aug 30 09:38:45 2016
 
 */
 #include "magmasparse_internal.h"
@@ -131,5 +131,5 @@ magma_cmgecsrmv(
     cmgecsrmv_kernel<<< grid, threads, MEM_SIZE, queue->cuda_stream()>>>
             (m, n, num_vecs, alpha, dval, drowptr, dcolind, dx, beta, dy);
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

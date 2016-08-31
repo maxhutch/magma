@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZUNGHR generates a COMPLEX_16 unitary matrix Q which is defined as the
@@ -66,8 +66,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_zgeev_comp
-    ********************************************************************/
+    @ingroup magma_unghr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zunghr_m(
     magma_int_t n, magma_int_t ilo, magma_int_t ihi,

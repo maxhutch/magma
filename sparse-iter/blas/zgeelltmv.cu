@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -165,7 +165,7 @@ magma_zgeelltmv(
     }
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -269,5 +269,5 @@ magma_zgeelltmv_shift(
                             beta, offset, blocksize, addrows, dy );
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

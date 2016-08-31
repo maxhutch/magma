@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -72,7 +72,6 @@ magma_zbcsrtrsv(
     magmaDoubleComplex_ptr x,
     magma_queue_t queue )
 {
-
     // some useful variables
     magmaDoubleComplex one = MAGMA_Z_MAKE(1.0, 0.0);
     magmaDoubleComplex mone = MAGMA_Z_MAKE(-1.0, 0.0);

@@ -1,19 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
 
-       @generated from src/zgetrs_batched.cpp normal z -> d, Mon May  2 23:30:26 2016
+       @generated from src/zgetrs_batched.cpp, normal z -> d, Tue Aug 30 09:38:24 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGETRS solves a system of linear equations
@@ -82,8 +81,8 @@
             Queue to execute in.
 
 
-    @ingroup magma_dgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrs_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgetrs_batched(
                   magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
@@ -131,7 +130,7 @@ magma_dgetrs_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, DTRTRI_BATCHED_NB )*DTRTRI_BATCHED_NB;
     magma_int_t dwork_msize = n*nrhs;
     double* dinvA      = NULL;
     double* dwork      = NULL; // dinvA and dwork are workspace in dtrsm
@@ -156,7 +155,7 @@ magma_dgetrs_batched(
     magmablas_dlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, invA_msize, queue );
     magmablas_dlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, dwork_msize, queue );
     magma_dset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
-    magma_dset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
+    magma_dset_pointer( dinvA_array, dinvA, DTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
 
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zpotrf3_mgpu.cpp normal z -> c, Mon May  2 23:30:01 2016
+       @generated from src/zpotrf3_mgpu.cpp, normal z -> c, Tue Aug 30 09:38:02 2016
 
 */
 #include "magma_internal.h"
@@ -21,7 +21,7 @@
 #endif
 /* === End defining what BLAS to use ======================================= */
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CPOTRF computes the Cholesky factorization of a complex Hermitian
@@ -128,8 +128,8 @@
                   positive definite, and the factorization could not be
                   completed.
 
-    @ingroup magma_cposv_comp
-    ********************************************************************/
+    @ingroup magma_potrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrf3_mgpu(
     magma_int_t ngpu,
@@ -777,7 +777,7 @@ magma_cpotrf3_mgpu(
 #define dA(d, i, j) (dA[(d)]+(j)*ldda + (i))
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" magma_int_t
 magma_chtodpo(
     magma_int_t ngpu,
@@ -844,7 +844,7 @@ magma_chtodpo(
 }
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" magma_int_t
 magma_cdtohpo(
     magma_int_t ngpu,

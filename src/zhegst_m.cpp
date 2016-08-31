@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -13,6 +13,7 @@
 #include "magma_internal.h"
 
 
+/******************************************************************************/
 static void magma_zhegst_m_1_U_row_update(
     magma_int_t nk, magma_int_t nb,
     magmaDoubleComplex* dA_row, magma_int_t ldda,
@@ -44,6 +45,7 @@ static void magma_zhegst_m_1_U_row_update(
 }
 
 
+/******************************************************************************/
 static void magma_zhegst_m_1_L_col_update(
     magma_int_t nk, magma_int_t nb,
     magmaDoubleComplex* dA_col, magma_int_t ldda,
@@ -75,7 +77,7 @@ static void magma_zhegst_m_1_L_col_update(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHEGST_M reduces a complex Hermitian-definite generalized
@@ -143,8 +145,8 @@ static void magma_zhegst_m_1_L_col_update(
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
     
 
-    @ingroup magma_zheev_comp
-    ********************************************************************/
+    @ingroup magma_hegst
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhegst_m(
     magma_int_t ngpu,
@@ -176,7 +178,7 @@ magma_zhegst_m(
 
     bool upper = (uplo == MagmaUpper);
 
-    magma_int_t nb = magma_get_zhegst_nb_m( n );
+    magma_int_t nb = magma_get_zhegst_m_nb( n );
 
     /* Test the input parameters. */
     *info = 0;

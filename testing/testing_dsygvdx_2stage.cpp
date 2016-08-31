@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zhegvdx_2stage.cpp normal z -> d, Mon May  2 23:31:19 2016
+       @generated from testing/testing_zhegvdx_2stage.cpp, normal z -> d, Tue Aug 30 09:39:14 2016
 
 */
 
@@ -24,7 +24,8 @@
 #include "magma_lapack.h"
 #include "testings.h"
 #include "magma_dbulge.h"
-#include "magma_threadsetting.h"
+
+#include "../control/magma_threadsetting.h"  // internal header
 
 #define REAL
 
@@ -33,7 +34,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     /* Constants */
     const double c_zero    = MAGMA_D_ZERO;
@@ -55,7 +57,7 @@ int main( int argc, char** argv)
     magma_int_t *iwork;
     magma_int_t N, n2, info, lda, lwork, liwork;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -70,9 +72,9 @@ int main( int argc, char** argv)
     // pass ngpu = -1 to test multi-GPU code using 1 gpu
     magma_int_t abs_ngpu = abs( opts.ngpu );
     
-    printf("%% itype = %d, jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu = %d\n",
-           int(opts.itype), lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
-           opts.fraction, int(abs_ngpu) );
+    printf("%% itype = %lld, jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu = %lld\n",
+           (long long) opts.itype, lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
+           opts.fraction, (long long) abs_ngpu);
 
     if (opts.itype == 1) {
         printf("%%   N     M   GPU Time (sec)   |AZ-BZD|   |D - D_magma|\n");
@@ -113,17 +115,17 @@ int main( int argc, char** argv)
                                      #endif
                                      &liwork);
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC_CPU( h_A,    double, n2 );
-            TESTING_MALLOC_CPU( h_B,    double, n2 );
-            TESTING_MALLOC_CPU( w1,     double, N );
-            TESTING_MALLOC_CPU( w2,     double, N );
-            TESTING_MALLOC_CPU( iwork,  magma_int_t, liwork );
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A,    n2 ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_B,    n2 ));
+            TESTING_CHECK( magma_dmalloc_cpu( &w1,     N ));
+            TESTING_CHECK( magma_dmalloc_cpu( &w2,     N ));
+            TESTING_CHECK( magma_imalloc_cpu( &iwork,  liwork ));
             
-            TESTING_MALLOC_PIN( h_R,    double, n2 );
-            TESTING_MALLOC_PIN( h_S,    double, n2 );
-            TESTING_MALLOC_PIN( h_work, double, max( lwork, N*N ));  // check needs N*N
+            TESTING_CHECK( magma_dmalloc_pinned( &h_R,    n2 ));
+            TESTING_CHECK( magma_dmalloc_pinned( &h_S,    n2 ));
+            TESTING_CHECK( magma_dmalloc_pinned( &h_work, max( lwork, N*N ) ));  // check needs N*N
             #ifdef COMPLEX
-            TESTING_MALLOC_PIN( rwork,  double, lrwork);
+            TESTING_CHECK( magma_dmalloc_pinned( &rwork,  lrwork ));
             #endif
 
             /* Initialize the matrix */
@@ -161,8 +163,8 @@ int main( int argc, char** argv)
             }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0) {
-                printf("magma_dsygvdx_2stage returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_dsygvdx_2stage returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             if ( opts.check ) {
@@ -219,8 +221,8 @@ int main( int argc, char** argv)
                                   iwork, &liwork,
                                   &info );
                 if (info != 0) {
-                    printf("lapackf77_dsygvd returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_dsygvd returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 
                 double maxw=0, diff=0;
@@ -235,8 +237,8 @@ int main( int argc, char** argv)
             /* =====================================================================
                Print execution time
                =================================================================== */
-            printf("%5d %5d   %9.4f     ",
-                   (int) N, (int) m1, gpu_time);
+            printf("%5lld %5lld   %9.4f     ",
+                   (long long) N, (long long) m1, gpu_time);
             if ( opts.check ) {
                 bool okay = (result[1] < tolulp);
                 if ( opts.jobz != MagmaNoVec ) {
@@ -253,17 +255,17 @@ int main( int argc, char** argv)
                 printf("     ---\n");
             }
             
-            TESTING_FREE_CPU( h_A   );
-            TESTING_FREE_CPU( h_B   );
-            TESTING_FREE_CPU( w1    );
-            TESTING_FREE_CPU( w2    );
-            TESTING_FREE_CPU( iwork );
+            magma_free_cpu( h_A   );
+            magma_free_cpu( h_B   );
+            magma_free_cpu( w1    );
+            magma_free_cpu( w2    );
+            magma_free_cpu( iwork );
             
-            TESTING_FREE_PIN( h_R );
-            TESTING_FREE_PIN( h_S );
-            TESTING_FREE_PIN( h_work );
+            magma_free_pinned( h_R );
+            magma_free_pinned( h_S );
+            magma_free_pinned( h_work );
             #ifdef COMPLEX
-            TESTING_FREE_PIN( rwork );
+            magma_free_pinned( rwork );
             #endif
             fflush( stdout );
         }
@@ -273,6 +275,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

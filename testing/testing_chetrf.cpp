@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zhetrf.cpp normal z -> c, Mon May  2 23:31:12 2016
+       @generated from testing/testing_zhetrf.cpp, normal z -> c, Tue Aug 30 09:39:08 2016
        @author Ichitaro Yamazaki
 */
 // includes, system
@@ -67,8 +67,8 @@ float get_residual(
     magmaFloatComplex *x, *b;
     
     // initialize RHS
-    TESTING_MALLOC_CPU( x, magmaFloatComplex, n );
-    TESTING_MALLOC_CPU( b, magmaFloatComplex, n );
+    TESTING_CHECK( magma_cmalloc_cpu( &x, n ));
+    TESTING_CHECK( magma_cmalloc_cpu( &b, n ));
     lapackf77_clarnv( &ione, ISEED, &n, b );
     blasf77_ccopy( &n, b, &ione, x, &ione );
     
@@ -104,8 +104,8 @@ float get_residual(
         lapackf77_chetrs( lapack_uplo_const(uplo), &n, &ione, A, &lda, ipiv, x, &n, &info );
     }
     if (info != 0) {
-        printf("lapackf77_chetrs returned error %d: %s.\n",
-               (int) info, magma_strerror( info ));
+        printf("lapackf77_chetrs returned error %lld: %s.\n",
+               (long long) info, magma_strerror( info ));
     }
     // reset to original A
     init_matrix( nopiv, n, A, lda );
@@ -121,10 +121,10 @@ float get_residual(
     
     //printf( "r=\n" ); magma_cprint( 1, n, b, 1 );
     
-    TESTING_FREE_CPU( x );
-    TESTING_FREE_CPU( b );
+    magma_free_cpu( x );
+    magma_free_cpu( b );
     
-    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%d\n", norm_r, norm_A, norm_x, n );
+    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%lld\n", norm_r, norm_A, norm_x, (long long) n );
     return norm_r / (n * norm_A * norm_x);
 }
 
@@ -140,32 +140,16 @@ float get_residual_aasen(
     magmaFloatComplex *L, *T;
     #define  A(i,j) ( A[(i) + (j)*lda])
     #define  L(i,j) ( L[(i) + (j)*n])
-    #define  T(i,j) ( T[(i) + (j)*n])
-    TESTING_MALLOC_CPU( L, magmaFloatComplex, n*n );
-    TESTING_MALLOC_CPU( T, magmaFloatComplex, n*n );
+    TESTING_CHECK( magma_cmalloc_cpu( &L, n*n ));
     memset( L, 0, n*n*sizeof(magmaFloatComplex) );
-    memset( T, 0, n*n*sizeof(magmaFloatComplex) );
 
-    magma_int_t i, j, istart, piv;
+    magma_int_t i, j, piv;
     magma_int_t nb = magma_get_chetrf_aasen_nb(n);
-    // extract T
-    for (i=0; i < n; i++)
-    {
-        istart = max(0, i-nb);
-        for (j=istart; j <= i; j++) {
-            T(i,j) = A(i,j);
-        }
-        for (j=istart; j < i; j++) {
-            T(j,i) = MAGMA_C_CONJ(A(i,j));
-        }
-    }
     // extract L
-    for (i=0; i < min(n,nb); i++) 
-    {
+    for (i=0; i < min(n,nb); i++) {
         L(i,i) = c_one;
     }
-    for (i=nb; i < n; i++)
-    {
+    for (i=nb; i < n; i++) {
         for (j=0; j < i-nb; j++) {
             L(i,nb+j) = A(i,j);
         }
@@ -178,8 +162,8 @@ float get_residual_aasen(
     magmaFloatComplex *x, *b;
     
     // initialize RHS
-    TESTING_MALLOC_CPU( x, magmaFloatComplex, n );
-    TESTING_MALLOC_CPU( b, magmaFloatComplex, n );
+    TESTING_CHECK( magma_cmalloc_cpu( &x, n ));
+    TESTING_CHECK( magma_cmalloc_cpu( &b, n ));
     lapackf77_clarnv( &ione, ISEED, &n, b );
     blasf77_ccopy( &n, b, &ione, x, &ione );
     // pivot..
@@ -193,13 +177,46 @@ float get_residual_aasen(
     blasf77_ctrsv( MagmaLowerStr, MagmaNoTransStr, MagmaUnitStr, &n, &L(0,0), &n, x, &ione );
     // banded solver
     magma_int_t nrhs = 1, *p = NULL;
-    
-    TESTING_MALLOC_CPU( p, magma_int_t, n );
-    
-    lapackf77_cgesv( &n, &nrhs, &T(0, 0), &n, p, x, &n, &info );
-    
-    TESTING_FREE_CPU( p );
-    
+    TESTING_CHECK( magma_imalloc_cpu( &p, n ));
+    //#define CHESV_USE_CGESV
+    #ifdef CHESV_USE_CGESV
+      // using CGESV on banded matrix
+      #define  T(i,j) ( T[(i) + (j)*n])
+      // extract T
+      TESTING_CHECK( magma_cmalloc_cpu( &T, n*n ));
+      memset( T, 0, n*n*sizeof(magmaFloatComplex) );
+      for (i=0; i < n; i++) {
+          magma_int_t istart = max(0, i-nb);
+          for (j=istart; j <= i; j++) {
+              T(i,j) = A(i,j);
+          }
+          for (j=istart; j < i; j++) {
+              T(j,i) = MAGMA_C_CONJ(A(i,j));
+          }
+      }
+      // solve with T
+      lapackf77_cgesv( &n, &nrhs, &T(0, 0), &n, p, x, &n, &info );
+    #else
+      // using CGBSV on banded matrix
+      magma_int_t ldtb = 3*nb+1;
+      // extract T
+      TESTING_CHECK( magma_cmalloc_cpu( &T, ldtb * n ));
+      memset( T, 0, ldtb*n*sizeof(magmaFloatComplex) );
+      for (j=0; j<n; j++) {
+          magma_int_t i0 = max(0, j-nb);
+          magma_int_t i1 = min(n-1, j+nb);
+          for (i=i0; i<j; i++) {
+              T[nb + i-(j-nb) + j*ldtb] = MAGMA_C_CONJ(A(j,i));
+          }
+          for (i=j; i<=i1; i++) {
+              T[nb + i-(j-nb) + j*ldtb] = A(i,j);
+          }
+      }
+      // solve with T
+      lapackf77_cgbsv(&n,&nb,&nb, &nrhs, T,&ldtb, p,x,&n, &info);
+    #endif
+    magma_free_cpu( p );
+
     // backward solve
     blasf77_ctrsv( MagmaLowerStr, MagmaConjTransStr, MagmaUnitStr, &n, &L(0,0), &n, x, &ione );
     // pivot..
@@ -223,16 +240,16 @@ float get_residual_aasen(
     norm_x = lapackf77_clange( MagmaFullStr, &n, &ione, x, &n, work );
     
     //printf( "r=\n" ); magma_cprint( 1, n, b, 1 );
-    TESTING_FREE_CPU( L );
-    TESTING_FREE_CPU( T );
+    magma_free_cpu( L );
+    magma_free_cpu( T );
     
-    TESTING_FREE_CPU( x );
-    TESTING_FREE_CPU( b );
+    magma_free_cpu( x );
+    magma_free_cpu( b );
     
     #undef T
     #undef L
     #undef A
-    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%d\n", norm_r, norm_A, norm_x, n );
+    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%lld\n", norm_r, norm_A, norm_x, (long long) n );
     return norm_r / (n * norm_A * norm_x);
 }
 
@@ -258,9 +275,9 @@ float get_LDLt_error(
     #define  L(i,j) ( L[(i) + (j)*N])
     #define  D(i,j) ( D[(i) + (j)*N])
 
-    TESTING_MALLOC_CPU( A, magmaFloatComplex, N*N );
-    TESTING_MALLOC_CPU( L, magmaFloatComplex, N*N );
-    TESTING_MALLOC_CPU( D, magmaFloatComplex, N*N );
+    TESTING_CHECK( magma_cmalloc_cpu( &A, N*N ));
+    TESTING_CHECK( magma_cmalloc_cpu( &L, N*N ));
+    TESTING_CHECK( magma_cmalloc_cpu( &D, N*N ));
     memset( L, 0, N*N*sizeof(magmaFloatComplex) );
     memset( D, 0, N*N*sizeof(magmaFloatComplex) );
 
@@ -440,9 +457,9 @@ float get_LDLt_error(
     }
     residual = lapackf77_clange(MagmaFullStr, &N, &N, D, &N, work);
 
-    TESTING_FREE_CPU( A );
-    TESTING_FREE_CPU( L );
-    TESTING_FREE_CPU( D );
+    magma_free_cpu( A );
+    magma_free_cpu( L );
+    magma_free_cpu( D );
 
     return residual / (matnorm * N);
 }
@@ -461,9 +478,9 @@ float get_LTLt_error(
     #define LT(i,j) (LT[(i) + (j)*lda])
     #define  T(i,j) ( T[(i) + (j)*N])
     
-    TESTING_MALLOC_CPU( A, magmaFloatComplex, N*N );
-    TESTING_MALLOC_CPU( L, magmaFloatComplex, N*N );
-    TESTING_MALLOC_CPU( T, magmaFloatComplex, N*N );
+    TESTING_CHECK( magma_cmalloc_cpu( &A, N*N ));
+    TESTING_CHECK( magma_cmalloc_cpu( &L, N*N ));
+    TESTING_CHECK( magma_cmalloc_cpu( &T, N*N ));
     memset( L, 0, N*N*sizeof(magmaFloatComplex) );
     memset( T, 0, N*N*sizeof(magmaFloatComplex) );
 
@@ -473,7 +490,7 @@ float get_LTLt_error(
     // for debuging
     /*
     magma_int_t *p;
-    TESTING_MALLOC_CPU( p, magma_int_t, n );
+    TESTING_CHECK( magma_imalloc_cpu( &p, n ));
     for (i=0; i < N; i++) {
         p[i] = i;
     }
@@ -485,10 +502,10 @@ float get_LTLt_error(
     }
     printf( " p=[" );
     for (i=0; i < N; i++) {
-        printf("%d ", p[i] );
+        printf("%lld ", (long long) p[i] );
     }
     printf( "];\n" );
-    TESTING_FREE_CPU( p );
+    magma_free_cpu( p );
     */
     
     // extract T
@@ -558,9 +575,9 @@ float get_LTLt_error(
     }
     residual = lapackf77_clange(MagmaFullStr, &N, &N, T, &N, work);
 
-    TESTING_FREE_CPU( A );
-    TESTING_FREE_CPU( L );
-    TESTING_FREE_CPU( T );
+    magma_free_cpu( A );
+    magma_free_cpu( L );
+    magma_free_cpu( T );
 
     return residual / (matnorm * N);
 }
@@ -570,15 +587,16 @@ float get_LTLt_error(
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     magmaFloatComplex *h_A, *work, temp;
     real_Double_t   gflops, gpu_perf, gpu_time = 0.0, cpu_perf=0, cpu_time=0;
     float          error, error_lapack = 0.0;
     magma_int_t     *ipiv;
     magma_int_t     i, cpu_panel = 1, N, n2, lda, lwork, info;
-    magma_int_t     status = 0;
     magma_int_t     cpu = 0, nopiv = 0, nopiv_gpu = 0, row = 0, aasen = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -617,7 +635,7 @@ int main( int argc, char** argv)
             printf( "\n%% CPU-Interface to Aasen's (%s)",(cpu_panel ? "CPU panel" : "GPU panel") );
             break;
         default:
-            printf( "\nversion = %d not supported\n\n", (int) opts.version );
+            printf( "\nversion = %lld not supported\n\n", (long long) opts.version );
             return 0;
     }
     printf( " (%s)\n", lapack_uplo_const(opts.uplo) );
@@ -639,8 +657,8 @@ int main( int argc, char** argv)
             n2     = lda*N;
             gflops = FLOPS_CPOTRF( N ) / 1e9;
             
-            TESTING_MALLOC_PIN( ipiv, magma_int_t, N );
-            TESTING_MALLOC_PIN( h_A,  magmaFloatComplex, n2 );
+            TESTING_CHECK( magma_imalloc_pinned( &ipiv, N ));
+            TESTING_CHECK( magma_cmalloc_pinned( &h_A,  n2 ));
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -649,7 +667,7 @@ int main( int argc, char** argv)
                 lwork = -1;
                 lapackf77_chetrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, ipiv, &temp, &lwork, &info );
                 lwork = (magma_int_t)MAGMA_C_REAL( temp );
-                TESTING_MALLOC_CPU( work, magmaFloatComplex, lwork );
+                TESTING_CHECK( magma_cmalloc_cpu( &work, lwork ));
 
                 init_matrix( nopiv, N, h_A, lda );
                 cpu_time = magma_wtime();
@@ -657,12 +675,12 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_chetrf returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_chetrf returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 error_lapack = get_residual( nopiv, opts.uplo, N, h_A, lda, ipiv );
 
-                TESTING_FREE_CPU( work );
+                magma_free_cpu( work );
             }
            
             /* ====================================================================
@@ -671,7 +689,7 @@ int main( int argc, char** argv)
             init_matrix( (nopiv | nopiv_gpu), N, h_A, lda );
 
             //printf( "A0=" );
-            //magma_cprint(N,N,h_A,lda);
+            //magma_cprlong( N, N, h_A, lda );
             if (nopiv) {
                 // CPU-interface to non-piv LDLt
                 gpu_time = magma_wtime();
@@ -686,13 +704,13 @@ int main( int argc, char** argv)
                 // GPU-interface to non-piv LDLt
                 magma_int_t ldda = magma_roundup( N, opts.align );
                 magmaFloatComplex_ptr d_A;
-                TESTING_MALLOC_DEV( d_A, magmaFloatComplex, N*ldda );
+                TESTING_CHECK( magma_cmalloc( &d_A, N*ldda ));
                 magma_csetmatrix(N, N, h_A, lda, d_A, ldda, opts.queue );
                 gpu_time = magma_wtime();
                 magma_chetrf_nopiv_gpu( opts.uplo, N, d_A, ldda, &info);
                 gpu_time = magma_wtime() - gpu_time;
                 magma_cgetmatrix(N, N, d_A, ldda, h_A, lda, opts.queue );
-                TESTING_FREE_DEV( d_A );
+                magma_free( d_A );
             } else if (aasen) {
                 // CPU-interface to Aasen's LTLt
                 gpu_time = magma_wtime();
@@ -705,22 +723,22 @@ int main( int argc, char** argv)
             }
             gpu_perf = gflops / gpu_time;
             if (info != 0) {
-                printf("magma_chetrf returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_chetrf returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             /* =====================================================================
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
-                       (int) N, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
+                printf("%5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (long long) N, (long long) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
             }
             else {
-                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)",
-                       (int) N, (int) N, gpu_perf, gpu_time );
+                printf("%5lld %5lld     ---   (  ---  )   %7.2f (%7.2f)",
+                       (long long) N, (long long) N, gpu_perf, gpu_time );
             }
-            if ( opts.check == 2 ) {
+            if ( opts.check == 2 && info == 0) {
                 if (aasen) {
                     error = get_residual_aasen( (nopiv | nopiv_gpu), opts.uplo, N, h_A, lda, ipiv );
                 } else {
@@ -732,7 +750,7 @@ int main( int argc, char** argv)
                 printf("\n");
                 status += ! (error < tol);
             }
-            else if ( opts.check ) {
+            else if ( opts.check && info == 0 ) {
                 if (aasen) {
                     error = get_LTLt_error( (nopiv | nopiv_gpu), opts.uplo, N, h_A, lda, ipiv );
                 } else {
@@ -745,8 +763,8 @@ int main( int argc, char** argv)
                 printf("     ---   \n");
             }
  
-            TESTING_FREE_PIN( ipiv );
-            TESTING_FREE_PIN( h_A  );
+            magma_free_pinned( ipiv );
+            magma_free_pinned( h_A  );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -755,6 +773,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

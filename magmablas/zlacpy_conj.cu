@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -12,6 +12,7 @@
 
 #define BLOCK_SIZE 64
 
+/******************************************************************************/
 // copy & conjugate a single vector of length n.
 // TODO: this was modeled on the old zswap routine. Update to new zlacpy code for 2D matrix?
 
@@ -30,6 +31,7 @@ __global__ void zlacpy_conj_kernel(
 }
 
 
+/******************************************************************************/
 extern "C" void 
 magmablas_zlacpy_conj_q(
     magma_int_t n,

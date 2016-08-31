@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zunmtr.cpp normal z -> s, Mon May  2 23:30:15 2016
+       @generated from src/zunmtr.cpp, normal z -> s, Tue Aug 30 09:38:16 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SORMTR overwrites the general real M-by-N matrix C with
@@ -22,8 +22,9 @@
     TRANS = MagmaNoTrans:       Q * C               C * Q
     TRANS = MagmaTrans:    Q**H * C            C * Q**H
 
-    where Q is a real orthogonal matrix of order nq, with nq = m if
-    SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
+    where Q is a real orthogonal matrix of order nq,
+    with nq = m if SIDE = MagmaLeft
+    and  nq = n if SIDE = MagmaRight. Q is defined as the product of
     nq-1 elementary reflectors, as returned by SSYTRD:
 
     if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);
@@ -67,7 +68,8 @@
     @param[in]
     lda     INTEGER
             The leading dimension of the array A.
-            LDA >= max(1,M) if SIDE = MagmaLeft; LDA >= max(1,N) if SIDE = MagmaRight.
+            LDA >= max(1,M) if SIDE = MagmaLeft;
+            LDA >= max(1,N) if SIDE = MagmaRight.
 
     @param[in]
     tau     REAL array, dimension
@@ -108,8 +110,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_ssyev_comp
-    ********************************************************************/
+    @ingroup magma_unmtr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sormtr(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,

@@ -1,20 +1,18 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
    @precisions normal z -> s d c
-   */
+*/
 #include "magma_internal.h"
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zgeqrf_panel_batched(
         magma_int_t m, magma_int_t n, magma_int_t nb,    
@@ -60,7 +58,6 @@ magma_zgeqrf_panel_batched(
         magma_zdisplace_pointers(dW0_displ, dA_array, ldda, j, j, batchCount, queue); 
         magmablas_zlaset_batched( MagmaUpper, jb, jb, MAGMA_Z_ZERO, MAGMA_Z_ONE, dW0_displ, ldda, batchCount, queue ); 
 
-
         if ( (n-j-jb) > 0) //update the trailing matrix inside the panel
         {
             magma_zlarft_sm32x32_batched(m-j, jb,
@@ -96,9 +93,5 @@ magma_zgeqrf_panel_batched(
     magma_zdisplace_pointers(dW0_displ, dA_array, ldda, 0, 0, batchCount, queue); 
     magmablas_zlaset_batched( MagmaUpper, minmn, n, MAGMA_Z_ZERO, MAGMA_Z_ONE, dW0_displ, ldda, batchCount, queue ); 
 
-
     return MAGMA_SUCCESS;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////

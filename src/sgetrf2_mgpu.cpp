@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgetrf2_mgpu.cpp normal z -> s, Mon May  2 23:30:03 2016
+       @generated from src/zgetrf2_mgpu.cpp, normal z -> s, Tue Aug 30 09:38:05 2016
 
 */
 #include "magma_internal.h"
@@ -14,7 +14,7 @@
 #include "magma_timer.h"
 //#include "../testing/flops.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGETRF computes an LU factorization of a general M-by-N matrix A
@@ -99,8 +99,8 @@
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
-    @ingroup magma_sgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgetrf2_mgpu(
     magma_int_t ngpu,
@@ -144,7 +144,7 @@ magma_sgetrf2_mgpu(
 
     /* Function Body */
     mindim = min(m, n);
-    if ( ngpu > ceil((float)n/nb) ) {
+    if ( ngpu > magma_ceildiv( n, nb )) {
         *info = -1;
         return *info;
     }
@@ -181,7 +181,7 @@ magma_sgetrf2_mgpu(
                             queues[0][1] );
     trace_gpu_end( 0, 1 );
 
-    /* ------------------------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
     magma_timer_t time=0;
     timer_start( time );
 
@@ -359,7 +359,7 @@ magma_sgetrf2_mgpu(
             trace_gpu_end( d, 0 );
         }
     } /* end of for j=1..s */
-    /* ------------------------------------------------------------------------------ */
+    /* ---------------------------------------------------------------------- */
     
     /* Set the GPU number that holds the last panel */
     id = s % ngpu;

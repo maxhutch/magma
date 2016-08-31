@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        csymv.cu is nearly identical to chemv.cu, just change names and drop MAGMA_C_CONJ.
        
@@ -11,7 +11,7 @@
        csymv_kernel_L (lower) in csymv.cu; diff the two files to compare.
        
        Note: [ds] precisions generated from chemv.cu
-       @generated from magmablas/zsymv.cu normal z -> c, Mon May  2 23:30:35 2016
+       @generated from magmablas/zsymv.cu, normal z -> c, Tue Aug 30 09:38:34 2016
        
        @author Mark Gates
 */
@@ -27,7 +27,7 @@
 #define half_NB_X    32
 
 
-/*******************************************************************************
+/***************************************************************************//**
     Lower case, compute block multiply, work = A*x, for any size n:
     
            [ A11*x1   A12*x2             A13*x3                    ]   [ A11 A12 A13 ]   [ x1 ]
@@ -53,7 +53,7 @@
     which doesn't work as well because that has dimension blocks*NB by blocks,
     where blocks*NB >= n, and it can be that blocks*NB > lda, so it won't fit in
     lda*blocks space. This is why it used to need lwork = lda*(blocks + 1).
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 csymv_kernel_L(
     int n,
@@ -429,7 +429,7 @@ csymv_kernel_L(
 // end csymv_kernel_L
 
 
-/**************************************************************
+/***************************************************************************//**
     Lower case, sum up final results
     Each block sums one block row; each thread sums one row.
     
@@ -442,7 +442,7 @@ csymv_kernel_L(
               [ (A11*x1) + (A21^H*x2) + (A31^H*x3) ]
     y = alpha*[ (A21*x1 + A22*x2)     + (A32^H*x3) ] + beta*y
               [ (A21*x1 + A22*x2 + A33*x3)         ]
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 csymv_kernel_L_sum(
     int n,
@@ -471,7 +471,7 @@ csymv_kernel_L_sum(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     magmablas_csymv_work performs the matrix-vector operation:
@@ -577,8 +577,8 @@ csymv_kernel_L_sum(
     Our tests show that this penalty is about 10 Gflop/s when the matrix
     size is around 10000.
 
-    @ingroup magma_cblas2
-    ********************************************************************/
+    @ingroup magma_symv
+*******************************************************************************/
 extern "C"
 magma_int_t
 magmablas_csymv_work(
@@ -661,7 +661,7 @@ magmablas_csymv_work(
 // end magmablas_csymv_work
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     magmablas_csymv performs the matrix-vector operation:
@@ -744,8 +744,8 @@ magmablas_csymv_work(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cblas2
-    ********************************************************************/
+    @ingroup magma_symv
+*******************************************************************************/
 extern "C"
 magma_int_t
 magmablas_csymv_q(

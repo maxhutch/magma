@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlascl.cu normal z -> s, Mon May  2 23:30:33 2016
+       @generated from magmablas/zlascl.cu, normal z -> s, Tue Aug 30 09:38:31 2016
 
        @author Mark Gates
 */
@@ -67,7 +67,7 @@ slascl_upper(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLASCL multiplies the M by N real matrix A by the real scalar
@@ -130,8 +130,8 @@ slascl_upper(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_lascl
+*******************************************************************************/
 extern "C" void
 magmablas_slascl_q(
     magma_type_t type, magma_int_t kl, magma_int_t ku,

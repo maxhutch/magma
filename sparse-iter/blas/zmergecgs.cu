@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -105,7 +105,7 @@ magma_zcgs_1(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_zcgs_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, r, q, u, p );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -184,7 +184,7 @@ magma_zcgs_2(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_zcgs_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, r, u, p);
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -276,7 +276,7 @@ magma_zcgs_3(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_zcgs_3_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, v_hat, u, q, t );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -293,7 +293,6 @@ magma_zcgs_4_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if ( i<num_rows ) {
         for( int j=0; j<num_cols; j++ ){
-            
             x[ i+j*num_rows ] = x[ i+j*num_rows ] 
                                 + alpha * u_hat[ i+j*num_rows ];
             r[ i+j*num_rows ] = r[ i+j*num_rows ] 
@@ -365,8 +364,5 @@ magma_zcgs_4(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_zcgs_4_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, u_hat, t, x, r );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-
-
-

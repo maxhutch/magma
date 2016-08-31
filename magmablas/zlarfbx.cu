@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -16,9 +16,7 @@
 #define BLOCK_SIZE 512
 
 
-
-
-//==============================================================================
+/******************************************************************************/
 extern "C"
 __global__ void 
 magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv, 
@@ -44,8 +42,8 @@ magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
        dwork [blockIdx.x] = sum[0];
 }
 
-//==============================================================================
-/*  ----------------------------------------------------------------------------- 
+/******************************************************************************/
+/*
     Call 
         magma_zgemv_kernel3<<< n, BLOCK_SIZE, 0, queue->cuda_stream() >>>(m, V, ldv, c, dwork, tau)
     to compute
@@ -53,7 +51,7 @@ magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
         and to set c[0] to 1.
     i.e., 
         work = -tau[0] V**H c
-    ----------------------------------------------------------------------------- */
+*/
 extern "C"
 __global__ void
 magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv, magmaDoubleComplex *c,
@@ -81,7 +79,8 @@ magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv, m
        dwork [blockIdx.x] = -tau[0]*sum[0];
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__ void
 magma_zgemv_kernel2(int m, int n, const magmaDoubleComplex * __restrict__ V, int ldv, 
@@ -102,8 +101,8 @@ magma_zgemv_kernel2(int m, int n, const magmaDoubleComplex * __restrict__ V, int
     }
 }
 
-//==============================================================================
 
+/******************************************************************************/
 /*
     Apply a complex block reflector H to a complex vector C from the left
     (i.e., C = H C). H is represented in the form
@@ -138,4 +137,3 @@ magma_zlarfbx_gpu_q(
         <<< blocks3, threads3, 0, queue->cuda_stream() >>>
         ( m, k, V, ldv, dwork+k, c);
 }
-//==============================================================================

@@ -1,22 +1,22 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zlatrd2.cpp normal z -> d, Mon May  2 23:30:15 2016
+       @generated from src/zlatrd2.cpp, normal z -> d, Tue Aug 30 09:38:15 2016
 
 */
 #include "magma_internal.h"
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLATRD2 reduces NB rows and columns of a real symmetric matrix A to
@@ -98,6 +98,12 @@
             The leading dimension of the array W. LDW >= max(1,N).
     
     @param
+    work    TODO: dimension (lwork)?
+    
+    @param
+    lwork   TODO: size??
+    
+    @param
     dA      TODO: dimension (ldda, n) ??
     
     @param
@@ -167,8 +173,8 @@
     an element of the original matrix that is unchanged, and vi denotes
     an element of the vector defining H(i).
 
-    @ingroup magma_dsyev_aux
-    ********************************************************************/
+    @ingroup magma_latrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dlatrd2(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb,

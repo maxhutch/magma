@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zbombard_merge.cpp normal z -> c, Mon May  2 23:31:01 2016
+       @generated from sparse-iter/src/zbombard_merge.cpp, normal z -> c, Tue Aug 30 09:38:58 2016
 */
 
 #include "magmasparse_internal.h"
@@ -563,8 +563,7 @@ magma_cbombard_merge(
         Q_gamm = c_one / magma_csqrt(c_one + Q_thet*Q_thet);        
         Q_eta = - Q_eta * Q_rho1 * Q_gamm * Q_gamm / (Q_beta * Q_gamm1 * Q_gamm1);
 
-        if( solver_par->numiter == 1 ){
-            
+        if ( solver_par->numiter == 1 ) {
                 //QMR: d = eta * p + pds * d;
                 //QMR: s = eta * pt + pds * d;
                 //QMR: x = x + d;
@@ -581,8 +580,7 @@ magma_cbombard_merge(
             Q_r.dval, 
             queue );
         }
-        else{
-
+        else {
             Q_pds = (Q_thet1 * Q_gamm) * (Q_thet1 * Q_gamm);
             
                 //QMR: d = eta * p + pds * d;
@@ -692,9 +690,6 @@ magma_cbombard_merge(
             info = MAGMA_DIVERGENCE;
             break;
         } 
-                
-
- 
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
         

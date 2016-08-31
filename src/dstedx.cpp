@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Raffaele Solca
        
@@ -11,7 +11,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DSTEDX computes some eigenvalues and, optionally, eigenvectors of a
@@ -125,8 +125,8 @@
        at Berkeley, USA
     Modified by Francoise Tisseur, University of Tennessee.
 
-    @ingroup magma_dsyev_comp
-    ********************************************************************/
+    @ingroup magma_stedx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dstedx(
     magma_range_t range, magma_int_t n, double vl, double vu,
@@ -223,7 +223,7 @@ magma_dstedx(
     //magma_set_lapack_numthreads(mklth);
 
 #ifdef ENABLE_DEBUG
-    //printf("  D&C is using %d threads\n", threads);
+    //printf("  D&C is using %lld threads\n", (long long) threads );
 #endif
 
     // If N is smaller than the minimum divide size (SMLSIZ+1), then

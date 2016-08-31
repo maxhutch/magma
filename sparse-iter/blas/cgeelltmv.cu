@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/blas/zgeelltmv.cu normal z -> c, Mon May  2 23:30:44 2016
+       @generated from sparse-iter/blas/zgeelltmv.cu, normal z -> c, Tue Aug 30 09:38:42 2016
 
 */
 #include "magmasparse_internal.h"
@@ -165,7 +165,7 @@ magma_cgeelltmv(
     }
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -269,5 +269,5 @@ magma_cgeelltmv_shift(
                             beta, offset, blocksize, addrows, dy );
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

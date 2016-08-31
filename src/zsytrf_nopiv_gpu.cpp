@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Ichitaro Yamazaki
        @author Stan Tomov
@@ -14,7 +14,7 @@
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZSYTRF_nopiv_gpu computes the LDLt factorization of a complex symmetric
@@ -68,8 +68,8 @@
                   positive definite, and the factorization could not be
                   completed.
     
-    @ingroup magma_zsysv_comp
-    ******************************************************************* */
+    @ingroup magma_sytrf_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zsytrf_nopiv_gpu(
     magma_uplo_t uplo, magma_int_t n,

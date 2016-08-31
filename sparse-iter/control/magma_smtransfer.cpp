@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/control/magma_zmtransfer.cpp normal z -> s, Mon May  2 23:30:53 2016
+       @generated from sparse-iter/control/magma_zmtransfer.cpp, normal z -> s, Tue Aug 30 09:38:50 2016
        @author Hartwig Anzt
 */
 #include "magmasparse_internal.h"
@@ -74,11 +74,13 @@ magma_smtransfer(
     // first case: copy matrix from host to device
     if ( src == Magma_CPU && dst == Magma_DEV ) {
         //CSR-type
-        if ( A.storage_type == Magma_CSR || A.storage_type == Magma_CUCSR
-                                        || A.storage_type == Magma_CSC
-                                        || A.storage_type == Magma_CSRD
-                                        || A.storage_type == Magma_CSRL
-                                        || A.storage_type == Magma_CSRU ) {
+        if ( A.storage_type == Magma_CSR   ||
+             A.storage_type == Magma_CUCSR ||
+             A.storage_type == Magma_CSC   ||
+             A.storage_type == Magma_CSRD  ||
+             A.storage_type == Magma_CSRL  ||
+             A.storage_type == Magma_CSRU )
+        {
             // fill in information for B
             B->storage_type = A.storage_type;
             B->memory_location = Magma_DEV;
@@ -291,11 +293,13 @@ magma_smtransfer(
     // second case: copy matrix from host to host
     else if ( src == Magma_CPU && dst == Magma_CPU ) {
         //CSR-type
-        if ( A.storage_type == Magma_CSR || A.storage_type == Magma_CUCSR
-                                        || A.storage_type == Magma_CSC
-                                        || A.storage_type == Magma_CSRD
-                                        || A.storage_type == Magma_CSRL
-                                        || A.storage_type == Magma_CSRU ) {
+        if ( A.storage_type == Magma_CSR   ||
+             A.storage_type == Magma_CUCSR ||
+             A.storage_type == Magma_CSC   ||
+             A.storage_type == Magma_CSRD  ||
+             A.storage_type == Magma_CSRL  ||
+             A.storage_type == Magma_CSRU )
+        {
             // fill in information for B
             B->storage_type = A.storage_type;
             B->memory_location = Magma_CPU;
@@ -543,11 +547,13 @@ magma_smtransfer(
     // third case: copy matrix from device to host
     else if ( src == Magma_DEV && dst == Magma_CPU ) {
         //CSR-type
-        if ( A.storage_type == Magma_CSR || A.storage_type == Magma_CUCSR
-                                        || A.storage_type == Magma_CSC
-                                        || A.storage_type == Magma_CSRD
-                                        || A.storage_type == Magma_CSRL
-                                        || A.storage_type == Magma_CSRU ) {
+        if ( A.storage_type == Magma_CSR   ||
+             A.storage_type == Magma_CUCSR ||
+             A.storage_type == Magma_CSC   ||
+             A.storage_type == Magma_CSRD  ||
+             A.storage_type == Magma_CSRL  ||
+             A.storage_type == Magma_CSRU )
+        {
             // fill in information for B
             B->storage_type = A.storage_type;
             B->memory_location = Magma_CPU;
@@ -762,11 +768,13 @@ magma_smtransfer(
     // fourth case: copy matrix from device to device
     else if ( src == Magma_DEV && dst == Magma_DEV ) {
         //CSR-type
-        if ( A.storage_type == Magma_CSR || A.storage_type == Magma_CUCSR
-                                        || A.storage_type == Magma_CSC
-                                        || A.storage_type == Magma_CSRD
-                                        || A.storage_type == Magma_CSRL
-                                        || A.storage_type == Magma_CSRU ) {
+        if ( A.storage_type == Magma_CSR   ||
+             A.storage_type == Magma_CUCSR ||
+             A.storage_type == Magma_CSC   ||
+             A.storage_type == Magma_CSRD  ||
+             A.storage_type == Magma_CSRL  ||
+             A.storage_type == Magma_CSRU )
+        {
             // fill in information for B
             B->storage_type = A.storage_type;
             B->memory_location = Magma_DEV;

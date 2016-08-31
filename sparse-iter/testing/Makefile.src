@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.2) --
+#   -- MAGMA (version 2.1.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2016
+#      @date August 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -14,7 +14,7 @@ cdir      := sparse-iter/testing
 
 # ----------
 # utility functions
-sparse_testing_zsrc += \
+sparse_testing_src += \
 	$(cdir)/testing_zblas.cpp             \
 	$(cdir)/testing_zmatrix.cpp           \
 	$(cdir)/testing_zio.cpp               \
@@ -26,7 +26,7 @@ sparse_testing_zsrc += \
 
 # ----------
 # low level LA operations
-sparse_testing_zsrc += \
+sparse_testing_src += \
 	$(cdir)/testing_zdot.cpp              \
 	$(cdir)/testing_zmdotc.cpp            \
 	$(cdir)/testing_zspmv.cpp             \
@@ -36,14 +36,15 @@ sparse_testing_zsrc += \
 
 # ----------
 # iterative solvers and preconditioners
-sparse_testing_zsrc += \
+sparse_testing_src += \
 	$(cdir)/testing_zsolver.cpp           \
 	$(cdir)/testing_zsolver_rhs.cpp           \
 	$(cdir)/testing_zpreconditioner.cpp   \
+#	$(cdir)/testing_zsolver_ufgetone.cpp	\
 
 # ----------
 # Mixed-precision solvers
-#sparse_testing_zsrc += \
+#sparse_testing_src += \
 #	$(cdir)/testing_zpcg.cpp              \
 #	$(cdir)/testing_zpbicgstab.cpp        \
 #	$(cdir)/testing_zcpbicgstab.cpp       \
@@ -57,7 +58,8 @@ sparse_testing_zsrc += \
 #	$(cdir)/testing_z_mpk_5.cpp           \
 
 # debugging
-sparse_testing_zsrc += \
+sparse_testing_src += \
+#	$(cdir)/testing_zbug.cpp              \
 #	$(cdir)/testing_zailumatrix.cpp       \
 #	$(cdir)/testing_zdynamicilu.cpp       \
 #	$(cdir)/testing_zbgmres_saak_mscale2M.cpp	\

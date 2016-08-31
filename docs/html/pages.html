@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -117,20 +116,13 @@ $(document).ready(function(){initNavTree('pages.html','');});
 <tr id="row_1_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="installing.html" target="_self">Installing MAGMA</a></td><td class="desc">First, create a file make.inc, using one of the examples as a template </td></tr>
 <tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="testing.html" target="_self">Running tests</a></td><td class="desc">The testing directory includes tests of most MAGMA functions </td></tr>
 <tr id="row_3_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="example.html" target="_self">Example</a></td><td class="desc">The example directory shows a simple, standalone example </td></tr>
-<tr id="row_4_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="routines.html" target="_self">Routine names</a></td><td class="desc">The interface for MAGMA is similar to LAPACK, to facilitate porting existing codes </td></tr>
-<tr id="row_5_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="types.html" target="_self">Data types &amp; complex numbers</a></td><td class="desc"><h2>Integers </h2>
-MAGMA uses <b>magma_int_t</b> for integers </td></tr>
-<tr id="row_6_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="variables.html" target="_self">Conventions for variables</a></td><td class="desc">Here are general guidelines for variable names; there are of course exceptions to these </td></tr>
-<tr id="row_7_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="constants.html" target="_self">Constants</a></td><td class="desc">MAGMA defines a few constant parameters, such as <code>MagmaTrans, MagmaNoTrans</code>, that are equivalent of CBLAS and LAPACK parameters </td></tr>
-<tr id="row_8_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="errors.html" target="_self">Errors</a></td><td class="desc">Driver and computational routines, and a few BLAS/auxiliary routines, currently return errors both as a return value and in the info argument </td></tr>
-<tr id="row_9_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="methodology.html" target="_self">Methodology</a></td><td class="desc"><h1>One-sided matrix factorizations </h1>
-</td></tr>
-<tr id="row_10_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="sparse-iter.html" target="_self">Sparse-Iter</a></td><td class="desc"><h1>The MAGMA Sparse-Iter Package </h1>
-The sparse-iter package recently added to the MAGMA software stack contains sparse BLAS routines as well as functions to handle the complete iterative solution process of a sparse linear system of equations </td></tr>
-<tr id="row_11_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="contributors-guide.html" target="_self">Contributor&#39;s Guide</a></td><td class="desc"><h1><a class="anchor" id="style"></a>
+<tr id="row_4_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="routines.html" target="_self">Overview</a></td><td class="desc">The interface for MAGMA is similar to LAPACK, to facilitate porting existing codes </td></tr>
+<tr id="row_5_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="sparse-iter.html" target="_self">Sparse Overview</a></td><td class="desc"><h1>The MAGMA Sparse-Iter Package </h1>
+The sparse-iter package in the MAGMA software stack contains sparse BLAS routines as well as functions to handle the complete iterative solution process of a sparse linear system of equations </td></tr>
+<tr id="row_6_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="contributors-guide.html" target="_self">Contributors&#39; Guide</a></td><td class="desc"><h1><a class="anchor" id="style"></a>
 Coding Style </h1>
 </td></tr>
-<tr id="row_12_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="deprecated.html" target="_self">Deprecated List</a></td><td class="desc"></td></tr>
+<tr id="row_7_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="deprecated.html" target="_self">Deprecated List</a></td><td class="desc"></td></tr>
 </table>
 </div><!-- directory -->
 </div><!-- contents -->
@@ -138,7 +130,7 @@ Coding Style </h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

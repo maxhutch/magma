@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_ztrsv_batched.cpp normal z -> d, Mon May  2 23:31:22 2016
+       @generated from testing/testing_ztrsv_batched.cpp, normal z -> d, Tue Aug 30 09:39:17 2016
        @author Tingxing Dong
 
 */
@@ -25,21 +25,20 @@
 
 #if defined(_OPENMP)
 #include <omp.h>
-#include "magma_threadsetting.h"
+#include "../control/magma_threadsetting.h"  // internal header
 #endif
 
 
 #define h_A(i,j,s) (h_A + (i) + (j)*lda + (s)*lda*Ak)
 
 
-//#define PRINTMAT
-
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dtrsm_batched
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, magma_perf, magma_time=0, cublas_perf=0, cublas_time=0, cpu_perf=0, cpu_time=0;
     double          magma_error, cublas_error, normx, normr, normA, work[1];
@@ -62,7 +61,7 @@ int main( int argc, char** argv)
 
     double c_neg_one = MAGMA_D_NEG_ONE;
     double alpha = MAGMA_D_ONE;
-    magma_int_t status = 0;
+    int status = 0;
     magma_int_t batchCount;
 
     magma_opts opts( MagmaOptsBatched );
@@ -89,25 +88,25 @@ int main( int argc, char** argv)
             sizeA = lda*Ak*batchCount;
             sizeB = N*batchCount;
 
-            TESTING_MALLOC_CPU( h_A,       double, sizeA  );
-            TESTING_MALLOC_CPU( h_b,       double, sizeB   );
-            TESTING_MALLOC_CPU( h_x,       double, sizeB   );
-            TESTING_MALLOC_CPU( h_blapack, double, sizeB   );
-            TESTING_MALLOC_CPU( h_bcublas, double, sizeB   );
-            TESTING_MALLOC_CPU( h_bmagma,  double, sizeB   );
-            TESTING_MALLOC_CPU( ipiv,      magma_int_t,        Ak      );
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A,       sizeA  ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_b,       sizeB   ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_x,       sizeB   ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_blapack, sizeB   ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_bcublas, sizeB   ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_bmagma,  sizeB   ));
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv,      Ak      ));
             
-            TESTING_MALLOC_DEV( d_A,       double, ldda*Ak*batchCount );
-            TESTING_MALLOC_DEV( d_b,       double, N*batchCount  );
+            TESTING_CHECK( magma_dmalloc( &d_A,       ldda*Ak*batchCount ));
+            TESTING_CHECK( magma_dmalloc( &d_b,       N*batchCount  ));
             
-            TESTING_MALLOC_DEV( d_A_array,   double*, batchCount );
-            TESTING_MALLOC_DEV( d_b_array,   double*, batchCount );
-            TESTING_MALLOC_DEV( dwork_array, double*, batchCount );
+            TESTING_CHECK( magma_malloc( (void**) &d_A_array,   batchCount * sizeof(double*) ));
+            TESTING_CHECK( magma_malloc( (void**) &d_b_array,   batchCount * sizeof(double*) ));
+            TESTING_CHECK( magma_malloc( (void**) &dwork_array, batchCount * sizeof(double*) ));
 
 
             magmaDouble_ptr dwork=NULL; // invA and work are workspace in dtrsm
             magma_int_t dwork_batchSize = N;
-            TESTING_MALLOC_DEV( dwork, double, dwork_batchSize * batchCount );
+            TESTING_CHECK( magma_dmalloc( &dwork, dwork_batchSize * batchCount ));
     
             magma_dset_pointer( dwork_array, dwork, N, 0, 0, dwork_batchSize, batchCount, opts.queue );
 
@@ -167,9 +166,9 @@ int main( int argc, char** argv)
                 cublasDtrsmBatched(
                     opts.handle, cublas_side_const(MagmaLeft), cublas_uplo_const(opts.uplo),
                     cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
-                    N, 1, &alpha,
-                    (const double**) d_A_array, ldda,
-                    d_b_array, N, batchCount);
+                    int(N), 1, &alpha,
+                    (const double**) d_A_array, int(ldda),
+                    d_b_array, int(N), int(batchCount) );
                 cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
                 cublas_perf = gflops / cublas_time;
             #else
@@ -227,8 +226,8 @@ int main( int argc, char** argv)
                 err = normr / (normA*normx);
                 
                 if ( isnan(err) || isinf(err) ) {
-                    printf("error for matrix %d cublas_error = %7.2f where normr=%7.2f normx=%7.2f and normA=%7.2f\n", 
-                            s, err, normr, normx, normA);
+                    printf("error for matrix %lld cublas_error = %7.2f where normr=%7.2f normx=%7.2f and normA=%7.2f\n", 
+                            (long long) s, err, normr, normx, normA);
                     cublas_error = err;
                     break;
                 }
@@ -247,8 +246,8 @@ int main( int argc, char** argv)
                 err = normr / (normA*normx);
 
                 if ( isnan(err) || isinf(err) ) {
-                    printf("error for matrix %d magma_error = %7.2f where normr=%7.2f normx=%7.2f and normA=%7.2f\n", 
-                            s, err, normr, normx, normA);
+                    printf("error for matrix %lld magma_error = %7.2f where normr=%7.2f normx=%7.2f and normA=%7.2f\n", 
+                            (long long) s, err, normr, normx, normA);
                     magma_error = err;
                     break;
                 }
@@ -258,8 +257,8 @@ int main( int argc, char** argv)
             status += ! okay;
 
             if ( opts.lapack ) {
-                printf("%10d %5d    %7.2f (%7.2f)     %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %s\n",
-                        (int)batchCount, (int) N,
+                printf("%10lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %s\n",
+                        (long long) batchCount, (long long) N,
                         magma_perf,  1000.*magma_time,
                         cublas_perf, 1000.*cublas_time,
                         cpu_perf,    1000.*cpu_time,
@@ -267,29 +266,29 @@ int main( int argc, char** argv)
                         (okay ? "ok" : "failed"));
             }
             else {
-                printf("%10d %5d    %7.2f (%7.2f)     %7.2f (%7.2f)     ---   (  ---  )   %8.2e   %8.2e   %s\n",
-                        (int)batchCount, (int) N,
+                printf("%10lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)     ---   (  ---  )   %8.2e   %8.2e   %s\n",
+                        (long long) batchCount, (long long) N,
                         magma_perf,  1000.*magma_time,
                         cublas_perf, 1000.*cublas_time,
                         magma_error, cublas_error,
                         (okay ? "ok" : "failed"));
             }
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_b );
-            TESTING_FREE_CPU( h_x );
-            TESTING_FREE_CPU( h_blapack );
-            TESTING_FREE_CPU( h_bcublas );
-            TESTING_FREE_CPU( h_bmagma  );
-            TESTING_FREE_CPU( ipiv );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_b );
+            magma_free_cpu( h_x );
+            magma_free_cpu( h_blapack );
+            magma_free_cpu( h_bcublas );
+            magma_free_cpu( h_bmagma  );
+            magma_free_cpu( ipiv );
             
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_b );
-            TESTING_FREE_DEV( d_A_array );
-            TESTING_FREE_DEV( d_b_array );
+            magma_free( d_A );
+            magma_free( d_b );
+            magma_free( d_A_array );
+            magma_free( d_b_array );
 
-            TESTING_FREE_DEV( dwork );
-            TESTING_FREE_DEV( dwork_array );
+            magma_free( dwork );
+            magma_free( dwork_array );
             
             fflush( stdout );
         }
@@ -299,6 +298,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Raffaele Solca
-       @generated from src/dlaex3_m.cpp normal d -> s, Mon May  2 23:30:16 2016
+       @generated from src/dlaex3_m.cpp, normal d -> s, Tue Aug 30 09:38:16 2016
 */
 
 #ifdef _OPENMP
@@ -27,7 +27,7 @@ magma_int_t magma_get_slaex3_m_nb() { return 1024; }
 }  // end extern "C"
 #endif
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLAEX3 finds the roots of the secular equation, as defined by the
@@ -185,8 +185,8 @@ magma_int_t magma_get_slaex3_m_nb() { return 1024; }
     at Berkeley, USA
     Modified by Francoise Tisseur, University of Tennessee.
 
-    @ingroup magma_ssyev_aux
-    ********************************************************************/
+    @ingroup magma_laex3
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slaex3_m(
     magma_int_t ngpu,
@@ -336,9 +336,9 @@ magma_slaex3_m(
     //
 
 #ifdef _OPENMP
-    /////////////////////////////////////////////////////////////////////////////////
-    //openmp implementation
-    /////////////////////////////////////////////////////////////////////////////////
+    // -------------------------------------------------------------------------
+    // openmp implementation
+    // -------------------------------------------------------------------------
     magma_timer_t time=0;
     timer_start( time );
 
@@ -459,9 +459,9 @@ magma_slaex3_m(
     timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
 
 #else
-    /////////////////////////////////////////////////////////////////////////////////
+    // -------------------------------------------------------------------------
     // Non openmp implementation
-    /////////////////////////////////////////////////////////////////////////////////
+    // -------------------------------------------------------------------------
     magma_timer_t time=0;
     timer_start( time );
 
@@ -631,7 +631,7 @@ magma_slaex3_m(
                         magma_sgemm( MagmaNoTrans, MagmaNoTrans, ni_loc[dev+1], ib, n23, d_one, dQ2(dev+1), n2_loc,
                                      dS(dev+1, ind), n23, d_zero, dQ(dev+1, ind), n2_loc, queues[dev+1][ind] );
                         #ifdef CHECK_CPU
-                        printf( "norm Q %d: %f\n", dev+1, cpu_gpu_sdiff(ni_loc[dev+1], ib, hQ(dev+1, ind), n2_loc, dQ(dev+1, ind), n2_loc) );
+                        printf( "norm Q %lld: %f\n", (long long) dev+1, cpu_gpu_sdiff(ni_loc[dev+1], ib, hQ(dev+1, ind), n2_loc, dQ(dev+1, ind), n2_loc) );
                         #endif
                     }
                     if (n12 != 0) {
@@ -643,7 +643,7 @@ magma_slaex3_m(
                         magma_sgemm( MagmaNoTrans, MagmaNoTrans, ni_loc[dev], ib, n12, d_one, dQ2(dev), n1_loc,
                                      dS(dev, ind), n12, d_zero, dQ(dev, ind), n1_loc, queues[dev][ind] );
                         #ifdef CHECK_CPU
-                        printf( "norm Q %d: %f\n", dev, cpu_gpu_sdiff(ni_loc[dev], ib, hQ(dev, ind), n1_loc, dQ(dev, ind), n1_loc) );
+                        printf( "norm Q %lld: %f\n", (long long) dev, cpu_gpu_sdiff(ni_loc[dev], ib, hQ(dev, ind), n1_loc, dQ(dev, ind), n1_loc) );
                         #endif
                     }
                 }

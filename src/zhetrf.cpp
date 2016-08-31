@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     =======
  
@@ -110,8 +110,8 @@
     If s = 2, the lower triangle of D(k) overwrites A(k,k), A(k+1,k),
     and A(k+1,k+1), and v overwrites A(k+2:n,k:k+1).
  
-    @ingroup magma_zhesv_comp
-    ********************************************************************/
+    @ingroup magma_hetrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhetrf(
     magma_uplo_t uplo, magma_int_t n,

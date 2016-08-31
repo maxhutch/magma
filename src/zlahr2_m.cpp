@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -12,7 +12,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLAHR2 reduces the first NB columns of a complex general n-BY-(n-k+1)
@@ -122,8 +122,8 @@
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
 
-    @ingroup magma_zgeev_aux
-    ********************************************************************/
+    @ingroup magma_lahr2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zlahr2_m(
     magma_int_t n, magma_int_t k, magma_int_t nb,
@@ -136,11 +136,11 @@ magma_zlahr2_m(
     #define  A(  i, j ) ( A + (i) + (j)*lda)
     #define  Y(  i, j ) ( Y + (i) + (j)*ldy)
     #define  T(  i, j ) ( T + (i) + (j)*ldt)
-    #define dA(  d, i, j ) (data->A [d] + (i) + (j)*ldda)
-    #define dTi( d       ) (data->Ti[d])
-    #define dV(  d, i, j ) (data->V [d] + (i) + (j)*ldv )
-    #define dVd( d, i, j ) (data->Vd[d] + (i) + (j)*ldvd)
-    #define dY(  d, i, j ) (data->Y [d] + (i) + (j)*ldda)
+    #define dA(  dev, i, j ) (data->dA [dev] + (i) + (j)*ldda)
+    #define dTi( dev       ) (data->dTi[dev])
+    #define dV(  dev, i, j ) (data->dV [dev] + (i) + (j)*ldv )
+    #define dVd( dev, i, j ) (data->dVd[dev] + (i) + (j)*ldvd)
+    #define dY(  dev, i, j ) (data->dY [dev] + (i) + (j)*ldda)
 
     magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
@@ -154,7 +154,7 @@ magma_zlahr2_m(
     
     magma_int_t ione = 1;
     
-    magma_int_t d, dki1, dn, nblocks, gblock, lblock, lgid;
+    magma_int_t dev, dki1, dn, nblocks, gblock, lblock, lgid;
     magma_int_t n_k_i_1, n_k;
     magmaDoubleComplex scale;
 
@@ -192,9 +192,9 @@ magma_zlahr2_m(
     magma_getdevice( &orig_dev );
     
     // zero out current top block of V on all GPUs
-    for( d = 0; d < ngpu; ++d ) {
-        magma_setdevice( d );
-        magmablas_zlaset( MagmaFull, nb, nb, c_zero, c_zero, dV(d,k,0), ldv, data->queues[d] );
+    for( dev = 0; dev < ngpu; ++dev ) {
+        magma_setdevice( dev );
+        magmablas_zlaset( MagmaFull, nb, nb, c_zero, c_zero, dV(dev,k,0), ldv, data->queues[dev] );
     }
     
     // set all Y=0
@@ -265,15 +265,15 @@ magma_zlahr2_m(
         ei = *A(k+i+1,i);
         *A(k+i+1,i) = c_one;
 
-        // compute yi = A vi = sum_g A{d} vi{d}
+        // compute yi = A vi = sum_g A{dev} vi{dev}
         nblocks = (n-1) / nb / ngpu + 1;
-        for( d = 0; d < ngpu; ++d ) {
-            magma_setdevice( d );
+        for( dev = 0; dev < ngpu; ++dev ) {
+            magma_setdevice( dev );
             
             // dV(k+i+1:n-1, i) = VA(k+i:n, i)
             magma_zsetvector_async( n_k_i_1,
                                     A(k+i+1,i), 1,
-                                    dV(d, k+i+1, i), 1, data->queues[d] );
+                                    dV(dev, k+i+1, i), 1, data->queues[dev] );
             
             // copy column of dV -> dVd, using block cyclic distribution.
             // This assumes V and Vd have been padded so that
@@ -281,16 +281,16 @@ magma_zlahr2_m(
             gblock = k / nb;
             lblock = gblock / ngpu;
             lgid   = gblock % ngpu;
-            if ( d < lgid ) {
+            if ( dev < lgid ) {
                 lblock += 1;
             }
             // treat V as (nb*ngpu) x nblock matrix, and Vd as nb x nblock matrix
             magmablas_zlacpy( MagmaFull, nb, nblocks-lblock,
-                              dV (d, d*nb + lblock*nb*ngpu, i), nb*ngpu,
-                              dVd(d, 0    + lblock*nb,      i), nb, data->queues[d] );
+                              dV (dev, dev*nb + lblock*nb*ngpu, i), nb*ngpu,
+                              dVd(dev, 0      + lblock*nb,      i), nb, data->queues[dev] );
             
             // convert global indices (k) to local indices (dk)
-            magma_indices_1D_bcyclic( nb, ngpu, d, k+i+1, n, &dki1, &dn );
+            magma_indices_1D_bcyclic( nb, ngpu, dev, k+i+1, n, &dki1, &dn );
             
             // dY(k:n, i) = dA(k:n, k+i+1:n) * dV(k+i+1:n, i)
             // skip if matrix is empty
@@ -298,15 +298,15 @@ magma_zlahr2_m(
             // which are summed in separate loop below
             if ( dn-dki1 > 0 ) {
                 magma_zgemv( MagmaNoTrans, n-k, dn-dki1,
-                             c_one,  dA (d, k,    dki1), ldda,
-                                     dVd(d, dki1,    i), 1,
-                             c_zero, dY (d, k,       i), 1, data->queues[d] );
+                             c_one,  dA (dev, k,    dki1), ldda,
+                                     dVd(dev, dki1,    i), 1,
+                             c_zero, dY (dev, k,       i), 1, data->queues[dev] );
                 
-                // copy vector to host, storing in column nb+d of Y
+                // copy vector to host, storing in column nb+dev of Y
                 // as temporary space (Y has >= nb+ngpu columns)
                 magma_zgetvector_async( n-k,
-                                        dY(d, k, i), 1,
-                                        Y(k, nb+d),  1, data->queues[d] );
+                                        dY(dev, k, i), 1,
+                                        Y(k, nb+dev),  1, data->queues[dev] );
             }
         }
         
@@ -357,26 +357,26 @@ magma_zlahr2_m(
                            &c_one,     A(k,i1), &ione );
         }
         
-        // yi = sum_g yi{d}
-        for( d = 0; d < ngpu; ++d ) {
-            magma_setdevice( d );
-            magma_queue_sync( data->queues[d] );
-            magma_indices_1D_bcyclic( nb, ngpu, d, k+i+1, n, &dki1, &dn );
+        // yi = sum_g yi{dev}
+        for( dev = 0; dev < ngpu; ++dev ) {
+            magma_setdevice( dev );
+            magma_queue_sync( data->queues[dev] );
+            magma_indices_1D_bcyclic( nb, ngpu, dev, k+i+1, n, &dki1, &dn );
             if ( dn-dki1 > 0 ) {
-                // yi = yi + yi{d}
-                blasf77_zaxpy( &n_k, &c_one, Y(k,nb+d), &ione, Y(k,i), &ione );
+                // yi = yi + yi{dev}
+                blasf77_zaxpy( &n_k, &c_one, Y(k,nb+dev), &ione, Y(k,i), &ione );
             }
         }
     }
     // Restore diagonal element
     *A(k+nb,nb-1) = ei;
     
-    // compute Y = Am V = sum_g Am{d} V{d} --- top part, Y(0:k-1,:)
-    for( d = 0; d < ngpu; ++d ) {
-        magma_setdevice( d );
+    // compute Y = Am V = sum_g Am{dev} V{dev} --- top part, Y(0:k-1,:)
+    for( dev = 0; dev < ngpu; ++dev ) {
+        magma_setdevice( dev );
         
         // convert global indices (k) to local indices (dk)
-        magma_indices_1D_bcyclic( nb, ngpu, d, k+1, n, &dki1, &dn );
+        magma_indices_1D_bcyclic( nb, ngpu, dev, k+1, n, &dki1, &dn );
         
         // dY(0:k, :) = dA(0:k, k+i+1:n-1) * dV(k+i+1:n-1, :)
         // skip if matrix is empty
@@ -384,36 +384,36 @@ magma_zlahr2_m(
         // which are summed in separate loop below
         if ( dn-dki1 > 0 ) {
             magma_zgemm( MagmaNoTrans, MagmaNoTrans, k, nb, dn-dki1,
-                         c_one,  dA (d, 0,    dki1), ldda,
-                                 dVd(d, dki1,    0), ldvd,
-                         c_zero, dY (d, 0,       0), ldda, data->queues[d] );
+                         c_one,  dA (dev, 0,    dki1), ldda,
+                                 dVd(dev, dki1,    0), ldvd,
+                         c_zero, dY (dev, 0,       0), ldda, data->queues[dev] );
             
-            // copy result to host, storing in columns [nb + nb*d : nb + nb*(d+1)] of Y
+            // copy result to host, storing in columns [nb + nb*dev : nb + nb*(dev+1)] of Y
             // as temporary space (Y has nb + nb*ngpu columns)
             magma_zgetmatrix_async( k, nb,
-                                    dY(d, 0, 0),  ldda,
-                                    Y(0,nb+nb*d), ldy, data->queues[d] );
+                                    dY(dev, 0, 0),  ldda,
+                                    Y(0,nb+nb*dev), ldy, data->queues[dev] );
         }
     }
     
-    // Y = sum_g Y{d}
-    for( d = 0; d < ngpu; ++d ) {
-        magma_setdevice( d );
-        magma_queue_sync( 0 );
-        magma_indices_1D_bcyclic( nb, ngpu, d, k+1, n, &dki1, &dn );
+    // Y = sum_g Y{dev}
+    for( dev = 0; dev < ngpu; ++dev ) {
+        magma_setdevice( dev );
+        magma_queue_sync( data->queues[dev] );
+        magma_indices_1D_bcyclic( nb, ngpu, dev, k+1, n, &dki1, &dn );
         if ( dn-dki1 > 0 ) {
             // Y = Y + Am V
             for( i = 0; i < nb; ++i ) {
-                blasf77_zaxpy( &k, &c_one, Y(0,nb+nb*d+i), &ione, Y(0,i), &ione );
+                blasf77_zaxpy( &k, &c_one, Y(0,nb+nb*dev+i), &ione, Y(0,i), &ione );
             }
         }
     }
     
     // copy Y and T matrices to GPUs
-    for( d = 0; d < ngpu; ++d ) {
-        magma_setdevice( d );
-        magma_zsetmatrix_async( n, nb, Y, ldy, dY(d, 0, 0), ldda, data->queues[d] );
-        magma_zsetmatrix_async( nb, nb, T, nb, dTi(d),      nb,   data->queues[d] );
+    for( dev = 0; dev < ngpu; ++dev ) {
+        magma_setdevice( dev );
+        magma_zsetmatrix_async( n, nb, Y, ldy, dY(dev, 0, 0), ldda, data->queues[dev] );
+        magma_zsetmatrix_async( nb, nb, T, nb, dTi(dev),      nb,   data->queues[dev] );
     }
 
     magma_setdevice( orig_dev );

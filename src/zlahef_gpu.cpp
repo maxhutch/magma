@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 */
@@ -12,7 +12,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     =======
 
@@ -126,8 +126,8 @@
                  has been completed, but the block diagonal matrix D is
                  exactly singular.
   
-    @ingroup magma_zhesv_aux
-    ********************************************************************/
+    @ingroup magma_lahef
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zlahef_gpu(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magma_int_t *kb,
@@ -445,7 +445,7 @@ magma_zlahef_gpu(
         for (k = 0; k < min(nb-1,n); k += kstep) {
             /* Copy column K of A to column K of W and update it */
 
-            /* -------------------------------------------------------------- */
+            /* -------------------------------------------- */
             trace_gpu_start( 0, 0, "copy", "copyAk" );
             magma_zcopy( n-k, &dA( k, k ), 1, &dW( k, k ), 1, queues[0] );
 
@@ -454,7 +454,7 @@ magma_zlahef_gpu(
             magma_dsetvector_async( 1, &d_zero, 1, ((magmaDouble_ptr)&dW( k, k ))+1, 1, queues[0] );
             #endif
             trace_gpu_end( 0, 0 );
-            /* -------------------------------------------------------------- */
+            /* -------------------------------------------- */
 
             trace_gpu_start( 0, 0, "gemv", "gemv" );
             magma_zgemv( MagmaNoTrans, n-k, k,
@@ -579,7 +579,7 @@ magma_zlahef_gpu(
                 if ( kp != kk ) {
                     /* Copy non-updated column kk to column kp */
 
-                    /* ------------------------------------------------------------------ */
+                    /* -------------------------------------------- */
                     trace_gpu_start( 0, 0, "copy", "copy" );
                     #ifdef COMPLEX
                     magmablas_zlacpy_conj( kp-kk, &dA( kk, kk ), 1, &dA( kp, kk ), ldda, queues[0] );
@@ -591,7 +591,7 @@ magma_zlahef_gpu(
                     magma_dsetvector_async( 1, &d_zero, 1, ((magmaDouble_ptr)&dA( kp, kp ))+1, 1, queues[0] );
                     #endif
                     trace_gpu_end( 0, 0 );
-                    /* ------------------------------------------------------------------ */
+                    /* -------------------------------------------- */
 
                     /* Interchange rows kk and kp in first kk columns of A and W */
 
@@ -671,13 +671,13 @@ magma_zlahef_gpu(
                 for (magma_int_t jj = j; jj < j + jb; jj++) {
                     magma_int_t jnb = j + jb - jj;
     
-                    /* -------------------------------------------------------- */
+                    /* -------------------------------------------- */
                     magma_zgemv( MagmaNoTrans, jnb, k,
                                  c_neg_one, &dA( jj, 0 ),  ldda,
                                             &dW( jj, 0 ),  lddw,
                                  c_one,     &dA( jj, jj ), ione,
                                  queues[0] );
-                    /* -------------------------------------------------------- */
+                    /* -------------------------------------------- */
                 }
 
                 /* Update the rectangular subdiagonal block */

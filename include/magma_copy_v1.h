@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set  copies host   to device
 // get  copies device to host
@@ -48,7 +48,7 @@ void magma_copyvector_internal(
     const char* func, const char* file, int line );
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 
 #define magma_setmatrix(           m, n, elemSize, hA_src, lda, dB_dst, lddb ) \
@@ -79,7 +79,7 @@ void magma_copymatrix_internal(
     const char* func, const char* file, int line );
 
 
-// ========================================
+// =============================================================================
 // copying vectors - version for magma_int_t
 
 #define magma_isetvector(           n, hx_src, incx, dy_dst, incy ) \
@@ -113,7 +113,7 @@ static inline void magma_icopyvector_internal(
 { magma_copyvector_internal( n, sizeof(magma_int_t), dx_src, incx, dy_dst, incy, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices - version for magma_int_t
 
 #define magma_isetmatrix(           m, n, hA_src, lda, dB_dst, lddb ) \
@@ -147,7 +147,7 @@ static inline void magma_icopymatrix_internal(
 { magma_copymatrix_internal( m, n, sizeof(magma_int_t), dA_src, ldda, dB_dst, lddb, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // copying vectors - version for magma_index_t
 
 #define magma_index_setvector(           n, hx_src, incx, dy_dst, incy ) \
@@ -181,7 +181,7 @@ static inline void magma_index_copyvector_internal(
 { magma_copyvector_internal( n, sizeof(magma_index_t), dx_src, incx, dy_dst, incy, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices - version for magma_index_t
 
 #define magma_index_setmatrix(           m, n, hA_src, lda, dB_dst, lddb ) \

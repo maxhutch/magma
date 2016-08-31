@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Stan Tomov
 
-       @generated from magmablas/zgemv_conj.cu normal z -> c, Mon May  2 23:30:30 2016
+       @generated from magmablas/zgemv_conj.cu, normal z -> c, Tue Aug 30 09:38:28 2016
 */
 #include "magma_internal.h"
 #include "commonblas_c.h"
@@ -41,7 +41,7 @@ cgemv_conj_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEMV_CONJ performs the matrix-vector operation
@@ -95,8 +95,8 @@ cgemv_conj_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cblas2
-    ********************************************************************/
+    @ingroup magma_gemv
+*******************************************************************************/
 extern "C" void
 magmablas_cgemv_conj_q(
     magma_int_t m, magma_int_t n, magmaFloatComplex alpha,

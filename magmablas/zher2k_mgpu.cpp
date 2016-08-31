@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -11,7 +11,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHER2K performs one of the Hermitian rank 2k operations
@@ -161,8 +161,8 @@
     nqueue   INTEGER.
              Number of queues to use on each device
 
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_her2k
+*******************************************************************************/
 extern "C"
 void magmablas_zher2k_mgpu2(
     magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,

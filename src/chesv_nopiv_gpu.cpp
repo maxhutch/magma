@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        @author Adrien REMY
 
-       @generated from src/zhesv_nopiv_gpu.cpp normal z -> c, Mon May  2 23:30:13 2016
+       @generated from src/zhesv_nopiv_gpu.cpp, normal z -> c, Tue Aug 30 09:38:13 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHESV solves a system of linear equations
@@ -67,8 +67,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_chesv_driver
-    ********************************************************************/
+    @ingroup magma_hesv_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chesv_nopiv_gpu(
     magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs,

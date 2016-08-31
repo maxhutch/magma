@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Mark Gates
        @author Azzam Haidar
@@ -16,7 +16,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZTREVC3 computes some or all of the right and/or left eigenvectors of
@@ -151,8 +151,8 @@
     magnitude has magnitude 1; here the magnitude of a complex number
     (x,y) is taken to be |x| + |y|.
 
-    @ingroup magma_zgeev_comp
-    ********************************************************************/
+    @ingroup magma_trevc
+*******************************************************************************/
 extern "C"
 magma_int_t magma_ztrevc3(
     magma_side_t side, magma_vec_t howmany,

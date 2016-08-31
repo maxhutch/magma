@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 */
@@ -115,10 +115,10 @@ float test( magma_int_t m, magma_int_t n )
     const magma_int_t ione = 1;
     magma_int_t lda = max(m,n);
     
-    TESTING_MALLOC_CPU( &sA,    float,  lda*n );
-    TESTING_MALLOC_CPU( &dA,    double, lda*n );
-    TESTING_MALLOC_CPU( &swork, float,  m     );
-    TESTING_MALLOC_CPU( &dwork, double, m     );
+    TESTING_CHECK( magma_smalloc_cpu( &&sA,    lda*n ));
+    TESTING_CHECK( magma_dmalloc_cpu( &&dA,    lda*n ));
+    TESTING_CHECK( magma_smalloc_cpu( &&swork, m     ));
+    TESTING_CHECK( magma_dmalloc_cpu( &&dwork, m     ));
     
     for( magma_int_t j = 0; j < n; ++j ) {
         for( magma_int_t i = 0; i < lda; ++i ) {
@@ -129,7 +129,7 @@ float test( magma_int_t m, magma_int_t n )
     }
     
     double error;
-    magma_int_t status;
+    int status = 0;
     
     // can repeat multiple times, but shows same results every time
     status = 0;
@@ -138,8 +138,8 @@ float test( magma_int_t m, magma_int_t n )
         dnorm_one = blasf77_ddot(  &m, dA, &ione, dA, &ione );
         snorm_fro = blasf77_snrm2( &m, sA, &ione );
         dnorm_fro = blasf77_dnrm2( &m, dA, &ione );
-        printf( "m %d, sdot %12.8f, snrm2 %12.8f\n", (int) m, snorm_one, snorm_fro );
-        printf( "m %d, ddot %12.8f, dnrm2 %12.8f\n", (int) m, dnorm_one, dnorm_fro );
+        printf( "m %lld, sdot %12.8f, snrm2 %12.8f\n", (long long) m, snorm_one, snorm_fro );
+        printf( "m %lld, ddot %12.8f, dnrm2 %12.8f\n", (long long) m, dnorm_one, dnorm_fro );
         error = fabs(snorm_one - dnorm_one) / dnorm_one;
         status |= ! (error < 1e-6);
     }
@@ -163,11 +163,11 @@ float test( magma_int_t m, magma_int_t n )
         dnorm_max = lapackf77_dlange( "max", &m, &n, dA, &lda, dwork );
         dnorm_fro = lapackf77_dlange( "fro", &m, &n, dA, &lda, dwork );
         
-        printf( "m %d, n %d, slange norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
-                (int) m, (int) n, snorm_one, snorm_inf, snorm_max, snorm_fro );
+        printf( "m %lld, n %lld, slange norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
+                (long long) m, (long long) n, snorm_one, snorm_inf, snorm_max, snorm_fro );
         
-        printf( "m %d, n %d, dlange norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
-                (int) m, (int) n, dnorm_one, dnorm_inf, dnorm_max, dnorm_fro );
+        printf( "m %lld, n %lld, dlange norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
+                (long long) m, (long long) n, dnorm_one, dnorm_inf, dnorm_max, dnorm_fro );
         error = fabs(snorm_one - dnorm_one) / dnorm_one;
         status |= ! (error < 1e-6);
     }
@@ -191,11 +191,11 @@ float test( magma_int_t m, magma_int_t n )
         dnorm_max = lapackf77_dlansy( "max", "up", &n, dA, &lda, dwork );
         dnorm_fro = lapackf77_dlansy( "fro", "up", &n, dA, &lda, dwork );
         
-        printf( "m %d, n %d, slansy norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
-                (int) m, (int) n, snorm_one, snorm_inf, snorm_max, snorm_fro );
+        printf( "m %lld, n %lld, slansy norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
+                (long long) m, (long long) n, snorm_one, snorm_inf, snorm_max, snorm_fro );
         
-        printf( "m %d, n %d, dlansy norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
-                (int) m, (int) n, dnorm_one, dnorm_inf, dnorm_max, dnorm_fro );
+        printf( "m %lld, n %lld, dlansy norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
+                (long long) m, (long long) n, dnorm_one, dnorm_inf, dnorm_max, dnorm_fro );
         error = fabs(snorm_one - dnorm_one) / dnorm_one;
         status |= ! (error < 1e-6);
     }
@@ -207,10 +207,10 @@ float test( magma_int_t m, magma_int_t n )
     }
     printf( "\n" );
     
-    TESTING_FREE_CPU( sA );
-    TESTING_FREE_CPU( dA );
-    TESTING_FREE_CPU( swork );
-    TESTING_FREE_CPU( dwork );
+    magma_free_cpu( sA );
+    magma_free_cpu( dA );
+    magma_free_cpu( swork );
+    magma_free_cpu( dwork );
     
     return 1.125;
 }

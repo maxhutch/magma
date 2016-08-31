@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -231,9 +231,7 @@ magma_zfgmres(
         s[0] = beta;
 
         i = -1;
-        do
-        {
-
+        do {
             i++;
             
             // M.apply(n, 1, V(i), n, W(i), n);
@@ -280,6 +278,7 @@ magma_zfgmres(
                 }
             }
             if (rel_resid <= solver_par->rtol || betanom <= solver_par->atol ){
+                info = MAGMA_SUCCESS;
                 break;
             }
         }

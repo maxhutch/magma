@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zher2k_mgpu.cpp normal z -> s, Mon May  2 23:30:39 2016
+       @generated from magmablas/zher2k_mgpu.cpp, normal z -> s, Tue Aug 30 09:38:37 2016
        @author Mark Gates
        @author Azzam Haidar 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SSYR2K performs one of the symmetric rank 2k operations
@@ -161,8 +161,8 @@
     nqueue   INTEGER.
              Number of queues to use on each device
 
-    @ingroup magma_sblas3
-    ********************************************************************/
+    @ingroup magma_her2k
+*******************************************************************************/
 extern "C"
 void magmablas_ssyr2k_mgpu2(
     magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,

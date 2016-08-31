@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEQLF computes a QL factorization of a COMPLEX_16 M-by-N matrix A:
@@ -87,8 +87,8 @@
     v(m-k+i+1:m) = 0 and v(m-k+i) = 1; v(1:m-k+i-1) is stored on exit in
     A(1:m-k+i-1,n-k+i), and tau in TAU(i).
 
-    @ingroup magma_zgeqlf_comp
-    ********************************************************************/
+    @ingroup magma_geqlf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgeqlf(
     magma_int_t m, magma_int_t n,

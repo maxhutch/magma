@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
- 
+       @date August 2016
+
        @author Mark Gates
 */
 
@@ -55,7 +55,7 @@ extern std::map< void*, size_t > g_pointers_pin;
 #endif
 
 
-// ------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // constants
 
 // bit flags
@@ -68,7 +68,7 @@ enum {
 };
 
 
-// ------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // globals
 #if __cplusplus >= 201103  // C++11 standard
     static std::mutex g_mutex;
@@ -129,7 +129,7 @@ static int g_init = 0;
 #endif // MAGMA_NO_V1
 
 
-// --------------------
+// -----------------------------------------------------------------------------
 // subset of the CUDA device properties, set by magma_init()
 struct magma_device_info
 {
@@ -141,24 +141,29 @@ static int g_magma_devices_cnt = 0;
 static struct magma_device_info* g_magma_devices = NULL;
 
 
-// ========================================
+// =============================================================================
 // initialization
 
-/**
+/***************************************************************************//**
     Initializes the MAGMA library.
     Caches information about available CUDA devices.
-    When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init.
-    When setting CUDA device flags, call cudaSetDeviceFlags before calling magma_init.
-    
+
     Every magma_init call must be paired with a magma_finalize call.
     Only one thread needs to call magma_init and magma_finalize,
     but every thread may call it. If n threads call magma_init,
     the n-th call to magma_finalize will release resources.
-    
+
+    When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init.
+    When setting CUDA device flags, call cudaSetDeviceFlags before calling magma_init.
+
+    @retval MAGMA_SUCCESS
+    @retval MAGMA_ERR_CUDA
+    @retval MAGMA_ERR_HOST_ALLOC
+
     @see magma_finalize
-    
+
     @ingroup magma_init
-*/
+*******************************************************************************/
 extern "C"
 magma_int_t magma_init()
 {
@@ -200,40 +205,26 @@ magma_int_t magma_init()
             }
             
             #ifndef MAGMA_NO_V1
-            #ifdef HAVE_PTHREAD_KEY
-                // create thread-specific key
-                // currently, this is needed only for MAGMA v1 compatability
-                // see magma_init, magmablas(Set|Get)KernelStream, magmaGetQueue
-                info = pthread_key_create( &g_magma_queue_key, NULL );
-                if ( info != 0 ) {
-                    info = MAGMA_ERR_UNKNOWN;
+                #ifdef HAVE_PTHREAD_KEY
+                    // create thread-specific key
+                    // currently, this is needed only for MAGMA v1 compatability
+                    // see magma_init, magmablas(Set|Get)KernelStream, magmaGetQueue
+                    info = pthread_key_create( &g_magma_queue_key, NULL );
+                    if ( info != 0 ) {
+                        info = MAGMA_ERR_UNKNOWN;
+                        goto cleanup;
+                    }
+                #endif
+                
+                // ----- queues with NULL streams (for backwards compatability with MAGMA 1.x)
+                // allocate array of queues with NULL stream
+                size = max( 1, g_magma_devices_cnt ) * sizeof(magma_queue_t);
+                magma_malloc_cpu( (void**) &g_null_queues, size );
+                if ( g_null_queues == NULL ) {
+                    info = MAGMA_ERR_HOST_ALLOC;
                     goto cleanup;
                 }
-            #endif
-            
-            // ----- queues with NULL streams (for backwards compatability with MAGMA 1.x)
-            // allocate array of queues with NULL stream
-            size = max( 1, g_magma_devices_cnt ) * sizeof(magma_queue_t);
-            magma_malloc_cpu( (void**) &g_null_queues, size );
-            if ( g_null_queues == NULL ) {
-                info = MAGMA_ERR_HOST_ALLOC;
-                goto cleanup;
-            }
-            memset( g_null_queues, 0, size );
-            
-            // create queue with NULL stream on each device
-            if ( g_magma_devices_cnt > 0 ) {
-                magma_device_t cdev;
-                magma_getdevice( &cdev );
-                
-                for( int dev=0; dev < g_magma_devices_cnt; ++dev ) {
-                    magma_queue_create_from_cuda( dev, NULL, NULL, NULL, &g_null_queues[dev] );
-                }
-                
-                // set default queue on current device
-                magma_setdevice( cdev );
-                magmablasSetKernelStream( g_null_queues[cdev] );
-            }
+                memset( g_null_queues, 0, size );
             #endif // MAGMA_NO_V1
         }
 cleanup:
@@ -245,28 +236,12 @@ cleanup:
 }
 
 
-// --------------------
-#ifdef DEBUG_MEMORY
-extern "C"
-void magma_warn_leaks( const std::map< void*, size_t >& pointers, const char* type )
-{
-    if ( pointers.size() > 0 ) {
-        fprintf( stderr, "Warning: MAGMA detected memory leak of %ld %s pointers:\n",
-                 pointers.size(), type );
-        std::map< void*, size_t >::const_iterator iter;
-        for( iter = pointers.begin(); iter != pointers.end(); ++iter ) {
-            fprintf( stderr, "    pointer %p, size %lu\n", iter->first, iter->second );
-        }
-    }
-}
-#endif
-
-
-// --------------------
-/**
+/***************************************************************************//**
     Frees information used by the MAGMA library.
+    @see magma_init
+
     @ingroup magma_init
-*/
+*******************************************************************************/
 extern "C"
 magma_int_t magma_finalize()
 {
@@ -315,19 +290,56 @@ magma_int_t magma_finalize()
     return info;
 }
 
-// --------------------
-/**
-    Print the available GPU devices. Used in testing.
-    @ingroup magma_init
-*/
+
+// =============================================================================
+// testing and debugging support
+
+#ifdef DEBUG_MEMORY
+/***************************************************************************//**
+    If DEBUG_MEMORY is defined at compile time, prints warnings when
+    magma_finalize() is called for any GPU device, CPU, or CPU pinned
+    allocations that were not freed.
+
+    @param[in]
+    pointers    Hash table mapping allocated pointers to size.
+
+    @param[in]
+    type        String describing type of pointers (GPU, CPU, etc.)
+
+    @ingroup magma_testing
+*******************************************************************************/
+extern "C"
+void magma_warn_leaks( const std::map< void*, size_t >& pointers, const char* type )
+{
+    if ( pointers.size() > 0 ) {
+        fprintf( stderr, "Warning: MAGMA detected memory leak of %lld %s pointers:\n",
+                 pointers.size(), type );
+        std::map< void*, size_t >::const_iterator iter;
+        for( iter = pointers.begin(); iter != pointers.end(); ++iter ) {
+            fprintf( stderr, "    pointer %p, size %lu\n", iter->first, iter->second );
+        }
+    }
+}
+#endif
+
+
+/***************************************************************************//**
+    Print MAGMA version, CUDA version, LAPACK/BLAS library version,
+    available GPU devices, number of threads, date, etc.
+    Used in testing.
+    @ingroup magma_testing
+*******************************************************************************/
 extern "C"
 void magma_print_environment()
 {
     magma_int_t major, minor, micro;
     magma_version( &major, &minor, &micro );
-    printf( "%% MAGMA %d.%d.%d %s compiled for CUDA capability >= %.1f, %d-bit magma_int_t, %d-bit pointer.\n",
-            (int) major, (int) minor, (int) micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100.,
-            (int) (8*sizeof(magma_int_t)), (int) (8*sizeof(void*)) );
+    printf( "%% MAGMA %lld.%lld.%lld %s compiled for CUDA capability >= %.1f, %lld-bit magma_int_t, %lld-bit pointer.\n",
+            (long long) major, (long long) minor, (long long) micro,
+            MAGMA_VERSION_STAGE,
+            MIN_CUDA_ARCH/100.,
+            (long long) (8*sizeof(magma_int_t)),
+            (long long) (8*sizeof(void*)) );
     
     int cuda_runtime=0, cuda_driver=0;
     cudaError_t err;
@@ -402,17 +414,73 @@ void magma_print_environment()
 }
 
 
-// ========================================
+/***************************************************************************//**
+    For debugging purposes, determines whether a pointer points to CPU or GPU memory.
+    
+    On CUDA architecture 2.0 cards with unified addressing, CUDA can tell if
+    it is a device pointer or pinned host pointer.
+    For malloc'd host pointers, cudaPointerGetAttributes returns error,
+    implying it is a (non-pinned) host pointer.
+    
+    On older cards, this cannot determine if it is CPU or GPU memory.
+    
+    @param[in] A    pointer to test
+    
+    @return  1:  if A is a device pointer (definitely),
+    @return  0:  if A is a host   pointer (definitely or inferred from error),
+    @return -1:  if unknown.
+
+    @ingroup magma_util
+*******************************************************************************/
+extern "C"
+magma_int_t magma_is_devptr( const void* A )
+{
+    cudaError_t err;
+    cudaDeviceProp prop;
+    cudaPointerAttributes attr;
+    int dev;  // must be int
+    err = cudaGetDevice( &dev );
+    if ( ! err ) {
+        err = cudaGetDeviceProperties( &prop, dev );
+        if ( ! err && prop.unifiedAddressing ) {
+            // I think the cudaPointerGetAttributes prototype is wrong, missing const (mgates)
+            err = cudaPointerGetAttributes( &attr, const_cast<void*>( A ));
+            if ( ! err ) {
+                // definitely know type
+                return (attr.memoryType == cudaMemoryTypeDevice);
+            }
+            else if ( err == cudaErrorInvalidValue ) {
+                // clear error; see http://icl.cs.utk.edu/magma/forum/viewtopic.php?f=2&t=529
+                cudaGetLastError();
+                // infer as host pointer
+                return 0;
+            }
+        }
+    }
+    // clear error
+    cudaGetLastError();
+    // unknown, e.g., device doesn't support unified addressing
+    return -1;
+}
+
+
+// =============================================================================
 // device support
-// ---------------------------------------------
-// Returns CUDA architecture capability for the current device.
-// This requires magma_init to be called first (to cache the information).
-// Version is integer xyz, where x is major, y is minor, and z is micro,
-// the same as __CUDA_ARCH__. Thus for architecture 1.3 it returns 130.
+
+/***************************************************************************//**
+    Returns CUDA architecture capability for the current device.
+    This requires magma_init() to be called first to cache the information.
+    Version is an integer xyz, where x is major, y is minor, and z is micro,
+    the same as __CUDA_ARCH__. Thus for architecture 1.3.0 it returns 130.
+
+    @return CUDA_ARCH for the current device.
+
+    @ingroup magma_device
+*******************************************************************************/
 extern "C"
 magma_int_t magma_getdevice_arch()
 {
-    magma_device_t dev;
+    int dev;
     cudaError_t err;
     err = cudaGetDevice( &dev );
     check_error( err );
@@ -424,46 +492,87 @@ magma_int_t magma_getdevice_arch()
 }
 
 
-// --------------------
+/***************************************************************************//**
+    Fills in devices array with the available devices.
+    (This makes much more sense in OpenCL than in CUDA.)
+
+    @param[out]
+    devices     Array of dimension (size).
+                On output, devices[0, ..., num_dev-1] contain device IDs.
+                Entries >= num_dev are not touched.
+
+    @param[in]
+    size        Dimension of the array devices.
+
+    @param[out]
+    num_dev     Number of devices, limited to size.
+
+    @ingroup magma_device
+*******************************************************************************/
 extern "C"
 void magma_getdevices(
     magma_device_t* devices,
     magma_int_t  size,
-    magma_int_t* numPtr )
+    magma_int_t* num_dev )
 {
     cudaError_t err;
     int cnt;
     err = cudaGetDeviceCount( &cnt );
     check_error( err );
     
-    cnt = min( cnt, size );
+    cnt = min( cnt, int(size) );
     for( int i = 0; i < cnt; ++i ) {
         devices[i] = i;
     }
-    *numPtr = cnt;
+    *num_dev = cnt;
 }
 
-// --------------------
+
+/***************************************************************************//**
+    Get the current device.
+
+    @param[out]
+    device      On output, device ID of the current device.
+                Each thread has its own current device.
+
+    @ingroup magma_device
+*******************************************************************************/
 extern "C"
 void magma_getdevice( magma_device_t* device )
 {
+    int dev;
     cudaError_t err;
-    err = cudaGetDevice( device );
+    err = cudaGetDevice( &dev );
+    *device = dev;
     check_error( err );
 }
 
-// --------------------
+
+/***************************************************************************//**
+    Set the current device.
+
+    @param[in]
+    device      Device ID to set as the current device.
+                Each thread has its own current device.
+
+    @ingroup magma_device
+*******************************************************************************/
 extern "C"
 void magma_setdevice( magma_device_t device )
 {
     cudaError_t err;
-    err = cudaSetDevice( device );
+    err = cudaSetDevice( int(device) );
     check_error( err );
 }
 
-// --------------------
-/// This functionality does not exist in OpenCL, so it is deprecated for CUDA, too.
-/// @deprecated
+
+/***************************************************************************//**
+    @deprecated
+    Synchronize the current device.
+    This functionality does not exist in OpenCL, so it is deprecated for CUDA, too.
+
+    @ingroup magma_device
+*******************************************************************************/
 extern "C"
 void magma_device_sync()
 {
@@ -473,8 +582,17 @@ void magma_device_sync()
 }
 
 
-// ========================================
+// =============================================================================
 // queue support
+
+/***************************************************************************//**
+    @param[in]
+    queue       Queue to query.
+
+    @return Device ID associated with the MAGMA queue.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 magma_int_t
 magma_queue_get_device( magma_queue_t queue )
@@ -482,6 +600,15 @@ magma_queue_get_device( magma_queue_t queue )
     return queue->device();
 }
 
+
+/***************************************************************************//**
+    @param[in]
+    queue       Queue to query.
+
+    @return CUDA stream associated with the MAGMA queue.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 cudaStream_t
 magma_queue_get_cuda_stream( magma_queue_t queue )
@@ -489,6 +616,16 @@ magma_queue_get_cuda_stream( magma_queue_t queue )
     return queue->cuda_stream();
 }
 
+
+/***************************************************************************//**
+    @param[in]
+    queue       Queue to query.
+
+    @return cuBLAS handle associated with the MAGMA queue.
+            MAGMA assumes the handle's stream will not be modified.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 cublasHandle_t
 magma_queue_get_cublas_handle( magma_queue_t queue )
@@ -496,6 +633,16 @@ magma_queue_get_cublas_handle( magma_queue_t queue )
     return queue->cublas_handle();
 }
 
+
+/***************************************************************************//**
+    @param[in]
+    queue       Queue to query.
+
+    @return cuSparse handle associated with the MAGMA queue.
+            MAGMA assumes the handle's stream will not be modified.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 cusparseHandle_t
 magma_queue_get_cusparse_handle( magma_queue_t queue )
@@ -505,11 +652,24 @@ magma_queue_get_cusparse_handle( magma_queue_t queue )
 
 
 #ifndef MAGMA_NO_V1
-// --------------------
+/***************************************************************************//**
+    @deprecated
+
+    Sets the current global MAGMA v1 queue for kernels to execute in.
+    In MAGMA v2, all kernels take queue as an argument, so this is deprecated.
+    If compiled with MAGMA_NO_V1, this is not defined.
+
+    @param[in]
+    queue       Queue to set as current global MAGMA v1 queue.
+
+    @return MAGMA_SUCCESS if successful
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 magma_int_t magmablasSetKernelStream( magma_queue_t queue )
 {
-    int info = 0;
+    magma_int_t info = 0;
     #ifdef HAVE_PTHREAD_KEY
     info = pthread_setspecific( g_magma_queue_key, queue );
     #else
@@ -519,7 +679,20 @@ magma_int_t magmablasSetKernelStream( magma_queue_t queue )
 }
 
 
-// --------------------
+/***************************************************************************//**
+    @deprecated
+
+    Gets the current global MAGMA v1 queue for kernels to execute in.
+    In MAGMA v2, all kernels take queue as an argument, so this is deprecated.
+    If compiled with MAGMA_NO_V1, this is not defined.
+
+    @param[out]
+    queue_ptr    On output, set to the current global MAGMA v1 queue.
+
+    @return MAGMA_SUCCESS if successful
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 magma_int_t magmablasGetKernelStream( magma_queue_t *queue_ptr )
 {
@@ -532,7 +705,21 @@ magma_int_t magmablasGetKernelStream( magma_queue_t *queue_ptr )
 }
 
 
-// --------------------
+/***************************************************************************//**
+    @deprecated
+
+    Gets the current global MAGMA v1 queue for kernels to execute in.
+    Unlike magmablasGetKernelStream(), if the current queue is NULL,
+    this will return a special MAGMA queue that has a NULL CUDA stream.
+    This allows MAGMA v1 wrappers to call v2 kernels with a non-NULL queue.
+
+    In MAGMA v2, all kernels take queue as an argument, so this is deprecated.
+    If compiled with MAGMA_NO_V1, this is not defined.
+
+    @return Current global MAGMA v1 queue.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 magma_queue_t magmablasGetQueue()
 {
@@ -545,10 +732,16 @@ magma_queue_t magmablasGetQueue()
     if ( queue == NULL ) {
         magma_device_t dev;
         magma_getdevice( &dev );
-        if ( dev >= g_magma_devices_cnt || g_null_queues == NULL || g_null_queues[dev] == NULL ) {
+        if ( dev >= g_magma_devices_cnt || g_null_queues == NULL ) {
             fprintf( stderr, "Error: %s requires magma_init() to be called first for MAGMA v1 compatability.\n",
                      __func__ );
             return NULL;
+        }
+        // create queue w/ NULL stream first time that NULL queue is used
+        if ( g_null_queues[dev] == NULL ) {
+            magma_queue_create_from_cuda( dev, NULL, NULL, NULL, &g_null_queues[dev] );
+            //printf( "dev %lld create queue %p\n", (long long) dev, (void*) g_null_queues[dev] );
+            assert( g_null_queues[dev] != NULL );
         }
         queue = g_null_queues[dev];
     }
@@ -558,13 +751,15 @@ magma_queue_t magmablasGetQueue()
 #endif // MAGMA_NO_V1
 
 
-// --------------------
+/******************************************************************************/
+// @deprecated
+// MAGMA v1 version that doesn't take device ID.
 extern "C"
 void magma_queue_create_internal(
     magma_queue_t* queue_ptr,
     const char* func, const char* file, int line )
 {
-    magma_device_t device;
+    int device;
     cudaError_t err;
     err = cudaGetDevice( &device );
     check_xerror( err, func, file, line );
@@ -572,7 +767,26 @@ void magma_queue_create_internal(
     magma_queue_create_v2_internal( device, queue_ptr, func, file, line );
 }
 
-// --------------------
+
+/***************************************************************************//**
+    @fn magma_queue_create_v2( device, queue_ptr )
+
+    magma_queue_create( device, queue_ptr ) is the preferred alias to this
+    function.
+
+    Creates a new MAGMA queue, with associated CUDA stream, cuBLAS handle,
+    and cuSparse handle.
+
+    This is the MAGMA v2 version which takes a device ID.
+
+    @param[in]
+    device          Device to create queue on.
+
+    @param[out]
+    queue_ptr       On output, the newly created queue.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 void magma_queue_create_v2_internal(
     magma_device_t device, magma_queue_t* queue_ptr,
@@ -611,11 +825,41 @@ void magma_queue_create_v2_internal(
     check_xerror( stat2, func, file, line );
 }
 
-// --------------------
+
+/***************************************************************************//**
+    @fn magma_queue_create_from_cuda( device, cuda_stream, cublas_handle, cusparse_handle, queue_ptr )
+
+    Warning: non-portable outside of CUDA. Use with discretion.
+
+    Creates a new MAGMA queue, using the given CUDA stream, cuBLAS handle, and
+    cuSparse handle. The caller retains ownership of the given stream and
+    handles, so must free them after destroying the queue;
+    see magma_queue_destroy().
+
+    MAGMA sets the stream on the cuBLAS and cuSparse handles, and assumes
+    it will not be changed while MAGMA is running.
+
+    @param[in]
+    device          Device to create queue on.
+
+    @param[in]
+    cuda_stream     CUDA stream to use, even if NULL (the so-called default stream).
+
+    @param[in]
+    cublas_handle   cuBLAS handle to use. If NULL, a new handle is created.
+
+    @param[in]
+    cusparse_handle cuSparse handle to use. If NULL, a new handle is created.
+
+    @param[out]
+    queue_ptr       On output, the newly created queue.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 void magma_queue_create_from_cuda_internal(
     magma_device_t   device,
-    cudaStream_t     stream,
+    cudaStream_t     cuda_stream,
     cublasHandle_t   cublas_handle,
     cusparseHandle_t cusparse_handle,
     magma_queue_t*   queue_ptr,
@@ -635,7 +879,7 @@ void magma_queue_create_from_cuda_internal(
     magma_setdevice( device );
     
     // stream can be NULL
-    queue->stream__ = stream;
+    queue->stream__ = cuda_stream;
     
     // allocate cublas handle if given as NULL
     cublasStatus_t stat;
@@ -660,7 +904,22 @@ void magma_queue_create_from_cuda_internal(
     check_xerror( stat2, func, file, line );
 }
 
-// --------------------
+
+/***************************************************************************//**
+    @fn magma_queue_destroy( queue )
+
+    Destroys a queue, freeing its resources.
+
+    If the queue was created with magma_queue_create_from_cuda(), the CUDA
+    stream, cuBLAS handle, and cuSparse handle given there are NOT freed -- the
+    caller retains ownership. However, if MAGMA allocated the handles, MAGMA
+    will free them here.
+
+    @param[in]
+    queue           Queue to destroy.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 void magma_queue_destroy_internal(
     magma_queue_t queue,
@@ -688,7 +947,18 @@ void magma_queue_destroy_internal(
     }
 }
 
-// --------------------
+
+/***************************************************************************//**
+    @fn magma_queue_sync( queue )
+
+    Synchronizes with a queue. The CPU blocks until all operations on the queue
+    are finished.
+
+    @param[in]
+    queue           Queue to synchronize.
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C"
 void magma_queue_sync_internal(
     magma_queue_t queue,
@@ -705,21 +975,41 @@ void magma_queue_sync_internal(
 }
 
 
-// --------------------
-// TODO: do set device based on queue? and restore device?
+/***************************************************************************//**
+    @param[in]
+    queue           Queue to query.
+
+    @return         Amount of free memory in bytes available on the device
+                    associated with the queue.
+                    (CUDA would only needs a device ID, but OpenCL requires a queue.)
+
+    @ingroup magma_queue
+*******************************************************************************/
 extern "C" size_t
 magma_queue_mem_size( magma_queue_t queue )
 {
     size_t freeMem, totalMem;
+    magma_device_t dev;
+    magma_getdevice( &dev );
+    magma_setdevice( magma_queue_get_device( queue ));
     cudaError_t err = cudaMemGetInfo( &freeMem, &totalMem );
     check_error( err );
+    magma_setdevice( dev );
     return freeMem;
 }
 
 
-// ========================================
+// =============================================================================
 // event support
-// --------------------
+
+/***************************************************************************//**
+    Creates a GPU event.
+
+    @param[in]
+    event           On output, the newly created event.
+
+    @ingroup magma_event
+*******************************************************************************/
 extern "C"
 void magma_event_create( magma_event_t* event )
 {
@@ -728,7 +1018,15 @@ void magma_event_create( magma_event_t* event )
     check_error( err );
 }
 
-// --------------------
+
+/***************************************************************************//**
+    Destroys a GPU event, freeing its resources.
+
+    @param[in]
+    event           Event to destroy.
+
+    @ingroup magma_event
+*******************************************************************************/
 extern "C"
 void magma_event_destroy( magma_event_t event )
 {
@@ -739,7 +1037,19 @@ void magma_event_destroy( magma_event_t event )
     }
 }
 
-// --------------------
+
+/***************************************************************************//**
+    Records an event into the queue's execution stream.
+    The event will trigger when all previous operations on this queue finish.
+
+    @param[in]
+    event           Event to record.
+
+    @param[in]
+    queue           Queue to execute in.
+
+    @ingroup magma_event
+*******************************************************************************/
 extern "C"
 void magma_event_record( magma_event_t event, magma_queue_t queue )
 {
@@ -748,8 +1058,15 @@ void magma_event_record( magma_event_t event, magma_queue_t queue )
     check_error( err );
 }
 
-// --------------------
-// blocks CPU until event occurs
+
+/***************************************************************************//**
+    Synchronizes with an event. The CPU blocks until the event triggers.
+
+    @param[in]
+    event           Event to synchronize with.
+
+    @ingroup magma_event
+*******************************************************************************/
 extern "C"
 void magma_event_sync( magma_event_t event )
 {
@@ -758,8 +1075,19 @@ void magma_event_sync( magma_event_t event )
     check_error( err );
 }
 
-// --------------------
-// blocks queue (but not CPU) until event occurs
+
+/***************************************************************************//**
+    Synchronizes a queue with an event. The queue blocks until the event
+    triggers. The CPU does not block.
+
+    @param[in]
+    event           Event to synchronize with.
+
+    @param[in]
+    queue           Queue to synchronize.
+
+    @ingroup magma_event
+*******************************************************************************/
 extern "C"
 void magma_queue_wait_event( magma_queue_t queue, magma_event_t event )
 {

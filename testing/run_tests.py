@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 2.0.2) --
+# MAGMA (version 2.1.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date May 2016
+# @date August 2016
 
-## @file run_tests.py
+## @file
 #  @author Mark Gates
 #
 # Script to run testers with various matrix sizes.
@@ -150,7 +150,7 @@
 #       testing_sgemv -c                          ** 7 tests failed
 #       testing_sgemv -T -c                       ok
 #       testing_sgemv -C -c                       ok
-#       
+#
 #       ****************************************************************************************************
 #       summary
 #       ****************************************************************************************************
@@ -163,21 +163,21 @@
 # Post-process with tolerance tol2=100. Numbers in {braces} are ratio = error/epsilon, which should be < tol.
 # Here, the ratio is just slightly larger {31.2 to 37.4} than the default tol=30.
 #
-#       ./run_summarize.py --tol2 100 run-gemv.txt 
+#       ./run_summarize.py --tol2 100 run-gemv.txt
 #       single epsilon 5.96e-08,  tol2 100,  tol2*eps 5.96e-06,  30*eps 1.79e-06,  100*eps 5.96e-06,  1000*eps 5.96e-05
 #       double epsilon 1.11e-16,  tol2 100,  tol2*eps 1.11e-14,  30*eps 3.33e-15,  100*eps 1.11e-14,  1000*eps 1.11e-13
 #       ########################################################################################################################
 #       okay tests:                                          3 commands,    302 tests
-#       
-#       
+#
+#
 #       ########################################################################################################################
 #       errors (segfault, etc.):                             0 commands,      0 tests
-#       
-#       
+#
+#
 #       ########################################################################################################################
 #       failed tests (error > tol2*eps):                     0 commands,      0 tests
-#       
-#       
+#
+#
 #       ########################################################################################################################
 #       suspicious tests (tol2*eps > error > tol*eps):       1 commands,      7 tests
 #       ./testing_sgemv
@@ -188,17 +188,17 @@
 #          32 10000      0.10 (   6.68)       1.35 (   0.47)     11.00 (   0.06)   2.15e-06 {   36.1}    9.14e-07 {   15.3}   suspect
 #          33 10000      0.10 (   6.72)       1.24 (   0.53)      9.85 (   0.07)   2.19e-06 {   36.7}    1.07e-06 {   18.0}   suspect
 #          10 10000      0.03 (   6.58)       0.52 (   0.39)      5.71 (   0.04)   2.23e-06 {   37.4}    1.11e-06 {   18.6}   suspect
-#       
-#       
-#       
+#
+#
+#
 #       ########################################################################################################################
 #       known failures:                                      0 commands,      0 tests
-#       
-#       
+#
+#
 #       ########################################################################################################################
 #       ignored errors (e.g., malloc failed):                0 commands,      0 tests
-#       
-#       
+#
+#
 #       ########################################################################################################################
 #       other (lines that did not get matched):              0 commands,      0 tests
 #
@@ -422,7 +422,7 @@ if opts.mnk and opts.small:
 	mnk  += (' -N 1,2,3           -N 2,1,3           -N 1,3,2           -N 2,3,1           -N 3,1,2           -N 3,2,1'
 	     +   ' -N 10,20,30        -N 20,10,30        -N 10,30,20        -N 20,30,10        -N 30,10,20        -N 30,20,10'
 	     +   ' -N 100,200,300     -N 200,100,300     -N 100,300,200     -N 200,300,100     -N 300,100,200     -N 300,200,100'
-	)    
+	)
 if opts.mnk and opts.med:
 	mnk  +=  ' -N 100,300,600     -N 300,100,600     -N 100,600,300     -N 300,600,100     -N 600,100,300     -N 600,300,100'
 if opts.mnk and opts.large:
@@ -1083,15 +1083,15 @@ svd = (
 	# U & V none/some/overwrite/all
 	# gesdd only has one jobz (taken from -U), while
 	# gesvd can set U & V independently; not all combos are tested here
-	('testing_zgesdd',         '-UN     -c',  mn,   ''),
-	('testing_zgesdd',         '-US     -c',  mn,   ''),
-	('testing_zgesdd',         '-UO     -c',  mn,   ''),
-	('testing_zgesdd',         '-UA     -c',  n,    ''),  # todo: do tall & wide, but avoid excessive sizes
+	('testing_zgesdd',      '--jobu n     -c',  mn,   ''),
+	('testing_zgesdd',      '--jobu s     -c',  mn,   ''),
+	('testing_zgesdd',      '--jobu o     -c',  mn,   ''),
+	('testing_zgesdd',      '--jobu a     -c',  n,    ''),  # todo: do tall & wide, but avoid excessive sizes
 	
-	('testing_zgesvd',         '-UN -VN -c',  mn,   ''),
-	('testing_zgesvd',         '-US -VS -c',  mn,   ''),
-	('testing_zgesvd',         '-UO -VS -c',  mn,   ''),
-	('testing_zgesvd',         '-UA -VA -c',  n,    ''),  # todo: do tall & wide, but avoid excessive sizes
+	('testing_zgesvd', '--jobu n --jobv n -c',  mn,   ''),
+	('testing_zgesvd', '--jobu s --jobv s -c',  mn,   ''),
+	('testing_zgesvd', '--jobu o --jobv s -c',  mn,   ''),
+	('testing_zgesvd', '--jobu a --jobv a -c',  n,    ''),  # todo: do tall & wide, but avoid excessive sizes
 	
 	('testing_zgebrd',                 '-c',  mn,   ''),
 	('testing_zungbr',                 '-c',  mnk,  ''),
@@ -1122,7 +1122,19 @@ batched = (
 	('testing_zherk_batched',     batch + '         -U    -c',  nk,   ''),
 	('testing_zherk_batched',     batch + '         -U -C -c',  nk,   ''),
 	
+	# lower/upper, no-trans/conj-trans
+	('testing_zher2k_batched',    batch + '         -L    -c',  nk,   ''),
+	('testing_zher2k_batched',    batch + '         -L -C -c',  nk,   ''),
+	('testing_zher2k_batched',    batch + '         -U    -c',  nk,   ''),
+	('testing_zher2k_batched',    batch + '         -U -C -c',  nk,   ''),
+	
 	('testing_zlacpy_batched',    batch + '               -c',  mn,   ''),
+	
+	# lower/upper, no-trans/conj-trans
+	('testing_zsyr2k_batched',    batch + '         -L    -c',  nk,   ''),
+	('testing_zsyr2k_batched',    batch + '         -L -C -c',  nk,   ''),
+	('testing_zsyr2k_batched',    batch + '         -U    -c',  nk,   ''),
+	('testing_zsyr2k_batched',    batch + '         -U -C -c',  nk,   ''),
 	
 	# left/right, lower/upper, no-trans/conj-trans, non-unit/unit diag
 	('testing_ztrsm_batched',     batch + '-SL -L    -DN  -c',  n + wide, ''),
@@ -1172,6 +1184,33 @@ batched = (
 	
 	('testing_zpotrf_batched',    batch + '         -L    -c2', n,    ''),
 	('#testing_zpotrf_batched',   batch + '         -U    -c2', n,    'upper not implemented'),
+	
+	# ----------
+	# vbatched (BLAS, LU, etc.)
+	
+	# no-trans/conj-trans; there are other combinations with trans
+	('testing_zgemm_vbatched',     batch + '-NN            -c',  mn,   ''),
+	('testing_zgemm_vbatched',     batch + '-NC            -c',  mn,   ''),
+	('testing_zgemm_vbatched',     batch + '-CN            -c',  mn,   ''),
+	('testing_zgemm_vbatched',     batch + '-CC            -c',  mn,   ''),
+	
+	# no-trans/trans/conj-trans
+	('testing_zgemv_vbatched',     batch + '               -c',  mn,   ''),
+	('testing_zgemv_vbatched',     batch + '-T             -c',  mn,   ''),
+	('testing_zgemv_vbatched',     batch + '-C             -c',  mn,   ''),
+	
+	# lower/upper, no-trans/conj-trans
+	('testing_zherk_vbatched',     batch + '         -L    -c',  nk,   ''),
+	('testing_zherk_vbatched',     batch + '         -L -C -c',  nk,   ''),
+	('testing_zherk_vbatched',     batch + '         -U    -c',  nk,   ''),
+	('testing_zherk_vbatched',     batch + '         -U -C -c',  nk,   ''),
+	
+	# lower/upper, no-trans/conj-trans
+	('testing_zher2k_vbatched',    batch + '         -L    -c',  nk,   ''),
+	('testing_zher2k_vbatched',    batch + '         -L -C -c',  nk,   ''),
+	('testing_zher2k_vbatched',    batch + '         -U    -c',  nk,   ''),
+	('testing_zher2k_vbatched',    batch + '         -U -C -c',  nk,   ''),
+	
 )
 if ( opts.batched ):
 	tests += batched

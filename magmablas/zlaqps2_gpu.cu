@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -16,8 +16,7 @@
 #define BLOCK_SIZE 512
 
 
-/* --------------------------------------------------------------------------- */
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZLAQPS computes a step of QR factorization with column pivoting
@@ -96,12 +95,15 @@
     lddf    INTEGER
             The leading dimension of the array F. LDDF >= max(1,N).
 
+    @param
+    dlsticcs    TODO: undocumented
+
     @param[in]
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zgeqp3_aux
-    ********************************************************************/
+    @ingroup magma_laqps
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zlaqps2_gpu(
     magma_int_t m, magma_int_t n, magma_int_t offset,
@@ -206,7 +208,7 @@ magma_zlaqps2_gpu(
                          c_one, dF(k+1,k), ione, queue );
         }
 
-       /* Update the current row of A:
+        /* Update the current row of A:
            A(RK,K+1:N) := A(RK,K+1:N) - A(RK,1:K)*F(K+1:N,1:K)'.               */
         if (k < n-1) {
             i__1 = n - k - 1;

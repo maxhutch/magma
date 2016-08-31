@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Hatem Ltaief
        @author Mark Gates
 
-       @generated from src/ztrtri_gpu.cpp normal z -> s, Mon May  2 23:30:00 2016
+       @generated from src/ztrtri_gpu.cpp, normal z -> s, Tue Aug 30 09:38:01 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     STRTRI computes the inverse of a real upper or lower triangular
@@ -63,8 +63,8 @@
                     matrix is singular and its inverse cannot be computed.
                  (Singularity check is currently disabled.)
 
-    @ingroup magma_sgesv_comp
-    ********************************************************************/
+    @ingroup magma_trtri
+*******************************************************************************/
 extern "C" magma_int_t
 magma_strtri_gpu(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgetf2.cu normal z -> c, Mon May  2 23:30:39 2016
+       @generated from magmablas/zgetf2.cu, normal z -> c, Tue Aug 30 09:38:37 2016
 */
 #include "magma_internal.h"
 
@@ -21,7 +21,7 @@ void magma_cscal_cgeru(
 
 
 // TODO: this function could be in .cpp file -- it has no CUDA code in it.
-/**
+/***************************************************************************//**
     CGETF2 computes an LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
@@ -73,8 +73,8 @@ void magma_cscal_cgeru(
                  singular, and division by zero will occur if it is used
                  to solve a system of equations.
 
-    @ingroup magma_cgesv_aux
-    ********************************************************************/
+    @ingroup magma_getf2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgetf2_gpu(
     magma_int_t m, magma_int_t n,
@@ -140,6 +140,7 @@ magma_cgetf2_gpu(
 // TODO: use standard BLAS magma_cswap?
 #define cswap_bs 64
 
+/******************************************************************************/
 __global__
 void kernel_cswap(int n, magmaFloatComplex *x, int i, int j, int incx)
 {
@@ -153,6 +154,7 @@ void kernel_cswap(int n, magmaFloatComplex *x, int i, int j, int incx)
 }
 
 
+/******************************************************************************/
 void magma_cgetf2_swap(
     magma_int_t n, magmaFloatComplex *x, magma_int_t i, magma_int_t j, magma_int_t incx,
     magma_queue_t queue )
@@ -166,11 +168,13 @@ void magma_cgetf2_swap(
 }
 
 
-// ===========================================================================
+/******************************************************************************/
 // dynamically allocated shared memory, set to size n when the kernel is launched.
 // See CUDA Guide B.2.3
 extern __shared__ magmaFloatComplex shared_data[];
 
+
+/******************************************************************************/
 __global__
 void kernel_cscal_cgeru(int m, int n, magmaFloatComplex *A, int lda)
 {
@@ -201,6 +205,7 @@ void kernel_cscal_cgeru(int m, int n, magmaFloatComplex *A, int lda)
 }
 
 
+/******************************************************************************/
 void magma_cscal_cgeru(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magmablas_z_v2.h normal z -> d, Mon May  2 23:31:25 2016
+       @generated from include/magmablas_z_v2.h, normal z -> d, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMABLAS_D_H
@@ -135,7 +135,7 @@ extern "C" {
    * These wrap CUBLAS or AMD OpenCL BLAS functions.
    */
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set  copies host   to device
 // get  copies device to host
@@ -152,7 +152,7 @@ extern "C" {
 #define magma_dcopyvector                    magma_dcopyvector_q
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 
 #undef magma_dsetmatrix
@@ -164,7 +164,7 @@ extern "C" {
 #define magma_dcopymatrix                    magma_dcopymatrix_q
 
 
-// ========================================
+// =============================================================================
 // Level 1 BLAS (alphabetical order)
 
 #define magma_idamax                         magma_idamax_q
@@ -176,6 +176,7 @@ extern "C" {
 #define magma_ddot                          magma_ddot_q
 #define magma_dnrm2                         magma_dnrm2_q
 #define magma_drot                           magma_drot_q
+#define magma_drotg                          magma_drotg_q
 #define magma_drot                          magma_drot_q
                         
 #ifdef REAL             
@@ -188,12 +189,19 @@ extern "C" {
 #define magma_dswap                          magma_dswap_q
 
 
-// ========================================
+// =============================================================================
 // Level 2 BLAS (alphabetical order)
 
 #define magma_dgemv                          magma_dgemv_q
 #define magma_dger                          magma_dger_q
+
+#ifdef COMPLEX
 #define magma_dger                          magma_dger_q
+#define magma_dsymv                          magma_dsymv_q
+#define magma_dsyr                           magma_dsyr_q
+#define magma_dsyr2                          magma_dsyr2_q
+#endif // COMPLEX
+
 #define magma_dsymv                          magma_dsymv_q
 #define magma_dsyr                           magma_dsyr_q
 #define magma_dsyr2                          magma_dsyr2_q
@@ -201,15 +209,19 @@ extern "C" {
 #define magma_dtrsv                          magma_dtrsv_q
 
 
-// ========================================
+// =============================================================================
 // Level 3 BLAS (alphabetical order)
 
 #define magma_dgemm                          magma_dgemm_q
+
+#ifdef COMPLEX
 #define magma_dsymm                          magma_dsymm_q
-#define magma_dsymm                          magma_dsymm_q
-#define magma_dsyr2k                         magma_dsyr2k_q
 #define magma_dsyr2k                         magma_dsyr2k_q
 #define magma_dsyrk                          magma_dsyrk_q
+#endif // COMPLEX
+
+#define magma_dsymm                          magma_dsymm_q
+#define magma_dsyr2k                         magma_dsyr2k_q
 #define magma_dsyrk                          magma_dsyrk_q
 #define magma_dtrmm                          magma_dtrmm_q
 #define magma_dtrsm                          magma_dtrsm_q

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgeqr2_batched.cu normal z -> d, Mon May  2 23:30:42 2016
+       @generated from magmablas/zgeqr2_batched.cu, normal z -> d, Tue Aug 30 09:38:38 2016
 */
 
 #include "magma_internal.h"
@@ -23,11 +23,11 @@
 
 #include "dlarfg_devicesfunc.cuh"
 
-//==============================================================================
-
+/******************************************************************************/
 static __device__
-void dlarfx_device( int m, int n,  double *v, double *tau,
-                         double *dc, magma_int_t ldc, double* sum)
+void dlarfx_device(
+    int m, int n,  double *v, double *tau,
+    double *dc, magma_int_t ldc, double* sum)
 {
     if (n <= 0) return;
     if (MAGMA_D_EQUAL(*tau, MAGMA_D_ZERO) )  return; // check singularity
@@ -69,8 +69,7 @@ void dlarfx_device( int m, int n,  double *v, double *tau,
 }
 
 
-//==============================================================================
-
+/******************************************************************************/
 static __device__
 void dgeqr2_device( magma_int_t m, magma_int_t n,
                                double* dA, magma_int_t lda,
@@ -92,11 +91,12 @@ void dgeqr2_device( magma_int_t m, magma_int_t n,
     __syncthreads();
 }
 
-//==============================================================================
 
+/******************************************************************************/
 extern __shared__ double shared_data[];
 
 
+/******************************************************************************/
 __global__
 void dgeqr2_sm_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
                                double **dtau_array)
@@ -149,12 +149,7 @@ void dgeqr2_sm_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
 }
 
 
-
-
-
-
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void dgeqr2_column_sm_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
                                double **dtau_array)
@@ -203,6 +198,7 @@ void dgeqr2_column_sm_kernel_batched( int m, int n, double** dA_array, magma_int
 }
 
 
+/******************************************************************************/
 __global__
 void dgeqr2_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
                                double **dtau_array)
@@ -232,10 +228,7 @@ void dgeqr2_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
 }
 
 
-//==============================================================================
-
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEQR2 computes a QR factorization of a real m by n matrix A:
@@ -304,9 +297,8 @@ void dgeqr2_kernel_batched( int m, int n, double** dA_array, magma_int_t lda,
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_aux
-    ********************************************************************/
-
+    @ingroup magma_geqr2_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqr2_batched(magma_int_t m, magma_int_t n, 
                      double **dA_array, magma_int_t ldda, 
@@ -357,7 +349,3 @@ magma_dgeqr2_batched(magma_int_t m, magma_int_t n,
 
     return arginfo;
 }
-
-
-
-//==============================================================================

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -33,16 +33,13 @@ magma_zmergeblockkrylov_kernel(
     int vec = blockIdx.y;
     
     if ( row<num_rows ) {
-        
         magmaDoubleComplex val = x[ row + vec * num_rows ];
         
         for( int j=0; j<num_vecs; j++ ){
-            
             magmaDoubleComplex lalpha = alpha[ j * num_vecs + vec ];
             magmaDoubleComplex xval = p[ row + j * num_rows ];
             
             val += lalpha * xval;
-            
         }
         x[ row + vec * num_rows ] = val;
     }
@@ -102,6 +99,5 @@ magma_zmergeblockkrylov(
     magma_zmergeblockkrylov_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>
                 ( num_rows, num_cols, alpha, p, x );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -36,7 +36,8 @@
 
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     real_Double_t   gflops, t1, t2;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
@@ -68,25 +69,25 @@ int main( int argc, char** argv )
         n = opts.nsize[itest];
         k = opts.ksize[itest];
         printf("%%========================================================================\n");
-        printf( "m=%d, n=%d, k=%d\n", (int) m, (int) n, (int) k );
+        printf( "m=%lld, n=%lld, k=%lld\n", (long long) m, (long long) n, (long long) k );
         
         // allocate matrices
         // over-allocate so they can be any combination of {m,n,k} x {m,n,k}.
         maxn = max( max( m, n ), k );
         ld = max( 1, maxn );
         size = ld*maxn;
-        TESTING_MALLOC_CPU( piv, magma_int_t, maxn );
+        TESTING_CHECK( magma_imalloc_cpu( &piv, maxn ));
         
-        TESTING_MALLOC_PIN( A,   magmaDoubleComplex, size );
-        TESTING_MALLOC_PIN( B,   magmaDoubleComplex, size );
-        TESTING_MALLOC_PIN( C,   magmaDoubleComplex, size );
-        TESTING_MALLOC_PIN( C2,  magmaDoubleComplex, size );
-        TESTING_MALLOC_PIN( LU,  magmaDoubleComplex, size );
+        TESTING_CHECK( magma_zmalloc_pinned( &A,   size ));
+        TESTING_CHECK( magma_zmalloc_pinned( &B,   size ));
+        TESTING_CHECK( magma_zmalloc_pinned( &C,   size ));
+        TESTING_CHECK( magma_zmalloc_pinned( &C2,  size ));
+        TESTING_CHECK( magma_zmalloc_pinned( &LU,  size ));
         
-        TESTING_MALLOC_DEV( dA,  magmaDoubleComplex, size );
-        TESTING_MALLOC_DEV( dB,  magmaDoubleComplex, size );
-        TESTING_MALLOC_DEV( dC1, magmaDoubleComplex, size );
-        TESTING_MALLOC_DEV( dC2, magmaDoubleComplex, size );
+        TESTING_CHECK( magma_zmalloc( &dA,  size ));
+        TESTING_CHECK( magma_zmalloc( &dB,  size ));
+        TESTING_CHECK( magma_zmalloc( &dC1, size ));
+        TESTING_CHECK( magma_zmalloc( &dC2, size ));
         
         // initialize matrices
         size = maxn*maxn;
@@ -105,7 +106,7 @@ int main( int argc, char** argv )
             magma_zswap( m, dB(0,1), 1, dB(0,2), 1, opts.queue );
             
             // check results, storing diff between magma and cuda calls in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dA, 1, dB, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dA, 1, dB, 1 );
             magma_zgetmatrix( m, n, dB, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &m, &k, C2, &ld, work );
             total_error += error;
@@ -122,7 +123,7 @@ int main( int argc, char** argv )
         for( int j = 0; j < k; ++j ) {
             magma_int_t i1 = magma_izamax( m, dA(0,j), 1, opts.queue );
             int i2;  // not magma_int_t
-            cublasIzamax( opts.handle, m, dA(0,j), 1, &i2 );
+            cublasIzamax( opts.handle, int(m), dA(0,j), 1, &i2 );
             // todo need sync here?
             assert( i1 == i2 );
             error += abs( i1 - i2 );
@@ -149,12 +150,12 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZgemv( opts.handle, cublas_trans_const(trans[ia]),
-                         m, n, &alpha, dA, ld, dB, 1, &beta, dC2, 1 );
+                         int(m), int(n), &alpha, dA, int(ld), dB, 1, &beta, dC2, 1 );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             size = (trans[ia] == MagmaNoTrans ? m : n);
-            cublasZaxpy( opts.handle, size, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(size), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetvector( size, dC2, 1, C2, 1, opts.queue );
             error = lapackf77_zlange( "F", &size, &ione, C2, &ld, work );
             total_error += error;
@@ -179,11 +180,11 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZhemv( opts.handle, cublas_uplo_const(uplo[iu]),
-                         m, &alpha, dA, ld, dB, 1, &beta, dC2, 1 );
+                         int(m), &alpha, dA, int(ld), dB, 1, &beta, dC2, 1 );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, m, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(m), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetvector( m, dC2, 1, C2, 1, opts.queue );
             error = lapackf77_zlange( "F", &m, &ione, C2, &ld, work );
             total_error += error;
@@ -220,11 +221,11 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZtrsv( opts.handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
-                         cublas_diag_const(diag[id]), m, dA, ld, dC2, 1 );
+                         cublas_diag_const(diag[id]), int(m), dA, int(ld), dC2, 1 );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, m, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(m), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetvector( m, dC2, 1, C2, 1, opts.queue );
             error = lapackf77_zlange( "F", &m, &ione, C2, &ld, work );
             total_error += error;
@@ -255,11 +256,11 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZgemm( opts.handle, cublas_trans_const(trans[ia]), cublas_trans_const(trans[ib]),
-                         m, n, k, &alpha, dA, ld, dB, ld, &beta, dC2, ld );
+                         int(m), int(n), int(k), &alpha, dA, int(ld), dB, int(ld), &beta, dC2, int(ld) );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetmatrix( m, n, dC2, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &m, &n, C2, &ld, work );
             total_error += error;
@@ -287,11 +288,11 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZhemm( opts.handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
-                         m, n, &alpha, dA, ld, dB, ld, &beta, dC2, ld );
+                         int(m), int(n), &alpha, dA, int(ld), dB, int(ld), &beta, dC2, int(ld) );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetmatrix( m, n, dC2, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &m, &n, C2, &ld, work );
             total_error += error;
@@ -318,11 +319,11 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZherk( opts.handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
-                         n, k, &dalpha, dA, ld, &dbeta, dC2, ld );
+                         int(n), int(k), &dalpha, dA, int(ld), &dbeta, dC2, int(ld) );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetmatrix( n, n, dC2, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
@@ -350,11 +351,11 @@ int main( int argc, char** argv )
             
             t2 = magma_sync_wtime( opts.queue );
             cublasZher2k( opts.handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
-                          n, k, &alpha, dA, ld, dB, ld, &dbeta, dC2, ld );
+                          int(n), int(k), &alpha, dA, int(ld), dB, int(ld), &dbeta, dC2, int(ld) );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetmatrix( n, n, dC2, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
@@ -387,11 +388,11 @@ int main( int argc, char** argv )
             t2 = magma_sync_wtime( opts.queue );
             cublasZtrmm( opts.handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
                          cublas_trans_const(trans[it]), cublas_diag_const(diag[id]),
-                         m, n, &alpha, dA, ld, dC2, ld, dC2, ld );
+                         int(m), int(n), &alpha, dA, int(ld), dC2, int(ld), dC2, int(ld) );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetmatrix( m, n, dC2, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
@@ -422,11 +423,11 @@ int main( int argc, char** argv )
             t2 = magma_sync_wtime( opts.queue );
             cublasZtrsm( opts.handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
                          cublas_trans_const(trans[it]), cublas_diag_const(diag[id]),
-                         m, n, &alpha, dA, ld, dC2, ld );
+                         int(m), int(n), &alpha, dA, int(ld), dC2, int(ld) );
             t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasZaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
+            cublasZaxpy( opts.handle, int(ld*n), &c_neg_one, dC1, 1, dC2, 1 );
             magma_zgetmatrix( m, n, dC2, ld, C2, ld, opts.queue );
             error = lapackf77_zlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
@@ -438,16 +439,16 @@ int main( int argc, char** argv )
         printf( "\n" );
         
         // cleanup
-        TESTING_FREE_CPU( piv );
-        TESTING_FREE_PIN( A   );
-        TESTING_FREE_PIN( B   );
-        TESTING_FREE_PIN( C   );
-        TESTING_FREE_PIN( C2  );
-        TESTING_FREE_PIN( LU  );
-        TESTING_FREE_DEV( dA  );
-        TESTING_FREE_DEV( dB  );
-        TESTING_FREE_DEV( dC1 );
-        TESTING_FREE_DEV( dC2 );
+        magma_free_cpu( piv );
+        magma_free_pinned( A   );
+        magma_free_pinned( B   );
+        magma_free_pinned( C   );
+        magma_free_pinned( C2  );
+        magma_free_pinned( LU  );
+        magma_free( dA  );
+        magma_free( dB  );
+        magma_free( dC1 );
+        magma_free( dC2 );
         fflush( stdout );
     }
     
@@ -460,8 +461,8 @@ int main( int argc, char** argv )
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     
-    magma_int_t status = (total_error != 0.);
+    int status = (total_error != 0.);
     return status;
 }

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
 
        @precisions normal z -> s d c
 */
 #include "magma_internal.h"
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPOSV computes the solution to a complex system of linear equations
@@ -83,8 +83,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zposv_driver
-    ********************************************************************/
+    @ingroup magma_posv_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zposv_batched(
                   magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
@@ -130,7 +130,8 @@ magma_zposv_batched(
     for (magma_int_t i=0; i < batchCount; i++)
     {
         if (cpu_info[i] != 0 ) {
-            printf("magma_zpotrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );
+            printf("magma_zpotrf_batched matrix %lld returned error %lld\n",
+                    (long long) i, (long long) cpu_info[i] );
             info = cpu_info[i];
             magma_free_cpu (cpu_info);
             return info;

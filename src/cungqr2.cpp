@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zungqr2.cpp normal z -> c, Mon May  2 23:30:10 2016
+       @generated from src/zungqr2.cpp, normal z -> c, Tue Aug 30 09:38:11 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CUNGQR generates an M-by-N COMPLEX matrix Q with orthonormal columns,
@@ -62,8 +62,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument has an illegal value
 
-    @ingroup magma_cgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_ungqr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cungqr2(
     magma_int_t m, magma_int_t n, magma_int_t k,

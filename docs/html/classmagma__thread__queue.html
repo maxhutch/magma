@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li><a href="modules.html"><span>Modules</span></a></li>
-      <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -75,13 +74,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           </span>
         </div>
       </li>
-    </ul>
-  </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
-      <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 </div><!-- top -->
@@ -120,39 +112,38 @@ $(document).ready(function(){initNavTree('classmagma__thread__queue.html','');})
 <a href="#friends">Friends</a> &#124;
 <a href="classmagma__thread__queue-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">magma_thread_queue Class Reference</div>  </div>
+<div class="title">magma_thread_queue Class Reference<div class="ingroups"><a class="el" href="group__magma__internal.html">Internal routines</a> &raquo; <a class="el" href="group__magma__thread.html">Thread management</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Implements a thread pool with a multi-producer, multi-consumer queue.  
+<p>TODO: replace with OpenMP tasks.  
  <a href="classmagma__thread__queue.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a8509f1128d7315a848631020ed571779"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8509f1128d7315a848631020ed571779"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a8509f1128d7315a848631020ed571779">magma_thread_queue</a> ()</td></tr>
-<tr class="memdesc:a8509f1128d7315a848631020ed571779"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates queue with NO threads. Use <a class="el" href="classmagma__thread__queue.html#a357744e19d6baf75b014f7f692cbf0ea">launch</a> to create threads. <br /></td></tr>
+<tr class="memitem:a8509f1128d7315a848631020ed571779"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a8509f1128d7315a848631020ed571779">magma_thread_queue</a> ()</td></tr>
+<tr class="memdesc:a8509f1128d7315a848631020ed571779"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates queue with NO threads.  <a href="#a8509f1128d7315a848631020ed571779">More...</a><br /></td></tr>
 <tr class="separator:a8509f1128d7315a848631020ed571779"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85f9f3471cd59153184327d0ec015bd1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a85f9f3471cd59153184327d0ec015bd1"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a85f9f3471cd59153184327d0ec015bd1">~magma_thread_queue</a> ()</td></tr>
-<tr class="memdesc:a85f9f3471cd59153184327d0ec015bd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls <a class="el" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf">quit</a>, then deallocates data. <br /></td></tr>
+<tr class="memdesc:a85f9f3471cd59153184327d0ec015bd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls <a class="el" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf" title="Sets quit_flag, so pop_task() will return NULL once queue is empty, telling threads to exit...">quit()</a>, then deallocates data. <br /></td></tr>
 <tr class="separator:a85f9f3471cd59153184327d0ec015bd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a357744e19d6baf75b014f7f692cbf0ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a357744e19d6baf75b014f7f692cbf0ea">launch</a> (magma_int_t in_nthread)</td></tr>
 <tr class="memdesc:a357744e19d6baf75b014f7f692cbf0ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates threads.  <a href="#a357744e19d6baf75b014f7f692cbf0ea">More...</a><br /></td></tr>
 <tr class="separator:a357744e19d6baf75b014f7f692cbf0ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9220f8ad5466f976dcc094f492474e93"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93">push_task</a> (magma_task *task)</td></tr>
+<tr class="memitem:a9220f8ad5466f976dcc094f492474e93"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93">push_task</a> (<a class="el" href="classmagma__task.html">magma_task</a> *task)</td></tr>
 <tr class="memdesc:a9220f8ad5466f976dcc094f492474e93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add task to queue.  <a href="#a9220f8ad5466f976dcc094f492474e93">More...</a><br /></td></tr>
 <tr class="separator:a9220f8ad5466f976dcc094f492474e93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a131b04a3dadf057fa5c13a6395096c9e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a131b04a3dadf057fa5c13a6395096c9e">sync</a> ()</td></tr>
 <tr class="memdesc:a131b04a3dadf057fa5c13a6395096c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Block until all outstanding tasks have been finished.  <a href="#a131b04a3dadf057fa5c13a6395096c9e">More...</a><br /></td></tr>
 <tr class="separator:a131b04a3dadf057fa5c13a6395096c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a289689493610414cfa716dce2561e6cf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf">quit</a> ()</td></tr>
-<tr class="memdesc:a289689493610414cfa716dce2561e6cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets quit_flag, so <a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d">pop_task</a> will return NULL once queue is empty, telling threads to exit.  <a href="#a289689493610414cfa716dce2561e6cf">More...</a><br /></td></tr>
+<tr class="memdesc:a289689493610414cfa716dce2561e6cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets quit_flag, so <a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d" title="Get next task from queue. ">pop_task()</a> will return NULL once queue is empty, telling threads to exit.  <a href="#a289689493610414cfa716dce2561e6cf">More...</a><br /></td></tr>
 <tr class="separator:a289689493610414cfa716dce2561e6cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a2819b023e5d04949f96d5f142eeec13d"><td class="memItemLeft" align="right" valign="top">magma_task *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d">pop_task</a> ()</td></tr>
+<tr class="memitem:a2819b023e5d04949f96d5f142eeec13d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classmagma__task.html">magma_task</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d">pop_task</a> ()</td></tr>
 <tr class="memdesc:a2819b023e5d04949f96d5f142eeec13d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get next task from queue.  <a href="#a2819b023e5d04949f96d5f142eeec13d">More...</a><br /></td></tr>
 <tr class="separator:a2819b023e5d04949f96d5f142eeec13d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9ee2c11aae7957647606d6ea06b0db6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmagma__thread__queue.html#ad9ee2c11aae7957647606d6ea06b0db6">task_done</a> ()</td></tr>
@@ -170,12 +161,32 @@ Friends</h2></td></tr>
 <tr class="separator:a67218e4b6080631da1d3b04dd2f44ab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Implements a thread pool with a multi-producer, multi-consumer queue. </p>
+<div class="textblock"><p>TODO: replace with OpenMP tasks. </p>
+<p>Implements a thread pool with a multi-producer, multi-consumer queue.</p>
 <p>Typical use: A main thread creates the queue and tells it to launch worker threads. Then the main thread inserts (pushes) tasks into the queue. Threads will execute the tasks. No dependencies are tracked. The main thread can sync the queue, waiting for all current tasks to finish, and then insert more tasks into the queue. When finished, the main thread calls quit or simply destructs the queue, which will exit all worker threads.</p>
-<p>Tasks are sub-classes of magma_task. They must implement the run() function.</p>
+<p>Tasks are sub-classes of <a class="el" href="classmagma__task.html" title="Super class for tasks used with magma_thread_queue. ">magma_task</a>. They must implement the run() function.</p>
 <h2>Example </h2>
-<div class="fragment"><div class="line"><span class="keyword">class </span>task1: <span class="keyword">public</span> magma_task {</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    task1( <span class="keywordtype">int</span> arg ):</div><div class="line">        m_arg( arg ) {}</div><div class="line">    </div><div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> run() { do_task1( m_arg ); }</div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <span class="keywordtype">int</span> m_arg;</div><div class="line">};</div><div class="line"></div><div class="line"><span class="keyword">class </span>task2: <span class="keyword">public</span> magma_task {</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    task2( <span class="keywordtype">int</span> arg1, <span class="keywordtype">int</span> arg2 ):</div><div class="line">        m_arg1( arg1 ), m_arg2( arg2 ) {}</div><div class="line">    </div><div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> run() { do_task2( m_arg1, m_arg2 ); }</div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <span class="keywordtype">int</span> m_arg1, m_arg2;</div><div class="line">};</div><div class="line"></div><div class="line"><span class="keywordtype">void</span> master( <span class="keywordtype">int</span> n ) {</div><div class="line">    <a class="code" href="classmagma__thread__queue.html">magma_thread_queue</a> queue;</div><div class="line">    queue.<a class="code" href="classmagma__thread__queue.html#a357744e19d6baf75b014f7f692cbf0ea">launch</a>( 12 );  <span class="comment">// 12 worker threads</span></div><div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">int</span> i=0; i &lt; n; ++i ) {</div><div class="line">        queue.<a class="code" href="classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93">push_task</a>( <span class="keyword">new</span> task1( i ));</div><div class="line">    }</div><div class="line">    queue.<a class="code" href="classmagma__thread__queue.html#a131b04a3dadf057fa5c13a6395096c9e">sync</a>();  <span class="comment">// wait for all task1 to finish before doing task2.</span></div><div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">int</span> i=0; i &lt; n; ++i ) {</div><div class="line">        <span class="keywordflow">for</span>( <span class="keywordtype">int</span> j=0; j &lt; i; ++j ) {</div><div class="line">            queue.<a class="code" href="classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93">push_task</a>( <span class="keyword">new</span> task2( i, j ));</div><div class="line">        }</div><div class="line">    }</div><div class="line">    queue.<a class="code" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf">quit</a>();  <span class="comment">// [optional] explicitly exit worker threads</span></div><div class="line">}</div></div><!-- fragment --><p>This is similar to python's queue class, but also implements worker threads and adds quit mechanism. sync is like python's join, but threads do not exit, so join would be a misleading name. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<div class="fragment"><div class="line"><span class="keyword">class </span>task1: <span class="keyword">public</span> <a class="code" href="classmagma__task.html">magma_task</a> {</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    task1( <span class="keywordtype">int</span> arg ):</div><div class="line">        m_arg( arg ) {}</div><div class="line">    </div><div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> run() { do_task1( m_arg ); }</div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <span class="keywordtype">int</span> m_arg;</div><div class="line">};</div><div class="line"></div><div class="line"><span class="keyword">class </span>task2: <span class="keyword">public</span> <a class="code" href="classmagma__task.html">magma_task</a> {</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    task2( <span class="keywordtype">int</span> arg1, <span class="keywordtype">int</span> arg2 ):</div><div class="line">        m_arg1( arg1 ), m_arg2( arg2 ) {}</div><div class="line">    </div><div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> run() { do_task2( m_arg1, m_arg2 ); }</div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <span class="keywordtype">int</span> m_arg1, m_arg2;</div><div class="line">};</div><div class="line"></div><div class="line"><span class="keywordtype">void</span> master( <span class="keywordtype">int</span> n ) {</div><div class="line">    <a class="code" href="classmagma__thread__queue.html">magma_thread_queue</a> queue;</div><div class="line">    queue.<a class="code" href="classmagma__thread__queue.html#a357744e19d6baf75b014f7f692cbf0ea">launch</a>( 12 );  <span class="comment">// 12 worker threads</span></div><div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">int</span> i=0; i &lt; n; ++i ) {</div><div class="line">        queue.<a class="code" href="classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93">push_task</a>( <span class="keyword">new</span> task1( i ));</div><div class="line">    }</div><div class="line">    queue.<a class="code" href="classmagma__thread__queue.html#a131b04a3dadf057fa5c13a6395096c9e">sync</a>();  <span class="comment">// wait for all task1 to finish before doing task2.</span></div><div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">int</span> i=0; i &lt; n; ++i ) {</div><div class="line">        <span class="keywordflow">for</span>( <span class="keywordtype">int</span> j=0; j &lt; i; ++j ) {</div><div class="line">            queue.<a class="code" href="classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93">push_task</a>( <span class="keyword">new</span> task2( i, j ));</div><div class="line">        }</div><div class="line">    }</div><div class="line">    queue.<a class="code" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf">quit</a>();  <span class="comment">// [optional] explicitly exit worker threads</span></div><div class="line">}</div></div><!-- fragment --><p>This is similar to python's queue class, but also implements worker threads and adds <a class="el" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf" title="Sets quit_flag, so pop_task() will return NULL once queue is empty, telling threads to exit...">quit()</a> mechanism. <a class="el" href="classmagma__thread__queue.html#a131b04a3dadf057fa5c13a6395096c9e" title="Block until all outstanding tasks have been finished. ">sync()</a> is like python's join, but threads do not exit, so join would be a misleading name. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a8509f1128d7315a848631020ed571779"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_thread_queue::magma_thread_queue </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates queue with NO threads. </p>
+<p>Use <a class="el" href="classmagma__thread__queue.html#a357744e19d6baf75b014f7f692cbf0ea" title="Creates threads. ">launch()</a> to create threads. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a357744e19d6baf75b014f7f692cbf0ea"></a>
 <div class="memitem">
 <div class="memproto">
@@ -200,35 +211,6 @@ Friends</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a2819b023e5d04949f96d5f142eeec13d"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_task * magma_thread_queue::pop_task </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get next task from queue. </p>
-<dl class="section return"><dt>Returns</dt><dd>next task, blocking until a task is inserted if necesary. </dd>
-<dd>
-NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf">quit</a> has been called.</dd></dl>
-<p>This does <em>not</em> decrement number of outstanding tasks; thread should call <a class="el" href="classmagma__thread__queue.html#ad9ee2c11aae7957647606d6ea06b0db6">task_done</a> when task is completed. </p>
-
-</div>
-</div>
 <a class="anchor" id="a9220f8ad5466f976dcc094f492474e93"></a>
 <div class="memitem">
 <div class="memproto">
@@ -236,7 +218,7 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
         <tr>
           <td class="memname">void magma_thread_queue::push_task </td>
           <td>(</td>
-          <td class="paramtype">magma_task *&#160;</td>
+          <td class="paramtype"><a class="el" href="classmagma__task.html">magma_task</a> *&#160;</td>
           <td class="paramname"><em>task</em></td><td>)</td>
           <td></td>
         </tr>
@@ -244,30 +226,12 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
 </div><div class="memdoc">
 
 <p>Add task to queue. </p>
-<p>Task must be allocated with C++ new. Increments number of outstanding tasks. Signals threads that are waiting in pop_task. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Task must be allocated with C++ new. Increments number of outstanding tasks. Signals threads that are waiting in <a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d" title="Get next task from queue. ">pop_task()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">task</td><td>Task to queue. </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a class="anchor" id="a289689493610414cfa716dce2561e6cf"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void magma_thread_queue::quit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Sets quit_flag, so <a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d">pop_task</a> will return NULL once queue is empty, telling threads to exit. </p>
-<p>Signals all threads that are waiting in pop_task. Waits for all threads to exit (i.e., joins them). It is safe to call quit multiple times &ndash; the first time all the threads are joined; subsequent times it does nothing. (Destructor also calls quit, but you may prefer to call it explicitly.) </p>
 
 </div>
 </div>
@@ -286,6 +250,53 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
 
 <p>Block until all outstanding tasks have been finished. </p>
 <p>Threads continue to be alive; more tasks can be pushed after sync. </p>
+
+</div>
+</div>
+<a class="anchor" id="a289689493610414cfa716dce2561e6cf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_thread_queue::quit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets quit_flag, so <a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d" title="Get next task from queue. ">pop_task()</a> will return NULL once queue is empty, telling threads to exit. </p>
+<p>Signals all threads that are waiting in <a class="el" href="classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d" title="Get next task from queue. ">pop_task()</a>. Waits for all threads to exit (i.e., joins them). It is safe to call quit multiple times &ndash; the first time all the threads are joined; subsequent times it does nothing. (Destructor also calls quit, but you may prefer to call it explicitly.) </p>
+
+</div>
+</div>
+<a class="anchor" id="a2819b023e5d04949f96d5f142eeec13d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classmagma__task.html">magma_task</a> * magma_thread_queue::pop_task </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get next task from queue. </p>
+<dl class="section return"><dt>Returns</dt><dd>next task, blocking until a task is inserted if necesary. </dd>
+<dd>
+NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queue.html#a289689493610414cfa716dce2561e6cf" title="Sets quit_flag, so pop_task() will return NULL once queue is empty, telling threads to exit...">quit()</a> has been called.</dd></dl>
+<p>This does <em>not</em> decrement number of outstanding tasks; thread should call <a class="el" href="classmagma__thread__queue.html#ad9ee2c11aae7957647606d6ea06b0db6" title="Marks task as finished, decrementing number of outstanding tasks. ">task_done()</a> when task is completed. </p>
 
 </div>
 </div>
@@ -311,7 +322,7 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
 </div><div class="memdoc">
 
 <p>Marks task as finished, decrementing number of outstanding tasks. </p>
-<p>Signals threads that are waiting in <a class="el" href="classmagma__thread__queue.html#a131b04a3dadf057fa5c13a6395096c9e">sync</a>. </p>
+<p>Signals threads that are waiting in <a class="el" href="classmagma__thread__queue.html#a131b04a3dadf057fa5c13a6395096c9e" title="Block until all outstanding tasks have been finished. ">sync()</a>. </p>
 
 </div>
 </div>
@@ -341,7 +352,7 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
 <p>Thread's main routine, executed by pthread_create. </p>
 <p>Executes tasks from queue (given as arg), until a NULL task is returned. Deletes each task when it is done. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">arg</td><td><a class="el" href="classmagma__thread__queue.html" title="Implements a thread pool with a multi-producer, multi-consumer queue. ">magma_thread_queue</a> to get tasks from. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">arg</td><td><a class="el" href="classmagma__thread__queue.html" title="TODO: replace with OpenMP tasks. ">magma_thread_queue</a> to get tasks from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -349,8 +360,8 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/mnt/scratch/mgates/disable-v1/magma-2.0.2/control/thread_queue.hpp</li>
-<li>/mnt/scratch/mgates/disable-v1/magma-2.0.2/control/thread_queue.cpp</li>
+<li>/mnt/scratch/mgates/magma-trunk/magma-2.1.0/control/thread_queue.hpp</li>
+<li>/mnt/scratch/mgates/magma-trunk/magma-2.1.0/control/thread_queue.cpp</li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -358,7 +369,7 @@ NULL if queue is empty <em>and</em> <a class="el" href="classmagma__thread__queu
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classmagma__thread__queue.html">magma_thread_queue</a></li>
-    <li class="footer">Generated on Mon May 2 2016 23:31:44 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

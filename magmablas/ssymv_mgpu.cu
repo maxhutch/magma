@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zhemv_mgpu.cu normal z -> s, Mon May  2 23:30:38 2016
+       @generated from magmablas/zhemv_mgpu.cu, normal z -> s, Tue Aug 30 09:38:36 2016
 
        @author Mark Gates
 */
@@ -19,7 +19,7 @@
 #define half_NB_X    32
 
 
-/*******************************************************************************
+/***************************************************************************//**
     Lower case, compute block multiply, work = A*x, for any size n:
     
            [ (A11*x1)   (A21^H*x2)          (A31^H*x3)                 ]   [ A11  A21^H  A31^H ]   [ x1 ]
@@ -45,7 +45,7 @@
     which doesn't work as well because that has dimension blocks*NB by blocks,
     where blocks*NB >= n, and it can be that blocks*NB > lda, so it won't fit in
     lda*blocks space. This is why it used to need lwork = lda*(blocks + 1).
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 ssymv_kernel_L_mgpu(
     int n,
@@ -441,7 +441,7 @@ ssymv_kernel_L_mgpu(
 // end ssymv_kernel_L_mgpu
 
 
-/**************************************************************
+/***************************************************************************//**
     Lower case, sum up partial results per GPU.
     Each block sums one block row; each thread sums one row.
     
@@ -483,7 +483,7 @@ ssymv_kernel_L_mgpu(
     y[gpu=1]    = [ * + x + x     ]
                   [ *             ]
                   [ *             ]
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 ssymv_kernel_L_mgpu_sum(
     int n,
@@ -525,7 +525,7 @@ ssymv_kernel_L_mgpu_sum(
 // end ssymv_kernel_L_mgpu_sum
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     magmablas_ssymv_mgpu performs the matrix-vector operation:
@@ -647,8 +647,8 @@ ssymv_kernel_L_mgpu_sum(
     queues  magma_queue_t array of dimension (ngpu).
             queues[dev] is an execution queue on GPU dev.
     
-    @ingroup magma_sblas2
-    ********************************************************************/
+    @ingroup magma_hemv
+*******************************************************************************/
 extern "C"
 magma_int_t
 magmablas_ssymv_mgpu(
@@ -794,14 +794,14 @@ magmablas_ssymv_mgpu(
 }
 
 
-/**
+/***************************************************************************//**
     Synchronizes and acculumates final ssymv result.
     For convenience, the parameters are identical to magmablas_ssymv_mgpu
     (though some are unused here).
     
     @see magmablas_ssymv_mgpu
-    @ingroup magma_sblas2
-    ********************************************************************/
+    @ingroup magma_hemv
+*******************************************************************************/
 extern "C" magma_int_t
 magmablas_ssymv_mgpu_sync(
     magma_uplo_t uplo,                                               // unused, see magmablas_ssymv_mgpu

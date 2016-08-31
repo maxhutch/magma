@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #include "magma_internal.h"
@@ -20,16 +20,10 @@
 #  include <sys/time.h>
 #endif
 
-#if defined(ADD_)
-#  define magmaf_wtime        magmaf_wtime_
-#  define magma_wtime_f       magma_wtime_f_   /* deprecated name */
-#elif defined(NOCHANGE)
-#endif
 
+// =============================================================================
+// Emulate gettimeofday on Windows.
 
-/* ////////////////////////////////////////////////////////////////////////////
-   -- Emulate gettimeofday on Windows.
-*/
 #if defined( _WIN32 ) || defined( _WIN64 )
 #ifndef _TIMEZONE_DEFINED
 #define _TIMEZONE_DEFINED
@@ -73,10 +67,12 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
 #endif
 
 
-/* ////////////////////////////////////////////////////////////////////////////
-   -- Return time in seconds since arbitrary time in the past.
-      Use for elapsed wall clock time computation.
-*/
+/***************************************************************************//**
+    @return Current wall-clock time in seconds.
+            Resolution is from gettimeofday.
+
+    @ingroup magma_wtime
+*******************************************************************************/
 extern "C"
 double magma_wtime( void )
 {
@@ -85,7 +81,17 @@ double magma_wtime( void )
     return t.tv_sec + t.tv_usec*1e-6;
 }
 
-// synchronize before getting time, e.g., to time asynchronous cublas calls
+
+/***************************************************************************//**
+    Calls magma_queue_sync() to synchronize, then returns current time.
+    
+    @param[in] queue    Queue to synchronize.
+
+    @return Current wall-clock time in seconds.
+            Resolution is from gettimeofday.
+
+    @ingroup magma_wtime
+*******************************************************************************/
 extern "C"
 double magma_sync_wtime( magma_queue_t queue )
 {
@@ -93,17 +99,20 @@ double magma_sync_wtime( magma_queue_t queue )
     return magma_wtime();
 }
 
-// version callable from Fortran stores seconds in time.
+
+#define magmaf_wtime FORTRAN_NAME( magmaf_wtime, MAGMAF_WTIME )
+
+/***************************************************************************//**
+    Version of magma_wtime() that is callable from Fortran.
+
+    @param[out]
+    time    On output, set to current wall-clock time in seconds.
+            Resolution is from gettimeofday.
+
+    @ingroup magma_wtime
+*******************************************************************************/
 extern "C"
 void magmaf_wtime(double *time)
-{
-    *time = magma_wtime();
-}
-
-// version callable from Fortran stores seconds in time.
-// @deprecated name; @see magmaf_wtime
-extern "C"
-void magma_wtime_f(double *time)
 {
     *time = magma_wtime();
 }

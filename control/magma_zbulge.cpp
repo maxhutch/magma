@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @precisions normal z -> c d s
@@ -13,7 +13,7 @@
 #define COMPLEX
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_get_zbulge_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
 {
@@ -29,7 +29,7 @@ magma_get_zbulge_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" void
 magma_get_zbulge_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads,
         magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt)
@@ -40,7 +40,7 @@ magma_get_zbulge_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zbulge_getstg2size(magma_int_t n, magma_int_t nb, magma_int_t wantz,
                          magma_int_t Vblksiz, magma_int_t ldv, magma_int_t ldt,
@@ -55,7 +55,7 @@ magma_zbulge_getstg2size(magma_int_t n, magma_int_t nb, magma_int_t wantz,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zbulge_getlwstg2(magma_int_t n, magma_int_t threads, magma_int_t wantz,
                        magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt,
@@ -68,7 +68,7 @@ magma_zbulge_getlwstg2(magma_int_t n, magma_int_t threads, magma_int_t wantz,
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" void
 magma_zheevdx_getworksize(magma_int_t n, magma_int_t threads,
         magma_int_t wantz,
@@ -110,4 +110,3 @@ magma_zheevdx_getworksize(magma_int_t n, magma_int_t threads,
     }
     #endif
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

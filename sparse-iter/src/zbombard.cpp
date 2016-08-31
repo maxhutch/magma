@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -536,8 +536,7 @@ magma_zbombard(
         Q_gamm = c_one / magma_zsqrt(c_one + Q_thet*Q_thet);        
         Q_eta = - Q_eta * Q_rho1 * Q_gamm * Q_gamm / (Q_beta * Q_gamm1 * Q_gamm1);
 
-        if( solver_par->numiter == 1 ){
-            
+        if ( solver_par->numiter == 1 ) {
                 //QMR: d = eta * p + pds * d;
                 //QMR: s = eta * pt + pds * d;
                 //QMR: x = x + d;
@@ -554,8 +553,7 @@ magma_zbombard(
             Q_r.dval, 
             queue );
         }
-        else{
-
+        else {
             Q_pds = (Q_thet1 * Q_gamm) * (Q_thet1 * Q_gamm);
             
                 // d = eta * p + pds * d;
@@ -667,9 +665,6 @@ magma_zbombard(
             info = MAGMA_DIVERGENCE;
             break;
         } 
-                
-
- 
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
         

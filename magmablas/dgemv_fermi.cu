@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Mark Gates
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/zgemv_fermi.cu normal z -> d, Mon May  2 23:30:38 2016
+       @generated from magmablas/zgemv_fermi.cu, normal z -> d, Tue Aug 30 09:38:28 2016
 */
 #include "magma_internal.h"
 #include "commonblas_d.h"
@@ -25,7 +25,7 @@
 #define version(s,v) s ## _V_ ## v
 
 
-//////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // NoTrans kernel
 template<const int DIM_X, const int DIM_Y, const int TILE_SIZE>
 __global__ void
@@ -42,7 +42,7 @@ dgemvn_template_kernel_fermi(
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // Trans/ConjTans kernel
 template<const int DIM_X, const int DIM_Y, const int TILE_SIZE, magma_trans_t trans>
 __global__ void
@@ -59,7 +59,7 @@ dgemvc_template_kernel_fermi(
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // NoTrans CPU driver
 template<const int DIM_X, const int DIM_Y, const int TILE_SIZE>
 void
@@ -79,7 +79,7 @@ dgemvn_template_fermi(
 }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 // Trans/ConjTans CPU driver
 template<const int DIM_X, const int DIM_Y, const int TILE_SIZE>
 void
@@ -106,10 +106,7 @@ dgemvc_template_fermi(
 }
 
 
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEMV performs one of the matrix-vector operations
@@ -177,8 +174,8 @@ dgemvc_template_fermi(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_dblas2
-    ********************************************************************/
+    @ingroup magma_gemv
+*******************************************************************************/
 extern "C" void
 magmablas_dgemv_q(
     magma_trans_t trans, magma_int_t m, magma_int_t n, 

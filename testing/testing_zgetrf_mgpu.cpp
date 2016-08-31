@@ -1,9 +1,9 @@
 /*
-    -- clMAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -24,7 +24,7 @@
 // Initialize matrix to random.
 // Having this in separate function ensures the same ISEED is always used,
 // so we can re-generate the identical matrix.
-void init_matrix( int m, int n, magmaDoubleComplex *h_A, magma_int_t lda )
+void init_matrix( magma_int_t m, magma_int_t n, magmaDoubleComplex *h_A, magma_int_t lda )
 {
     magma_int_t ione = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -59,16 +59,16 @@ double get_residual(
     magmaDoubleComplex *x, *b;
     
     // initialize RHS
-    TESTING_MALLOC_CPU( x, magmaDoubleComplex, n );
-    TESTING_MALLOC_CPU( b, magmaDoubleComplex, n );
+    TESTING_CHECK( magma_zmalloc_cpu( &x, n ));
+    TESTING_CHECK( magma_zmalloc_cpu( &b, n ));
     lapackf77_zlarnv( &ione, ISEED, &n, b );
     blasf77_zcopy( &n, b, &ione, x, &ione );
     
     // solve Ax = b
     lapackf77_zgetrs( "Notrans", &n, &ione, A, &lda, ipiv, x, &n, &info );
     if (info != 0) {
-        printf("lapackf77_zgetrs returned error %d: %s.\n",
-               (int) info, magma_strerror( info ));
+        printf("lapackf77_zgetrs returned error %lld: %s.\n",
+               (long long) info, magma_strerror( info ));
     }
     
     // reset to original A
@@ -85,10 +85,10 @@ double get_residual(
     
     //printf( "r=\n" ); magma_zprint( 1, n, b, 1 );
     
-    TESTING_FREE_CPU( x );
-    TESTING_FREE_CPU( b );
+    magma_free_cpu( x );
+    magma_free_cpu( b );
     
-    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%d\n", norm_r, norm_A, norm_x, n );
+    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%lld\n", norm_r, norm_A, norm_x, (long long) n );
     return norm_r / (n * norm_A * norm_x);
 }
 
@@ -110,9 +110,9 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     magmaDoubleComplex *A, *L, *U;
     double work[1], matnorm, residual;
     
-    TESTING_MALLOC_CPU( A, magmaDoubleComplex, lda*N    );
-    TESTING_MALLOC_CPU( L, magmaDoubleComplex, M*min_mn );
-    TESTING_MALLOC_CPU( U, magmaDoubleComplex, min_mn*N );
+    TESTING_CHECK( magma_zmalloc_cpu( &A, lda*N    ));
+    TESTING_CHECK( magma_zmalloc_cpu( &L, M*min_mn ));
+    TESTING_CHECK( magma_zmalloc_cpu( &U, min_mn*N ));
     memset( L, 0, M*min_mn*sizeof(magmaDoubleComplex) );
     memset( U, 0, min_mn*N*sizeof(magmaDoubleComplex) );
 
@@ -138,9 +138,9 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     }
     residual = lapackf77_zlange("f", &M, &N, LU, &lda, work);
 
-    TESTING_FREE_CPU( A );
-    TESTING_FREE_CPU( L );
-    TESTING_FREE_CPU( U );
+    magma_free_cpu( A );
+    magma_free_cpu( L );
+    magma_free_cpu( U );
 
     return residual / (matnorm * N);
 }
@@ -151,7 +151,8 @@ double get_LU_error(magma_int_t M, magma_int_t N,
 */
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf=0, cpu_time=0;
     double           error;
@@ -160,7 +161,7 @@ int main( int argc, char** argv )
     magma_int_t *ipiv;
     magma_int_t M, N, n2, lda, ldda, n_local, ngpu;
     magma_int_t info, min_mn, nb, ldn_local;
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -173,7 +174,7 @@ int main( int argc, char** argv )
         magma_queue_create( dev, &queues[dev] );
     }
     
-    printf("%% ngpu %d\n", (int) opts.ngpu );
+    printf("%% ngpu %lld\n", (long long) opts.ngpu );
     if ( opts.check == 2 ) {
         printf("%%   M     N   CPU Gflop/s (sec)   GPU Gflop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
     }
@@ -195,12 +196,12 @@ int main( int argc, char** argv )
             // ngpu must be at least the number of blocks
             ngpu = min( opts.ngpu, magma_ceildiv(N,nb) );
             if ( ngpu < opts.ngpu ) {
-                printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) ngpu );
+                printf( " * too many GPUs for the matrix size, using %lld GPUs\n", (long long) ngpu );
             }
             
             // Allocate host memory for the matrix
-            TESTING_MALLOC_CPU( ipiv, magma_int_t,        min_mn );
-            TESTING_MALLOC_CPU( h_A,  magmaDoubleComplex, n2     );
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv, min_mn ));
+            TESTING_CHECK( magma_zmalloc_cpu( &h_A,  n2     ));
             
             // Allocate device memory
             for( int dev=0; dev < ngpu; dev++ ) {
@@ -211,7 +212,7 @@ int main( int argc, char** argv )
                     n_local += N % nb;
                 ldn_local = magma_roundup( n_local, opts.align );  // multiple of 32 by default  // TODO why?
                 magma_setdevice( dev );
-                TESTING_MALLOC_DEV( d_lA[dev], magmaDoubleComplex, ldda*ldn_local );
+                TESTING_CHECK( magma_zmalloc( &d_lA[dev], ldda*ldn_local ));
             }
     
             /* =====================================================================
@@ -225,8 +226,8 @@ int main( int argc, char** argv )
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_zgetrf returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_zgetrf returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
             }
             
@@ -234,29 +235,29 @@ int main( int argc, char** argv )
                Performs operation using MAGMA
                =================================================================== */
             init_matrix( M, N, h_A, lda );
-            magma_zsetmatrix_1D_col_bcyclic( M, N, h_A, lda, d_lA, ldda, ngpu, nb, queues );
+            magma_zsetmatrix_1D_col_bcyclic( ngpu, M, N, nb, h_A, lda, d_lA, ldda, queues );
 
             gpu_time = magma_wtime();
             magma_zgetrf_mgpu( ngpu, M, N, d_lA, ldda, ipiv, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0) {
-                printf("magma_zgetrf_mgpu returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_zgetrf_mgpu returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
                        
-            magma_zgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_A, lda, ngpu, nb, queues );
+            magma_zgetmatrix_1D_col_bcyclic( ngpu, M, N, nb, d_lA, ldda, h_A, lda, queues );
     
             /* =====================================================================
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%5d %5d  %7.2f (%7.2f)   %7.2f (%7.2f)",
-                       (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
+                printf("%5lld %5lld  %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (long long) M, (long long) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
             }
             else {
-                printf("%5d %5d    ---   (  ---  )   %7.2f (%7.2f)",
-                       (int) M, (int) N, gpu_perf, gpu_time );
+                printf("%5lld %5lld    ---   (  ---  )   %7.2f (%7.2f)",
+                       (long long) M, (long long) N, gpu_perf, gpu_time );
             }
             if ( opts.check == 2 ) {
                 error = get_residual( M, N, h_A, lda, ipiv );
@@ -272,11 +273,11 @@ int main( int argc, char** argv )
                 printf( "     ---\n" );
             }
             
-            TESTING_FREE_CPU( ipiv );
-            TESTING_FREE_CPU( h_A );
+            magma_free_cpu( ipiv );
+            magma_free_cpu( h_A );
             for( int dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
-                TESTING_FREE_DEV( d_lA[dev] );
+                magma_free( d_lA[dev] );
             }
             fflush( stdout );
         }
@@ -290,6 +291,6 @@ int main( int argc, char** argv )
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

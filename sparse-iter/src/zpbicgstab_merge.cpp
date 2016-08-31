@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -95,7 +95,7 @@ magma_zpbicgstab_merge(
     
     // solver variables
     magmaDoubleComplex alpha, beta, omega, rho_old, rho_new;
-    double nom, betanom, nom0, r0, res, nomb;
+    double betanom, nom0, r0, res, nomb;
     res=0;
     //double den;
 
@@ -103,7 +103,6 @@ magma_zpbicgstab_merge(
     CHECK(  magma_zresidualvec( A, b, *x, &r, &nom0, queue));
     magma_zcopy( dofs, r.dval, 1, rr.dval, 1, queue );                  // rr = r
     betanom = nom0;
-    nom = nom0*nom0;
     rho_new = magma_zdotc( dofs, r.dval, 1, r.dval, 1, queue );             // rho=<rr,r>
     rho_old = omega = alpha = MAGMA_Z_MAKE( 1.0, 0. );
     solver_par->init_res = nom0;
@@ -124,13 +123,13 @@ magma_zpbicgstab_merge(
         solver_par->res_vec[0] = nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }
     
     //Chronometry
-    real_Double_t tempo1, tempo2, tempop1, tempop2;
+    real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
 
     solver_par->numiter = 0;
@@ -160,11 +159,8 @@ magma_zpbicgstab_merge(
         queue );
 
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_z_applyprecond_left( MagmaNoTrans, A, p, &mt, precond_par, queue ));
         CHECK( magma_z_applyprecond_right( MagmaNoTrans, A, mt, &y, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
 
         CHECK( magma_z_spmv( c_one, A, y, c_zero, v, queue ));      // v = Ap
         solver_par->spmv_count++;
@@ -185,11 +181,8 @@ magma_zpbicgstab_merge(
         queue );
         
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_z_applyprecond_left( MagmaNoTrans, A, s, &ms, precond_par, queue ));
         CHECK( magma_z_applyprecond_right( MagmaNoTrans, A, ms, &z, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
 
         CHECK( magma_z_spmv( c_one, A, z, c_zero, t, queue ));       // t=As
         solver_par->spmv_count++;
@@ -212,8 +205,6 @@ magma_zpbicgstab_merge(
         queue );
 
         res = betanom = magma_dznrm2( dofs, r.dval, 1, queue );
-
-        nom = betanom*betanom;
 
         if ( solver_par->verbose > 0 ) {
             tempo2 = magma_sync_wtime( queue );

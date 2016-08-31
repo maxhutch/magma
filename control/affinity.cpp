@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
 
@@ -20,16 +20,16 @@ affinity_set::affinity_set()
 }
 
 
-affinity_set::affinity_set(int cpu_nr)
+affinity_set::affinity_set(int cpu)
 {
     CPU_ZERO(&set);
-    CPU_SET(cpu_nr, &set);
+    CPU_SET(cpu, &set);
 }
 
 
-void affinity_set::add(int cpu_nr)
+void affinity_set::add(int cpu)
 {
-    CPU_SET(cpu_nr, &set);
+    CPU_SET(cpu, &set);
 }
 
 

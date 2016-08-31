@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from src/zunmtr_gpu.cpp normal z -> s, Mon May  2 23:30:14 2016
+       @generated from src/zunmtr_gpu.cpp, normal z -> s, Tue Aug 30 09:38:14 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SORMTR overwrites the general real M-by-N matrix C with
@@ -108,8 +108,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_ssyev_comp
-    ********************************************************************/
+    @ingroup magma_unmtr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sormtr_gpu(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,

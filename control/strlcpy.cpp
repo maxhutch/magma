@@ -1,20 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 #include "magma_internal.h"
-
-/*
- * Use strlcat to copy strings. It is available on BSD, but not Linux or
- * Windows, so we provide our own copy of the BSD implementation. Note that:
- * strcat   is insecure (buffer overflow),
- * strncat  is insecure (doesn't always null terminate) and inefficient (zero pads),
- * snprintf is renamed and insecure on Windows (_sprintf doesn't always null terminate).
- */
-
 
 /*  $OpenBSD: strlcpy.c,v 1.11 2006/05/05 15:27:38 millert Exp $  */
 
@@ -37,11 +28,19 @@
 #include <sys/types.h>
 #include <string.h>
 
-/*
- * Copy src to string dst of size siz.  At most siz-1 characters
- * will be copied.  Always NUL terminates (unless siz == 0).
- * Returns strlen(src); if retval >= siz, truncation occurred.
- */
+/***************************************************************************//**
+    Copy src to string dst of size siz.  At most siz-1 characters
+    will be copied.  Always NUL terminates (unless siz == 0).
+    Returns strlen(src); if retval >= siz, truncation occurred.
+    
+    Use strlcat to copy strings. It is available on BSD, but not Linux or
+    Windows, so we provide our own copy of the BSD implementation. Note that:
+    strcat   is insecure (buffer overflow),
+    strncat  is insecure (doesn't always null terminate) and inefficient (zero pads),
+    snprintf is renamed and insecure on Windows (_sprintf doesn't always null terminate).
+    
+    @magma_util
+*******************************************************************************/
 extern "C"
 size_t
 magma_strlcpy(char *dst, const char *src, size_t siz)

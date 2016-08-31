@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
     
        @author Raffaele Solca
     
@@ -12,7 +12,7 @@
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZHEGVX computes selected eigenvalues, and optionally, eigenvectors
@@ -200,8 +200,8 @@
     Based on contributions by
        Mark Fahey, Department of Mathematics, Univ. of Kentucky, USA
 
-    @ingroup magma_zhegv_driver
-    ********************************************************************/
+    @ingroup magma_hegvx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zhegvx(
     magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,

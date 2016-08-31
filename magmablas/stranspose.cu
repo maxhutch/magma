@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/ztranspose.cu normal z -> s, Mon May  2 23:30:36 2016
+       @generated from magmablas/ztranspose.cu, normal z -> s, Tue Aug 30 09:38:34 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -119,7 +119,7 @@ void stranspose_kernel_batched(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     stranspose copies and transposes a matrix dA to matrix dAT.
@@ -156,8 +156,8 @@ void stranspose_kernel_batched(
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_transpose
+*******************************************************************************/
 extern "C" void
 magmablas_stranspose_q(
     magma_int_t m, magma_int_t n,
@@ -191,7 +191,7 @@ magmablas_stranspose_q(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     stranspose_batched copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
@@ -235,8 +235,8 @@ magmablas_stranspose_q(
     @param[in]
     batchCount  Number of matrices in dA_array and dAT_array
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_transpose_batched
+*******************************************************************************/
 extern "C" void
 magmablas_stranspose_batched(
     magma_int_t m, magma_int_t n,

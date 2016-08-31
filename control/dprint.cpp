@@ -1,28 +1,26 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from control/zprint.cpp normal z -> d, Mon May  2 23:29:59 2016
+       @generated from control/zprint.cpp, normal z -> d, Tue Aug 30 09:38:00 2016
 
 */
 #include "magma_internal.h"
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
-
     magma_dprint prints a matrix that is located on the CPU host.
     The output is intended to be Matlab compatible, to be useful in debugging.
 
     Arguments
     ---------
-
     @param[in]
     m       INTEGER
             The number of rows of the matrix A.  M >= 0.
@@ -39,8 +37,8 @@
     lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_print
+*******************************************************************************/
 extern "C"
 void magma_dprint(
     magma_int_t m, magma_int_t n,
@@ -97,7 +95,7 @@ void magma_dprint(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     magma_dprint_gpu prints a matrix that is located on the GPU device.
@@ -122,8 +120,8 @@ void magma_dprint(
     ldda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,M).
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_print
+*******************************************************************************/
 extern "C"
 void magma_dprint_gpu(
     magma_int_t m, magma_int_t n,

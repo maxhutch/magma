@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlarfgx-v2.cu normal z -> c, Mon May  2 23:30:33 2016
+       @generated from magmablas/zlarfgx-v2.cu, normal z -> c, Tue Aug 30 09:38:31 2016
 
 */
 #include "magma_internal.h"
@@ -17,8 +17,7 @@
 #define COMPLEX
 
 
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex* dx,
                                magmaFloatComplex *dtau, float *dxnorm,
@@ -92,9 +91,8 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
     }
 }
 
-//==============================================================================
 
-/*
+/***************************************************************************//**
     Generates Householder elementary reflector H = I - tau v v^T to reduce
         H [ dx0 ] = [ beta ]
           [ dx  ]   [ 0    ]
@@ -105,7 +103,7 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
     
     The difference with LAPACK's clarfg is that the norm of dx, and hance beta,
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
-*/
+*******************************************************************************/
 extern "C" void
 magma_clarfgx_gpu_q(
     magma_int_t n,
@@ -125,9 +123,7 @@ magma_clarfgx_gpu_q(
 }
 
 
-//==============================================================================
-
-/*
+/***************************************************************************//**
     Generates Householder elementary reflector H = I - tau v v^T to reduce
         H [ dx0 ] = [ beta ]
           [ dx  ]   [ 0    ]
@@ -138,7 +134,7 @@ magma_clarfgx_gpu_q(
     
     The difference with LAPACK's clarfg is that the norm of dx, and hance beta,
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
-*/
+*******************************************************************************/
 extern "C" void
 magma_clarfgtx_gpu_q(
     magma_int_t n,
@@ -171,4 +167,3 @@ magma_clarfgtx_gpu_q(
             ( T, ldt, dwork, T+iter*ldt, dtau );
     }
 }
-//==============================================================================

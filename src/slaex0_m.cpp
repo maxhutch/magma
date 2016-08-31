@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Raffaele Solca
        
-       @generated from src/dlaex0_m.cpp normal d -> s, Mon May  2 23:30:16 2016
+       @generated from src/dlaex0_m.cpp, normal d -> s, Tue Aug 30 09:38:16 2016
 */
 #include "magma_internal.h"
 #include "magma_timer.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLAEX0 computes all eigenvalues and the choosen eigenvectors of a
@@ -95,8 +95,8 @@
        Jeff Rutter, Computer Science Division, University of California
        at Berkeley, USA
 
-    @ingroup magma_ssyev_aux
-    ********************************************************************/
+    @ingroup magma_laex0
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slaex0_m(
     magma_int_t ngpu,
@@ -209,9 +209,9 @@ magma_slaex0_m(
         lapackf77_ssteqr( "I", &matsiz, &d[submat], &e[submat],
                           Q(submat, submat), &ldq, work, info );  // change to edc?
         if (*info != 0) {
-            printf( "info: %d\n, submat: %d\n", (int) *info, (int) submat );
+            printf( "info: %lld\n, submat: %lld\n", (long long) *info, (long long) submat );
             *info = (submat+1)*(n+1) + submat + matsiz;
-            printf( "info: %d\n", (int) *info );
+            printf( "info: %lld\n", (long long) *info );
             return *info;
         }
         k = 1;
@@ -268,7 +268,7 @@ magma_slaex0_m(
         ++curlvl;
         
         timer_stop( time );
-        timer_printf( "%d: time: %6.2f\n", (int) curlvl, time );
+        timer_printf( "%lld: time: %6.2f\n", (long long) curlvl, time );
     }
 
     // Re-merge the eigenvalues/vectors which were deflated at the final

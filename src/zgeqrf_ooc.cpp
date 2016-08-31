@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -12,7 +12,7 @@
 
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEQRF_OOC computes a QR factorization of a COMPLEX_16 M-by-N matrix A:
@@ -91,8 +91,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_zgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgeqrf_ooc(
     magma_int_t m, magma_int_t n,
@@ -138,7 +138,7 @@ magma_zgeqrf_ooc(
     cudaMemGetInfo( &freeMem, &totalMem );
     freeMem /= sizeof(magmaDoubleComplex);
     
-    magma_int_t NB = magma_int_t(0.8*freeMem/m);
+    magma_int_t NB = (magma_int_t)(0.8*freeMem/m);
     NB = (NB / nb) * nb;
 
     if (NB >= n)
@@ -170,7 +170,7 @@ magma_zgeqrf_ooc(
     /* start the main loop over the blocks that fit in the GPU memory */
     for (i=0; i < n; i += NB) {
         IB = min( n-i, NB );
-        //printf("Processing %5d columns -- %5d to %5d ... \n", IB, i, i+IB);
+        //printf("Processing %5lld columns -- %5lld to %5lld ...\n", (long long) IB, (long long) i, (long long)(i+IB) );
 
         /* 1. Copy the next part of the matrix to the GPU */
         magma_zsetmatrix_async( m, IB,

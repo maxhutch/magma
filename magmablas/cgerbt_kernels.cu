@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgerbt_kernels.cu normal z -> c, Mon May  2 23:30:30 2016
+       @generated from magmablas/zgerbt_kernels.cu, normal z -> c, Tue Aug 30 09:38:28 2016
 
 
        @author Adrien REMY
@@ -19,7 +19,7 @@
 #define NB 64
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 static __device__ void 
 magmablas_celementary_multiplication_devfunc(
     magma_int_t n,
@@ -66,7 +66,7 @@ magmablas_celementary_multiplication_devfunc(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void 
 magmablas_celementary_multiplication_kernel(
     magma_int_t n,
@@ -78,7 +78,7 @@ magmablas_celementary_multiplication_kernel(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void 
 magmablas_celementary_multiplication_kernel_batched(
     magma_int_t n,
@@ -91,7 +91,7 @@ magmablas_celementary_multiplication_kernel_batched(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 static __device__ void 
 magmablas_capply_vector_devfunc(
     magma_int_t n,
@@ -116,7 +116,7 @@ magmablas_capply_vector_devfunc(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void 
 magmablas_capply_vector_kernel(
     magma_int_t n,
@@ -126,7 +126,7 @@ magmablas_capply_vector_kernel(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void 
 magmablas_capply_vector_kernel_batched(
     magma_int_t n,
@@ -137,7 +137,7 @@ magmablas_capply_vector_kernel_batched(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 static __device__ void 
 magmablas_capply_transpose_vector_devfunc(
     magma_int_t n,
@@ -162,7 +162,7 @@ magmablas_capply_transpose_vector_devfunc(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void 
 magmablas_capply_transpose_vector_kernel(
     magma_int_t n,
@@ -172,7 +172,7 @@ magmablas_capply_transpose_vector_kernel(
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 __global__ void 
 magmablas_capply_transpose_vector_kernel_batched(
     magma_int_t n,
@@ -181,4 +181,3 @@ magmablas_capply_transpose_vector_kernel_batched(
     int batchid = blockIdx.y;
     magmablas_capply_transpose_vector_devfunc(n, du+offsetu, db_array[batchid]+offsetb);
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////

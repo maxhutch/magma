@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zpotrf_batched.cpp normal z -> c, Mon May  2 23:31:23 2016
+   @generated from testing/testing_zpotrf_batched.cpp, normal z -> c, Tue Aug 30 09:39:18 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -24,11 +24,10 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#include "magma_threadsetting.h"  // to work around MKL bug
-
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
+#include "../control/magma_threadsetting.h"  // internal header
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing cpotrf_batched
@@ -36,7 +35,8 @@
 
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     magmaFloatComplex *h_A, *h_R;
@@ -46,7 +46,7 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     float      work[1], error;
-    magma_int_t status = 0;
+    int status = 0;
     magmaFloatComplex **d_A_array = NULL;
     magma_int_t *dinfo_magma;
     magma_int_t *cpu_info;
@@ -72,13 +72,13 @@ int main( int argc, char** argv)
 
             gflops = batchCount * FLOPS_CPOTRF( N ) / 1e9;
 
-            TESTING_MALLOC_CPU( cpu_info, magma_int_t, batchCount);
-            TESTING_MALLOC_CPU( h_A, magmaFloatComplex, n2);
-            TESTING_MALLOC_PIN( h_R, magmaFloatComplex, n2);
-            TESTING_MALLOC_DEV(  d_A, magmaFloatComplex, ldda * N * batchCount);
-            TESTING_MALLOC_DEV(  dinfo_magma,  magma_int_t, batchCount);
+            TESTING_CHECK( magma_imalloc_cpu( &cpu_info, batchCount ));
+            TESTING_CHECK( magma_cmalloc_cpu( &h_A, n2 ));
+            TESTING_CHECK( magma_cmalloc_pinned( &h_R, n2 ));
+            TESTING_CHECK( magma_cmalloc( &d_A, ldda * N * batchCount ));
+            TESTING_CHECK( magma_imalloc( &dinfo_magma,  batchCount ));
             
-            TESTING_MALLOC_DEV( d_A_array, magmaFloatComplex*, batchCount );
+            TESTING_CHECK( magma_malloc( (void**) &d_A_array, batchCount * sizeof(magmaFloatComplex*) ));
 
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
@@ -106,12 +106,13 @@ int main( int argc, char** argv)
             for (int i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
-                    printf("magma_cpotrf_batched matrix %d returned diag error %d\n", i, (int)cpu_info[i] );
+                    printf("magma_cpotrf_batched matrix %lld returned diag error %lld\n",
+                            (long long) i, (long long) cpu_info[i] );
                     status = -1;
                 }
             }
             if (info != 0) {
-                //printf("magma_cpotrf_batched returned argument error %d: %s.\n", (int) info, magma_strerror( info ));
+                //printf("magma_cpotrf_batched returned argument error %lld: %s.\n", (long long) info, magma_strerror( info ));
                 status = -1;
             }                
             if (status == -1)
@@ -135,8 +136,8 @@ int main( int argc, char** argv)
                     magma_int_t locinfo;
                     lapackf77_cpotrf( lapack_uplo_const(opts.uplo), &N, h_A + s * lda * N, &lda, &locinfo );
                     if (locinfo != 0) {
-                        printf("lapackf77_cpotrf matrix %d returned error %d: %s.\n",
-                               (int) s, (int) locinfo, magma_strerror( locinfo ));
+                        printf("lapackf77_cpotrf matrix %lld returned error %lld: %s.\n",
+                               (long long) s, (long long) locinfo, magma_strerror( locinfo ));
                     }
                 }
 
@@ -150,12 +151,6 @@ int main( int argc, char** argv)
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                #ifdef MAGMA_WITH_MKL
-                // work around MKL bug in multi-threaded clanhe
-                magma_int_t la_threads = magma_get_lapack_numthreads();
-                magma_set_lapack_numthreads( 1 );
-                #endif
-                
                 magma_cgetmatrix( N, columns, d_A, ldda, h_R, lda, opts.queue );
                 magma_int_t NN = lda*N;
                 const char* uplo = lapack_uplo_const(opts.uplo);
@@ -164,8 +159,8 @@ int main( int argc, char** argv)
                 {
                     float Anorm, err;
                     blasf77_caxpy(&NN, &c_neg_one, h_A + i * lda*N, &ione, h_R + i * lda*N, &ione);
-                    Anorm = lapackf77_clanhe("f", uplo, &N, h_A + i * lda*N, &lda, work);
-                    err   = lapackf77_clanhe("f", uplo, &N, h_R + i * lda*N, &lda, work)
+                    Anorm = safe_lapackf77_clanhe("f", uplo, &N, h_A + i * lda*N, &lda, work);
+                    err   = safe_lapackf77_clanhe("f", uplo, &N, h_R + i * lda*N, &lda, work)
                           / Anorm;
                     if ( isnan(err) || isinf(err) ) {
                         error = err;
@@ -176,26 +171,21 @@ int main( int argc, char** argv)
                 bool okay = (error < tol);
                 status += ! okay;
                 
-                #ifdef MAGMA_WITH_MKL
-                // end single thread to work around MKL bug
-                magma_set_lapack_numthreads( la_threads );
-                #endif
-                
-                printf("%10d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                       (int)batchCount, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
+                printf("%10lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                       (long long) batchCount, (long long) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        error, (okay ? "ok" : "failed"));
             }
             else {
-                printf("%10d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---\n",
-                       (int)batchCount, (int) N, gpu_perf, gpu_time*1000. );
+                printf("%10lld %5lld     ---   (  ---  )   %7.2f (%7.2f)     ---\n",
+                       (long long) batchCount, (long long) N, gpu_perf, gpu_time*1000. );
             }
 cleanup:
-            TESTING_FREE_CPU( cpu_info );
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_PIN( h_R );
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_A_array );
-            TESTING_FREE_DEV( dinfo_magma );
+            magma_free_cpu( cpu_info );
+            magma_free_cpu( h_A );
+            magma_free_pinned( h_R );
+            magma_free( d_A );
+            magma_free( d_A_array );
+            magma_free( dinfo_magma );
             if (status == -1)
                 break;
             fflush( stdout );
@@ -209,6 +199,6 @@ cleanup:
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

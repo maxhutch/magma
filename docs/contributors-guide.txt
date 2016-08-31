@@ -4,7 +4,7 @@ This file is processed with Doxygen. See docs/html/index.html for formatted vers
 
 ********************************************************************************
 
-@page contributors-guide    Contributor's Guide
+@page contributors-guide    Contributors' Guide
 
 Coding Style {#style}
 =================================
@@ -47,7 +47,7 @@ This guide is based on the PLASMA coding style guide, though slightly different.
   Space may be used around other operators (`+, -,` etc.) to aid readability.
 
   Semi-colons are not preceded by a space.
-  Inside for loop statement, semi-colons are followed by a space, e.g., for(i=0; i < n; ++i).
+  Inside for loop statement, semi-colons are followed by a space, e.g., for (i=0; i < n; ++i).
   Similarly, commas are not preceded by a space, and are followed by a space.
   Occasionally, additional spaces can be used after the comma to line up items on
   consecutive lines for better readability.
@@ -230,8 +230,8 @@ This guide is based on the PLASMA coding style guide, though slightly different.
 - **Newlines:**
   Only Unix newlines (\\n, ASCII 10) should be used;
   Windows newlines (\\r\\n) and returns (\\r) should not be used.
-  Every file should have an end-of-line character at the end unless it's a
-  zero-length file.
+  Every file should have exactly one end-of-line character at the end,
+  unless it's a zero-length file.
 
 - **Tabs:**
   Tab characters should not be used. Tabs should always be emulated by four
@@ -319,7 +319,6 @@ Naming Conventions {#naming}
   leading dimension likewise has an added "d": `dA` and `ldda`, `dB` and `lddb`,
   etc.
 
-
 Coding Practices {#coding}
 =================================
 
@@ -330,10 +329,10 @@ Coding Practices {#coding}
   same prototype for each function.
 
 - **Preprocessor Macros:**
-  Conditional compilation, through the `#define` directive,
+  Conditional compilation, through the \#define directive,
   should be used only for portability reasons,
   and never for making choices that can be decided at runtime.
-  Excessive use of `#define` macros leads to frequent recompilations and obscure code.
+  Excessive use of \#define macros leads to frequent recompilations and obscure code.
 
 - **Dead Code:**
   There should be no dead code: no code that is never executed, no including

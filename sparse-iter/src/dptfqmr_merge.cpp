@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zptfqmr_merge.cpp normal z -> d, Mon May  2 23:30:58 2016
+       @generated from sparse-iter/src/zptfqmr_merge.cpp, normal z -> d, Tue Aug 30 09:38:54 2016
 */
 
 #include "magmasparse_internal.h"
@@ -73,7 +73,7 @@ magma_dptfqmr_merge(
     // local variables
     double c_zero = MAGMA_D_ZERO, c_one = MAGMA_D_ONE;
     // solver variables
-    double nom0, r0,  res, nomb;
+    double nom0, r0,  res=0, nomb;
     double rho = c_one, rho_l = c_one, eta = c_zero , c = c_zero , 
                         theta = c_zero , tau = c_zero, alpha = c_one, beta = c_zero,
                         sigma = c_zero;
@@ -134,7 +134,7 @@ magma_dptfqmr_merge(
     rho_l = rho;
     
     //Chronometry
-    real_Double_t tempo1, tempo2, tempop1, tempop2;
+    real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
     
     solver_par->numiter = 0;
@@ -167,7 +167,16 @@ magma_dptfqmr_merge(
         c = c_one / magma_dsqrt( c_one + theta*theta );
         tau = tau * theta *c;
         eta = c * c * alpha;
-        sigma = theta * theta / alpha * eta;  
+        sigma = theta * theta / alpha * eta;
+        if ( magma_d_isnan_inf( theta ) ||
+             magma_d_isnan_inf( c )     ||
+             magma_d_isnan_inf( tau )   ||
+             magma_d_isnan_inf( eta )   ||
+             magma_d_isnan_inf( sigma ) )
+        {
+            info = MAGMA_DIVERGENCE;
+            break;
+        }
         
         magma_dtfqmr_2(  
         r.num_rows, 
@@ -197,11 +206,8 @@ magma_dptfqmr_merge(
         }
 
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, u_mp1, &t, precond_par, queue ));
         CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, t, &pu_m, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
         
         CHECK( magma_d_spmv( c_one, A, pu_m, c_zero, Au_new, queue )); // Au_new = A u_mp1
         solver_par->spmv_count++;
@@ -270,11 +276,8 @@ magma_dptfqmr_merge(
         queue );
               
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, u_mp1, &t, precond_par, queue ));
         CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, t, &pu_m, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
         
         CHECK( magma_d_spmv( c_one, A, pu_m, c_zero, Au_new, queue )); // Au_new = A pu_m
 
@@ -288,8 +291,7 @@ magma_dptfqmr_merge(
         Au.dval, 
         queue );
         
-        magma_dcopy( dofs, u_mp1.dval, 1, u_m.dval, 1, queue ); 
-    
+        magma_dcopy( dofs, u_mp1.dval, 1, u_m.dval, 1, queue );
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
     

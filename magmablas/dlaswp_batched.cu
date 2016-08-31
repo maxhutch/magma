@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlaswp_batched.cu normal z -> d, Mon May  2 23:30:41 2016
+       @generated from magmablas/zlaswp_batched.cu, normal z -> d, Tue Aug 30 09:38:39 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -19,7 +19,7 @@
 extern __shared__ double shared_data[];
 
 
-//=================================================================================================
+/******************************************************************************/
 static __device__ 
 void dlaswp_rowparallel_devfunc(  
                               int n, int width, int height,
@@ -63,9 +63,9 @@ void dlaswp_rowparallel_devfunc(
     }
 }
 
-//=================================================================================================
+
+/******************************************************************************/
 // parallel swap the swaped dA(1:nb,i:n) is stored in dout 
-//=================================================================================================
 __global__ 
 void dlaswp_rowparallel_kernel( 
                                 int n, int width, int height,
@@ -75,8 +75,9 @@ void dlaswp_rowparallel_kernel(
 {
     dlaswp_rowparallel_devfunc(n, width, height, dinput, ldi, doutput, ldo, pivinfo);
 }
-//=================================================================================================
 
+
+/******************************************************************************/
 __global__ 
 void dlaswp_rowparallel_kernel_batched(
                                 int n, int width, int height,
@@ -89,9 +90,7 @@ void dlaswp_rowparallel_kernel_batched(
 }
 
 
-//=================================================================================================
-
-//=================================================================================================
+/******************************************************************************/
 extern "C" void
 magma_dlaswp_rowparallel_batched( magma_int_t n, 
                        double** input_array, magma_int_t ldi,
@@ -104,7 +103,7 @@ magma_dlaswp_rowparallel_batched( magma_int_t n,
     int height = k2-k1;
     if ( height  > 1024) 
     {
-        fprintf( stderr, "%s: n=%d > 1024, not supported\n", __func__, int(n) );
+        fprintf( stderr, "%s: n=%lld > 1024, not supported\n", __func__, (long long) n );
     }
 
     int blocks = magma_ceildiv( n, SWP_WIDTH );
@@ -126,12 +125,8 @@ magma_dlaswp_rowparallel_batched( magma_int_t n,
     }
 }
 
-//=================================================================================================
 
-
-
-
-//=================================================================================================
+/******************************************************************************/
 extern "C" void
 magma_dlaswp_rowparallel(
     magma_int_t n, 
@@ -145,7 +140,8 @@ magma_dlaswp_rowparallel(
     int height = k2-k1;
     if ( height  > MAX_NTHREADS) 
     {
-        fprintf( stderr, "%s: height=%d > %d, magma_dlaswp_rowparallel_q not supported\n", __func__, int(n), int(MAX_NTHREADS) );
+        fprintf( stderr, "%s: height=%lld > %lld, magma_dlaswp_rowparallel_q not supported\n",
+                 __func__, (long long) n, (long long) MAX_NTHREADS );
     }
 
     int blocks = magma_ceildiv( n, SWP_WIDTH );
@@ -167,15 +163,9 @@ magma_dlaswp_rowparallel(
     }
 }
 
-//=================================================================================================
 
-
-
-
-
-//=================================================================================================
-//  serial swap that does swapping one row by one row
-//=================================================================================================
+/******************************************************************************/
+// serial swap that does swapping one row by one row
 __global__ void dlaswp_rowserial_kernel_batched( int n, double **dA_array, int lda, int k1, int k2, magma_int_t** ipiv_array )
 {
     double* dA = dA_array[blockIdx.z];
@@ -202,10 +192,10 @@ __global__ void dlaswp_rowserial_kernel_batched( int n, double **dA_array, int l
     }
 }
 
-//=================================================================================================
-//  serial swap that does swapping one row by one row, similar to LAPACK
-//  K1, K2 are in Fortran indexing  
-//=================================================================================================
+
+/******************************************************************************/
+// serial swap that does swapping one row by one row, similar to LAPACK
+// K1, K2 are in Fortran indexing  
 extern "C" void
 magma_dlaswp_rowserial_batched(magma_int_t n, double** dA_array, magma_int_t lda,
                    magma_int_t k1, magma_int_t k2,
@@ -224,9 +214,8 @@ magma_dlaswp_rowserial_batched(magma_int_t n, double** dA_array, magma_int_t lda
 
 
 
-//=================================================================================================
-//  serial swap that does swapping one column by one column
-//=================================================================================================
+/******************************************************************************/
+// serial swap that does swapping one column by one column
 __global__ void dlaswp_columnserial_kernel_batched( int n, double **dA_array, int lda, int k1, int k2, magma_int_t** ipiv_array )
 {
     double* dA = dA_array[blockIdx.z];
@@ -268,10 +257,10 @@ __global__ void dlaswp_columnserial_kernel_batched( int n, double **dA_array, in
     }
 }
 
-//=================================================================================================
-//  serial swap that does swapping one column by one column
-//  K1, K2 are in Fortran indexing  
-//=================================================================================================
+
+/******************************************************************************/
+// serial swap that does swapping one column by one column
+// K1, K2 are in Fortran indexing  
 extern "C" void
 magma_dlaswp_columnserial_batched(magma_int_t n, double** dA_array, magma_int_t lda,
                    magma_int_t k1, magma_int_t k2,

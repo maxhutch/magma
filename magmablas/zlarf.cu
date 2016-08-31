@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Azzam Haidar
@@ -19,12 +19,11 @@
 #define BLOCK_SIZEy  16
 
 
-//==============================================================================
-//==============================================================================
-
+/******************************************************************************/
 __global__
-void magma_zlarf_kernel( int m, const magmaDoubleComplex *dv, const magmaDoubleComplex *dtau,
-                         magmaDoubleComplex *dc, int lddc )
+void magma_zlarf_kernel(
+    int m, const magmaDoubleComplex *dv, const magmaDoubleComplex *dtau,
+    magmaDoubleComplex *dc, int lddc )
 {
     if ( !MAGMA_Z_EQUAL(*dtau, MAGMA_Z_ZERO) ) {
         const int tx = threadIdx.x;
@@ -54,12 +53,12 @@ void magma_zlarf_kernel( int m, const magmaDoubleComplex *dv, const magmaDoubleC
     }
 }
 
-//==============================================================================
-//==============================================================================
 
+/******************************************************************************/
 __global__
-void magma_zlarf_smkernel( int m, int n, magmaDoubleComplex *dv, magmaDoubleComplex *dtau,
-                           magmaDoubleComplex *dc, int lddc )
+void magma_zlarf_smkernel(
+    int m, int n, magmaDoubleComplex *dv, magmaDoubleComplex *dtau,
+    magmaDoubleComplex *dc, int lddc )
 {
     if ( ! MAGMA_Z_EQUAL(*dtau, MAGMA_Z_ZERO) ) {
         const int i = threadIdx.x, col= threadIdx.y;
@@ -94,8 +93,8 @@ void magma_zlarf_smkernel( int m, int n, magmaDoubleComplex *dv, magmaDoubleComp
     }
 }
 
-//==============================================================================
 
+/******************************************************************************/
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
@@ -107,7 +106,7 @@ void magma_zlarf_smkernel( int m, int n, magmaDoubleComplex *dv, magmaDoubleComp
     instead tau.
 
     This routine uses only one SM (block).
- */
+*/
 extern "C" void
 magma_zlarf_sm(
     magma_int_t m, magma_int_t n,
@@ -122,8 +121,9 @@ magma_zlarf_sm(
         <<< blocks, threads, 0, queue->cuda_stream() >>>
         ( m, n, dv, dtau, dc, lddc );
 }
-//==============================================================================
-/*
+
+
+/***************************************************************************//**
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
           H = I - tau * v * v**H
@@ -132,9 +132,7 @@ magma_zlarf_sm(
 
     To apply H**H (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
-
- */
-
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zlarf_gpu(
     magma_int_t m,  magma_int_t n,
@@ -156,5 +154,3 @@ magma_zlarf_gpu(
 
     return MAGMA_SUCCESS;
 }
-
-//==============================================================================

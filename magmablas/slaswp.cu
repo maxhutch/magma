@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlaswp.cu normal z -> s, Mon May  2 23:30:34 2016
+       @generated from magmablas/zlaswp.cu, normal z -> s, Tue Aug 30 09:38:32 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -55,7 +55,7 @@ __global__ void slaswp_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     SLASWP performs a series of row interchanges on the matrix A.
@@ -108,9 +108,9 @@ __global__ void slaswp_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
-// It is used in sgessm, sgetrf_incpiv.
+    @ingroup magma_laswp
+*******************************************************************************/
+// used in sgessm, sgetrf_incpiv.
 extern "C" void
 magmablas_slaswp_q(
     magma_int_t n,
@@ -161,7 +161,7 @@ magmablas_slaswp_q(
 
 
 
-// ------------------------------------------------------------
+/******************************************************************************/
 // Extended version has stride in both directions (ldx, ldy)
 // to handle both row-wise and column-wise storage.
 
@@ -192,7 +192,7 @@ __global__ void slaswpx_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     SLASWPX performs a series of row interchanges on the matrix A.
@@ -250,8 +250,8 @@ __global__ void slaswpx_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_laswp
+*******************************************************************************/
 extern "C" void
 magmablas_slaswpx_q(
     magma_int_t n,
@@ -300,7 +300,7 @@ magmablas_slaswpx_q(
 
 
 
-// ------------------------------------------------------------
+/******************************************************************************/
 // This version takes d_ipiv on the GPU. Thus it does not pass pivots
 // as an argument using a structure, avoiding all the argument size
 // limitations of CUDA and OpenCL. It also needs just one kernel launch
@@ -331,7 +331,7 @@ __global__ void slaswp2_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose:
     =============
     SLASWP2 performs a series of row interchanges on the matrix A.
@@ -385,8 +385,8 @@ __global__ void slaswp2_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux2
-    ********************************************************************/
+    @ingroup magma_laswp
+*******************************************************************************/
 extern "C" void
 magmablas_slaswp2_q(
     magma_int_t n,

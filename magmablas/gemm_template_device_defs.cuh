@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -16,8 +16,7 @@
 #ifndef GEMM_TEMPLATE_DEVICE_DEFS_H
 #define GEMM_TEMPLATE_DEVICE_DEFS_H
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
+// =============================================================================
 #ifdef TEXTURE_1D
 
 static __device__
@@ -55,7 +54,8 @@ FloatingPoint_t tex_fetch(texture<float> tex_ref, int coord)
 }
 #endif
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// =============================================================================
 #ifdef TEXTURE_1D
     #define fetch(A, m, n, bound) tex_fetch(tex_ref_##A, coord_##A + n*LD##A+m)
 #else
@@ -84,8 +84,7 @@ FloatingPoint_t tex_fetch(texture<float> tex_ref, int coord)
 #endif
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
+// =============================================================================
 #ifdef TEXTURE_1D
 
     #if defined(PRECISION_z)
@@ -103,7 +102,5 @@ FloatingPoint_t tex_fetch(texture<float> tex_ref, int coord)
     #endif
     
 #endif
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif //GEMM_TEMPLATE_DEVICE_DEFS_H

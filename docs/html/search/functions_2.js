@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['get_5fthread_5findex',['get_thread_index',['../classmagma__thread__queue.html#a65afbd1d75b551159d75e69dc0258b0f',1,'magma_thread_queue']]]
+  ['d_5ftranspose_5fcsr',['d_transpose_csr',['../group__magmasparse__daux.html#ga3c4991d4d879c5953aab600eba839c9f',1,'magma_dmtranspose.cpp']]],
+  ['device',['device',['../structmagma__queue.html#a059eb41cf5717333dd5916cda991e526',1,'magma_queue']]]
 ];

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -11,12 +11,10 @@
        
        @precisions normal z -> s d c
 */
-
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGETRI computes the inverse of a matrix using the LU factorization
@@ -78,8 +76,8 @@
     queue   magma_queue_t
             Queue to execute in.
                   
-    @ingroup magma_zgesv_comp
-    ********************************************************************/
+    @ingroup magma_getri_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgetri_outofplace_batched( magma_int_t n, 
                   magmaDoubleComplex **dA_array, magma_int_t ldda,
@@ -89,7 +87,6 @@ magma_zgetri_outofplace_batched( magma_int_t n,
                   magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
-  
     magma_int_t info = 0;
     if (n < 0)
         info = -1;
@@ -156,7 +153,7 @@ magma_zgetri_outofplace_batched( magma_int_t n,
     magmablas_zlaset_q( MagmaFull, invdiagA_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvdiagA, invdiagA_msize, queue );
     magmablas_zlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork, dwork_msize, queue );
     magma_zset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
-    magma_zset_pointer( dinvdiagA_array, dinvdiagA, TRI_NB, 0, 0, invdiagA_msize, batchCount, queue );
+    magma_zset_pointer( dinvdiagA_array, dinvdiagA, ZTRTRI_BATCHED_NB, 0, 0, invdiagA_msize, batchCount, queue );
 
     magma_zdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
     // set dinvdiagA to identity
@@ -168,9 +165,7 @@ magma_zgetri_outofplace_batched( magma_int_t n,
         // Azzam : optimization can be done:
         //          2- compute invdiagL invdiagU only one time
 
-
-        //magma_queue_sync(NULL);
-        //printf(" @ step %d calling solve 1 \n",j);
+        //printf(" @ step %d calling solve 1\n",j);
         // solve dwork = L^-1 * I
         magmablas_zlaset_batched( MagmaFull, j, ib, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork_array, n, batchCount, queue );
         magma_zdisplace_pointers(dW5_displ, dwork_array, n, j, 0, batchCount, queue);
@@ -188,7 +183,7 @@ magma_zgetri_outofplace_batched( magma_int_t n,
                 dW3_displ,   dW4_displ,
                 1, batchCount, queue );
         
-        //printf(" @ step %d calling solve 2 \n",j);
+        //printf(" @ step %d calling solve 2\n",j);
         // solve dinvdiagA = U^-1 * dwork
         magma_zdisplace_pointers(dW5_displ, dwork_array, n, 0, 0, batchCount, queue);
         magma_zdisplace_pointers(dW0_displ, dinvA_array, lddia, 0, j, batchCount, queue);

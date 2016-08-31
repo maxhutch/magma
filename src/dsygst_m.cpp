@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from src/zhegst_m.cpp normal z -> d, Mon May  2 23:30:21 2016
+       @generated from src/zhegst_m.cpp, normal z -> d, Tue Aug 30 09:38:20 2016
 */
 #include "magma_internal.h"
 
 
+/******************************************************************************/
 static void magma_dsygst_m_1_U_row_update(
     magma_int_t nk, magma_int_t nb,
     double* dA_row, magma_int_t ldda,
@@ -44,6 +45,7 @@ static void magma_dsygst_m_1_U_row_update(
 }
 
 
+/******************************************************************************/
 static void magma_dsygst_m_1_L_col_update(
     magma_int_t nk, magma_int_t nb,
     double* dA_col, magma_int_t ldda,
@@ -75,7 +77,7 @@ static void magma_dsygst_m_1_L_col_update(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DSYGST_M reduces a real symmetric-definite generalized
@@ -143,8 +145,8 @@ static void magma_dsygst_m_1_L_col_update(
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
     
 
-    @ingroup magma_dsyev_comp
-    ********************************************************************/
+    @ingroup magma_hegst
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dsygst_m(
     magma_int_t ngpu,
@@ -176,7 +178,7 @@ magma_dsygst_m(
 
     bool upper = (uplo == MagmaUpper);
 
-    magma_int_t nb = magma_get_dsygst_nb_m( n );
+    magma_int_t nb = magma_get_dsygst_m_nb( n );
 
     /* Test the input parameters. */
     *info = 0;

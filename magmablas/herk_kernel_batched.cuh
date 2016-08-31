@@ -1,16 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Mark Gates
        @author Azzam Haidar
 
        See [zcds]zherk_fermi_batched.cu for description of related files.
 */
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************/
 extern "C" static  __global__
 void batched_herk_kernel_name(precision)(
     magma_uplo_t uplo, int N, int K,

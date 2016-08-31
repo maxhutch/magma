@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -13,11 +13,9 @@
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-////////////////////////////////////////////////////////////////////////////////////////
-/**
-    \n
-    This is an internal routine.
-    ********************************************************************/
+
+
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrf_panel_batched(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb,     
@@ -35,7 +33,7 @@ magma_zpotrf_panel_batched(
     //  panel factorization
     //===============================================
     if (n < nb) {
-        printf("magma_zpotrf_panel error n < nb %d < %d \n",(int) n, (int) nb);
+        printf("magma_zpotrf_panel error n < nb %lld < %lld\n", (long long) n, (long long) nb );
         return -101;
     }
 
@@ -74,15 +72,7 @@ magma_zpotrf_panel_batched(
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-/**
-    \n
-    This is an internal routine.
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrf_recpanel_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, 
@@ -102,13 +92,13 @@ magma_zpotrf_recpanel_batched(
         return arginfo;
     }
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        printf("Upper side is unavailable\n");
         arginfo = -1;
         magma_xerbla( __func__, -(arginfo) );
         return arginfo;
     }
     if (m < n) {
-        printf("error m < n %d < %d \n", (int) m, (int) n);
+        printf("error m < n %lld < %lld\n", (long long) m, (long long) n );
         arginfo = -101;
         magma_xerbla( __func__, -(arginfo) );
         return arginfo;
@@ -188,11 +178,7 @@ magma_zpotrf_recpanel_batched(
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////
-/**
-    \n
-    This is an internal routine.
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zpotrf_rectile_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, 
@@ -213,11 +199,11 @@ magma_zpotrf_rectile_batched(
         return 1;
     }
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        printf("Upper side is unavailable\n");
         return -100;
     }
     if (m < n) {
-        printf("error m < n %d < %d \n", (int) m, (int) n);
+        printf("error m < n %lld < %lld\n", (long long) m, (long long) n );
         return -101;
     }
 
@@ -228,7 +214,7 @@ magma_zpotrf_rectile_batched(
     magmaDoubleComplex beta  = MAGMA_Z_ONE;
     magma_int_t panel_nb = n;
     if (panel_nb <= min_recpnb) {
-        // if (DEBUG == 1) printf("calling bottom panel recursive with n=%d\n",(int) panel_nb);
+        // if (DEBUG == 1) printf("calling bottom panel recursive with n=%lld\n", (long long) panel_nb);
         //  panel factorization
         magma_zdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
         magma_zpotrf_panel_batched(
@@ -253,7 +239,7 @@ magma_zpotrf_rectile_batched(
         magma_int_t p2 = n1;
 
         // panel on A11
-        //if (DEBUG == 1) printf("calling recursive panel on A11=A(%d,%d) with n=%d min_recpnb %d\n",(int) p1, (int) p1, (int) n1, (int) min_recpnb);
+        //if (DEBUG == 1) printf("calling recursive panel on A11=A(%d,%d) with n=%d min_recpnb %d\n", p1, p1, n1, min_recpnb);
         magma_zdisplace_pointers(dA_displ, dA_array, ldda, p1, p1, batchCount, queue);        
         magma_zpotrf_rectile_batched(
                            uplo, n1, n1, min_recpnb,
@@ -266,7 +252,7 @@ magma_zpotrf_rectile_batched(
                            batchCount, queue);
 
         // TRSM on A21
-        //if (DEBUG == 1) printf("calling trsm on A21=A(%d,%d) using A11 == A(%d,%d) with m=%d k=%d \n",p2,p1,p1,p1,n2,n1);
+        //if (DEBUG == 1) printf("calling trsm on A21=A(%d,%d) using A11 == A(%d,%d) with m=%d k=%d\n",p2,p1,p1,p1,n2,n1);
         magma_zdisplace_pointers(dA_displ,  dA_array, ldda, p1, p1, batchCount, queue);        
         magma_zdisplace_pointers(dW0_displ, dA_array, ldda, p2, p1, batchCount, queue);
         magmablas_ztrsm_work_batched( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
@@ -305,7 +291,7 @@ magma_zpotrf_rectile_batched(
 
     if (m > n) {
         // TRSM on A3:
-        //if (DEBUG == 1) printf("calling trsm AT THE END on A3=A(%d,%d): using A1222 == A(%d,%d) with m=%d k=%d \n",n,0,0,0,m-n,n);
+        //if (DEBUG == 1) printf("calling trsm AT THE END on A3=A(%d,%d): using A1222 == A(%d,%d) with m=%d k=%d\n",n,0,0,0,m-n,n);
         magma_zdisplace_pointers(dA_displ,  dA_array, ldda, 0, 0, batchCount, queue);        
         magma_zdisplace_pointers(dW0_displ, dA_array, ldda, n, 0, batchCount, queue);
         magmablas_ztrsm_work_batched( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,

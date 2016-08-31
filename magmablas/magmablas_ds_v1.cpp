@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/magmablas_zc_v1.cpp mixed zc -> ds, Mon May  2 23:30:37 2016
+       @generated from magmablas/magmablas_zc_v1.cpp, mixed zc -> ds, Tue Aug 30 09:38:36 2016
 
        @author Mark Gates
        
@@ -16,11 +16,10 @@
 
 #include "common_magma.h"
 
+// These MAGMA v1 routines are all deprecated.
+// See corresponding v2 functions for documentation.
 
-/**
-    @see magmablas_dsaxpycp_q
-    @ingroup magma_dblas1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dsaxpycp(
     magma_int_t m,
@@ -33,10 +32,7 @@ magmablas_dsaxpycp(
 }
 
 
-/**
-    @see magmablas_slag2d_q
-    @ingroup magma_saux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_slag2d(
     magma_int_t m, magma_int_t n,
@@ -48,10 +44,7 @@ magmablas_slag2d(
 }
 
 
-/**
-    @see magmablas_slat2d_q
-    @ingroup magma_daux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_slat2d(
     magma_uplo_t uplo, magma_int_t n,
@@ -63,10 +56,7 @@ magmablas_slat2d(
 }
 
 
-/**
-    @see magmablas_dlag2s_q
-    @ingroup magma_daux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dlag2s(
     magma_int_t m, magma_int_t n,
@@ -78,10 +68,7 @@ magmablas_dlag2s(
 }
 
 
-/**
-    @see magmablas_dlat2s_q
-    @ingroup magma_daux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dlat2s(
     magma_uplo_t uplo, magma_int_t n,
@@ -93,11 +80,7 @@ magmablas_dlat2s(
 }
 
 
-/**
-    Note magmablas_dslaswp_q also adds ldsa. This assumes ldsa = lda.
-    @see magmablas_dslaswp_q
-    @ingroup magma_daux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_dslaswp(
     magma_int_t n,

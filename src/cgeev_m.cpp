@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgeev_m.cpp normal z -> c, Mon May  2 23:30:23 2016
+       @generated from src/zgeev_m.cpp, normal z -> c, Tue Aug 30 09:38:22 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -30,7 +30,7 @@
  */
 #define TREVC_VERSION 4
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEEV computes for an N-by-N complex nonsymmetric matrix A, the
@@ -127,8 +127,8 @@
                   elements and i+1:N of W contain eigenvalues which have
                   converged.
 
-    @ingroup magma_cgeev_driver
-    ********************************************************************/
+    @ingroup magma_geev
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgeev_m(
     magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,

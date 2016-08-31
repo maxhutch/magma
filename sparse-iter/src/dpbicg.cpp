@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/src/zpbicg.cpp normal z -> d, Mon May  2 23:30:56 2016
+       @generated from sparse-iter/src/zpbicg.cpp, normal z -> d, Tue Aug 30 09:38:52 2016
        @author Hartwig Anzt
 
 */

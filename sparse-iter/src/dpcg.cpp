@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
-       @generated from sparse-iter/src/zpcg.cpp normal z -> d, Mon May  2 23:30:59 2016
+       @generated from sparse-iter/src/zpcg.cpp, normal z -> d, Tue Aug 30 09:38:56 2016
 */
 
 #include "magmasparse_internal.h"
@@ -71,7 +71,7 @@ magma_dpcg(
     
     // solver variables
     double alpha, beta;
-    double nom, nom0, r0,  res, nomb;
+    double nom0, r0,  res, nomb;
     double den, gammanew, gammaold = MAGMA_D_MAKE(1.0,0.0);
     // local variables
     double c_zero = MAGMA_D_ZERO, c_one = MAGMA_D_ONE;
@@ -95,7 +95,6 @@ magma_dpcg(
     CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
 
     magma_dcopy( dofs, h.dval, 1, p.dval, 1, queue );                    // p = h
-    nom = MAGMA_D_ABS( magma_ddot( dofs, r.dval, 1, h.dval, 1, queue ));
     CHECK( magma_d_spmv( c_one, A, p, c_zero, q, queue ));             // q = A p
     den =  magma_ddot( dofs, p.dval, 1, q.dval, 1, queue ); // den = p dot q
     solver_par->init_res = nom0;
@@ -113,7 +112,7 @@ magma_dpcg(
         solver_par->res_vec[0] = (real_Double_t)nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }
@@ -124,7 +123,7 @@ magma_dpcg(
     }
 
     //Chronometry
-    real_Double_t tempo1, tempo2, tempop1, tempop2;
+    real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
     
     solver_par->numiter = 0;
@@ -135,11 +134,8 @@ magma_dpcg(
         solver_par->numiter++;
 
         // preconditioner
-        tempop1 = magma_sync_wtime( queue );
         CHECK( magma_d_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
         CHECK( magma_d_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
-        tempop2 = magma_sync_wtime( queue );
-        precond_par->runtime += tempop2-tempop1;
         
         gammanew = magma_ddot( dofs, r.dval, 1, h.dval, 1, queue );
                                                             // gn = < r,h>

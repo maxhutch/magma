@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from testing/testing_zunmql_gpu.cpp normal z -> s, Mon May  2 23:31:16 2016
+       @generated from testing/testing_zunmql_gpu.cpp, normal z -> s, Tue Aug 30 09:39:11 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -27,7 +27,8 @@
 */
 int main( int argc, char** argv )
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     float Cnorm, error, work[1];
@@ -38,7 +39,7 @@ int main( int argc, char** argv )
     magma_int_t nb, ldc, lda, /*lwork,*/ lwork_max;
     float *C, *R, *A, *hwork, *tau;
     magmaFloat_ptr dC, dA;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -68,15 +69,15 @@ int main( int argc, char** argv )
             gflops = FLOPS_SORMQL( m, n, k, side[iside] ) / 1e9;
             
             if ( side[iside] == MagmaLeft && m < k ) {
-                printf( "%5d %5d %5d   %4c   %5c   skipping because side=left  and m < k\n",
-                        (int) m, (int) n, (int) k,
+                printf( "%5lld %5lld %5lld   %4c   %5c   skipping because side=left  and m < k\n",
+                        (long long) m, (long long) n, (long long) k,
                         lapacke_side_const( side[iside] ),
                         lapacke_trans_const( trans[itran] ) );
                 continue;
             }
             if ( side[iside] == MagmaRight && n < k ) {
-                printf( "%5d %5d %5d  %4c   %5c    skipping because side=right and n < k\n",
-                        (int) m, (int) n, (int) k,
+                printf( "%5lld %5lld %5lld  %4c   %5c    skipping because side=right and n < k\n",
+                        (long long) m, (long long) n, (long long) k,
                         lapacke_side_const( side[iside] ),
                         lapacke_trans_const( trans[itran] ) );
                 continue;
@@ -85,16 +86,16 @@ int main( int argc, char** argv )
             // need at least 2*nb*nb for geqlf
             lwork_max = max( max( m*nb, n*nb ), 2*nb*nb );
             // this rounds it up slightly if needed to agree with lwork query below
-            lwork_max = int( real( magma_smake_lwork( lwork_max )));
+            lwork_max = magma_int_t( real( magma_smake_lwork( lwork_max )));
             
-            TESTING_MALLOC_CPU( C,     float, ldc*n );
-            TESTING_MALLOC_CPU( R,     float, ldc*n );
-            TESTING_MALLOC_CPU( A,     float, lda*k );
-            TESTING_MALLOC_CPU( hwork, float, lwork_max );
-            TESTING_MALLOC_CPU( tau,   float, k );
+            TESTING_CHECK( magma_smalloc_cpu( &C,     ldc*n ));
+            TESTING_CHECK( magma_smalloc_cpu( &R,     ldc*n ));
+            TESTING_CHECK( magma_smalloc_cpu( &A,     lda*k ));
+            TESTING_CHECK( magma_smalloc_cpu( &hwork, lwork_max ));
+            TESTING_CHECK( magma_smalloc_cpu( &tau,   k ));
             
-            TESTING_MALLOC_DEV( dC, float, ldc*n );
-            TESTING_MALLOC_DEV( dA, float, lda*k );
+            TESTING_CHECK( magma_smalloc( &dC, ldc*n ));
+            TESTING_CHECK( magma_smalloc( &dA, lda*k ));
             
             // C is full, m x n
             size = ldc*n;
@@ -109,8 +110,8 @@ int main( int argc, char** argv )
             magma_sgeqlf( mm, k, A, lda, tau, hwork, lwork_max, &info );
             magma_ssetmatrix( mm, k, A, lda, dA, lda, opts.queue );
             if (info != 0)
-                printf("magma_sgeqlf returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_sgeqlf returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -122,8 +123,8 @@ int main( int argc, char** argv )
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
             if (info != 0)
-                printf("lapackf77_sormql returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("lapackf77_sormql returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -135,11 +136,11 @@ int main( int argc, char** argv )
             //                   m, n, k,
             //                   A, lda, tau, R, ldc, hwork, lwork, &info );
             //if (info != 0)
-            //    printf("magma_sormql (lwork query) returned error %d: %s.\n",
-            //           (int) info, magma_strerror( info ));
+            //    printf("magma_sormql (lwork query) returned error %lld: %s.\n",
+            //           (long long) info, magma_strerror( info ));
             //lwork = (magma_int_t) MAGMA_S_REAL( hwork[0] );
             //if ( lwork < 0 || lwork > lwork_max ) {
-            //    printf("optimal lwork %d > lwork_max %d\n", (int) lwork, (int) lwork_max );
+            //    printf("optimal lwork %lld > lwork_max %lld\n", (long long) lwork, (long long) lwork_max );
             //    lwork = lwork_max;
             //}
             
@@ -162,8 +163,8 @@ int main( int argc, char** argv )
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
-                printf("magma_sormql returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_sormql returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             
             magma_sgetmatrix( m, n, dC, ldc, R, ldc, opts.queue );
             
@@ -175,22 +176,22 @@ int main( int argc, char** argv )
             Cnorm = lapackf77_slange( "Fro", &m, &n, C, &ldc, work );
             error = lapackf77_slange( "Fro", &m, &n, R, &ldc, work ) / (magma_ssqrt(m*n) * Cnorm);
             
-            printf( "%5d %5d %5d   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                    (int) m, (int) n, (int) k,
+            printf( "%5lld %5lld %5lld   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                    (long long) m, (long long) n, (long long) k,
                     lapacke_side_const( side[iside] ),
                     lapacke_trans_const( trans[itran] ),
                     cpu_perf, cpu_time, gpu_perf, gpu_time,
                     error, (error < tol ? "ok" : "failed") );
             status += ! (error < tol);
             
-            TESTING_FREE_CPU( C );
-            TESTING_FREE_CPU( R );
-            TESTING_FREE_CPU( A );
-            TESTING_FREE_CPU( hwork );
-            TESTING_FREE_CPU( tau );
+            magma_free_cpu( C );
+            magma_free_cpu( R );
+            magma_free_cpu( A );
+            magma_free_cpu( hwork );
+            magma_free_cpu( tau );
             
-            TESTING_FREE_DEV( dC );
-            TESTING_FREE_DEV( dA );
+            magma_free( dC );
+            magma_free( dA );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -201,6 +202,6 @@ int main( int argc, char** argv )
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

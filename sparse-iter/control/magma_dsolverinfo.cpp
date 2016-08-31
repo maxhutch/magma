@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/control/magma_zsolverinfo.cpp normal z -> d, Mon May  2 23:30:51 2016
+       @generated from sparse-iter/control/magma_zsolverinfo.cpp, normal z -> d, Tue Aug 30 09:38:48 2016
        @author Hartwig Anzt
 
 */
@@ -44,293 +44,379 @@ magma_dsolverinfo(
 {
     if( solver_par->verbose > 0 ){
         magma_int_t k = solver_par->verbose;
-        printf("%%==========================================================================="
-            "======%%\n");
+        printf("%%=================================================================================%%\n");
         switch( solver_par->solver ) {
-            case  Magma_CG:
-                    printf("%%   CG performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PCG:
-                    printf("%%   CG performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BICG:
-            case  Magma_BICGMERGE:
-            case  Magma_PBICG:
-            case  Magma_PBICGMERGE:
-                    printf("%%   BiCG performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_CGMERGE:
-                    printf("%%   CG (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BICGSTAB:
-                    printf("%%   BiCGSTAB performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PBICGSTAB:
-                    printf("%%   BiCGSTAB performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BICGSTABMERGE:
-                    printf("%%   BiCGSTAB (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BICGSTABMERGE2:
-                    printf("%%   BiCGSTAB (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_GMRES:
-                    printf("%%   GMRES(%d) performance analysis every %d iteration\n",
-                                                int(solver_par->restart), int(k) ); break;
-            case  Magma_PGMRES:
-                    printf("%%   GMRES(%d) performance analysis every %d iteration\n",
-                                                int(solver_par->restart), int(k) ); break;
-            case  Magma_IDR:
-            case  Magma_IDRMERGE:
-                    printf("%%   IDR(%d) performance analysis every %d iteration\n",
-                                                int(solver_par->restart), int(k) ); break;
-            case  Magma_PIDR:
-            case  Magma_PIDRMERGE:
-                    printf("%%   IDR(%d) performance analysis every %d iteration\n",
-                                                int(solver_par->restart), int(k) ); break;
-            case  Magma_ITERREF:
-                    printf("%%   Iterative refinement performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_JACOBI:
-                    printf("%%  Jacobi performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_CGS:
-                    printf("%%  CGS performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PCGS:
-                    printf("%%  CGS performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_CGSMERGE:
-                    printf("%%  CGS (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PCGSMERGE:
-                    printf("%%  CGS (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_TFQMR:
-                    printf("%%  TFQMR performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PCGMERGE:
-                    printf("%%  PCG performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PTFQMR:
-                    printf("%%  TFQMR performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_TFQMRMERGE:
-                    printf("%%  TFQMR (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PTFQMRMERGE:
-                    printf("%%  PTFQMR (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_QMR:
-                    printf("%%  QMR performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_LSQR:
-                    printf("%%  LSQR performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PQMR:
-                    printf("%%  PQMR performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_QMRMERGE:
-                    printf("%%  QMR (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_PQMRMERGE:
-                    printf("%%  PQMR (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BOMBARD:
-                    printf("%%  BOMBARD performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BOMBARDMERGE:
-                    printf("%%  BOMBARD (merged) performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
-            case  Magma_BAITER:
-            case  Magma_BAITERO:
-                    printf("%%  BAITER performance analysis every %d iteration\n",
-                                                                        int(k) ); break;
+            case Magma_CG:
+                printf("%%   CG performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PCG:
+                printf("%%   CG performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BICG:
+            case Magma_BICGMERGE:
+            case Magma_PBICG:
+            case Magma_PBICGMERGE:
+                printf("%%   BiCG performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_CGMERGE:
+                printf("%%   CG (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BICGSTAB:
+                printf("%%   BiCGSTAB performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PBICGSTAB:
+                printf("%%   BiCGSTAB performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BICGSTABMERGE:
+                printf("%%   BiCGSTAB (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BICGSTABMERGE2:
+                printf("%%   BiCGSTAB (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_GMRES:
+                printf("%%   GMRES(%lld) performance analysis every %lld iterations\n",
+                        (long long) solver_par->restart, (long long) k );
+                break;
+            case Magma_PGMRES:
+                printf("%%   GMRES(%lld) performance analysis every %lld iterations\n",
+                        (long long) solver_par->restart, (long long) k );
+                break;
+            case Magma_IDR:
+            case Magma_IDRMERGE:
+                printf("%%   IDR(%lld) performance analysis every %lld iterations\n",
+                        (long long) solver_par->restart, (long long) k );
+                break;
+            case Magma_PIDR:
+            case Magma_PIDRMERGE:
+                printf("%%   IDR(%lld) performance analysis every %lld iterations\n",
+                        (long long) solver_par->restart, (long long) k );
+                break;
+            case Magma_ITERREF:
+                printf("%%   Iterative refinement performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_JACOBI:
+                printf("%%  Jacobi performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_CGS:
+                printf("%%  CGS performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PCGS:
+                printf("%%  CGS performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_CGSMERGE:
+                printf("%%  CGS (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PCGSMERGE:
+                printf("%%  CGS (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_TFQMR:
+                printf("%%  TFQMR performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PCGMERGE:
+                printf("%%  PCG performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PTFQMR:
+                printf("%%  TFQMR performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_TFQMRMERGE:
+                printf("%%  TFQMR (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PTFQMRMERGE:
+                printf("%%  PTFQMR (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_QMR:
+                printf("%%  QMR performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_LSQR:
+                printf("%%  LSQR performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PQMR:
+                printf("%%  PQMR performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_QMRMERGE:
+                printf("%%  QMR (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_PQMRMERGE:
+                printf("%%  PQMR (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BOMBARD:
+                printf("%%  BOMBARD performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BOMBARDMERGE:
+                printf("%%  BOMBARD (merged) performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
+            case Magma_BAITER:
+            case Magma_BAITERO:
+                printf("%%  BAITER performance analysis every %lld iterations\n",
+                        (long long) k );
+                break;
             default:
-                    printf("%%   Detailed performance analysis not supported.\n"); break;
+                printf("%%  Detailed performance analysis not supported.\n");
+                break;
         }
         
         switch( precond_par->solver ) {
-            case  Magma_CG:
-                    printf("%%   Preconditioner used: CG.\n"); break;
-            case  Magma_BICGMERGE:
-            case  Magma_BICG:
-                    printf("%%   Preconditioner used: BiCG.\n"); break;
-            case  Magma_BICGSTAB:
-                    printf("%%   Preconditioner used: BiCGSTAB.\n"); break;
-            case  Magma_GMRES:
-                    printf("%%   Preconditioner used: GMRES.\n"); break;
-            case  Magma_CGS:
-                    printf("%%   Preconditioner used: CGS.\n"); break;
-            case  Magma_BOMBARD:
-                    printf("%%   Preconditioner used: BOMBARD.\n"); break;
-            case  Magma_TFQMR:
-                    printf("%%   Preconditioner used: TFQMR.\n"); break;
-            case  Magma_QMR:
-                    printf("%%   Preconditioner used: QMR.\n"); break;
-            case  Magma_JACOBI:
-                    printf("%%   Preconditioner used: Jacobi.\n"); break;
-            case  Magma_IDR:
-            case  Magma_IDRMERGE:
-                    printf("%%   Preconditioner used: Jacobi.\n"); break;
-            case  Magma_BAITER:
-            case  Magma_BAITERO:
-                    printf("%%   Preconditioner used: Block-asynchronous iteration.\n"); break;
-            case  Magma_ILU:
-                    printf("%%   Preconditioner used: ILU(%d).\n", int(precond_par->levels)); break;
-            case  Magma_AILU:
-                    printf("%%   Preconditioner used: iterative ILU(%d).\n", int(precond_par->levels)); break;
-            case  Magma_ICC:
-                    printf("%%   Preconditioner used: IC(%d).\n", int(precond_par->levels)); break;
-            case  Magma_AICC:
-                    printf("%%   Preconditioner used: iterative IC(%d).\n", int(precond_par->levels)); break;
+            case Magma_CG:
+                printf("%%   Preconditioner used: CG.\n");
+                break;
+            case Magma_BICGMERGE:
+            case Magma_BICG:
+                printf("%%   Preconditioner used: BiCG.\n");
+                break;
+            case Magma_BICGSTAB:
+                printf("%%   Preconditioner used: BiCGSTAB.\n");
+                break;
+            case Magma_GMRES:
+                printf("%%   Preconditioner used: GMRES.\n");
+                break;
+            case Magma_CGS:
+                printf("%%   Preconditioner used: CGS.\n");
+                break;
+            case Magma_BOMBARD:
+                printf("%%   Preconditioner used: BOMBARD.\n");
+                break;
+            case Magma_TFQMR:
+                printf("%%   Preconditioner used: TFQMR.\n");
+                break;
+            case Magma_QMR:
+                printf("%%   Preconditioner used: QMR.\n");
+                break;
+            case Magma_JACOBI:
+                printf("%%   Preconditioner used: Jacobi.\n");
+                break;
+            case Magma_IDR:
+            case Magma_IDRMERGE:
+                printf("%%   Preconditioner used: Jacobi.\n");
+                break;
+            case Magma_BAITER:
+            case Magma_BAITERO:
+                printf("%%   Preconditioner used: Block-asynchronous iteration.\n");
+                break;
+            case Magma_ILU:
+                printf("%%   Preconditioner used: ILU(%lld).\n",
+                        (long long) precond_par->levels );
+                break;
+            case Magma_PARILU:
+                printf("%%   Preconditioner used: iterative ILU(%lld).\n",
+                        (long long) precond_par->levels );
+                break;
+            case Magma_ICC:
+                printf("%%   Preconditioner used: IC(%lld).\n",
+                        (long long) precond_par->levels );
+                break;
+            case Magma_PARIC:
+                printf("%%   Preconditioner used: iterative IC(%lld).\n",
+                        (long long) precond_par->levels );
+                break;
+            case Magma_ISAI:
+                printf("%%   Preconditioner used: iterative ILU-SPAI.\n" );
+                break;
             default:
-                  break;
+                break;
         }
         
-            printf("%%==========================================================================="
-            "======%%\n");
+        printf("%%=================================================================================%%\n");
         switch( solver_par->solver ) {
-            case  Magma_CG:
-            case  Magma_PCG:
-            case  Magma_CGMERGE:
-            case  Magma_BICGSTAB:
-            case  Magma_PBICGSTAB:
-            case  Magma_BICGSTABMERGE:
-            case  Magma_BICGSTABMERGE2:
-            case  Magma_GMRES:
-            case  Magma_PGMRES:
-            case  Magma_IDR:
-            case  Magma_IDRMERGE:
-            case  Magma_PIDR:
-            case  Magma_PIDRMERGE:
-            case  Magma_CGS:
-            case  Magma_BICG:
-            case  Magma_BICGMERGE:
-            case  Magma_PBICG:
-            case  Magma_PBICGMERGE:
-            case  Magma_PCGS:
-            case  Magma_PCGMERGE:
-            case  Magma_CGSMERGE:
-            case  Magma_PCGSMERGE:
-            case  Magma_QMR:
-            case  Magma_QMRMERGE:
-            case  Magma_LSQR:
-            case  Magma_PQMR:
-            case  Magma_PQMRMERGE:
-            case  Magma_TFQMR:
-            case  Magma_PTFQMR:
-            case  Magma_TFQMRMERGE:
-            case  Magma_PTFQMRMERGE:
-            case  Magma_ITERREF:
-            case  Magma_BOMBARD:
-            case  Magma_BOMBARDMERGE:
-            case  Magma_JACOBI:
-            case  Magma_BAITER:
-            case  Magma_BAITERO:
+            case Magma_CG:
+            case Magma_PCG:
+            case Magma_CGMERGE:
+            case Magma_BICGSTAB:
+            case Magma_PBICGSTAB:
+            case Magma_BICGSTABMERGE:
+            case Magma_BICGSTABMERGE2:
+            case Magma_GMRES:
+            case Magma_PGMRES:
+            case Magma_IDR:
+            case Magma_IDRMERGE:
+            case Magma_PIDR:
+            case Magma_PIDRMERGE:
+            case Magma_CGS:
+            case Magma_BICG:
+            case Magma_BICGMERGE:
+            case Magma_PBICG:
+            case Magma_PBICGMERGE:
+            case Magma_PCGS:
+            case Magma_PCGMERGE:
+            case Magma_CGSMERGE:
+            case Magma_PCGSMERGE:
+            case Magma_QMR:
+            case Magma_QMRMERGE:
+            case Magma_LSQR:
+            case Magma_PQMR:
+            case Magma_PQMRMERGE:
+            case Magma_TFQMR:
+            case Magma_PTFQMR:
+            case Magma_TFQMRMERGE:
+            case Magma_PTFQMRMERGE:
+            case Magma_ITERREF:
+            case Magma_BOMBARD:
+            case Magma_BOMBARDMERGE:
+            case Magma_JACOBI:
+            case Magma_BAITER:
+            case Magma_BAITERO:
                 printf("%%   iter   ||   residual-nrm2    ||   runtime    ||   SpMV-count*  ||   info\n");
-                printf("%%==========================================================================="
-                        "======%%\n");
+                printf("%%=================================================================================%%\n");
                 for( int j=0; j<(solver_par->numiter)/k+1; j++ ) {
-                    printf(" %8d       %e          %f         %8d          %3d\n",
-                           int(j*k), solver_par->res_vec[j], solver_par->timing[j], int(solver_par->spmv_count/solver_par->numiter*(j*k)), int(solver_par->info) );
+                    printf(" %8lld       %e          %f         %8lld          %3lld\n",
+                           (long long)(j*k),
+                           solver_par->res_vec[j],
+                           solver_par->timing[j],
+                           (long long)(solver_par->spmv_count/solver_par->numiter*(j*k)),
+                           (long long) solver_par->info );
                 }
-                printf("%%==========================================================================="
-                        "======%%\n"); break;
+                printf("%%=================================================================================%%\n");
+                break;
             default:
-                printf("%%==========================================================================="
-                        "======%%\n"); break;
+                printf("%%=================================================================================%%\n");
+                break;
         }
     }
     else{
         printf("%%   iter   ||   residual-nrm2    ||   runtime    ||   SpMV-count   ||   info\n");
-            printf("%%==========================================================================="
-                        "======%%\n");
-        printf(" %8d       %e          %f         %8d          %3d\n",
-               int(solver_par->numiter), solver_par->iter_res, solver_par->runtime, int(solver_par->spmv_count), int(solver_par->info) );
-        printf("%%==========================================================================="
-        "======%%\n");
+        printf("%%=================================================================================%%\n");
+        printf(" %8lld       %e          %f         %8lld          %3lld\n",
+               (long long) solver_par->numiter,
+               solver_par->iter_res,
+               solver_par->runtime,
+               (long long) solver_par->spmv_count,
+               (long long) solver_par->info );
+        printf("%%=================================================================================%%\n");
     }
                 
-    printf("\n%%==========================================================================="
-        "======%%\n");
+    printf("\n%%=================================================================================%%\n");
     switch( solver_par->solver ) {
-        case  Magma_CG:
-            printf("%% CG solver summary:\n"); break;
-        case  Magma_PCG:
-        case  Magma_PCGMERGE:
-            printf("%% PCG solver summary:\n"); break;
-        case  Magma_CGMERGE:
-            printf("%% CG solver summary:\n"); break;
-        case  Magma_BICGSTAB:
-            printf("%% BiCGSTAB solver summary:\n"); break;
-        case  Magma_PBICGSTAB:
-            printf("%% PBiCGSTAB solver summary:\n"); break;
-        case  Magma_BICGSTABMERGE:
-            printf("%% BiCGSTAB solver summary:\n"); break;
-        case  Magma_BICGSTABMERGE2:
-            printf("%% BiCGSTAB solver summary:\n"); break;
-        case  Magma_BICG:
-        case  Magma_BICGMERGE:
-            printf("%% BiCG solver summary:\n"); break;
-        case  Magma_PBICG:
-        case  Magma_PBICGMERGE:
-            printf("%% BiCG solver summary:\n"); break;
-        case  Magma_GMRES:
-            printf("%% GMRES(%d) solver summary:\n", int(solver_par->restart)); break;
-        case  Magma_PGMRES:
-            printf("%% PGMRES(%d) solver summary:\n", int(solver_par->restart)); break;
-        case  Magma_IDR:
-        case  Magma_IDRMERGE:
-            printf("%% IDR(%d) solver summary:\n", int(solver_par->restart)); break;
-        case  Magma_PIDR:
-        case  Magma_PIDRMERGE:
-            printf("%% PIDR(%d) solver summary:\n", int(solver_par->restart)); break;
-        case  Magma_CGS:
-        case  Magma_CGSMERGE:
-            printf("%% CGS solver summary:\n"); break;
-        case  Magma_PCGS:
-        case  Magma_PCGSMERGE:
-            printf("%% PCGS solver summary:\n"); break;
-        case  Magma_TFQMR:
-        case  Magma_TFQMRMERGE:
-            printf("%% TFQMR solver summary:\n"); break;
-        case  Magma_PTFQMR:
-        case  Magma_PTFQMRMERGE:
-            printf("%% PTFQMR solver summary:\n"); break;
-        case  Magma_QMR:
-        case  Magma_QMRMERGE:
-            printf("%% QMR solver summary:\n"); break;
-        case  Magma_LSQR:
-            printf("%% LSQR solver summary:\n"); break;
-        case  Magma_PQMR:
-        case  Magma_PQMRMERGE:
-            printf("%% PQMR solver summary:\n"); break;
-        case  Magma_ITERREF:
-            printf("%% Iterative refinement solver summary:\n"); break;
-        case  Magma_JACOBI:
-            printf("%% Jacobi solver summary:\n"); break;
-        case  Magma_BAITER:
-        case  Magma_BAITERO:
-            printf("%% Block-asynchronous iteration solver summary:\n"); break;
-        case  Magma_LOBPCG:
-            printf("%% LOBPCG iteration solver summary:\n"); break;
-        case  Magma_BOMBARD:
-        case  Magma_BOMBARDMERGE:
-            printf("%% multi-solver iteration summary:\n"); break;
+        case Magma_CG:
+            printf("%% CG solver summary:\n");
+            break;
+        case Magma_PCG:
+        case Magma_PCGMERGE:
+            printf("%% PCG solver summary:\n");
+            break;
+        case Magma_CGMERGE:
+            printf("%% CG solver summary:\n");
+            break;
+        case Magma_BICGSTAB:
+            printf("%% BiCGSTAB solver summary:\n");
+            break;
+        case Magma_PBICGSTAB:
+            printf("%% PBiCGSTAB solver summary:\n");
+            break;
+        case Magma_BICGSTABMERGE:
+            printf("%% BiCGSTAB solver summary:\n");
+            break;
+        case Magma_BICGSTABMERGE2:
+            printf("%% BiCGSTAB solver summary:\n");
+            break;
+        case Magma_BICG:
+        case Magma_BICGMERGE:
+            printf("%% BiCG solver summary:\n");
+            break;
+        case Magma_PBICG:
+        case Magma_PBICGMERGE:
+            printf("%% BiCG solver summary:\n");
+            break;
+        case Magma_GMRES:
+            printf("%% GMRES(%lld) solver summary:\n",
+                    (long long) solver_par->restart );
+            break;
+        case Magma_PGMRES:
+            printf("%% PGMRES(%lld) solver summary:\n",
+                    (long long) solver_par->restart );
+            break;
+        case Magma_IDR:
+        case Magma_IDRMERGE:
+            printf("%% IDR(%lld) solver summary:\n",
+                    (long long) solver_par->restart );
+            break;
+        case Magma_PIDR:
+        case Magma_PIDRMERGE:
+            printf("%% PIDR(%lld) solver summary:\n",
+                    (long long) solver_par->restart );
+            break;
+        case Magma_CGS:
+        case Magma_CGSMERGE:
+            printf("%% CGS solver summary:\n");
+            break;
+        case Magma_PCGS:
+        case Magma_PCGSMERGE:
+            printf("%% PCGS solver summary:\n");
+            break;
+        case Magma_TFQMR:
+        case Magma_TFQMRMERGE:
+            printf("%% TFQMR solver summary:\n");
+            break;
+        case Magma_PTFQMR:
+        case Magma_PTFQMRMERGE:
+            printf("%% PTFQMR solver summary:\n");
+            break;
+        case Magma_QMR:
+        case Magma_QMRMERGE:
+            printf("%% QMR solver summary:\n");
+            break;
+        case Magma_LSQR:
+            printf("%% LSQR solver summary:\n");
+            break;
+        case Magma_PQMR:
+        case Magma_PQMRMERGE:
+            printf("%% PQMR solver summary:\n");
+            break;
+        case Magma_ITERREF:
+            printf("%% Iterative refinement solver summary:\n");
+            break;
+        case Magma_JACOBI:
+            printf("%% Jacobi solver summary:\n");
+            break;
+        case Magma_BAITER:
+        case Magma_BAITERO:
+            printf("%% Block-asynchronous iteration solver summary:\n");
+            break;
+        case Magma_LOBPCG:
+            printf("%% LOBPCG iteration solver summary:\n");
+            break;
+        case Magma_BOMBARD:
+        case Magma_BOMBARDMERGE:
+            printf("%% multi-solver iteration summary:\n");
+            break;
         default:
-            printf("%%   Solver info not supported.\n"); goto cleanup;
+            printf("%%   Solver info not supported.\n");
+            goto cleanup;
     }
     printf("%%    initial residual: %e\n", solver_par->init_res );
     printf("%%    preconditioner setup: %.4f sec\n", precond_par->setuptime );
-    printf("%%    iterations: %4d\n", int(solver_par->numiter) );
-    printf("%%    SpMV-count: %4d\n", int(solver_par->spmv_count) );
-    printf("%%    exact final residual: %e\n%%    runtime: %.4f sec\n",
-        solver_par->final_res, solver_par->runtime);
+    printf("%%    iterations: %4lld\n", (long long) solver_par->numiter );
+    printf("%%    SpMV-count: %4lld\n", (long long) solver_par->spmv_count );
+    printf("%%    exact final residual: %e\n"
+           "%%    runtime: %.4f sec\n",
+            solver_par->final_res, solver_par->runtime);
     printf("%%    preconditioner runtime: %.4f sec\n", precond_par->runtime );
 cleanup:
-    printf("%%================================================================="
-        "================%%\n");
+    printf("%%=================================================================================%%\n");
     return MAGMA_SUCCESS;
 }
 
@@ -526,20 +612,21 @@ magma_dsolverinfo_free(
         magma_free_cpu( precond_par->UT.blockinfo );
         precond_par->UT.blockinfo = NULL;
     }
-    if (  precond_par->cuinfoL != NULL ){
-        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoL ); 
+    if ( precond_par->solver == Magma_ILU ||
+        precond_par->solver == Magma_PARILU ||
+        precond_par->solver == Magma_ICC||
+        precond_par->solver == Magma_PARIC ) {
+        if( precond_par->cuinfoL != NULL )
+            cusparseDestroySolveAnalysisInfo( precond_par->cuinfoL ); 
+        if( precond_par->cuinfoU != NULL )
+            cusparseDestroySolveAnalysisInfo( precond_par->cuinfoU ); 
         precond_par->cuinfoL = NULL;
-    }
-    if (  precond_par->cuinfoU != NULL ){
-        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoU ); 
         precond_par->cuinfoU = NULL;
-    }
-    if (  precond_par->cuinfoLT != NULL ){
-        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoLT ); 
+        if( precond_par->cuinfoLT != NULL )
+            cusparseDestroySolveAnalysisInfo( precond_par->cuinfoLT ); 
+        if( precond_par->cuinfoUT != NULL )
+            cusparseDestroySolveAnalysisInfo( precond_par->cuinfoUT ); 
         precond_par->cuinfoLT = NULL;
-    }
-    if (  precond_par->cuinfoUT != NULL ){
-        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoUT ); 
         precond_par->cuinfoUT = NULL;
     }
     if ( precond_par->LD.val != NULL ) {
@@ -591,6 +678,56 @@ magma_dsolverinfo_free(
     if ( precond_par->UD.blockinfo != NULL ) {
         magma_free_cpu( precond_par->UD.blockinfo );
         precond_par->UD.blockinfo = NULL;
+    }
+    if ( precond_par->LDT.val != NULL ) {
+        if ( precond_par->LDT.memory_location == Magma_DEV )
+            magma_free( precond_par->LDT.dval );
+        else
+            magma_free_cpu( precond_par->LDT.val );
+        precond_par->LDT.val = NULL;
+    }
+    if ( precond_par->LDT.col != NULL ) {
+        if ( precond_par->LDT.memory_location == Magma_DEV )
+            magma_free( precond_par->LDT.dcol );
+        else
+            magma_free_cpu( precond_par->LDT.col );
+        precond_par->LDT.col = NULL;
+    }
+    if ( precond_par->LDT.row != NULL ) {
+        if ( precond_par->LDT.memory_location == Magma_DEV )
+            magma_free( precond_par->LDT.drow );
+        else
+            magma_free_cpu( precond_par->LDT.row );
+        precond_par->LDT.row = NULL;
+    }
+    if ( precond_par->LDT.blockinfo != NULL ) {
+        magma_free_cpu( precond_par->LDT.blockinfo );
+        precond_par->LDT.blockinfo = NULL;
+    }
+    if ( precond_par->UDT.val != NULL ) {
+        if ( precond_par->UDT.memory_location == Magma_DEV )
+            magma_free( precond_par->UDT.dval );
+        else
+            magma_free_cpu( precond_par->UDT.val );
+        precond_par->UDT.val = NULL;
+    }
+    if ( precond_par->UDT.col != NULL ) {
+        if ( precond_par->UDT.memory_location == Magma_DEV )
+            magma_free( precond_par->UDT.dcol );
+        else
+            magma_free_cpu( precond_par->UDT.col );
+        precond_par->UDT.col = NULL;
+    }
+    if ( precond_par->UDT.row != NULL ) {
+        if ( precond_par->UDT.memory_location == Magma_DEV )
+            magma_free( precond_par->UDT.drow );
+        else
+            magma_free_cpu( precond_par->UDT.row );
+        precond_par->UDT.row = NULL;
+    }
+    if ( precond_par->UDT.blockinfo != NULL ) {
+        magma_free_cpu( precond_par->UDT.blockinfo );
+        precond_par->UDT.blockinfo = NULL;
     }
 
     precond_par->solver = Magma_NONE;
@@ -698,6 +835,16 @@ magma_dsolverinfo_init(
     precond_par->UD.row = NULL;
     precond_par->UD.blockinfo = NULL;
     
+    precond_par->LDT.val = NULL;
+    precond_par->LDT.col = NULL;
+    precond_par->LDT.row = NULL;
+    precond_par->LDT.blockinfo = NULL;
+
+    precond_par->UDT.val = NULL;
+    precond_par->UDT.col = NULL;
+    precond_par->UDT.row = NULL;
+    precond_par->UDT.blockinfo = NULL;
+    
     precond_par->cuinfoL = NULL;
     precond_par->cuinfoU = NULL;
     precond_par->cuinfoLT = NULL;
@@ -771,4 +918,50 @@ cleanup:
     }
     magma_free_cpu( initial_guess );
     return info;
+}
+
+
+
+
+/**
+    Checks whether a solver is among the list of Krylov solvers.
+    The result is passed in info:
+    1   yes - Krylov solver
+    0   no - no Krylov solver of the list.
+    
+    @param[in]
+    solver      magma_solver_type
+    
+    @return error
+    
+    @ingroup magma_util
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dKrylov_check( magma_solver_type solver )
+{
+    switch( solver ) {
+        case  Magma_CG:
+        case  Magma_CGMERGE:
+        case  Magma_BICGSTAB:
+        case  Magma_BICGSTABMERGE:
+        case  Magma_BICGSTABMERGE2:
+        case  Magma_GMRES:
+        case  Magma_IDR:
+        case  Magma_IDRMERGE:
+        case  Magma_CGS:
+        case  Magma_CGSMERGE:
+        case  Magma_BICG:
+        case  Magma_BICGMERGE:
+        case  Magma_QMR:
+        case  Magma_QMRMERGE:
+        case  Magma_LSQR:
+        case  Magma_TFQMR:
+        case  Magma_TFQMRMERGE:
+            return MAGMA_SUCCESS;                                
+            break;
+        
+        default:
+            return MAGMA_ERR_UNKNOWN;
+            break;
+    }
 }

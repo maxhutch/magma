@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -76,10 +76,12 @@ magma_zmfree(
             A->num_cols = 0;
             A->nnz = 0; A->true_nnz = 0;
         }
-        if ( A->storage_type == Magma_CSR || A->storage_type == Magma_CSC
-                                        || A->storage_type == Magma_CSRD
-                                        || A->storage_type == Magma_CSRL
-                                        || A->storage_type == Magma_CSRU ) {
+        if ( A->storage_type == Magma_CSR  ||
+             A->storage_type == Magma_CSC  ||
+             A->storage_type == Magma_CSRD ||
+             A->storage_type == Magma_CSRL ||
+             A->storage_type == Magma_CSRU )
+        {
             magma_free_cpu( A->val );
             magma_free_cpu( A->col );
             magma_free_cpu( A->row );
@@ -212,10 +214,12 @@ magma_zmfree(
             A->num_cols = 0;
             A->nnz = 0; A->true_nnz = 0;
         }
-        if ( A->storage_type == Magma_CSR || A->storage_type == Magma_CSC
-                                        || A->storage_type == Magma_CSRD
-                                        || A->storage_type == Magma_CSRL
-                                        || A->storage_type == Magma_CSRU ) {
+        if ( A->storage_type == Magma_CSR  ||
+             A->storage_type == Magma_CSC  ||
+             A->storage_type == Magma_CSRD ||
+             A->storage_type == Magma_CSRL ||
+             A->storage_type == Magma_CSRU )
+        {
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 

@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Ichitaro Yamazaki
        @author Stan Tomov
 
-       @generated from src/zhetrf_nopiv_gpu.cpp normal z -> c, Mon May  2 23:30:12 2016
+       @generated from src/zhetrf_nopiv_gpu.cpp, normal z -> c, Tue Aug 30 09:38:13 2016
 */
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     =======
 
@@ -68,8 +68,8 @@
                   positive definite, and the factorization could not be
                   completed.
     
-    @ingroup magma_chesv_comp
-    ******************************************************************* */
+    @ingroup magma_hetrf_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chetrf_nopiv_gpu(
     magma_uplo_t uplo, magma_int_t n,
@@ -99,12 +99,12 @@ magma_chetrf_nopiv_gpu(
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
 
     /* Quick return */
     if ( n == 0 )
-      return MAGMA_SUCCESS;
+      return *info;
 
     nb = magma_get_chetrf_nopiv_nb(n);
     ib = min(32, nb); // inner-block for diagonal factorization
@@ -265,5 +265,5 @@ magma_chetrf_nopiv_gpu(
     magma_free( dW );
     magma_free_pinned( A );
     
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_chetrf_nopiv */

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from testing/lin/magma_z_no_fortran.cpp normal z -> c, Mon May  2 23:31:05 2016
+       @generated from testing/lin/magma_z_no_fortran.cpp, normal z -> c, Tue Aug 30 09:39:01 2016
        
        This is simply a copy of part of magma_clapack.h,
        with the { printf(...); } function body added to each function.
@@ -102,15 +102,9 @@ void   lapackf77_cunt01( const char *rowcol, const magma_int_t *m, const magma_i
                          float *resid )
                          { printf( format, __func__ ); }
 
+// testing/eig
 void   lapackf77_clarfy( const char *uplo, const magma_int_t *n,
                          magmaFloatComplex *V, const magma_int_t *incv,
-                         magmaFloatComplex *tau,
-                         magmaFloatComplex *C, const magma_int_t *ldc,
-                         magmaFloatComplex *work )
-                         { printf( format, __func__ ); }
-
-void   lapackf77_clarfx( const char *side, const magma_int_t *m, const magma_int_t *n,
-                         magmaFloatComplex *V,
                          magmaFloatComplex *tau,
                          magmaFloatComplex *C, const magma_int_t *ldc,
                          magmaFloatComplex *work )
@@ -134,6 +128,7 @@ void   lapackf77_cqrt02( const magma_int_t *m, const magma_int_t *n, const magma
                          float *result )
                          { printf( format, __func__ ); }
 
+// testing/matgen
 void   lapackf77_clatms( magma_int_t *m, magma_int_t *n,
                          const char *dist, magma_int_t *iseed, const char *sym, float *d,
                          magma_int_t *mode, const float *cond, const float *dmax,

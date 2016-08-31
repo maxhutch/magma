@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zungqr_2stage_gpu.cpp normal z -> d, Mon May  2 23:30:18 2016
+       @generated from src/zungqr_2stage_gpu.cpp, normal z -> d, Tue Aug 30 09:38:17 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DORGQR generates an M-by-N DOUBLE PRECISION matrix Q with orthonormal columns,
@@ -72,8 +72,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_dsyev_2stage
-    ********************************************************************/
+    @ingroup magma_ungqr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dorgqr_2stage_gpu(
     magma_int_t m, magma_int_t n, magma_int_t k,

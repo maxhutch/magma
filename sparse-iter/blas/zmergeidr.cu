@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -88,7 +88,7 @@ magma_zidr_smoothing_1(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_zidr_smoothing_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, drs, dr, dt );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -162,5 +162,5 @@ magma_zidr_smoothing_2(
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     magma_zidr_smoothing_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, omega, dx, dxs);
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

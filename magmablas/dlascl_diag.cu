@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlascl_diag.cu normal z -> d, Mon May  2 23:30:33 2016
+       @generated from magmablas/zlascl_diag.cu, normal z -> d, Tue Aug 30 09:38:32 2016
 */
 #include "magma_internal.h"
 
-#define NB 64
+#define MB 64
+#define NB 160
 
 
 // each thread block does one NB x n block row of A.
@@ -20,11 +21,12 @@ dlascl_diag_lower(
     const double* D, int ldd,
     double*       A, int lda)
 {
-    int ind = blockIdx.x * NB + threadIdx.x;
+    int ind_x = blockIdx.x * MB + threadIdx.x;
+    int ind_y = blockIdx.y * NB;
 
-    A += ind;
-    if (ind < m) {
-        for (int j=0; j < n; j++ ) {
+    A += ind_x;
+    if (ind_x < m) {
+        for (int j=ind_y; j < min(ind_y+NB, n); j++ ) {
             A[j*lda] = MAGMA_D_DIV( A[j*lda], D[j + j*ldd] );
         }
     }
@@ -39,18 +41,19 @@ dlascl_diag_upper(
     const double* D, int ldd,
     double*       A, int lda)
 {
-    int ind = blockIdx.x * NB + threadIdx.x;
+    int ind_x = blockIdx.x * MB + threadIdx.x;
+    int ind_y = blockIdx.y * NB;
 
-    A += ind;
-    if (ind < m) {
-        for (int j=0; j < n; j++ ) {
-            A[j*lda] = MAGMA_D_DIV( A[j*lda], D[ind + ind*ldd] );
+    A += ind_x;
+    if (ind_x < m) {
+        for (int j=ind_y; j < min(ind_y+NB, n); j++ ) {
+            A[j*lda] = MAGMA_D_DIV( A[j*lda], D[ind_x + ind_x*ldd] );
         }
     }
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLASCL_DIAG scales the M by N real matrix A by the real diagonal matrix dD.
@@ -99,8 +102,8 @@ dlascl_diag_upper(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_daux2
-    ********************************************************************/
+    @ingroup magma_lascl_diag
+*******************************************************************************/
 extern "C" void
 magmablas_dlascl_diag_q(
     magma_type_t type, magma_int_t m, magma_int_t n,
@@ -126,8 +129,8 @@ magmablas_dlascl_diag_q(
         return;  //info;
     }
     
-    dim3 threads( NB );
-    dim3 grid( magma_ceildiv( m, NB ) );
+    dim3 threads( MB );
+    dim3 grid( magma_ceildiv( m, MB ), magma_ceildiv( n, NB ) );
     
     if (type == MagmaLower) {
         dlascl_diag_lower

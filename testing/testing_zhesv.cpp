@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
        @author Ichitaro Yamazaki
@@ -25,7 +25,7 @@
 // Initialize matrix to random & symmetrize.
 // Having this in separate function ensures the same ISEED is always used,
 // so we can re-generate the identical matrix.
-void init_matrix( int m, int n, magmaDoubleComplex *h_A, magma_int_t lda )
+void init_matrix( magma_int_t m, magma_int_t n, magmaDoubleComplex *h_A, magma_int_t lda )
 {
     assert( m == n );
     magma_int_t ione = 1;
@@ -64,7 +64,7 @@ double get_residual(
     norm_x = lapackf77_zlange( MagmaFullStr, &n, &ione, x, &n, work );
     
     //printf( "r=\n" ); magma_zprint( 1, n, b, 1 );
-    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%d\n", norm_r, norm_A, norm_x, n );
+    //printf( "r=%.2e, A=%.2e, x=%.2e, n=%lld\n", norm_r, norm_A, norm_x, (long long) n );
     return norm_r / (n * norm_A * norm_x);
 }
 
@@ -74,15 +74,17 @@ double get_residual(
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     magmaDoubleComplex *h_A, *h_B, *h_X, *work, temp;
     real_Double_t   gflops, gpu_perf, gpu_time = 0.0, cpu_perf=0, cpu_time=0;
     double          error, error_lapack = 0.0;
     magma_int_t     *ipiv;
     magma_int_t     N, n2, lda, ldb, sizeB, lwork, info;
-    magma_int_t     status = 0, ione = 1;
+    magma_int_t     ione = 1;
     magma_int_t     ISEED[4] = {0,0,0,1};
+    int status = 0;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -100,10 +102,10 @@ int main( int argc, char** argv)
             sizeB  = ldb*opts.nrhs;
             gflops = ( FLOPS_ZPOTRF( N ) + FLOPS_ZPOTRS( N, opts.nrhs ) ) / 1e9;
             
-            TESTING_MALLOC_CPU( ipiv, magma_int_t, N );
-            TESTING_MALLOC_PIN( h_A,  magmaDoubleComplex, n2 );
-            TESTING_MALLOC_PIN( h_B,  magmaDoubleComplex, sizeB );
-            TESTING_MALLOC_PIN( h_X,  magmaDoubleComplex, sizeB );
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv, N ));
+            TESTING_CHECK( magma_zmalloc_pinned( &h_A,  n2 ));
+            TESTING_CHECK( magma_zmalloc_pinned( &h_B,  sizeB ));
+            TESTING_CHECK( magma_zmalloc_pinned( &h_X,  sizeB ));
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -112,8 +114,8 @@ int main( int argc, char** argv)
                 lwork = -1;
                 lapackf77_zhesv(lapack_uplo_const(opts.uplo), &N, &opts.nrhs,
                                 h_A, &lda, ipiv, h_X, &ldb, &temp, &lwork, &info);
-                lwork = (int)MAGMA_Z_REAL(temp);
-                TESTING_MALLOC_CPU( work, magmaDoubleComplex, lwork );
+                lwork = (magma_int_t)MAGMA_Z_REAL(temp);
+                TESTING_CHECK( magma_zmalloc_cpu( &work, lwork ));
 
                 init_matrix( N, N, h_A, lda );
                 lapackf77_zlarnv( &ione, ISEED, &sizeB, h_B );
@@ -125,12 +127,12 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_zhesv returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_zhesv returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
                 error_lapack = get_residual( opts.uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, h_B, ldb );
 
-                TESTING_FREE_CPU( work );
+                magma_free_cpu( work );
             }
            
             /* ====================================================================
@@ -146,20 +148,20 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0) {
-                printf("magma_zhesv returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
+                printf("magma_zhesv returned error %lld: %s.\n",
+                       (long long) info, magma_strerror( info ));
             }
             
             /* =====================================================================
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
-                       (int) N, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
+                printf("%5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (long long) N, (long long) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
             }
             else {
-                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)",
-                       (int) N, (int) N, gpu_perf, gpu_time );
+                printf("%5lld %5lld     ---   (  ---  )   %7.2f (%7.2f)",
+                       (long long) N, (long long) N, gpu_perf, gpu_time );
             }
             if ( opts.check == 0 ) {
                 printf("     ---   \n");
@@ -172,10 +174,10 @@ int main( int argc, char** argv)
                 status += ! (error < tol);
             }
             
-            TESTING_FREE_CPU( ipiv );
-            TESTING_FREE_PIN( h_X  );
-            TESTING_FREE_PIN( h_B  );
-            TESTING_FREE_PIN( h_A  );
+            magma_free_cpu( ipiv );
+            magma_free_pinned( h_X  );
+            magma_free_pinned( h_B  );
+            magma_free_pinned( h_A  );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -184,6 +186,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

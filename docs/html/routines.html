@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>MAGMA: Routine names</title>
+<title>MAGMA: Overview</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -108,7 +107,7 @@ $(document).ready(function(){initNavTree('routines.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Routine names </div>  </div>
+<div class="title">Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>The interface for MAGMA is similar to LAPACK, to facilitate porting existing codes.</p>
@@ -181,19 +180,25 @@ Driver routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesv__driver.html">gesv</a>, <a class="el" href="group__magma__dposv__driver.html">posv</a> </td><td>solve linear system, AX = B </td></tr>
+<td><a class="el" href="group__magma__gesv.html">gesv</a> </td><td>solve linear system, AX = B, A is general (non-symmetric) </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgels__driver.html">gels</a> </td><td>least squares solve, AX = B </td></tr>
+<td><a class="el" href="group__magma__posv.html">posv</a> </td><td>solve linear system, AX = B, A is symmetric/Hermitian positive definite </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgeev__driver.html">geev</a>, <a class="el" href="group__magma__dsyev__driver.html">syev</a>, <a class="el" href="group__magma__zheev__driver.html">heev</a> </td><td>eigenvalue solver, AX = X Lambda </td></tr>
+<td><a class="el" href="group__magma__hesv.html">hesv</a> </td><td>solve linear system, AX = B, A is symmetric indefinite </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dsyev__driver.html">syevd</a>, <a class="el" href="group__magma__zheev__driver.html">heevd</a> </td><td>eigenvalue solver using divide &amp; conquer </td></tr>
+<td><a class="el" href="group__magma__gels.html">gels</a> </td><td>least squares solve, AX = B, A is rectangular </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dsygv__driver.html">sygvd</a>, <a class="el" href="group__magma__zhegv__driver.html">hegvd</a> </td><td>generalized eigenvalue solver, AX = BX Lambda </td></tr>
+<td><a class="el" href="group__magma__geev.html">geev</a> </td><td>non-symmetric eigenvalue solver, AX = X Lambda </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesvd__driver.html">gesvd</a> </td><td>singular value decomposition (SVD), A = U Sigma V^H </td></tr>
+<td><a class="el" href="group__magma__heev.html">syev/heev</a> </td><td>symmetric eigenvalue solver, AX = X Lambda </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesvd__driver.html">gesdd</a> </td><td>SVD using divide &amp; conquer </td></tr>
+<td><a class="el" href="group__magma__heev.html">syevd/heevd</a> </td><td>symmetric eigenvalue solver, AX = X Lambda, using divide &amp; conquer </td></tr>
+<tr>
+<td><a class="el" href="group__magma__hegv.html">sygvd/hegvd</a> </td><td>symmetric generalized eigenvalue solver, AX = BX Lambda </td></tr>
+<tr>
+<td><a class="el" href="group__magma__gesvd.html">gesvd</a> </td><td>singular value decomposition (SVD), A = U Sigma V^H </td></tr>
+<tr>
+<td><a class="el" href="group__magma__gesvd.html">gesdd</a> </td><td>singular value decomposition (SVD), A = U Sigma V^H, using divide &amp; conquer </td></tr>
 </table>
 <h1><a class="anchor" id="comp"></a>
 Computational routines  </h1>
@@ -204,37 +209,35 @@ Computational routines  </h1>
 <tr>
 <td>: <b>Triangular factorizations</b> : </td><td><b>Description</b> </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesv__comp.html#gac9a830bebc3f946a344485de2af56314">getrf</a>, <a class="el" href="group__magma__dposv__comp.html#gaf0f1a16f06b6b09293dfc36a55486ef8">potrf</a> </td><td>triangular factorization (LU, Cholesky) </td></tr>
+<td><a class="el" href="group__magma__getrf.html">getrf</a>, <a class="el" href="group__magma__potrf.html">potrf</a>, <a class="el" href="group__magma__hetrf.html">hetrf</a> </td><td>triangular factorization (LU, Cholesky, Indefinite) </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesv__comp.html#gad47641fbef3233404e0164b1a3c5d336">getrs</a>, <a class="el" href="group__magma__dposv__comp.html#ga15514cf1020a8fea8f4fe7c242b09882">potrs</a> </td><td>triangular forward and back solve </td></tr>
+<td><a class="el" href="group__magma__getrs.html">getrs</a>, <a class="el" href="group__magma__potrs.html">potrs</a>, <a class="el" href="group__magma__hetrs.html">hetrs</a> </td><td>triangular forward and back solve </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesv__comp.html#ga9008b52e17929b5ad6bd5c175b8efdac">getri</a>, <a class="el" href="group__magma__dposv__comp.html#gaaea46c7d21fdc62e0e344fd683a04b7f">potri</a> </td><td>triangular inverse </td></tr>
+<td><a class="el" href="group__magma__getri.html">getri</a>, <a class="el" href="group__magma__potri.html">potri</a> </td><td>triangular inverse </td></tr>
 <tr>
-<td>getf2, potf2 </td><td>triangular panel factorization (BLAS-2) </td></tr>
+<td><a class="el" href="group__magma__getf2.html">getf2</a>, <a class="el" href="group__magma__potf2.html">potf2</a> </td><td>triangular panel factorization (BLAS-2) </td></tr>
 <tr>
 <td>. <b>Orthogonal factorizations</b> </td><td><b>Description</b> </td></tr>
 <tr>
-<td>ge{<a class="el" href="group__magma__dgeqrf__comp.html#ga472ce8a0ffb5cfdaa1d84b356671adb7">qrf</a>, <a class="el" href="group__magma__dgeqlf__comp.html#ga2b3743b31af115045246faebdd7ded9f">qlf</a>, <a class="el" href="group__magma__dgelqf__comp.html#gad4a269d7fadc9d0be588a603b3be2cc0">lqf</a>, rqf*} </td><td>QR, QL, LQ, RQ factorization </td></tr>
+<td>ge{<a class="el" href="group__magma__geqrf.html">qrf</a>, <a class="el" href="group__magma__geqlf.html">qlf</a>, <a class="el" href="group__magma__gelqf.html">lqf</a>, rqf*} </td><td>QR, QL, LQ, RQ factorization </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgeqp3__comp.html#ga8e432999a48895380f8aefa018b5d1fc">geqp3</a> </td><td>QR with column pivoting (BLAS-3) </td></tr>
+<td><a class="el" href="group__magma__geqp3.html">geqp3</a> </td><td>QR with column pivoting (BLAS-3) </td></tr>
 <tr>
-<td>or{<a class="el" href="group__magma__dgeqrf__comp.html#ga87c875b90a1663dcc8763ba85e284168">mqr</a>, <a class="el" href="group__magma__dgeqlf__comp.html#gad832965677feb9c09dec834f29b9f8b4">mql</a>, <a class="el" href="group__magma__dgelqf__comp.html#gac27b29f9406bc5d2fb574d55d5d51d88">mlq</a>, mrq*} </td><td>multiply by Q after factorization (real) </td></tr>
+<td>or{<a class="el" href="group__magma__unmqr.html">mqr</a>, <a class="el" href="group__magma__unmql.html">mql</a>, <a class="el" href="group__magma__unmlq.html">mlq</a>, mrq*} </td><td>multiply by Q after factorization (real) </td></tr>
 <tr>
-<td>un{<a class="el" href="group__magma__zgeqrf__comp.html#ga04caefefcecc9958e5a515584f09cf95">mqr</a>, <a class="el" href="group__magma__zgeqlf__comp.html#ga974a7229cc529b9c524e412392f6da96">mql</a>, <a class="el" href="group__magma__zgelqf__comp.html#ga48193aac4643d88878b52374445dca28">mlq</a>, mrq*} </td><td>multiply by Q after factorization (complex) </td></tr>
+<td>un{<a class="el" href="group__magma__unmqr.html">mqr</a>, <a class="el" href="group__magma__unmql.html">mql</a>, <a class="el" href="group__magma__unmlq.html">mlq</a>, mrq*} </td><td>multiply by Q after factorization (complex) </td></tr>
 <tr>
-<td>or{<a class="el" href="group__magma__dgeqrf__comp.html#ga09f0829a12ccf16d66983440f47f35dd">gqr</a>, gql*, glq*, grq*} </td><td>generate Q after factorization (real) </td></tr>
+<td>or{<a class="el" href="group__magma__ungqr.html">gqr</a>, gql*, glq*, grq*} </td><td>generate Q after factorization (real) </td></tr>
 <tr>
-<td>un{<a class="el" href="group__magma__zgeqrf__comp.html#gafe72e6255dc28171aacf72134f332aa4">gqr</a>, gql*, glq*, grq*} </td><td>generate Q after factorization (complex) </td></tr>
-<tr>
-<td><a class="el" href="group__magma__dgeqrf__aux.html#gaa2ad4b5e3d8e59f18541fc3b8fd51bd2">geqr2</a> </td><td>QR panel factorization (BLAS-2) </td></tr>
+<td>un{<a class="el" href="group__magma__ungqr.html">gqr</a>, gql*, glq*, grq*} </td><td>generate Q after factorization (complex) </td></tr>
 <tr>
 <td>. <b>Eigenvalue &amp; SVD</b> </td><td><b>Description</b> </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgeev__comp.html#ga1fc2286856068ada21e9c0f42222eedc">gehrd</a> </td><td>Hessenberg reduction (in geev) </td></tr>
+<td><a class="el" href="group__magma__gehrd.html">gehrd</a> </td><td>Hessenberg reduction (in geev) </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dsyev__comp.html#ga46c485cec62267b9f24ffc3eb4305c69">sytrd</a>, <a class="el" href="group__magma__zheev__comp.html#ga83a4184e4c72a7a1a319f48acb5b8b70">hetrd</a> </td><td>tridiagonal reduction (in syev, heev) </td></tr>
+<td><a class="el" href="group__magma__hetrd.html">sytrd/hetrd</a> </td><td>tridiagonal reduction (in syev, heev) </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dgesvd__comp.html#ga41e57b1939ac0a650d1d3b2e7a51ad25">gebrd</a> </td><td>bidiagonal reduction (in gesvd) </td></tr>
+<td><a class="el" href="group__magma__gebrd.html">gebrd</a> </td><td>bidiagonal reduction (in gesvd) </td></tr>
 </table>
 <p>There are many other computational routines that are mostly internal to MAGMA and LAPACK, and not commonly called by end users.</p>
 <h1><a class="anchor" id="blas"></a>
@@ -246,25 +249,25 @@ BLAS routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga779c989f10b44cd4b2fd954ca64b87ea">copy</a> </td><td>copy vector, y = x </td></tr>
+<td><a class="el" href="group__magma__copy.html">copy</a> </td><td>copy vector, y = x </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga1388a2f29630157cc19e2b5be8d6c686">scal</a> </td><td>scale vector, y = alpha*y </td></tr>
+<td><a class="el" href="group__magma__scal.html">scal</a> </td><td>scale vector, y = alpha*y </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#gaa8809b904a19b654cc4cbb1cea7b6d2e">swap</a> </td><td>swap two vectors, y &lt;&mdash;&gt; x </td></tr>
+<td><a class="el" href="group__magma__swap.html">swap</a> </td><td>swap two vectors, y &lt;&mdash;&gt; x </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga87e79e0dfecc8a725565af7e951819e7">axpy</a> </td><td>y = alpha*x + y </td></tr>
+<td><a class="el" href="group__magma__axpy.html">axpy</a> </td><td>y = alpha*x + y </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga1a32beefe35bcce1f70c9221b0016e1c">nrm2</a> </td><td>vector 2-norm </td></tr>
+<td><a class="el" href="group__magma__nrm2.html">nrm2</a> </td><td>vector 2-norm </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga2600aeb5e601ab8fa6626b02dd6af5ca">amax</a> </td><td>vector max-norm </td></tr>
+<td><a class="el" href="group__magma__iamax.html">amax</a> </td><td>vector max-norm </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga3b2c55b248f754971a705efbc1d8c225">asum</a> </td><td>vector one-norm </td></tr>
+<td><a class="el" href="group__magma__asum.html">asum</a> </td><td>vector one-norm </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas1.html#ga029fd1e19dd328f97ec14c97bda2dd64">dot</a> </td><td>dot product (real), x^T y </td></tr>
+<td><a class="el" href="group__magma____dot.html">dot</a> </td><td>dot product (real), x^T y </td></tr>
 <tr>
-<td><a class="el" href="group__magma__zblas1.html#ga77d62ecc95fc47edd677219ea616283e">dotu</a> </td><td>dot product (complex), unconjugated, x^T y </td></tr>
+<td><a class="el" href="group__magma____dot.html">dotu</a> </td><td>dot product (complex), unconjugated, x^T y </td></tr>
 <tr>
-<td><a class="el" href="group__magma__zblas1.html#ga2cedd723917964f951ff744cbca2887a">dotc</a> </td><td>dot product (complex), conjugated, x^H y </td></tr>
+<td><a class="el" href="group__magma____dot.html">dotc</a> </td><td>dot product (complex), conjugated, x^H y </td></tr>
 </table>
 <h2>BLAS-2: matrix-vector operations </h2>
 <p>These do O(n^2) operations on O(n^2) data and are memory-bound.</p>
@@ -272,17 +275,17 @@ BLAS routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas2.html#gafee292d21be03554cd7e1c01e7f284f8">gemv</a> </td><td>general matrix-vector product, y = A*x </td></tr>
+<td><a class="el" href="group__magma__gemv.html">gemv</a> </td><td>general matrix-vector product, y = A*x </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas2.html#ga8cb5b0e6f4feca1a55030fe1dff4f9c0">symv</a>, <a class="el" href="group__magma__zblas2.html#gaba64ed916bbc280452e3eca296f35d44">hemv</a> </td><td>symmetric/Hermitian matrix-vector product, y = A*x </td></tr>
+<td><a class="el" href="group__magma__symv.html">symv</a>, <a class="el" href="group__magma__hemv.html">hemv</a> </td><td>symmetric/Hermitian matrix-vector product, y = A*x </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas2.html#ga7a9bc144c95740fa6b9706b826d4238f">syr</a>, <a class="el" href="group__magma__zblas2.html#gadad7fb3a0c66dac046e1f9e169e50c5a">her</a> </td><td>symmetric/Hermitian rank-1 update, A = A + x*x^H </td></tr>
+<td><a class="el" href="group__magma__syr.html">syr</a>, <a class="el" href="group__magma__her.html">her</a> </td><td>symmetric/Hermitian rank-1 update, A = A + x*x^H </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas2.html#ga31d144ad11a7b6068818e877fe6aa4fc">syr2</a>, <a class="el" href="group__magma__zblas2.html#ga8228bdd08473efb89b5148e7abe032d8">her2</a> </td><td>symmetric/Hermitian rank-2 update, A = A + x*y^H + y*x^H </td></tr>
+<td><a class="el" href="group__magma__syr2.html">syr2</a>, <a class="el" href="group__magma__her2.html">her2</a> </td><td>symmetric/Hermitian rank-2 update, A = A + x*y^H + y*x^H </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas2.html#gae415b822531f447b05181452df0adc8d">trmv</a> </td><td>triangular matrix-vector product, y = A*x </td></tr>
+<td><a class="el" href="group__magma__trmv.html">trmv</a> </td><td>triangular matrix-vector product, y = A*x </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas2.html#gaa4b400d79ff1346cc86eeab675a46315">trsv</a> </td><td>triangular solve, one right-hand side (RHS), solve Ax = b </td></tr>
+<td><a class="el" href="group__magma__trsv.html">trsv</a> </td><td>triangular solve, one right-hand side (RHS), solve Ax = b </td></tr>
 </table>
 <h2>BLAS-3: matrix-matrix operations </h2>
 <p>These do O(n^3) operations on O(n^2) data and are compute-bound. Level 3 BLAS are significantly more efficient than the memory-bound level 1 and level 2 BLAS.</p>
@@ -290,17 +293,17 @@ BLAS routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas3.html#gac237d171d626f7628424b08b6d1d18d2">gemm</a> </td><td>general matrix-matrix multiply, C = C + A*B </td></tr>
+<td><a class="el" href="group__magma__gemm.html">gemm</a> </td><td>general matrix-matrix multiply, C = C + A*B </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas3.html#ga3ddb324433a49643091989144ae1ce6a">symm</a>, <a class="el" href="group__magma__zblas3.html#ga76a65b497151bcb560c94c7dbc31c99a">hemm</a> </td><td>symmetric/Hermitian matrix-matrix multiply, C = C + A*B, A is symmetric </td></tr>
+<td><a class="el" href="group__magma__symm.html">symm</a>, <a class="el" href="group__magma__hemm.html">hemm</a> </td><td>symmetric/Hermitian matrix-matrix multiply, C = C + A*B, A is symmetric </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas3.html#ga4deaac8806ac142770e8a158e2fc8366">syrk</a>, <a class="el" href="group__magma__zblas3.html#gaedbc23544bad4144c1b9415272bd1c2c">herk</a> </td><td>symmetric/Hermitian rank-k update, C = C + A*A^H, C is symmetric </td></tr>
+<td><a class="el" href="group__magma__syrk.html">syrk</a>, <a class="el" href="group__magma__herk.html">herk</a> </td><td>symmetric/Hermitian rank-k update, C = C + A*A^H, C is symmetric </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas3.html#ga497636881a179b38dc7303f038b2f70d">syr2k</a>, <a class="el" href="group__magma__zblas3.html#ga54ca9b7106797176b040f08ca430f9a1">her2k</a> </td><td>symmetric/Hermitian rank-2k update, C = C + A*B^H + B*A^H, C is symmetric </td></tr>
+<td><a class="el" href="group__magma__syr2k.html">syr2k</a>, <a class="el" href="group__magma__her2k.html">her2k</a> </td><td>symmetric/Hermitian rank-2k update, C = C + A*B^H + B*A^H, C is symmetric </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas3.html#ga50206438fffe5a7284a12da304c2ecd9">trmm</a> </td><td>triangular matrix-matrix multiply, B = A*B or B*A, A is triangular </td></tr>
+<td><a class="el" href="group__magma__trmm.html">trmm</a> </td><td>triangular matrix-matrix multiply, B = A*B or B*A, A is triangular </td></tr>
 <tr>
-<td><a class="el" href="group__magma__dblas3.html#gaa39ce59bf7f85497c16e4b5786a742ca">trsm</a> </td><td>triangular solve, multiple RHS, solve A*X = B or X*A = B, A is triangular </td></tr>
+<td><a class="el" href="group__magma__trsm.html">trsm</a> </td><td>triangular solve, multiple RHS, solve A*X = B or X*A = B, A is triangular </td></tr>
 </table>
 <h1><a class="anchor" id="aux"></a>
 Auxiliary routines  </h1>
@@ -310,39 +313,37 @@ Auxiliary routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#gaed14c6a3da077b213bb6c3c867533d3e">geadd</a> </td><td>add general matrices (like axpy), B = alpha*A + B </td></tr>
+<td><a class="el" href="group__magma__geadd.html">geadd</a> </td><td>add general matrices (like axpy), B = alpha*A + B </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#gae62bdd8b7a6b8120ce9d8dfd6aacb258">laswp</a> </td><td>swap rows (in getrf) </td></tr>
+<td><a class="el" href="group__magma__laswp.html">laswp</a> </td><td>swap rows (in getrf) </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#ga0c4d955c7e4e74340351a7f9365fef4f">laset</a> </td><td>set matrix to constant </td></tr>
+<td><a class="el" href="group__magma__laset.html">laset</a> </td><td>set matrix to constant </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#ga84fb4624f31507b55fbeb099022b4633">lacpy</a> </td><td>copy matrix </td></tr>
+<td><a class="el" href="group__magma__lacpy.html">lacpy</a> </td><td>copy matrix </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#ga5b0dee8f5379e968b4a3af73aced6614">lascl</a> </td><td>scale matrix </td></tr>
+<td><a class="el" href="group__magma__lascl.html">lascl</a> </td><td>scale matrix </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#gad007530b31f1c0e3a8c5b1adf6842151">lange</a> </td><td>norm, general matrix </td></tr>
+<td><a class="el" href="group__magma__lange.html">lange</a> </td><td>norm, general matrix </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#gac287bff00383116908b23f0af34ccec8">lansy</a> </td><td>norm, symmetric matrix </td></tr>
+<td><a class="el" href="group__magma__lanhe.html">lansy/lanhe</a> </td><td>norm, symmetric/Hermitian matrix </td></tr>
 <tr>
-<td><a class="el" href="group__magma__zaux2.html#ga8d5002171811188959339f9d4322409b">lanhe</a> </td><td>norm, Hermitian matrix </td></tr>
+<td><a class="el" href="group__magma__lantr.html">lantr</a> </td><td>norm, triangular matrix </td></tr>
 <tr>
-<td>lantr </td><td>norm, triangular matrix </td></tr>
+<td><a class="el" href="group__magma__lag2.html">lag2</a> </td><td>convert general matrix from one precision to another (e.g., dlag2s is double to single) </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#ga066cc5d97f5f2d01e04ee4445f0298c0">lag2</a> </td><td>convert general matrix from one precision to another (e.g., dlag2s is double to single) </td></tr>
+<td><a class="el" href="group__magma__lat2.html">lat2</a> </td><td>convert triangular matrix from one precision to another </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#ga851519d671f8fb0d4b37dc2a117c3a0a">lat2</a> </td><td>convert triangular matrix from one precision to another </td></tr>
+<td><a class="el" href="group__magma__larf.html">larf</a> </td><td>apply Householder elementary reflector </td></tr>
 <tr>
-<td>larf </td><td>apply Householder elementary reflector </td></tr>
+<td><a class="el" href="group__magma__larfg.html">larfg</a> </td><td>generate Householder elementary reflector </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux1.html#gaf57a95772f64b629cfdea5a8249d8374">larfg</a> </td><td>generate Householder elementary reflector </td></tr>
+<td><a class="el" href="group__magma__larfb.html">larfb</a> </td><td>apply block Householder elementary reflector </td></tr>
 <tr>
-<td>larfb </td><td>apply block Householder elementary reflector </td></tr>
+<td><a class="el" href="group__magma__larft.html">larft</a> </td><td>form T for block Householder elementary reflector </td></tr>
 <tr>
-<td>larft </td><td>form T for block Householder elementary reflector </td></tr>
+<td><a class="el" href="group__magma__symmetrize.html">symmetrize</a> </td><td>copy lower triangle to upper triangle, or vice-versa </td></tr>
 <tr>
-<td><a class="el" href="group__magma__daux2.html#gac8b9b5e59f98f6d2de3af74aaa3f51b9">symmetrize</a> </td><td>copy lower triangle to upper triangle, or vice-versa </td></tr>
-<tr>
-<td><a class="el" href="group__magma__daux2.html#ga6b571479d3b46700f671bfc832d7eb14">transpose</a> </td><td>transpose matrix </td></tr>
+<td><a class="el" href="group__magma__transpose.html">transpose</a> </td><td>transpose matrix </td></tr>
 </table>
 <h1><a class="anchor" id="util"></a>
 Utility routines  </h1>
@@ -352,17 +353,17 @@ Utility routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td>magma_*malloc_cpu </td><td>allocate CPU memory that is aligned for better performance &amp; reproducibility </td></tr>
+<td><a class="el" href="group__magma__malloc__cpu.html#ga560fbcc797958d43ce4e0a0e895cf0fb" title="Allocate size bytes on CPU. ">magma_malloc_cpu()</a> </td><td>allocate CPU memory that is aligned for better performance &amp; reproducibility </td></tr>
 <tr>
-<td>magma_free_cpu </td><td>free CPU memory allocated with malloc_cpu </td></tr>
+<td><a class="el" href="group__magma__malloc__pinned.html#ga36433bfcd3933e850a8806b875e76243" title="Allocates memory on the CPU in pinned memory. ">magma_malloc_pinned()</a> </td><td>allocate CPU memory that is pinned (page-locked) </td></tr>
 <tr>
-<td>magma_*malloc_pinned </td><td>allocate CPU memory that is pinned (page-locked) </td></tr>
+<td><a class="el" href="group__magma__malloc.html#ga1157c16abce4543c026c15078f44e792" title="Allocates memory on the GPU. ">magma_malloc()</a> </td><td>allocate GPU memory </td></tr>
 <tr>
-<td>magma_free_pinned </td><td>free CPU memory allocated with malloc_pinned </td></tr>
+<td><a class="el" href="group__magma__malloc__cpu.html#ga2730f57a2656966af4620544e5762137" title="Frees CPU memory previously allocated by magma_malloc_cpu(). ">magma_free_cpu()</a> </td><td>free CPU memory allocated with magma_malloc_cpu </td></tr>
 <tr>
-<td>magma_*malloc </td><td>allocate GPU memory </td></tr>
+<td><a class="el" href="group__magma__malloc__pinned.html#gae11ad30ef6a28f56f1cd3c06cdaf5f0f" title="Frees CPU pinned memory previously allocated by magma_malloc_pinned(). ">magma_free_pinned()</a> </td><td>free CPU memory allocated with magma_malloc_pinned </td></tr>
 <tr>
-<td>magma_free </td><td>free GPU memory </td></tr>
+<td><a class="el" href="group__magma__malloc.html#gad800a1bf75f8316bc3dcf261e70ceaf0" title="Frees GPU memory previously allocated by magma_malloc(). ">magma_free()</a> </td><td>free GPU memory allocated with magma_malloc </td></tr>
 </table>
 <p>where * is one of the four precisions, s d c z, or i for magma_int_t, or none for an un-typed version.</p>
 <h2>Communication </h2>
@@ -371,20 +372,289 @@ Utility routines  </h1>
 <tr>
 <th>Name </th><th>Description  </th></tr>
 <tr>
-<td>setmatrix </td><td>send matrix to GPU </td></tr>
+<td><a class="el" href="group__magma__setmatrix.html">setmatrix</a> </td><td>send matrix to GPU </td></tr>
 <tr>
-<td>setvector </td><td>send vector to GPU </td></tr>
+<td><a class="el" href="group__magma__setvector.html">setvector</a> </td><td>send vector to GPU </td></tr>
 <tr>
-<td>getmatrix </td><td>get matrix from GPU </td></tr>
+<td><a class="el" href="group__magma__getmatrix.html">getmatrix</a> </td><td>get matrix from GPU </td></tr>
 <tr>
-<td>getvector </td><td>get vector from GPU </td></tr>
+<td><a class="el" href="group__magma__getvector.html">getvector</a> </td><td>get vector from GPU </td></tr>
 </table>
+<h1><a class="anchor" id="types"></a>
+Data types &amp; complex numbers </h1>
+<h2>Integers </h2>
+<p>MAGMA uses <b>magma_int_t</b> for integers. Normally, this is mapped to the C/C++ int type. Most systems today use the LP64 convention, meaning long and pointers are 64-bit, while int is 32-bit.</p>
+<p>MAGMA also supports the ILP64 convention as an alternative, where int, long, and pointers are all 64-bit. To use this, we typedef magma_int_t to be long long. To use ILP64, define MAGMA_ILP64 or MKL_ILP64 when compiling, and link with an ILP64 BLAS and LAPACK library; see make.inc.mkl-ilp64 for an example.</p>
+<h2>Complex numbers </h2>
+<p>MAGMA supports complex numbers. Unfortunately, there is not a single standard for how to implement complex numbers in C/C++. Fortunately, most implementations are identical on a binary level, so you can freely cast from one to another. The MAGMA types are: <b>magmaFloatComplex</b>, which in CUDA MAGMA is a typedef of cuFloatComplex, and <b>magmaDoubleComplex</b>, which in CUDA MAGMA is a typedef of cuDoubleComplex.</p>
+<p>For C, we provide macros to manipulate complex numbers. For C++ support, include the magma_operators.h header, which provides overloaded C++ operators and functions.</p>
+<table class="doxtable">
+<tr>
+<th>C macro </th><th>C++ operator </th><th>Description  </th></tr>
+<tr>
+<td>c = MAGMA_*_MAKE(r,i) </td><td></td><td>create complex number from real &amp; imaginary parts </td></tr>
+<tr>
+<td>r = MAGMA_*_REAL(a) </td><td>r = real(a) </td><td>return real part </td></tr>
+<tr>
+<td>i = MAGMA_*_IMAG(a) </td><td>i = imag(a) </td><td>return imaginary part </td></tr>
+<tr>
+<td>c = MAGMA_*_NEGATE(a) </td><td>c = -a; </td><td>negate </td></tr>
+<tr>
+<td>c = MAGMA_*_ADD(a,b) </td><td>c = a + b; </td><td>add </td></tr>
+<tr>
+<td>c = MAGMA_*_SUB(a,b) </td><td>c = a - b; </td><td>subtract </td></tr>
+<tr>
+<td>c = MAGMA_*_MUL(a,b) </td><td>c = a * b; </td><td>multiply </td></tr>
+<tr>
+<td>c = MAGMA_*_DIV(a,b) </td><td>c = a / b; </td><td>divide </td></tr>
+<tr>
+<td>c = MAGMA_*_CNJG(a) </td><td>c = conj(a) </td><td>conjugate </td></tr>
+<tr>
+<td>r = MAGMA_*_ABS(a) </td><td>r = fabs(a) </td><td>2-norm, sqrt( real(a)^2 + imag(a)^2 ) </td></tr>
+<tr>
+<td>r = MAGMA_*_ABS1(a) </td><td>r = abs1(a) </td><td>1-norm, abs(real(a)) + abs(imag(a)) </td></tr>
+<tr>
+<td>. <b>Constants</b> </td><td></td><td><b>Description</b> </td></tr>
+<tr>
+<td>c = MAGMA_*_ZERO </td><td></td><td>zero </td></tr>
+<tr>
+<td>c = MAGMA_*_ONE </td><td></td><td>one </td></tr>
+<tr>
+<td>c = MAGMA_*_NAN </td><td></td><td>not-a-number (e.g., 0/0) </td></tr>
+<tr>
+<td>c = MAGMA_*_INF </td><td></td><td>infinity (e.g., 1/0, overflow) </td></tr>
+</table>
+<p>where * is one of the four precisions, S D C Z.</p>
+<h1><a class="anchor" id="variables"></a>
+Conventions for variables </h1>
+<p>Here are general guidelines for variable names; there are of course exceptions to these.</p>
+<ul>
+<li>Uppercase letters indicate matrices: A, B, C, X.</li>
+<li>Lowercase letters indicate vectors: b, x, y, z.</li>
+<li>"d" prefix indicates matrix or vector on GPU device: dA, dB, dC, dX; db, dx, dy, dz.</li>
+<li>Greek words indicate scalars: alpha, beta.</li>
+<li>m, n, k are matrix dimensions.</li>
+</ul>
+<p>Typically, the order of arguments is:</p><ul>
+<li>options (uplo, etc.)</li>
+<li>matrix sizes (m, n, k, etc.),</li>
+<li>input matrices &amp; vectors (A, lda, x, incx, etc.)</li>
+<li>output matrices &amp; vectors</li>
+<li>workspaces (work, lwork, etc.)</li>
+<li>info error code</li>
+</ul>
+<p>LAPACK and MAGMA use column-major matrices. For matrix X with dimension (lda,n), element X(i, j) is X[ i + j*lda ]. For symmetric, Hermitian, and triangular matrices, only the lower or upper triangle is accessed, as specified by the uplo argument; the other triangle is ignored.</p>
+<p>lda is the leading dimension of matrix A; similarly ldb for B, ldda for dA, etc. It should immediately follow the matrix pointer in the argument list. The leading dimension can be the number of rows, or if A is a sub-matrix of a larger parent matrix, lda is the leading dimension (e.g., rows) of the parent matrix.</p>
+<p>On the GPU, it is often beneficial to round the leading dimension up to a multiple of 32, to provide better performance. This aligns memory reads so they are coalesced. This is provided by the magma_roundup function: </p><pre class="fragment">ldda = magma_roundup( m, 32 );
+</pre><p>The formula ((m + 31)/32)*32 also works, relying on floored integer division, but the roundup function is clearer to use.</p>
+<p>On the CPU, it is often beneficial to ensure that the leading dimension is <b>not</b> a multiple of the page size (often 4 KiB), to minimize TLB misses.</p>
+<p>For vectors, incx is the increment or stride between elements of vector x. In all cases, incx != 0. In most cases, if incx &lt; 0, then the vector is indexed in reverse order, for instance, using Matlab notation, </p><pre class="fragment">incx =  1   means   x( 1 : 1 : n     )
+incx =  2   means   x( 1 : 2 : 2*n-1 )
+</pre><p>while </p><pre class="fragment">incx = -1   means   x( n     : -1 : 1 )
+incx = -2   means   x( 2*n-1 : -2 : 1 )
+</pre><p>For several routines (amax, amin, asum, nrm2, scal), the order is irrelevant, so negative incx are not allowed; incx &gt; 0.</p>
+<h1><a class="anchor" id="constants"></a>
+Constants </h1>
+<p>MAGMA defines a few constant parameters, such as <code>MagmaTrans, MagmaNoTrans</code>, that are equivalent of CBLAS and LAPACK parameters. The naming and numbering of these parameters follow that of <a href="http://www.netlib.org/blas/blast-forum/cblas.tgz">CBLAS from Netlib</a> and the <a href="http://www.netlib.org/lapack/lapwrapc/">C Interface to LAPACK from Netlib</a>, and <a href="http://icl.utk.edu/plasma/">PLASMA</a>.</p>
+<p>MAGMA includes functions, <code>lapack_xyz_const()</code>, which take MAGMA's integer constants and return LAPACK's string constants, where <code>xyz</code> is a MAGMA type such as <code>uplo</code>, <code>trans</code>, etc. From the standpoint of LAPACK, only the first letter of each string is significant. Nevertheless, the functions return meaningful strings, such as "No transpose", "Transpose", "Upper", "Lower", etc. Similarly, there are functions to go from MAGMA's integer constants to CBLAS, OpenCL's clBLAS, and CUDA's cuBLAS integer constants.</p>
+<p>There are also functions, <code>magma_xyz_const()</code>, to go in the opposite direction, from LAPACK's string constants to MAGMA's integer constants.</p>
+<p>The most common constants are those defined for BLAS routines:</p>
+<ul>
+<li><p class="startli">enum { MagmaNoTrans, MagmaTrans, MagmaConjTrans } magma_order_t</p>
+<p class="startli">Whether a matrix is not transposed, transposed, or conjugate-transposed. For a real matrix, Trans and ConjTrans have the same meaning.</p>
+</li>
+<li><p class="startli">enum { MagmaLower, MagmaUpper, MagmaFull } magma_uplo_t</p>
+<p class="startli">Whether the lower or upper triangle of a matrix is given, or the full matrix.</p>
+</li>
+<li><p class="startli">enum { MagmaLeft, MagmaRight } magma_side_t</p>
+<p class="startli">Whether the matrix is on the left or right.</p>
+</li>
+<li><p class="startli">enum { MagmaUnit, MagmaNonUnit } magma_diag_t</p>
+<p class="startli">Whether the diagonal is assumed to be unit (all ones) or not.</p>
+</li>
+</ul>
+<p>Additional constants for specific routines are defined in the documentation for the routines.</p>
+<p>Because MAGMA, CBLAS, LAPACK, CUBLAS, and clBlas use potentially different constants, converters between them are provided.</p>
+<p>These convert LAPACK constants to MAGMA constants. Note that the meaning of LAPACK constants depends on the context: 'N' can mean False, NoTrans, NonUnit, NoVec, etc. Here, curly braces { } group similar constants.</p>
+<table class="doxtable">
+<tr>
+<th>. </th><th>Function </th><th>. </th><th>Description  </th></tr>
+<tr>
+<td>magma_bool_t </td><td>magma_bool_const </td><td>( character ) </td><td>Map 'N', 'Y' <br />
+ to MagmaTrue, MagmaFalse </td></tr>
+<tr>
+<td>magma_order_t </td><td>magma_order_const </td><td>( character ) </td><td>Map 'R', 'C' <br />
+ to MagmaRowMajor, MagmaColMajor </td></tr>
+<tr>
+<td>magma_trans_t </td><td>magma_trans_const </td><td>( character ) </td><td>Map 'N', 'T', 'C' <br />
+ to MagmaNoTrans, MagmaTrans, MagmaConjTrans </td></tr>
+<tr>
+<td>magma_uplo_t </td><td>magma_uplo_const </td><td>( character ) </td><td>Map 'L', 'U' <br />
+ to MagmaLower, MagmaUpper </td></tr>
+<tr>
+<td>magma_diag_t </td><td>magma_diag_const </td><td>( character ) </td><td>Map 'N', 'U' <br />
+ to MagmaNonUnit, MagmaUnit </td></tr>
+<tr>
+<td>magma_side_t </td><td>magma_side_const </td><td>( character ) </td><td>Map 'L', 'R' <br />
+ to MagmaLeft, MagmaRight </td></tr>
+<tr>
+<td>magma_norm_t </td><td>magma_norm_const </td><td>( character ) </td><td>Map 'O', '1', '2', 'F', 'E', 'I', 'M' <br />
+ to Magma{One, Two, Frobenius, Inf, Max}Norm </td></tr>
+<tr>
+<td>magma_dist_t </td><td>magma_dist_const </td><td>( character ) </td><td>Map 'U', 'S', 'N' <br />
+ to MagmaDist{Uniform, Symmetric, Normal} </td></tr>
+<tr>
+<td>magma_vec_t </td><td>magma_vec_const </td><td>( character ) </td><td>Map 'V', 'N', 'I', 'A', 'S', 'O' <br />
+ to MagmaVec, Magma{No, I, All, Some, Overwrite}Vec </td></tr>
+<tr>
+<td>magma_range_t </td><td>magma_range_const </td><td>( character ) </td><td>Map 'A', 'V', 'I' <br />
+ to MagmaRange{All, V, I} </td></tr>
+<tr>
+<td>magma_vect_t </td><td>magma_vect_const </td><td>( character ) </td><td>Map 'Q', 'P' <br />
+ to MagmaQ, MagmaP </td></tr>
+<tr>
+<td>magma_direct_t </td><td>magma_direct_const </td><td>( character ) </td><td>Map 'F', 'B' <br />
+ to MagmaForward, MagmaBackward </td></tr>
+<tr>
+<td>magma_storev_t </td><td>magma_storev_const </td><td>( character ) </td><td>Map 'C', 'R' <br />
+ to MagmaColumnwise, MagmaRowwise </td></tr>
+</table>
+<p>These do the inverse map, converting MAGMA to LAPACK constants. From the standpoint of LAPACK, only the first letter of each string is significant. Nevertheless, the functions return meaningful strings, such as "No transpose", "Transpose". Substitute <code>lapacke</code> for <code>lapack</code> to get version that returns single char instead of string (const char*).</p>
+<table class="doxtable">
+<tr>
+<th>. </th><th>Function </th><th>. </th><th>Description  </th></tr>
+<tr>
+<td>const char* </td><td>lapack_bool_const </td><td>( magma_bool_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga067c91bb89cf0d4b8801cc1d52679f30">magma_bool_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_order_const </td><td>( magma_order_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga9ba2a2992e9b9c321a4aadefe6120455">magma_order_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_trans_const </td><td>( magma_trans_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#gad7e94cd15b21ee1c42db1c3f17c4046d">magma_trans_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_uplo_const </td><td>( magma_uplo_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga1fc568aa02daa327681c9766c8cd7e4f">magma_uplo_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_diag_const </td><td>( magma_diag_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga439812e4d2595e6e3d0a348f501a0716">magma_diag_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_side_const </td><td>( magma_side_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga082d3f421fbe8b0031775241adbc8751">magma_side_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_norm_const </td><td>( magma_norm_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#gaa19439cbe016d513b0d996960eea1dea">magma_norm_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_dist_const </td><td>( magma_dist_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga7befc62c779dfe2cdf732e886079bd99">magma_dist_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_vec_const </td><td>( magma_vec_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#gaeccb80b1ed13859abf179735794443fb">magma_vec_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_range_const </td><td>( magma_range_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#gae9280f9706c025bc4e64924ccf319afc">magma_range_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_vect_const </td><td>( magma_vect_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga332a1f4504df9a9de752e10837c262f7">magma_vect_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_direct_const </td><td>( magma_direct_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#ga5b868d6bf2e873d913d02fe8afac250b">magma_direct_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_storev_const </td><td>( magma_storev_t ) </td><td>Inverse of <a class="el" href="group__magma__const.html#gabc90afa498c523e69a224c77836169c2">magma_storev_const()</a> </td></tr>
+<tr>
+<td>const char* </td><td>lapack_const </td><td>( constant ) </td><td>Map any MAGMA constant, Magma*, to an LAPACK string constant </td></tr>
+<tr>
+<td>char </td><td>lapacke_const </td><td>( constant ) </td><td>Map any MAGMA constant, Magma*, to an LAPACKE character </td></tr>
+</table>
+<p>To convert MAGMA to Nvidia's CUBLAS constants:</p>
+<table class="doxtable">
+<tr>
+<th>. </th><th>Function </th><th>. </th><th>Description  </th></tr>
+<tr>
+<td>cublasOperation_t </td><td>cublas_trans_const </td><td>( trans ) </td><td>Map MagmaNoTrans, MagmaTrans, MagmaConjTrans <br />
+ to CUBLAS_OP_N, CUBLAS_OP_T, CUBLAS_OP_C </td></tr>
+<tr>
+<td>cublasFillMode_t </td><td>cublas_uplo_const </td><td>( uplo ) </td><td>Map MagmaLower, MagmaUpper <br />
+ to CUBLAS_FILL_MODE_LOWER, CUBLAS_FILL_MODE_UPPER </td></tr>
+<tr>
+<td>cublasDiagType_t </td><td>cublas_diag_const </td><td>( diag ) </td><td>Map MagmaNonUnit, MagmaUnit <br />
+ to CUBLAS_DIAG_NON_UNIT, CUBLAS_DIAG_UNIT </td></tr>
+<tr>
+<td>cublasSideMode_t </td><td>cublas_side_const </td><td>( side ) </td><td>Map MagmaLeft, MagmaRight <br />
+ to CUBLAS_SIDE_LEFT, CUBLAS_SIDE_Right </td></tr>
+</table>
+<p>To convert MAGMA to AMD's clBlas constants:</p>
+<table class="doxtable">
+<tr>
+<th>. </th><th>Function </th><th>. </th><th>Description  </th></tr>
+<tr>
+<td>clblasOrder </td><td>clblas_order_const </td><td>( order ) </td><td>Map MagmaRowMajor, MagmaColMajor <br />
+ to clAmdBlasRowMajor, clAmdBlasColumnMajor </td></tr>
+<tr>
+<td>clblasTranspose </td><td>clblas_trans_const </td><td>( trans ) </td><td>Map MagmaNoTrans, MagmaTrans, MagmaConjTrans <br />
+ to clAmdBlasNoTrans, clAmdBlasTrans, clAmdBlasConjTrans </td></tr>
+<tr>
+<td>clblasUplo </td><td>clblas_uplo_const </td><td>( uplo ) </td><td>Map MagmaLower, MagmaUpper <br />
+ to clAmdBlasLower, clAmdBlasUpper </td></tr>
+<tr>
+<td>clblasDiag </td><td>clblas_diag_const </td><td>( diag ) </td><td>Map MagmaNonUnit, MagmaUnit <br />
+ to clAmdBlasNonUnit, clAmdBlasUnit </td></tr>
+<tr>
+<td>clblasSide </td><td>clblas_side_const </td><td>( side ) </td><td>Map MagmaLeft, MagmaRight <br />
+ to clAmdBlasLeft, clAmdBlasRight </td></tr>
+</table>
+<p>To convert MAGMA to CBLAS constants:</p>
+<table class="doxtable">
+<tr>
+<th>. </th><th>Function </th><th>. </th><th>Description  </th></tr>
+<tr>
+<td>enum CBLAS_ORDER </td><td>cblas_order_const </td><td>( order ) </td><td>Map MagmaRowMajor, MagmaColMajor <br />
+ to CblasRowMajor, CblasColMajor </td></tr>
+<tr>
+<td>enum CBLAS_TRANSPOSE </td><td>cblas_trans_const </td><td>( trans ) </td><td>Map MagmaNoTrans, MagmaTrans, MagmaConjTrans <br />
+ to CblasNoTrans, CblasTrans, CblasConjTrans </td></tr>
+<tr>
+<td>enum CBLAS_UPLO </td><td>cblas_uplo_const </td><td>( uplo ) </td><td>Map MagmaLower, MagmaUpper <br />
+ to CblasLower, CblasUpper </td></tr>
+<tr>
+<td>enum CBLAS_DIAG </td><td>cblas_diag_const </td><td>( diag ) </td><td>Map MagmaNonUnit, MagmaUnit <br />
+ to CblasNonUnit, CblasUnit </td></tr>
+<tr>
+<td>enum CBLAS_SIDE </td><td>cblas_side_const </td><td>( side ) </td><td>Map MagmaLeft, MagmaRight <br />
+ to CblasLeft, CblasRight </td></tr>
+</table>
+<h1><a class="anchor" id="errors"></a>
+Errors </h1>
+<p>Driver and computational routines, and a few BLAS/auxiliary routines, currently return errors both as a return value and in the info argument. The return value and info should always be identical. In general, the meaning is as given in this table. Predefined error codes are large negative numbers. Using the symbolic constants below is preferred, but the numeric values can be found in include/magma_types.h.</p>
+<table class="doxtable">
+<tr>
+<th>Info </th><th>Description  </th></tr>
+<tr>
+<td>info = 0 (MAGMA_SUCCESS) </td><td>Successful exit </td></tr>
+<tr>
+<td>info &lt; 0, but small </td><td>For info = -i, the i-th argument had an illegal value </td></tr>
+<tr>
+<td>info &gt; 0 </td><td>Function-specific error such as singular matrix </td></tr>
+<tr>
+<td>MAGMA_ERR_DEVICE_ALLOC </td><td>Could not allocate GPU device memory </td></tr>
+<tr>
+<td>MAGMA_ERR_HOST_ALLOC </td><td>Could not allocate CPU host memory </td></tr>
+<tr>
+<td>MAGMA_ERR_ILLEGAL_VALUE </td><td>An argument had an illegal value (deprecated; instead it should return -i to say the i-th argument was bad) </td></tr>
+<tr>
+<td>MAGMA_ERR_INVALID_PTR </td><td>Can't free pointer </td></tr>
+<tr>
+<td>MAGMA_ERR_NOT_IMPLEMENTED </td><td>Function or option not implemented </td></tr>
+<tr>
+<td>MAGMA_ERR_NOT_SUPPORTED </td><td>Function or option not supported on the current architecture </td></tr>
+</table>
+<p><a class="el" href="group__magma__error.html#gad026dfb936bc0cc82ce52f9f8100d54c" title="magma_xerbla is an error handler for the MAGMA routines. ">magma_xerbla()</a> is called to report errors (mostly bad arguments) to the user.</p>
+<p><a class="el" href="group__magma__error.html#ga1bc3a6840b398f67da40701a5af9439f">magma_strerror()</a> returns string description of an error code.</p>
+<h1><a class="anchor" id="methodology"></a>
+Methodology </h1>
+<h2>One-sided matrix factorizations </h2>
+<p>The one-sided LU, Cholesky, and QR factorizations form a basis for solving linear systems. A general recommendation is to use LU for general n-by-n matrices, Cholesky for symmetric/Hermitian positive definite (SPD) matrices, and QR for solving least squares problems, </p><pre class="fragment">min || A x - b ||
+</pre><p>for general m-by-n, m &gt; n matrices.</p>
+<p>We use hybrid algorithms where the computation is split between the GPU and and the CPU. In general for the one-sided factorizations, the panels are factored on the CPU and the trailing sub-matrix updates on the GPU. Look-ahead techniques are used to overlap the CPU and GPU work and some communications.</p>
+<p>In both the CPU and GPU interfaces the matrix to be factored resides in the GPU memory, and CPU-GPU transfers are associated only with the panels. The resulting matrix is accumulated (on the CPU or GPU according to the interface) along the computation, as a byproduct of the algorithm, vs. sending the the entire matrix when needed. In the CPU interface, the original transfer of the matrix to the GPU is overlapped with the factorization of the first panel. In this sense the CPU and GPU interfaces, although similar, are not derivatives of each other as they have different communication patterns.</p>
+<p>Although the solution step has O(n) times less floating point operations than the factorization, it is still very important to optimize it. Solving a triangular system of equations can be very slow because the computation is bandwidth limited and naturally not parallel. Various approaches have been proposed in the past. We use an approach where diagonal blocks of A are explicitly inverted and used in a block algorithm. This results in a high performance, numerically stable algorithm, especially when used with triangular matrices coming from numerically stable factorization algorithms (e.g., as in LAPACK and MAGMA).</p>
+<p>For instances when the GPU's single precision performance is much higher than its double precision performance, MAGMA provides a second set of solvers, based on the mixed precision iterative refinement technique. The solvers are based again on correspondingly the LU, QR, and Cholesky factorizations, and are designed to solve linear problems in double precision accuracy but at a speed that is characteristic for the much faster single precision computations. The idea is to use single precision for the bulk of the computation, namely the factorization step, and than use that factorization as a preconditioner in a simple iterative refinement process in double precision arithmetic. This often results in the desired high performance and high accuracy solvers.</p>
+<h2>Two-sided matrix factorizations </h2>
+<p>As the one-sided matrix factorizations are the basis for various linear solvers, the two-sided matrix factorizations are the basis for eigen-solvers, and therefore form an important class of dense linear algebra routines. The two-sided factorizations have been traditionally more difficult to achieve high performance. The reason is that the two-sided factorizations involve large matrix-vector products which are memory bound, and as the gap between compute and communication power increases exponentially, these memory bound operations become an increasingly more difficult to handle bottleneck. GPUs though offer an attractive possibility to accelerate them. Indeed, having a high bandwidth (e.g. 10 times larger than current CPU bus bandwidths), GPUs can accelerate matrix-vector products significantly (10 to 30 times). Here, the panel factorization itself is hybrid, while the trailing matrix update is performed on the GPU. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:40 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zhegvd.cpp normal z -> c, Mon May  2 23:30:21 2016
+       @generated from src/zhegvd.cpp, normal z -> c, Tue Aug 30 09:38:20 2016
 
 */
 #include "magma_internal.h"
@@ -18,7 +18,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHEGVD computes all the eigenvalues, and optionally, the eigenvectors
@@ -105,9 +105,9 @@
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= max( N + N*NB, 2*N + N**2 ).
+     -      If N <= 1,                      LWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LWORK >= N + N*NB.
+     -      If JOBZ = MagmaVec   and N > 1, LWORK >= max( N + N*NB, 2*N + N**2 ).
             NB can be obtained through magma_get_chetrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
@@ -123,9 +123,9 @@
     @param[in]
     lrwork  INTEGER
             The dimension of the array RWORK.
-            If N <= 1,                      LRWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
-            If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
+     -      If N <= 1,                      LRWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
+     -      If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
     \n
             If LRWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
@@ -140,9 +140,9 @@
     @param[in]
     liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                      LIWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
-            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+     -      If N <= 1,                      LIWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+     -      If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
@@ -178,8 +178,8 @@
     bounds reference to A - reported by Ralf Meyer).  Also corrected the
     description of INFO and the test on ITYPE. Sven, 16 Feb 05.
 
-    @ingroup magma_chegv_driver
-    ********************************************************************/
+    @ingroup magma_hegvd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chegvd(
     magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t n,

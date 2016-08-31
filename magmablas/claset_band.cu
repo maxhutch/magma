@@ -1,22 +1,23 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from magmablas/zlaset_band.cu normal z -> c, Mon May  2 23:30:34 2016
+       @generated from magmablas/zlaset_band.cu, normal z -> c, Tue Aug 30 09:38:32 2016
 
 */
 #include "magma_internal.h"
 
 #define NB 64
 
-/* ////////////////////////////////////////////////////////////////////////////
- -- GPU kernel for setting the k-1 super-diagonals to OFFDIAG
+/******************************************************************************/
+/*
+    GPU kernel for setting the k-1 super-diagonals to OFFDIAG
     and the main diagonal to DIAG.
     Divides matrix into min( ceil((m+k-1)/nb), ceil(n/nb) ) block-columns,
     with k threads in each block.
@@ -66,8 +67,10 @@ void claset_band_upper(
     }
 }
 
-/* ////////////////////////////////////////////////////////////////////////////
- -- GPU kernel for setting the k-1 sub-diagonals to OFFDIAG
+
+/******************************************************************************/
+/*
+    GPU kernel for setting the k-1 sub-diagonals to OFFDIAG
     and the main diagonal to DIAG.
     Divides matrix into min( ceil(m/nb), ceil(n/nb) ) block-columns,
     with k threads in each block.
@@ -93,7 +96,6 @@ void claset_band_upper(
     
     Thread assignment for m=13, n=12, k=4, nb=8. Each column is done in parallel.
 */
-
 __global__
 void claset_band_lower(
     int m, int n,
@@ -119,7 +121,7 @@ void claset_band_lower(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLASET_BAND initializes the main diagonal of dA to DIAG,
@@ -171,8 +173,8 @@ void claset_band_lower(
     queue   magma_queue_t
             Stream to execute CLASET in.
     
-    @ingroup magma_caux2
-    ********************************************************************/
+    @ingroup magma_laset_band
+*******************************************************************************/
 extern "C" void
 magmablas_claset_band_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,

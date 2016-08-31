@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zlaqps.cpp normal z -> d, Mon May  2 23:30:11 2016
+       @generated from src/zlaqps.cpp, normal z -> d, Tue Aug 30 09:38:11 2016
 
        @author Stan Tomov
        @author Mark Gates 
@@ -16,7 +16,7 @@
 
 #define REAL
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLAQPS computes a step of QR factorization with column pivoting
@@ -65,6 +65,16 @@
     @param[in]
     lda     INTEGER
             The leading dimension of the array A. LDA >= max(1,M).
+    
+    @param[in,out]
+    dA      DOUBLE PRECISION array, dimension (LDA,N)
+            Copy of A on the GPU.
+            Portions of  A are updated on the CPU;
+            portions of dA are updated on the GPU. See code for details.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA. LDDA >= max(1,M).
 
     @param[in,out]
     jpvt    INTEGER array, dimension (N)
@@ -95,8 +105,16 @@
     ldf     INTEGER
             The leading dimension of the array F. LDF >= max(1,N).
 
-    @ingroup magma_dgeqp3_aux
-    ********************************************************************/
+    @param[in,out]
+    dF      DOUBLE PRECISION array, dimension (LDDF,NB)
+            Copy of F on the GPU. See code for details.
+
+    @param[in]
+    lddf    INTEGER
+            The leading dimension of the array dF. LDDF >= max(1,N).
+
+    @ingroup magma_laqps
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dlaqps(
     magma_int_t m, magma_int_t n, magma_int_t offset,

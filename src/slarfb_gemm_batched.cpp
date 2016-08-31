@@ -1,20 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
-       @generated from src/zlarfb_gemm_batched.cpp normal z -> s, Mon May  2 23:30:28 2016
+       @generated from src/zlarfb_gemm_batched.cpp, normal z -> s, Tue Aug 30 09:38:26 2016
 */
-
 #include "magma_internal.h"
-#include "cublas_v2.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLARFB applies a real block reflector H or its transpose H^H to a
@@ -92,7 +90,7 @@
 
     @param[in]
     lddc    INTEGER
-            The leading dimension of the array C. LDA >= max(1,M).
+            The leading dimension of the array C. LDDC >= max(1,M).
 
     @param
     dwork_array   (workspace) REAL array, dimension (LDWORK,K)
@@ -144,8 +142,8 @@
                      (  0  1 v3 )
                      (  0  0  1 )
 
-    @ingroup magma_saux3
-    ********************************************************************/
+    @ingroup magma_larfb_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slarfb_gemm_batched(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
@@ -157,16 +155,18 @@ magma_slarfb_gemm_batched(
     magmaFloat_ptr dworkvt_array[],     magma_int_t ldworkvt,
     magma_int_t batchCount, magma_queue_t queue)
 {
-    float c_zero    = MAGMA_S_ZERO;
-    float c_one     = MAGMA_S_ONE;
-    float c_neg_one = MAGMA_S_NEG_ONE;
+    // Constants
+    const float c_zero    = MAGMA_S_ZERO;
+    const float c_one     = MAGMA_S_ONE;
+    const float c_neg_one = MAGMA_S_NEG_ONE;
 
     /* Function Body */
     magma_int_t info = 0;
     if (m <= 0 || n <= 0) {
         return info;
     }
-    // internal variable
+    
+    // Local variables
     magma_int_t ldwvt = (m > n ?  k : m);
     magma_int_t ldw;
     if ( side == MagmaLeft ) {
@@ -182,7 +182,6 @@ magma_slarfb_gemm_batched(
         transt = MagmaNoTrans;
     
     MAGMA_UNUSED( transt );  // TODO: is this a bug that it isn't used?
-    
     
     // whether V is stored transposed or not
     magma_trans_t notransV, transV;
@@ -200,7 +199,7 @@ magma_slarfb_gemm_batched(
         // Comments assume H C.
         // When forming H^H C, T gets transposed via transt for m >= n or by trans for m < n.
         
-        // W = V' C                              
+        // W = V^H C                              
         magma_sgemm_batched( MagmaTrans,notransV, /*NontransLeft*/
                      k, n, m,
                      c_one,  dV_array,    lddv,
@@ -217,8 +216,7 @@ magma_slarfb_gemm_batched(
                          c_zero, dworkvt_array, ldwvt,
                          batchCount, queue );
 
-
-            // C = C - W2 W = C - V T V' C = (I - V T V') C = H C
+            // C = C - W2 W = C - V T V^H C = (I - V T V^H) C = H C
             magma_sgemm_batched( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dworkvt_array,  ldwvt,
@@ -227,7 +225,7 @@ magma_slarfb_gemm_batched(
                          batchCount, queue );
         }
         else {
-            // W2 = T W  = T  V' C
+            // W2 = T W  = T  V^H C
             magma_sgemm_batched( trans, MagmaNoTrans,
                          k, n, k,
                          c_one,  dT_array, lddt,
@@ -235,7 +233,7 @@ magma_slarfb_gemm_batched(
                          c_zero, dworkvt_array, ldwvt,
                          batchCount, queue );
 
-            // C = C - V W2 = C - V T V' C = (I - V T V') C = H C
+            // C = C - V W2 = C - V T V^H C = (I - V T V^H) C = H C
             magma_sgemm_batched( notransV, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dV_array,  lddv,
@@ -256,6 +254,7 @@ magma_slarfb_gemm_batched(
                              dV_array,    lddv,
                      c_zero, dwork_array, ldw,
                      batchCount, queue );
+
         if (m <= n) {
             // W2 = W T = C V T
             magma_sgemm_batched( MagmaNoTrans, trans,
@@ -265,7 +264,7 @@ magma_slarfb_gemm_batched(
                          c_zero, dworkvt_array, ldwvt,
                          batchCount, queue );
 
-            // C = C - W2 V' = C - C V T V' = C (I - V T V') = C H
+            // C = C - W2 V^H = C - C V T V^H = C (I - V T V^H) = C H
             magma_sgemm_batched( MagmaNoTrans, transV,
                          m, n, k,
                          c_neg_one, dworkvt_array, ldwvt,
@@ -274,14 +273,15 @@ magma_slarfb_gemm_batched(
                          batchCount, queue );
         }
         else {
-            // W2 = T V'
+            // W2 = T V^H
             magma_sgemm_batched( trans, transV,
                          k, n, k,
                          c_one,  dT_array, lddt,
                                  dV_array, lddv,
                          c_zero, dworkvt_array, ldwvt,
                          batchCount, queue );
-            // C = C - W W2 = C - C V T V' = C (I - V T V') = C H
+
+            // C = C - W W2 = C - C V T V^H = C (I - V T V^H) = C H
             magma_sgemm_batched( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dwork_array,   ldw,
@@ -290,5 +290,6 @@ magma_slarfb_gemm_batched(
                          batchCount, queue );
         }
     }
-    return MAGMA_SUCCESS;
+
+    return info;
 } /* magma_slarfb */

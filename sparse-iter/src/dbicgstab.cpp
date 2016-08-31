@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/src/zbicgstab.cpp normal z -> d, Mon May  2 23:30:55 2016
+       @generated from sparse-iter/src/zbicgstab.cpp, normal z -> d, Tue Aug 30 09:38:52 2016
        @author Hartwig Anzt
 
 */
@@ -81,14 +81,13 @@ magma_dbicgstab(
     
     // solver variables
     double alpha, beta, omega, rho_old, rho_new;
-    double nom, betanom, nom0, r0, res, nomb;
+    double betanom, nom0, r0, res, nomb;
     //double den;
 
     // solver setup
     CHECK(  magma_dresidualvec( A, b, *x, &r, &nom0, queue));
     magma_dcopy( dofs, r.dval, 1, rr.dval, 1, queue );                  // rr = r
     betanom = nom0;
-    nom = nom0*nom0;
     rho_new = magma_ddot( dofs, r.dval, 1, r.dval, 1, queue );             // rho=<rr,r>
     rho_old = omega = alpha = MAGMA_D_MAKE( 1.0, 0. );
     solver_par->init_res = nom0;
@@ -110,7 +109,7 @@ magma_dbicgstab(
         solver_par->res_vec[0] = nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }
@@ -151,7 +150,6 @@ magma_dbicgstab(
         magma_daxpy( dofs, c_neg_one * omega, t.dval, 1 , r.dval, 1, queue ); // r=r-omega*t
         res = betanom = magma_dnrm2( dofs, r.dval, 1, queue );
 
-        nom = betanom*betanom;
         rho_old = rho_new;                                    // rho_old=rho
 
         if ( solver_par->verbose > 0 ) {

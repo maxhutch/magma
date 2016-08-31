@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlacpy_conj.cu normal z -> c, Mon May  2 23:30:31 2016
+       @generated from magmablas/zlacpy_conj.cu, normal z -> c, Tue Aug 30 09:38:29 2016
 
 */
 #include "magma_internal.h"
 
 #define BLOCK_SIZE 64
 
+/******************************************************************************/
 // copy & conjugate a single vector of length n.
 // TODO: this was modeled on the old cswap routine. Update to new clacpy code for 2D matrix?
 
@@ -30,6 +31,7 @@ __global__ void clacpy_conj_kernel(
 }
 
 
+/******************************************************************************/
 extern "C" void 
 magmablas_clacpy_conj_q(
     magma_int_t n,

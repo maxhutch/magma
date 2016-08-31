@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -12,6 +12,7 @@
 
 #define NB 64
 
+/******************************************************************************/
 // adds   x += r  --and--
 // copies r = b
 // each thread does one index, x[i] and r[i]
@@ -30,9 +31,10 @@ zaxpycp_kernel(
 }
 
 
-// ----------------------------------------------------------------------
-// adds   x += r  --and--
-// copies r = b
+/***************************************************************************//**
+    adds   x += r  --and--
+    copies r = b
+*******************************************************************************/
 extern "C" void
 magmablas_zaxpycp_q(
     magma_int_t m,

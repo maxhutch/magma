@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from src/zhetrd_he2hb_mgpu.cpp normal z -> c, Mon May  2 23:30:20 2016
+       @generated from src/zhetrd_he2hb_mgpu.cpp, normal z -> c, Tue Aug 30 09:38:19 2016
 
 */
 #include <cuda_runtime.h>
@@ -17,7 +17,7 @@
 #include "magma_bulge.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHETRD_HE2HB reduces a complex Hermitian matrix A to real symmetric
@@ -172,8 +172,8 @@
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
 
-    @ingroup magma_cheev_2stage
-    ********************************************************************/
+    @ingroup magma_hetrd_he2hb
+*******************************************************************************/
 extern "C" magma_int_t
 magma_chetrd_he2hb_mgpu(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
@@ -254,7 +254,7 @@ magma_chetrd_he2hb_mgpu(
     magma_int_t ncmplx=0;
     magma_buildconnection_mgpu(gnode, &ncmplx,  ngpu);
     #ifdef ENABLE_DEBUG
-    printf(" Initializing communication pattern.... GPU-ncmplx %d\n\n", ncmplx);
+    printf(" Initializing communication pattern.... GPU-ncmplx %lld\n\n", (long long) ncmplx );
     #endif
 
     magmaFloatComplex *dspace[MagmaMaxGPUs];
@@ -316,7 +316,7 @@ magma_chetrd_he2hb_mgpu(
                 idev   = ((i-1) / distblk) % ngpu;          // device with this block
 
 
-                //printf("Receiving panel ofsize %d %d from idev %d A(%d,%d) \n",(pm+pn), pn,idev,i-1,di);
+                //printf("Receiving panel ofsize %d %d from idev %d A(%d,%d)\n",(pm+pn), pn,idev,i-1,di);
                 magma_setdevice( idev );
 
                 //magma_device_sync();
@@ -325,7 +325,7 @@ magma_chetrd_he2hb_mgpu(
                                         A( i, i), lda, queues[ idev ][ nqueue-1 ] );
               
                 //magma_setdevice( 0 );
-                //printf("updating cher2k on A(%d,%d) of size %d %d \n",indi_old+pn_old-1,indi_old+pn_old-1,pm_old-pn_old,pn_old);
+                //printf("updating cher2k on A(%d,%d) of size %d %d\n",indi_old+pn_old-1,indi_old+pn_old-1,pm_old-pn_old,pn_old);
                 // compute CHER2K_MGPU
                 magmablas_cher2k_mgpu2( 
                     MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old,
@@ -490,7 +490,7 @@ magma_chetrd_he2hb_mgpu(
                             dw[idev], pm,
                             dv[idev], pm, c_one,
                             dA(idev, indi, di+1), ldda, queues[ idev ][ nqueue-1 ] );
-                //printf("updating next panel distblk %d  idev %d  on A(%d,%d) of size %d %d %d \n",distblk,idev,indi-1,di,pm,pn,pn);
+                //printf("updating next panel distblk %d  idev %d  on A(%d,%d) of size %d %d %d\n",distblk,idev,indi-1,di,pm,pn,pn);
             }
             else {
                 /* no look-ahead as this is last iteration */
@@ -499,7 +499,7 @@ magma_chetrd_he2hb_mgpu(
                 di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
                 idev   = ((indi-1) / distblk) % ngpu;          // device with this block
                 magma_setdevice( idev );
-                //printf("LAST CHER2K idev %d on A(%d,%d) of size %d \n",idev, indi-1,di,pk);
+                //printf("LAST CHER2K idev %d on A(%d,%d) of size %d\n",idev, indi-1,di,pk);
                 magma_cher2k( MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
                              dv[idev], pm,
                              dw[idev], pm, d_one,

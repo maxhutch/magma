@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from src/zlarfb_gpu_gemm.cpp normal z -> s, Mon May  2 23:30:07 2016
+       @generated from src/zlarfb_gpu_gemm.cpp, normal z -> s, Tue Aug 30 09:38:08 2016
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLARFB applies a real block reflector H or its transpose H^H to a
@@ -138,8 +138,8 @@
                      (  0  1 v3 )
                      (  0  0  1 )
 
-    @ingroup magma_saux3
-    ********************************************************************/
+    @ingroup magma_larfb
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slarfb_gpu_gemm_q(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,

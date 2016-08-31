@@ -18,7 +18,7 @@
 #define TRACE_METHOD 2
 
 
-// ----------------------------------------
+/******************************************************************************/
 struct event_log
 {
     int    ncore;
@@ -48,7 +48,7 @@ struct event_log
 struct event_log glog;
 
 
-// ----------------------------------------
+/******************************************************************************/
 void trace_init( int ncore, int ngpu, int nqueue, magma_queue_t* queues )
 {
     if ( ncore > MAX_CORES ) {
@@ -97,7 +97,7 @@ void trace_init( int ncore, int ngpu, int nqueue, magma_queue_t* queues )
 }
 
 
-// ----------------------------------------
+/******************************************************************************/
 void trace_cpu_start( int core, const char* tag, const char* lbl )
 {
     int id = glog.cpu_id[core];
@@ -107,7 +107,7 @@ void trace_cpu_start( int core, const char* tag, const char* lbl )
 }
 
 
-// ----------------------------------------
+/******************************************************************************/
 void trace_cpu_end( int core )
 {
     int id = glog.cpu_id[core];
@@ -121,7 +121,7 @@ void trace_cpu_end( int core )
 }
 
 
-// ----------------------------------------
+/******************************************************************************/
 void trace_gpu_start( int dev, int s, const char* tag, const char* lbl )
 {
     int t = dev*glog.nqueue + s;
@@ -137,7 +137,7 @@ void trace_gpu_start( int dev, int s, const char* tag, const char* lbl )
 }
 
 
-// ----------------------------------------
+/******************************************************************************/
 void trace_gpu_end( int dev, int s )
 {
     int t = dev*glog.nqueue + s;
@@ -153,7 +153,7 @@ void trace_gpu_end( int dev, int s )
 }
 
 
-// ----------------------------------------
+/******************************************************************************/
 void trace_finalize( const char* filename, const char* cssfile )
 {
     // these are all in SVG "pixels"

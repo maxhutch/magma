@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgehrd_m.cpp normal z -> c, Mon May  2 23:30:23 2016
+       @generated from src/zgehrd_m.cpp, normal z -> c, Tue Aug 30 09:38:22 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEHRD reduces a COMPLEX general matrix A to upper Hessenberg form H by
@@ -121,8 +121,8 @@
 
     This version stores the T matrices, for later use in magma_cunghr.
 
-    @ingroup magma_cgeev_comp
-    ********************************************************************/
+    @ingroup magma_gehrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgehrd_m(
     magma_int_t n, magma_int_t ilo, magma_int_t ihi,
@@ -132,15 +132,15 @@ magma_cgehrd_m(
     magmaFloatComplex *T,
     magma_int_t *info)
 {
-    #define  A( i, j )    (A + (i) + (j)*lda)
-    #define dA( d, i, j ) (data.A[d] + (i) + (j)*ldda)
+    #define  A( i, j )      (A + (i) + (j)*lda)
+    #define dA( dev, i, j ) (data.dA[dev] + (i) + (j)*ldda)
 
     magmaFloatComplex c_one  = MAGMA_C_ONE;
     magmaFloatComplex c_zero = MAGMA_C_ZERO;
 
     magma_int_t nb = magma_get_cgehrd_nb(n);
 
-    magma_int_t nh, iws, ldda, min_lblocks, max_lblocks, last_dev, d;
+    magma_int_t nh, iws, ldda, min_lblocks, max_lblocks, last_dev, dev;
     magma_int_t dpanel, di, nlocal, i, i2, ib, ldwork;
     magma_int_t iinfo;
     magma_int_t lquery;
@@ -195,9 +195,9 @@ magma_cgehrd_m(
     lapackf77_claset( "Full", &nb, &n, &c_zero, &c_zero, T, &nb );
 
     // set to null, to simplify cleanup code
-    for( d = 0; d < ngpu; ++d ) {
-        data.A[d]      = NULL;
-        data.queues[d] = NULL;
+    for( dev = 0; dev < ngpu; ++dev ) {
+        data.dA[dev]     = NULL;
+        data.queues[dev] = NULL;
     }
     
     // Now requires lwork >= iws; else dT won't be computed in unblocked code.
@@ -224,13 +224,13 @@ magma_cgehrd_m(
         data.ldv  = nb*max_lblocks*ngpu;
         data.ldvd = nb*max_lblocks;
         
-        for( d = 0; d < ngpu; ++d ) {
-            magma_setdevice( d );
+        for( dev = 0; dev < ngpu; ++dev ) {
+            magma_setdevice( dev );
             nlocal = min_lblocks*nb;
-            if ( d < last_dev ) {
+            if ( dev < last_dev ) {
                 nlocal += nb;
             }
-            else if ( d == last_dev ) {
+            else if ( dev == last_dev ) {
                 nlocal += (n % nb);
             }
             
@@ -240,21 +240,21 @@ magma_cgehrd_m(
                    + nb*ldda       // Y
                    + nb*ldda       // W
                    + nb*nb;        // Ti
-            if ( MAGMA_SUCCESS != magma_cmalloc( &data.A[d], ldwork )) {
+            if ( MAGMA_SUCCESS != magma_cmalloc( &data.dA[dev], ldwork )) {
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 goto CLEANUP;
             }
-            data.V [d] = data.A [d] + nlocal*ldda;
-            data.Vd[d] = data.V [d] + nb*data.ldv;
-            data.Y [d] = data.Vd[d] + nb*data.ldvd;
-            data.W [d] = data.Y [d] + nb*ldda;
-            data.Ti[d] = data.W [d] + nb*ldda;
+            data.dV [dev] = data.dA [dev] + nlocal*ldda;
+            data.dVd[dev] = data.dV [dev] + nb*data.ldv;
+            data.dY [dev] = data.dVd[dev] + nb*data.ldvd;
+            data.dW [dev] = data.dY [dev] + nb*ldda;
+            data.dTi[dev] = data.dW [dev] + nb*ldda;
             
-            magma_queue_create( d, &data.queues[d] );
+            magma_queue_create( dev, &data.queues[dev] );
         }
         
         // Copy the matrix to GPUs
-        magma_csetmatrix_1D_col_bcyclic( n, n, A, lda, data.A, ldda, ngpu, nb, data.queues );
+        magma_csetmatrix_1D_col_bcyclic( ngpu, n, n, nb, A, lda, data.dA, ldda, data.queues );
         
         // round ilo down to block boundary
         ilo = (ilo/nb)*nb;
@@ -289,12 +289,12 @@ magma_cgehrd_m(
         // Copy remainder to host, block-by-block
         for( i2 = i; i2 < n; i2 += nb ) {
             ib = min( nb, n-i2 );
-            d  = (i2 / nb) % ngpu;
-            di = (i2 / nb) / ngpu * nb;
-            magma_setdevice( d );
+            dev = (i2 / nb) % ngpu;
+            di  = (i2 / nb) / ngpu * nb;
+            magma_setdevice( dev );
             magma_cgetmatrix( n, ib,
-                              dA(d, 0, di), ldda,
-                              A(0,i2),      lda, data.queues[d] );
+                              dA(dev, 0, di), ldda,
+                              A(0,i2),        lda, data.queues[dev] );
         }
     }
 
@@ -305,10 +305,10 @@ magma_cgehrd_m(
     work[0] = magma_cmake_lwork( iws );
     
 CLEANUP:
-    for( d = 0; d < ngpu; ++d ) {
-        magma_setdevice( d );
-        magma_free( data.A[d] );
-        magma_queue_destroy( data.queues[d] );
+    for( dev = 0; dev < ngpu; ++dev ) {
+        magma_setdevice( dev );
+        magma_free( data.dA[dev] );
+        magma_queue_destroy( data.queues[dev] );
     }
     magma_setdevice( orig_dev );
     

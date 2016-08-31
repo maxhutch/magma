@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
- 
+       @date August 2016
+
        @author Mark Gates
 */
 
@@ -32,9 +32,30 @@ std::map< void*, size_t > g_pointers_pin;
 #endif
 
 
-// ========================================
-// memory allocation
-// Allocate size bytes on GPU, returning pointer in ptrPtr.
+/***************************************************************************//**
+    Allocates memory on the GPU. CUDA imposes a synchronization.
+    Use magma_free() to free this memory.
+
+    @param[out]
+    ptrPtr  On output, set to the pointer that was allocated.
+            NULL on failure.
+
+    @param[in]
+    size    Size in bytes to allocate. If size = 0, allocates some minimal size.
+
+    @return MAGMA_SUCCESS
+    @return MAGMA_ERR_DEVICE_ALLOC on failure
+    
+    Type-safe versions avoid the need for a (void**) cast and explicit sizeof.
+    @see magma_smalloc
+    @see magma_dmalloc
+    @see magma_cmalloc
+    @see magma_zmalloc
+    @see magma_imalloc
+    @see magma_index_malloc
+    
+    @ingroup magma_malloc
+*******************************************************************************/
 extern "C" magma_int_t
 magma_malloc( magma_ptr* ptrPtr, size_t size )
 {
@@ -54,8 +75,20 @@ magma_malloc( magma_ptr* ptrPtr, size_t size )
     return MAGMA_SUCCESS;
 }
 
-// --------------------
-// Free GPU memory allocated by magma_malloc.
+
+/***************************************************************************//**
+    @fn magma_free( ptr )
+    
+    Frees GPU memory previously allocated by magma_malloc().
+
+    @param[in]
+    ptr     Pointer to free.
+
+    @return MAGMA_SUCCESS
+    @return MAGMA_ERR_INVALID_PTR on failure
+
+    @ingroup magma_malloc
+*******************************************************************************/
 extern "C" magma_int_t
 magma_free_internal( magma_ptr ptr,
     const char* func, const char* file, int line )
@@ -79,13 +112,35 @@ magma_free_internal( magma_ptr ptr,
     return MAGMA_SUCCESS;
 }
 
-// --------------------
-// Allocate size bytes on CPU, returning pointer in ptrPtr.
-// The purpose of using this instead of malloc is to properly align arrays
-// for vector (SSE) instructions. The default implementation uses
-// posix_memalign (on Linux, MacOS, etc.) or _aligned_malloc (on Windows)
-// to align memory to a 32 byte boundary.
-// Use magma_free_cpu() to free this memory.
+
+/***************************************************************************//**
+    Allocate size bytes on CPU.
+    The purpose of using this instead of malloc is to properly align arrays
+    for vector (SSE, AVX) instructions. The default implementation uses
+    posix_memalign (on Linux, MacOS, etc.) or _aligned_malloc (on Windows)
+    to align memory to a 32 byte boundary.
+    Use magma_free_cpu() to free this memory.
+
+    @param[out]
+    ptrPtr  On output, set to the pointer that was allocated.
+            NULL on failure.
+
+    @param[in]
+    size    Size in bytes to allocate. If size = 0, allocates some minimal size.
+
+    @return MAGMA_SUCCESS
+    @return MAGMA_ERR_HOST_ALLOC on failure
+    
+    Type-safe versions avoid the need for a (void**) cast and explicit sizeof.
+    @see magma_smalloc_cpu
+    @see magma_dmalloc_cpu
+    @see magma_cmalloc_cpu
+    @see magma_zmalloc_cpu
+    @see magma_imalloc_cpu
+    @see magma_index_malloc_cpu
+
+    @ingroup magma_malloc_cpu
+*******************************************************************************/
 extern "C" magma_int_t
 magma_malloc_cpu( void** ptrPtr, size_t size )
 {
@@ -121,10 +176,21 @@ magma_malloc_cpu( void** ptrPtr, size_t size )
     return MAGMA_SUCCESS;
 }
 
-// --------------------
-// Free CPU pinned memory previously allocated by magma_malloc_pinned.
-// The default implementation uses free(), which works for both malloc and posix_memalign.
-// For Windows, _aligned_free() is used.
+
+/***************************************************************************//**
+    Frees CPU memory previously allocated by magma_malloc_cpu().
+    The default implementation uses free(),
+    which works for both malloc and posix_memalign.
+    For Windows, _aligned_free() is used.
+
+    @param[in]
+    ptr     Pointer to free.
+
+    @return MAGMA_SUCCESS
+    @return MAGMA_ERR_INVALID_PTR on failure
+
+    @ingroup magma_malloc_cpu
+*******************************************************************************/
 extern "C" magma_int_t
 magma_free_cpu( void* ptr )
 {
@@ -147,8 +213,31 @@ magma_free_cpu( void* ptr )
     return MAGMA_SUCCESS;
 }
 
-// --------------------
-// Allocate size bytes on CPU in pinned memory, returning pointer in ptrPtr.
+
+/***************************************************************************//**
+    Allocates memory on the CPU in pinned memory.
+    Use magma_free_pinned() to free this memory.
+
+    @param[out]
+    ptrPtr  On output, set to the pointer that was allocated.
+            NULL on failure.
+
+    @param[in]
+    size    Size in bytes to allocate. If size = 0, allocates some minimal size.
+
+    @return MAGMA_SUCCESS
+    @return MAGMA_ERR_HOST_ALLOC on failure
+    
+    Type-safe versions avoid the need for a (void**) cast and explicit sizeof.
+    @see magma_smalloc_pinned
+    @see magma_dmalloc_pinned
+    @see magma_cmalloc_pinned
+    @see magma_zmalloc_pinned
+    @see magma_imalloc_pinned
+    @see magma_index_malloc_pinned
+
+    @ingroup magma_malloc_pinned
+*******************************************************************************/
 extern "C" magma_int_t
 magma_malloc_pinned( void** ptrPtr, size_t size )
 {
@@ -169,8 +258,23 @@ magma_malloc_pinned( void** ptrPtr, size_t size )
     return MAGMA_SUCCESS;
 }
 
-// --------------------
-// Free CPU pinned memory previously allocated by magma_malloc_pinned.
+
+/***************************************************************************//**
+    @fn magma_free_pinned( ptr )
+    
+    Frees CPU pinned memory previously allocated by magma_malloc_pinned().
+    The default implementation uses free(),
+    which works for both malloc and posix_memalign.
+    For Windows, _aligned_free() is used.
+
+    @param[in]
+    ptr     Pointer to free.
+    
+    @return MAGMA_SUCCESS
+    @return MAGMA_ERR_INVALID_PTR on failure
+
+    @ingroup magma_malloc_pinned
+*******************************************************************************/
 extern "C" magma_int_t
 magma_free_pinned_internal( void* ptr,
     const char* func, const char* file, int line )

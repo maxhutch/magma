@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zlaset.cpp normal z -> s, Mon May  2 23:31:08 2016
+       @generated from testing/testing_zlaset.cpp, normal z -> s, Tue Aug 30 09:39:04 2016
        @author Mark Gates
 */
 
@@ -27,7 +27,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t    gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
     float           error, work[1];
@@ -37,7 +38,7 @@ int main( int argc, char** argv)
     float offdiag, diag;
     magma_int_t M, N, size, lda, ldda;
     magma_int_t ione     = 1;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -87,10 +88,10 @@ int main( int argc, char** argv)
                 gbytes = sizeof(float) * 1.*M*N / 1e9;
             }
     
-            TESTING_MALLOC_CPU( h_A, float, size   );
-            TESTING_MALLOC_CPU( h_R, float, size   );
+            TESTING_CHECK( magma_smalloc_cpu( &h_A, size   ));
+            TESTING_CHECK( magma_smalloc_cpu( &h_R, size   ));
             
-            TESTING_MALLOC_DEV( d_A, float, ldda*N );
+            TESTING_CHECK( magma_smalloc( &d_A, ldda*N ));
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -136,16 +137,16 @@ int main( int argc, char** argv)
 
             bool okay = (error == 0);
             status += ! okay;
-            printf("%5s %5d %5d  %9.4f  %6.4f   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
-                   lapack_uplo_const( uplo[iuplo] ), (int) M, (int) N,
+            printf("%5s %5lld %5lld  %9.4f  %6.4f   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
+                   lapack_uplo_const( uplo[iuplo] ), (long long) M, (long long) N,
                    real(offdiag), real(diag),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    (okay ? "ok" : "failed") );
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_R );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_R );
             
-            TESTING_FREE_DEV( d_A );
+            magma_free( d_A );
             fflush( stdout );
           }
         }
@@ -157,6 +158,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -119,7 +119,7 @@ void ztranspose_kernel_batched(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ztranspose copies and transposes a matrix dA to matrix dAT.
@@ -156,8 +156,8 @@ void ztranspose_kernel_batched(
     queue   magma_queue_t
             Queue to execute in.
     
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_transpose
+*******************************************************************************/
 extern "C" void
 magmablas_ztranspose_q(
     magma_int_t m, magma_int_t n,
@@ -191,7 +191,7 @@ magmablas_ztranspose_q(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ztranspose_batched copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
@@ -235,8 +235,8 @@ magmablas_ztranspose_q(
     @param[in]
     batchCount  Number of matrices in dA_array and dAT_array
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_transpose_batched
+*******************************************************************************/
 extern "C" void
 magmablas_ztranspose_batched(
     magma_int_t m, magma_int_t n,

@@ -6,7 +6,7 @@
  *
  * @version 1.0.0
  * @author Mathieu Faverge
- * @date May 2016
+ * @date August 2016
  *
  **/
 /*
@@ -26,6 +26,11 @@
 /************************************************************************
  *           Generic formula coming from LAWN 41
  ***********************************************************************/
+/*
+ * Level 1 BLAS
+ */
+ #define FMULS_AXPY(n_) (n_)
+ #define FADDS_AXPY(n_) (n_)
 
 /*
  * Level 2 BLAS
@@ -195,6 +200,13 @@
 /*******************************************************************************
  *               Users functions
  ******************************************************************************/
+/*
+ * Level 1 BLAS
+ */
+#define FLOPS_ZAXPY(n_) (6. * FMULS_AXPY((double)(n_)) + 2.0 * FADDS_AXPY((double)(n_)) )
+#define FLOPS_CAXPY(n_) (6. * FMULS_AXPY((double)(n_)) + 2.0 * FADDS_AXPY((double)(n_)) )
+#define FLOPS_DAXPY(n_) (     FMULS_AXPY((double)(n_)) +       FADDS_AXPY((double)(n_)) )
+#define FLOPS_SAXPY(n_) (     FMULS_AXPY((double)(n_)) +       FADDS_AXPY((double)(n_)) )
 
 /*
  * Level 2 BLAS

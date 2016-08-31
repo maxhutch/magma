@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zlarfx.cu normal z -> s, Mon May  2 23:30:32 2016
+       @generated from magmablas/zlarfx.cu, normal z -> s, Tue Aug 30 09:38:31 2016
 
 */
 #include "magma_internal.h"
@@ -19,8 +19,7 @@
 #define BLOCK_SIZEy  16
 
 
-//==============================================================================
-
+/******************************************************************************/
 __global__
 void magma_slarfx_kernel( int m, float *v, float *tau,
                          float *c, int ldc, float *xnorm,
@@ -80,7 +79,8 @@ void magma_slarfx_kernel( int m, float *v, float *tau,
     }
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_strmv_kernel(const float *T, int ldt, float *t)
@@ -101,6 +101,8 @@ void magma_strmv_kernel(const float *T, int ldt, float *t)
     t[tx] = res;
 }
 
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_strmv_kernel2(const float *T, int ldt, float *t, 
@@ -123,7 +125,8 @@ void magma_strmv_kernel2(const float *T, int ldt, float *t,
     }
 }
 
-//==============================================================================
+
+/******************************************************************************/
 extern "C"
 __global__
 void magma_strmv_tkernel(float *T, int ldt, float *t, float *y)
@@ -142,8 +145,8 @@ void magma_strmv_tkernel(float *T, int ldt, float *t, float *y)
         y[blockIdx.x] = sum[0];
 }
 
-//==============================================================================
 
+/******************************************************************************/
 /*
     Apply a real elementary reflector H to a real M-by-N
     matrix C from the left. H is represented in the form
@@ -157,7 +160,7 @@ void magma_strmv_tkernel(float *T, int ldt, float *t, float *y)
     The norms of v(:, 1:n) are given as input in xnorm(1:n). On exit, the norms
     are adjusted to hold the norms of v(2:m,2:n). This is a difference with the 
     LAPACK's slarf routine. 
- */
+*/
 extern "C" void
 magma_slarfx_gpu_q(
     magma_int_t m, magma_int_t n,
@@ -191,4 +194,3 @@ magma_slarfx_gpu_q(
             ( dT, N, work, dT+iter*N, tau );
     }
 }
-//==============================================================================

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZPOTRI computes the inverse of a real symmetric positive definite
@@ -47,8 +47,8 @@
       -     > 0:  if INFO = i, the (i,i) element of the factor U or L is
                   zero, and the inverse could not be computed.
 
-    @ingroup magma_zposv_comp
-    ********************************************************************/
+    @ingroup magma_potri
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zpotri(
     magma_uplo_t uplo, magma_int_t n,

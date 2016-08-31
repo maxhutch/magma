@@ -65,9 +65,9 @@ integer function magmaf_get_zhegst_nb( n )
     integer :: n
 end function magmaf_get_zhegst_nb
 
-integer function magmaf_get_zhegst_nb_m( n )
+integer function magmaf_get_zhegst_m_nb( n )
     integer :: n
-end function magmaf_get_zhegst_nb_m
+end function magmaf_get_zhegst_m_nb
 
 integer function magmaf_get_zgebrd_nb( m, n )
     integer :: m, n

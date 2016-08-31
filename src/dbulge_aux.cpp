@@ -48,7 +48,7 @@ extern "C" void  magma_dstedc_withZ(magma_vec_t JOBZ, magma_int_t N, double *D, 
     
     if (INFO != 0) {
         printf("=================================================\n");
-        printf("DSTEDC ERROR OCCURED. HERE IS INFO %d \n ", (int) INFO);
+        printf("DSTEDC ERROR OCCURED. HERE IS INFO %lld\n ", (long long) INFO );
         printf("=================================================\n");
         //assert(INFO == 0);
     }
@@ -94,7 +94,7 @@ extern "C" void  magma_dstedx_withZ(magma_int_t N, magma_int_t NE, double *D, do
     
     if (INFO != 0) {
         printf("=================================================\n");
-        printf("DSTEDC ERROR OCCURED. HERE IS INFO %d \n ", (int) INFO);
+        printf("DSTEDC ERROR OCCURED. HERE IS INFO %lld\n ", (long long) INFO );
         printf("=================================================\n");
         //assert(INFO == 0);
     }

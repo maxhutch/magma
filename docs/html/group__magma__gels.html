@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>MAGMA: Least squares</title>
+<title>MAGMA: gels: Least squares solves Ax = b using QR factorization (driver)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -108,32 +107,1343 @@ $(document).ready(function(){initNavTree('group__magma__gels.html','');});
 
 <div class="header">
   <div class="summary">
-<a href="#groups">Modules</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">Least squares</div>  </div>
+<div class="title">gels: Least squares solves Ax = b using QR factorization (driver)<div class="ingroups"><a class="el" href="group__dense.html">Dense linear algebra</a> &raquo; <a class="el" href="group__group__solvers.html">Linear system solvers</a> &raquo; <a class="el" href="group__group__gels.html">General matrices: least squares</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Solve over- or under-determined \( Ax = b \).  
-<a href="#details">More...</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="groups"></a>
-Modules</h2></td></tr>
-<tr class="memitem:group__magma__gels__driver"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels__driver.html">Least squares solve: driver</a></td></tr>
-<tr class="memdesc:group__magma__gels__driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whole \( Ax=b \) (least squares) problem. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:group__magma__gels__comp"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels__comp.html">Least squares solve: computational</a></td></tr>
-<tr class="memdesc:group__magma__gels__comp"><td class="mdescLeft">&#160;</td><td class="mdescRight">Major computational phases of solving \( Ax=b \) (least squares);. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga1e6241db5333b5d3be0d1835a3133d2d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga1e6241db5333b5d3be0d1835a3133d2d">magma_cgels</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaFloatComplex_ptr A, magma_int_t lda, magmaFloatComplex_ptr B, magma_int_t ldb, magmaFloatComplex *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga1e6241db5333b5d3be0d1835a3133d2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga1e6241db5333b5d3be0d1835a3133d2d">More...</a><br /></td></tr>
+<tr class="separator:ga1e6241db5333b5d3be0d1835a3133d2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9908cd5e427774eae5238866107ec3e5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga9908cd5e427774eae5238866107ec3e5">magma_cgels3_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex_ptr dB, magma_int_t lddb, magmaFloatComplex *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga9908cd5e427774eae5238866107ec3e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga9908cd5e427774eae5238866107ec3e5">More...</a><br /></td></tr>
+<tr class="separator:ga9908cd5e427774eae5238866107ec3e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaec9ae710930ccbb83779bf41c6315f1b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#gaec9ae710930ccbb83779bf41c6315f1b">magma_cgels_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex_ptr dB, magma_int_t lddb, magmaFloatComplex *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaec9ae710930ccbb83779bf41c6315f1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#gaec9ae710930ccbb83779bf41c6315f1b">More...</a><br /></td></tr>
+<tr class="separator:gaec9ae710930ccbb83779bf41c6315f1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4638ad21c7392a0bd22440a4827c0b0d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga4638ad21c7392a0bd22440a4827c0b0d">magma_dgels</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaDouble_ptr A, magma_int_t lda, magmaDouble_ptr B, magma_int_t ldb, double *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga4638ad21c7392a0bd22440a4827c0b0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga4638ad21c7392a0bd22440a4827c0b0d">More...</a><br /></td></tr>
+<tr class="separator:ga4638ad21c7392a0bd22440a4827c0b0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf4d664f17065304d74cd1f06623d1ff3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#gaf4d664f17065304d74cd1f06623d1ff3">magma_dgels3_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaDouble_ptr dA, magma_int_t ldda, magmaDouble_ptr dB, magma_int_t lddb, double *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaf4d664f17065304d74cd1f06623d1ff3"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#gaf4d664f17065304d74cd1f06623d1ff3">More...</a><br /></td></tr>
+<tr class="separator:gaf4d664f17065304d74cd1f06623d1ff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4cee0665fc8c54b018e8f44251f16e53"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga4cee0665fc8c54b018e8f44251f16e53">magma_dgels_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaDouble_ptr dA, magma_int_t ldda, magmaDouble_ptr dB, magma_int_t lddb, double *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga4cee0665fc8c54b018e8f44251f16e53"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga4cee0665fc8c54b018e8f44251f16e53">More...</a><br /></td></tr>
+<tr class="separator:ga4cee0665fc8c54b018e8f44251f16e53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf1d00b107f2c5c058465263a0e66870"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#gaaf1d00b107f2c5c058465263a0e66870">magma_sgels</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaFloat_ptr A, magma_int_t lda, magmaFloat_ptr B, magma_int_t ldb, float *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaaf1d00b107f2c5c058465263a0e66870"><td class="mdescLeft">&#160;</td><td class="mdescRight">SGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#gaaf1d00b107f2c5c058465263a0e66870">More...</a><br /></td></tr>
+<tr class="separator:gaaf1d00b107f2c5c058465263a0e66870"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6102400f064b371575a8f575eb5cf0de"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga6102400f064b371575a8f575eb5cf0de">magma_sgels3_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dB, magma_int_t lddb, float *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga6102400f064b371575a8f575eb5cf0de"><td class="mdescLeft">&#160;</td><td class="mdescRight">SGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga6102400f064b371575a8f575eb5cf0de">More...</a><br /></td></tr>
+<tr class="separator:ga6102400f064b371575a8f575eb5cf0de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga92025de26e24648d31dfba2cfb07a848"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga92025de26e24648d31dfba2cfb07a848">magma_sgels_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dB, magma_int_t lddb, float *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga92025de26e24648d31dfba2cfb07a848"><td class="mdescLeft">&#160;</td><td class="mdescRight">SGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga92025de26e24648d31dfba2cfb07a848">More...</a><br /></td></tr>
+<tr class="separator:ga92025de26e24648d31dfba2cfb07a848"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86eec437e948fd6b77c239933b111c33"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga86eec437e948fd6b77c239933b111c33">magma_zgels</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaDoubleComplex_ptr A, magma_int_t lda, magmaDoubleComplex_ptr B, magma_int_t ldb, magmaDoubleComplex *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga86eec437e948fd6b77c239933b111c33"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga86eec437e948fd6b77c239933b111c33">More...</a><br /></td></tr>
+<tr class="separator:ga86eec437e948fd6b77c239933b111c33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0f0bd53fa656ae45a231bb8bbba0feda"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga0f0bd53fa656ae45a231bb8bbba0feda">magma_zgels3_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaDoubleComplex_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb, magmaDoubleComplex *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga0f0bd53fa656ae45a231bb8bbba0feda"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga0f0bd53fa656ae45a231bb8bbba0feda">More...</a><br /></td></tr>
+<tr class="separator:ga0f0bd53fa656ae45a231bb8bbba0feda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga543dd53fccbce2c1bf3093fecd06b85c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__gels.html#ga543dd53fccbce2c1bf3093fecd06b85c">magma_zgels_gpu</a> (magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs, magmaDoubleComplex_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb, magmaDoubleComplex *hwork, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga543dd53fccbce2c1bf3093fecd06b85c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A.  <a href="#ga543dd53fccbce2c1bf3093fecd06b85c">More...</a><br /></td></tr>
+<tr class="separator:ga543dd53fccbce2c1bf3093fecd06b85c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p>Solve over- or under-determined \( Ax = b \). </p>
+<h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga1e6241db5333b5d3be0d1835a3133d2d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cgels </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by CGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A, LDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>COMPLEX array, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) COMPLEX array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= max( N*NB, 2*NB*NB ), where NB is the blocksize given by magma_get_cgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga9908cd5e427774eae5238866107ec3e5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cgels3_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by CGEQRF3.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) COMPLEX array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_cgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaec9ae710930ccbb83779bf41c6315f1b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cgels_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by CGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) COMPLEX array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_cgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4638ad21c7392a0bd22440a4827c0b0d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dgels </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE PRECISION array, dimension (LDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by DGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A, LDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>DOUBLE PRECISION array, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE PRECISION array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= max( N*NB, 2*NB*NB ), where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf4d664f17065304d74cd1f06623d1ff3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dgels3_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE PRECISION array, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by DGEQRF3.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE PRECISION array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4cee0665fc8c54b018e8f44251f16e53"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dgels_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE PRECISION array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by DGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE PRECISION array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaaf1d00b107f2c5c058465263a0e66870"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_sgels </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>SGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by SGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A, LDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>REAL array, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) REAL array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= max( N*NB, 2*NB*NB ), where NB is the blocksize given by magma_get_sgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6102400f064b371575a8f575eb5cf0de"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_sgels3_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>SGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by SGEQRF3.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>REAL array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) REAL array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_sgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga92025de26e24648d31dfba2cfb07a848"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_sgels_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>SGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by SGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>REAL array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) REAL array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_sgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga86eec437e948fd6b77c239933b111c33"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zgels </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ZGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array, dimension (LDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by ZGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A, LDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>COMPLEX_16 array, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) COMPLEX_16 array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= max( N*NB, 2*NB*NB ), where NB is the blocksize given by magma_get_zgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga0f0bd53fa656ae45a231bb8bbba0feda"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zgels3_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ZGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by ZGEQRF3.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX_16 array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) COMPLEX_16 array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_zgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga543dd53fccbce2c1bf3093fecd06b85c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zgels_gpu </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nrhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>hwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ZGELS solves the overdetermined, least squares problem min || A*X - C || using the QR factorization A. </p>
+<p>The underdetermined problem (m &lt; n) is not currently handled.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: the linear system involves A. Only TRANS=MagmaNoTrans is currently handled.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. M &gt;= N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of columns of the matrix C. NRHS &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, A is overwritten by details of its QR factorization as returned by ZGEQRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A, LDDA &gt;= M.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX_16 array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) COMPLEX_16 array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_zgeqrf_nb( M, N ). <br />
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:41 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

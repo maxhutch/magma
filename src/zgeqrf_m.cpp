@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
 */
 #include "magma_internal.h" 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEQRF computes a QR factorization of a COMPLEX_16 M-by-N matrix A:
@@ -90,8 +90,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_zgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgeqrf_m(
     magma_int_t ngpu,
@@ -165,7 +165,7 @@ magma_zgeqrf_m(
         }
 
         /* Copy the matrix to the GPUs in 1D block cyclic distribution */
-        magma_zsetmatrix_1D_col_bcyclic(m, n, A, lda, da, ldda, ngpu, nb, queues);
+        magma_zsetmatrix_1D_col_bcyclic( ngpu, m, n, nb, A, lda, da, ldda, queues );
         for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_sync( queues[dev] );
@@ -175,7 +175,7 @@ magma_zgeqrf_m(
         magma_zgeqrf2_mgpu( ngpu, m, n, da, ldda, tau, info);
 
         /* Copy the matrix back from the GPUs to the CPU */
-        magma_zgetmatrix_1D_col_bcyclic(m, n, da, ldda, A, lda, ngpu, nb, queues);
+        magma_zgetmatrix_1D_col_bcyclic( ngpu, m, n, nb, da, ldda, A, lda, queues );
         for( magma_int_t dev=0; dev < ngpu; dev++ ) {
             magma_setdevice( dev );
             magma_queue_sync( queues[dev] );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magma_zgehrd_m.h normal z -> d, Mon May  2 23:31:25 2016
+       @generated from include/magma_zgehrd_m.h, normal z -> d, Tue Aug 30 09:39:21 2016
        @author Mark Gates
 */
 
@@ -18,6 +18,19 @@
 extern "C" {
 #endif
 
+/***************************************************************************//**
+    Structure containing matrices for multi-GPU dgehrd.
+
+    - dA  is distributed column block-cyclic across GPUs.
+    - dV  is duplicated on all GPUs.
+    - dVd is distributed row block-cyclic across GPUs (TODO: verify).
+    - dY  is partial results on each GPU in dlahr2,
+          then complete results are duplicated on all GPUs for dlahru.
+    - dW  is local to each GPU (workspace).
+    - dTi is duplicated on all GPUs.
+
+    @ingroup magma_gehrd
+*******************************************************************************/
 struct dgehrd_data
 {
     magma_int_t ngpu;
@@ -26,12 +39,12 @@ struct dgehrd_data
     magma_int_t ldv;
     magma_int_t ldvd;
     
-    double *A    [ MagmaMaxGPUs ];  // ldda*nlocal
-    double *V    [ MagmaMaxGPUs ];  // ldv *nb, whole panel
-    double *Vd   [ MagmaMaxGPUs ];  // ldvd*nb, block-cyclic
-    double *Y    [ MagmaMaxGPUs ];  // ldda*nb
-    double *W    [ MagmaMaxGPUs ];  // ldda*nb
-    double *Ti   [ MagmaMaxGPUs ];  // nb*nb
+    magmaDouble_ptr dA [ MagmaMaxGPUs ];  // ldda*nlocal
+    magmaDouble_ptr dV [ MagmaMaxGPUs ];  // ldv *nb, whole panel
+    magmaDouble_ptr dVd[ MagmaMaxGPUs ];  // ldvd*nb, block-cyclic
+    magmaDouble_ptr dY [ MagmaMaxGPUs ];  // ldda*nb
+    magmaDouble_ptr dW [ MagmaMaxGPUs ];  // ldda*nb
+    magmaDouble_ptr dTi[ MagmaMaxGPUs ];  // nb*nb
     
     magma_queue_t queues[ MagmaMaxGPUs ];
 };

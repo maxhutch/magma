@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['eigenvalue',['Eigenvalue',['../group__eigenvalue.html',1,'']]]
+  ['batched',['Batched',['../group__batched.html',1,'']]]
 ];

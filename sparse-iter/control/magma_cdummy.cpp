@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/control/magma_zdummy.cpp normal z -> c, Mon May  2 23:30:53 2016
+       @generated from sparse-iter/control/magma_zdummy.cpp, normal z -> c, Tue Aug 30 09:38:51 2016
        @author Hartwig Anzt
 
 */
@@ -14,11 +14,37 @@
 #ifdef _OPENMP
 #include <omp.h>
 
+extern "C" magma_int_t
+magma_cparilutsetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
 
+    printf("error: not yet released\n");
+
+    return info;
+}
+
+extern "C" magma_int_t
+magma_cparictsetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    printf("error: not yet released\n");
+
+    return info;
+}
 
 
 extern "C" magma_int_t
-magma_cmdynamicic_insert(
+magma_cparict_insert(
     magma_int_t tri,
     magma_int_t num_rm,
     magma_index_t *rm_loc,
@@ -27,7 +53,6 @@ magma_cmdynamicic_insert(
     omp_lock_t *rowlock,
     magma_queue_t queue )
 {
-
     magma_int_t info = 0;
 
     printf("error: not yet released\n");
@@ -39,7 +64,7 @@ magma_cmdynamicic_insert(
 
 
 extern "C" magma_int_t
-magma_cmdynamicilu_rm_thrs(
+magma_cparilut_rm_thrs(
     magmaFloatComplex *thrs,
     magma_int_t *num_rm,
     magma_c_matrix *LU,
@@ -48,7 +73,6 @@ magma_cmdynamicilu_rm_thrs(
     omp_lock_t *rowlock,
     magma_queue_t queue )
 {
-
     magma_int_t info = 0;
 
     printf("error: not yet released\n");
@@ -60,13 +84,13 @@ magma_cmdynamicilu_rm_thrs(
 
 
 extern "C" magma_int_t
-magma_cmdynamicilu_set_thrs(
+magma_cparilut_set_thrs(
     magma_int_t num_rm,
     magma_c_matrix *LU,
+    magma_int_t order,
     magmaFloatComplex *thrs,
     magma_queue_t queue )
 {
-
     magma_int_t info = 0;
 
     printf("error: not yet released\n");
@@ -77,12 +101,11 @@ magma_cmdynamicilu_set_thrs(
 
 
 extern "C" magma_int_t
-magma_cmdynamicic_sweep(
-    magma_c_matrix A,
+magma_cparict_sweep(
+    magma_c_matrix *A,
     magma_c_matrix *LU,
     magma_queue_t queue )
 {
-
     magma_int_t info = 0;
 
     printf("error: not yet released\n");
@@ -124,13 +147,12 @@ magma_cmdynamicic_sweep(
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cmdynamicic_residuals(
+magma_cparict_residuals(
     magma_c_matrix A,
     magma_c_matrix LU,
     magma_c_matrix *LU_new,
     magma_queue_t queue )
 {
-
     magma_int_t info = 0;
 
     printf("error: not yet released\n");
@@ -167,12 +189,58 @@ magma_cmdynamicic_residuals(
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cmdynamicic_candidates(
+magma_cparict_candidates(
     magma_c_matrix LU,
     magma_c_matrix *LU_new,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
 
+    printf("error: not yet released\n");
+
+    return info;
+}
+
+#endif
+
+
+/**
+    Purpose
+    -------
+
+    Prepares Incomplete LU preconditioner using a sparse approximate inverse 
+    instead of sparse triangular solves.
+    
+
+    Arguments
+    ---------
+
+    @param[in]
+    A           magma_c_matrix
+                input matrix A
+                
+    @param[in]
+    b           magma_c_matrix
+                input RHS b
+
+    @param[in,out]
+    precond     magma_c_preconditioner*
+                preconditioner parameters
+                
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_cgepr
+    ********************************************************************/
+extern "C"
+magma_int_t
+magma_ciluisaisetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
     magma_int_t info = 0;
 
     printf("error: not yet released\n");
@@ -182,5 +250,166 @@ magma_cmdynamicic_candidates(
     
 
 
-#endif
 
+
+/**
+    Purpose
+    -------
+
+    Left-hand-side application of ISAI preconditioner.
+    
+
+    Arguments
+    ---------
+
+    @param[in]
+    b           magma_c_matrix
+                input RHS b
+                
+    @param[in,out]
+    x           magma_c_matrix
+                solution x
+
+    @param[in,out]
+    precond     magma_c_preconditioner*
+                preconditioner parameters
+                
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_cgepr
+    ********************************************************************/
+extern "C"
+magma_int_t
+magma_cisai_l(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    printf("error: not yet released\n");
+
+    return info;
+}
+extern "C"
+magma_int_t
+magma_cisai_l_t(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    printf("error: not yet released\n");
+
+    return info;
+}
+
+
+/**
+    Purpose
+    -------
+
+    Right-hand-side application of ISAI preconditioner.
+    
+
+    Arguments
+    ---------
+
+    @param[in]
+    b           magma_c_matrix
+                input RHS b
+                
+    @param[in,out]
+    x           magma_c_matrix
+                solution x
+
+    @param[in,out]
+    precond     magma_c_preconditioner*
+                preconditioner parameters
+                
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_cgepr
+    ********************************************************************/
+extern "C"
+magma_int_t
+magma_cisai_r(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    printf("error: not yet released\n");
+
+    return info;
+}
+extern "C"
+magma_int_t
+magma_cisai_r_t(
+    magma_c_matrix b,
+    magma_c_matrix *x,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    printf("error: not yet released\n");
+
+    return info;
+}
+
+    
+
+/**
+    Purpose
+    -------
+
+    Prepares Incomplete Cholesky preconditioner using a sparse approximate 
+    inverse instead of sparse triangular solves. This is the symmetric variant 
+    of cgeisai.cpp. 
+    
+
+    Arguments
+    ---------
+
+    @param[in]
+    A           magma_c_matrix
+                input matrix A
+                
+    @param[in]
+    b           magma_c_matrix
+                input RHS b
+
+    @param[in,out]
+    precond     magma_c_preconditioner*
+                preconditioner parameters
+                
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_cgepr
+    ********************************************************************/
+extern "C"
+magma_int_t
+magma_cicisaisetup(
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    printf("error: not yet released\n");
+
+    return info;
+}

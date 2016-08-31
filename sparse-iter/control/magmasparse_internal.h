@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 */
@@ -43,7 +43,8 @@ magma_int_t cusparse2magma_error( cusparseStatus_t status );
             return info;
         }
     
-    @ingroup internal
+    @see CHECK_CUSPARSE
+    @ingroup magma_error_internal
     ********************************************************************/
 #define CHECK( err )             \
     do {                         \
@@ -61,7 +62,7 @@ magma_int_t cusparse2magma_error( cusparseStatus_t status );
     then does goto cleanup.
     
     @see CHECK
-    @ingroup internal
+    @ingroup magma_error_internal
     ********************************************************************/
 #define CHECK_CUSPARSE( err )                   \
     do {                                        \

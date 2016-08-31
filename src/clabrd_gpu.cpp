@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zlabrd_gpu.cpp normal z -> c, Mon May  2 23:30:24 2016
+       @generated from src/zlabrd_gpu.cpp, normal z -> c, Tue Aug 30 09:38:23 2016
 
 */
 #include "magma_internal.h"
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLABRD reduces the first NB rows and columns of a complex general
@@ -184,8 +184,8 @@
     vi denotes an element of the vector defining H(i), and ui an element
     of the vector defining G(i).
 
-    @ingroup magma_cgesvd_aux
-    ********************************************************************/
+    @ingroup magma_labrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_clabrd_gpu(
     magma_int_t m, magma_int_t n, magma_int_t nb,
@@ -263,7 +263,7 @@ magma_clabrd_gpu(
                              dA(i,i), ione, c_zero,
                              dY(i+1,i),   ione, queue );
                 
-                // 3. Put the result back ----------------------------------
+                // 3. Get the result back ----------------------------------
                 magma_cgetmatrix_async( n_i1, 1,
                                         dY(i+1,i), lddy,
                                         Y(i+1,i),  ldy, queue );
@@ -335,7 +335,7 @@ magma_clabrd_gpu(
                              c_zero,
                              dX(i+1,i), ione, queue );
 
-                // 3. Put the result back ----------------------------------
+                // 3. Get the result back ----------------------------------
                 magma_cgetmatrix_async( m_i1, 1,
                                         dX(i+1,i), lddx,
                                         X(i+1,i),  ldx, queue );
@@ -425,7 +425,7 @@ magma_clabrd_gpu(
                              c_zero,
                              dX(i+1,i), ione, queue );
                 
-                // 3. Put the result back ----------------------------------
+                // 3. Get the result back ----------------------------------
                 magma_cgetmatrix_async( m_i1, 1,
                                         dX(i+1,i), lddx,
                                         X(i+1,i),  ldx, queue );
@@ -497,7 +497,7 @@ magma_clabrd_gpu(
                              dA(i+1,i), ione, c_zero,
                              dY(i+1,i), ione, queue );
                 
-                // 3. Put the result back ----------------------------------
+                // 3. Get the result back ----------------------------------
                 magma_cgetmatrix_async( n_i1, 1,
                                         dY(i+1,i), lddy,
                                         Y(i+1,i),  ldy, queue );

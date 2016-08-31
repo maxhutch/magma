@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
-       @generated from src/zlatrsd.cpp normal z -> c, Mon May  2 23:30:22 2016
+       @generated from src/zlatrsd.cpp, normal z -> c, Tue Aug 30 09:38:21 2016
        Making s,d precisions requires fixing dot call.
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLATRSD solves one of the triangular systems with modified diagonal
@@ -177,8 +177,8 @@
     and we can safely call CTRSV if 1/M(n) and 1/G(n) are both greater
     than max(underflow, 1/overflow).
 
-    @ingroup magma_cgeev_aux
-    ********************************************************************/
+    @ingroup magma_latrsd
+*******************************************************************************/
 extern "C"
 magma_int_t magma_clatrsd(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag, magma_bool_t normin,

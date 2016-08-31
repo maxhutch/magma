@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2011      The University of Tennessee and The University
- *                         of Tennessee Research Foundation.  All rights
- *                         reserved.
- *
- *
- *     @author Azzam Haidar
- *
- *     @generated from src/core_zlarfy.cpp normal z -> c, Mon May  2 23:30:20 2016
- *
- */
+    -- MAGMA (version 2.1.0) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date August 2016
+
+       @author Azzam Haidar
+  
+       @generated from src/core_zlarfy.cpp, normal z -> c, Tue Aug 30 09:38:19 2016
+*/
 #include "magma_internal.h"
 #include "magma_bulge.h"
 
 /***************************************************************************//**
  *
- * @ingroup magma_caux3
+ * @ingroup magma_larfy
  *
  *  magma_clarfy applies an elementary reflector, or Householder matrix, H,
  *  to a n-by-n Hermitian matrix C, from both the left and the right.

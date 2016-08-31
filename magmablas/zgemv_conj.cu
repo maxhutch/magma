@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Stan Tomov
 
@@ -41,7 +41,7 @@ zgemv_conj_kernel(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEMV_CONJ performs the matrix-vector operation
@@ -95,8 +95,8 @@ zgemv_conj_kernel(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zblas2
-    ********************************************************************/
+    @ingroup magma_gemv
+*******************************************************************************/
 extern "C" void
 magmablas_zgemv_conj_q(
     magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,

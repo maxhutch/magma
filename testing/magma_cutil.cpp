@@ -1,22 +1,22 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/magma_zutil.cpp normal z -> c, Mon May  2 23:31:04 2016
+       @generated from testing/magma_zutil.cpp, normal z -> c, Tue Aug 30 09:39:00 2016
 
        @author Mark Gates
 
        Utilities for testing.
 */
 
-#include "testings.h"
-
 #include "magma_v2.h"
 #include "magma_lapack.h"
-#include "magma_threadsetting.h"  // to work around MKL bug
+#include "../control/magma_threadsetting.h"  // internal header, to work around MKL bug
+
+#include "testings.h"
 
 #define COMPLEX
 
@@ -95,6 +95,7 @@ void magma_cmake_spd( magma_int_t N, magmaFloatComplex* A, magma_int_t lda )
 // MKL 11.2 corrects it for inf, one, max norm.
 // MKL 11.2 still segfaults for Frobenius norm.
 // See testing_clanhe.cpp
+extern "C"
 float safe_lapackf77_clanhe(
     const char *norm, const char *uplo,
     const magma_int_t *n,

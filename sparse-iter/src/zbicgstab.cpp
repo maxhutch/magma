@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -81,14 +81,13 @@ magma_zbicgstab(
     
     // solver variables
     magmaDoubleComplex alpha, beta, omega, rho_old, rho_new;
-    double nom, betanom, nom0, r0, res, nomb;
+    double betanom, nom0, r0, res, nomb;
     //double den;
 
     // solver setup
     CHECK(  magma_zresidualvec( A, b, *x, &r, &nom0, queue));
     magma_zcopy( dofs, r.dval, 1, rr.dval, 1, queue );                  // rr = r
     betanom = nom0;
-    nom = nom0*nom0;
     rho_new = magma_zdotc( dofs, r.dval, 1, r.dval, 1, queue );             // rho=<rr,r>
     rho_old = omega = alpha = MAGMA_Z_MAKE( 1.0, 0. );
     solver_par->init_res = nom0;
@@ -110,7 +109,7 @@ magma_zbicgstab(
         solver_par->res_vec[0] = nom0;
         solver_par->timing[0] = 0.0;
     }
-    if ( nom < r0 ) {
+    if ( nomb < r0 ) {
         info = MAGMA_SUCCESS;
         goto cleanup;
     }
@@ -151,7 +150,6 @@ magma_zbicgstab(
         magma_zaxpy( dofs, c_neg_one * omega, t.dval, 1 , r.dval, 1, queue ); // r=r-omega*t
         res = betanom = magma_dznrm2( dofs, r.dval, 1, queue );
 
-        nom = betanom*betanom;
         rho_old = rho_new;                                    // rho_old=rho
 
         if ( solver_par->verbose > 0 ) {

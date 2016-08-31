@@ -26,7 +26,6 @@ versions = [
 	v161_cuda70_k40c,
 	v162_cuda70_k40c,
 	v170_cuda70_k40c,
-	v200_cuda70_k40c_sm30,
 	v200_cuda70_k40c,
 ]
 

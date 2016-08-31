@@ -1,9 +1,9 @@
 /*
--- MAGMA (version 2.0.2) --
+-- MAGMA (version 2.1.0) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date May 2016
+ @date August 2016
 
  @precisions mixed zc -> ds
  @author Hartwig Anzt
@@ -63,8 +63,8 @@ magmablas_zlag2c_sparse(
     magma_int_t lda, 
     magmaFloatComplex_ptr dSA, 
     magma_int_t ldsa,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void 
 magmablas_clag2z_sparse(
@@ -74,8 +74,8 @@ magmablas_clag2z_sparse(
     magma_int_t ldsa, 
     magmaDoubleComplex_ptr dA, 
     magma_int_t lda,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void 
 magma_zlag2c_CSR_DENSE(

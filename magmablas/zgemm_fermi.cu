@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -26,13 +26,9 @@
 
 #define PRECISION_z
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include "zgemm_fermi_kernels.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEMM performs one of the matrix-matrix operations
@@ -140,8 +136,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_gemm
+*******************************************************************************/
 extern "C" void
 magmablas_zgemm_q(
     magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,

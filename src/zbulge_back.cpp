@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -20,12 +20,15 @@
 
 static void *magma_zapplyQ_parallel_section(void *arg);
 
-static void magma_ztile_bulge_applyQ(magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
-                                     magmaDoubleComplex *E, magma_int_t lde, magmaDoubleComplex *V, magma_int_t ldv,
-                                     magmaDoubleComplex *TAU, magmaDoubleComplex *T, magma_int_t ldt);
+static void magma_ztile_bulge_applyQ(
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc,
+    magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    magmaDoubleComplex *E, magma_int_t lde,
+    magmaDoubleComplex *V, magma_int_t ldv,
+    magmaDoubleComplex *TAU,
+    magmaDoubleComplex *T, magma_int_t ldt);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/******************************************************************************/
 typedef struct magma_zapplyQ_data_s {
     magma_int_t threads_num;
     magma_int_t n;
@@ -45,11 +48,17 @@ typedef struct magma_zapplyQ_data_s {
     pthread_barrier_t barrier;
 } magma_zapplyQ_data;
 
+
+/******************************************************************************/
 void magma_zapplyQ_data_init(
-    magma_zapplyQ_data *zapplyQ_data, magma_int_t threads_num, magma_int_t n, magma_int_t ne, magma_int_t n_gpu,
-    magma_int_t nb, magma_int_t Vblksiz, magmaDoubleComplex *E, magma_int_t lde,
-    magmaDoubleComplex *V, magma_int_t ldv, magmaDoubleComplex *TAU,
-    magmaDoubleComplex *T, magma_int_t ldt, magmaDoubleComplex *dE, magma_int_t ldde)
+    magma_zapplyQ_data *zapplyQ_data, magma_int_t threads_num,
+    magma_int_t n, magma_int_t ne, magma_int_t n_gpu,
+    magma_int_t nb, magma_int_t Vblksiz,
+    magmaDoubleComplex *E, magma_int_t lde,
+    magmaDoubleComplex *V, magma_int_t ldv,
+    magmaDoubleComplex *TAU,
+    magmaDoubleComplex *T, magma_int_t ldt,
+    magmaDoubleComplex *dE, magma_int_t ldde)
 {
     zapplyQ_data->threads_num = threads_num;
     zapplyQ_data->n = n;
@@ -72,20 +81,26 @@ void magma_zapplyQ_data_init(
     if (zapplyQ_data->threads_num > 1)
         --count;
 
-    pthread_barrier_init(&(zapplyQ_data->barrier), NULL, count);
+    pthread_barrier_init(&(zapplyQ_data->barrier), NULL, (unsigned)count);
 }
 
+
+/******************************************************************************/
 void magma_zapplyQ_data_destroy(
     magma_zapplyQ_data *zapplyQ_data)
 {
     pthread_barrier_destroy(&(zapplyQ_data->barrier));
 }
 
+
+/******************************************************************************/
 typedef struct magma_zapplyQ_id_data {
     magma_int_t id;
     magma_zapplyQ_data* data;
 } magma_zapplyQ_id_data;
 
+
+/******************************************************************************/
 void magma_zapplyQ_id_data_init(
     magma_zapplyQ_id_data *zapplyQ_id_data,
     magma_int_t id, magma_zapplyQ_data* data)
@@ -93,8 +108,9 @@ void magma_zapplyQ_id_data_init(
     zapplyQ_id_data->id = id;
     zapplyQ_id_data->data = data;
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+/******************************************************************************/
 extern "C" magma_int_t
 magma_zbulge_back(
     magma_uplo_t uplo,
@@ -119,14 +135,14 @@ magma_zbulge_back(
     magma_getdevice( &cdev );
     magma_queue_create( cdev, &queue );
 
-//#ifdef REAL
-    //double gpu_cpu_perf = 50;  // gpu over cpu performance  //100% ev // SandyB. - Kepler (K20c)
-    //double gpu_cpu_perf = 16;  // gpu over cpu performance  //100% ev // SandyB. - Fermi (M2090)
-//#else
-//    double gpu_cpu_perf = 27.5;  // gpu over cpu performance  //100% ev // Westmere - Fermi (M2090)
-    //double gpu_cpu_perf = 37;  // gpu over cpu performance  //100% ev // SandyB. - Kepler (K20c)
-//    double gpu_cpu_perf = 130;  // gpu over cpu performance  //100% ev // Bulldozer - Kepler (K20X)
-//#endif
+    //#ifdef REAL
+    //    double gpu_cpu_perf = 50;  // gpu over cpu performance  //100% ev // SandyB. - Kepler (K20c)
+    //    double gpu_cpu_perf = 16;  // gpu over cpu performance  //100% ev // SandyB. - Fermi (M2090)
+    //#else
+    //    double gpu_cpu_perf = 27.5;  // gpu over cpu performance  //100% ev // Westmere - Fermi (M2090)
+    //    double gpu_cpu_perf = 37;    // gpu over cpu performance  //100% ev // SandyB. - Kepler (K20c)
+    //    double gpu_cpu_perf = 130;   // gpu over cpu performance  //100% ev // Bulldozer - Kepler (K20X)
+    //#endif
 
     magma_int_t gpu_cpu_perf = magma_get_zbulge_gcperf();
     if (threads > 1) {
@@ -134,17 +150,17 @@ magma_zbulge_back(
         n_gpu = (magma_int_t)(f*ne);
     }
 
-    /****************************************************
+    /* --------------------------------------------------
      *  apply V2 from left to the eigenvectors Z. dZ = (I-V2*T2*V2')*Z
-     * **************************************************/
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-n_gpu=ne;
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+     * -------------------------------------------------- */
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    n_gpu=ne;
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     timeaplQ2 = magma_wtime();
     /*============================
      *  use GPU+CPU's
@@ -154,7 +170,7 @@ n_gpu=ne;
         // define the size of Q to be done on CPU's and the size on GPU's
         // note that GPU use Q(1:N_GPU) and CPU use Q(N_GPU+1:N)
         #ifdef ENABLE_DEBUG
-        printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %d     N_GPU %d   N_CPU %d\n",ne, n_gpu, ne-n_gpu);
+        printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %lld     N_GPU %lld   N_CPU %lld\n",ne, n_gpu, ne-n_gpu);
         #endif
         magma_zapplyQ_data data_applyQ;
         magma_zapplyQ_data_init(&data_applyQ, threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt, dZ, lddz);
@@ -173,7 +189,7 @@ n_gpu=ne;
         // Set one thread per core
         pthread_attr_init(&thread_attr);
         pthread_attr_setscope(&thread_attr, PTHREAD_SCOPE_SYSTEM);
-        pthread_setconcurrency(threads);
+        pthread_setconcurrency( (unsigned)threads );
 
         // Launch threads
         for (magma_int_t thread = 1; thread < threads; thread++) {
@@ -211,7 +227,8 @@ n_gpu=ne;
     return MAGMA_SUCCESS;
 }
 
-//##################################################################################################
+
+/******************************************************************************/
 static void *magma_zapplyQ_parallel_section(void *arg)
 {
     magma_int_t my_core_id   = ((magma_zapplyQ_id_data*)arg) -> id;
@@ -223,14 +240,14 @@ static void *magma_zapplyQ_parallel_section(void *arg)
     magma_int_t n_gpu          = data -> n_gpu;
     magma_int_t nb             = data -> nb;
     magma_int_t Vblksiz        = data -> Vblksiz;
-    magmaDoubleComplex *E         = data -> E;
+    magmaDoubleComplex *E      = data -> E;
     magma_int_t lde            = data -> lde;
-    magmaDoubleComplex *V         = data -> V;
+    magmaDoubleComplex *V      = data -> V;
     magma_int_t ldv            = data -> ldv;
-    magmaDoubleComplex *TAU       = data -> TAU;
-    magmaDoubleComplex *T         = data -> T;
+    magmaDoubleComplex *TAU    = data -> TAU;
+    magmaDoubleComplex *T      = data -> T;
     magma_int_t ldt            = data -> ldt;
-    magmaDoubleComplex *dE        = data -> dE;
+    magmaDoubleComplex *dE     = data -> dE;
     magma_int_t ldde           = data -> ldde;
     pthread_barrier_t* barrier = &(data -> barrier);
 
@@ -325,17 +342,22 @@ static void *magma_zapplyQ_parallel_section(void *arg)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************/
 #define E(m,n)   &(E[(m) + lde*(n)])
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)     &(T[(m)])
+
+/******************************************************************************/
+// TODO: this is identical to function in zbulge_back_m.cpp
 static void magma_ztile_bulge_applyQ(
-    magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc,
+    magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
     magmaDoubleComplex *E, magma_int_t lde,
     magmaDoubleComplex *V, magma_int_t ldv,
-    magmaDoubleComplex *TAU, magmaDoubleComplex *T, magma_int_t ldt)
+    magmaDoubleComplex *TAU,
+    magmaDoubleComplex *T, magma_int_t ldt)
     //, magma_int_t* info)
 {
     //%===========================
@@ -390,8 +412,9 @@ static void magma_ztile_bulge_applyQ(
      *            IN parallel E is splitten in horizontal block over the threads  */
     #ifdef ENABLE_DEBUG
     if ((core_id == 0) || (core_id == 1))
-        printf("  APPLY Q2_cpu zbulge_back   N %d  N_loc %d  nbchunk %d  NB %d  Vblksiz %d  SIDE %c \n", n, n_loc, nbchunk, nb, Vblksiz, side);
+        printf("  APPLY Q2_cpu zbulge_back   N %lld  N_loc %lld  nbchunk %lld  NB %lld  Vblksiz %lld  SIDE %c\n", n, n_loc, nbchunk, nb, Vblksiz, side);
     #endif
+
     for (magma_int_t i = 0; i < nbchunk; i++) {
         magma_int_t ib_loc = min(nb_loc, (n_loc - i*nb_loc));
 
@@ -423,7 +446,7 @@ static void magma_ztile_bulge_applyQ(
                         lapackf77_zlarfb( "L", "N", "F", "C", &vlen, &ib_loc, &vnb, V(vpos), &ldv, T(tpos), &ldt, E(fst,i*nb_loc), &lde, work, &ib_loc);
                     }
                     if (INFO != 0)
-                        printf("ERROR ZUNMQR INFO %d \n", (int) INFO);
+                        printf("ERROR ZUNMQR INFO %lld\n", (long long) INFO );
                 }
             }
         } else if (side == MagmaRight) {
@@ -456,15 +479,15 @@ static void magma_ztile_bulge_applyQ(
                 }
             }
         } else {
-            printf("ERROR SIDE %d \n",side);
+            printf("ERROR SIDE %d\n", side);
         }
     } // END loop over the chunks
 
     magma_free_cpu(work);
     magma_free_cpu(work2);
 }
+
 #undef E
 #undef V
 #undef TAU
 #undef T
-////////////////////////////////////////////////////////////////////////////////////////////////////

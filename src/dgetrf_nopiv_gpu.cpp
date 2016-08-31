@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        
-       @generated from src/zgetrf_nopiv_gpu.cpp normal z -> d, Mon May  2 23:30:03 2016
+       @generated from src/zgetrf_nopiv_gpu.cpp, normal z -> d, Tue Aug 30 09:38:04 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGETRF_NOPIV_GPU computes an LU factorization of a general M-by-N
@@ -56,8 +56,8 @@
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
-    @ingroup magma_dgesv_comp
-    ********************************************************************/
+    @ingroup magma_getrf_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgetrf_nopiv_gpu(
     magma_int_t m, magma_int_t n,

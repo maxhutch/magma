@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgebrd.cpp normal z -> d, Mon May  2 23:30:24 2016
+       @generated from src/zgebrd.cpp, normal z -> d, Tue Aug 30 09:38:23 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DGEBRD reduces a general real M-by-N matrix A to upper or lower
@@ -141,8 +141,8 @@
     denotes an element of the vector defining H(i), and ui an element of
     the vector defining G(i).
 
-    @ingroup magma_dgesvd_comp
-    ********************************************************************/
+    @ingroup magma_gebrd
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgebrd(
     magma_int_t m, magma_int_t n,

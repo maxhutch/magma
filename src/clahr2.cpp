@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zlahr2.cpp normal z -> c, Mon May  2 23:30:22 2016
+       @generated from src/zlahr2.cpp, normal z -> c, Tue Aug 30 09:38:21 2016
        @author Stan Tomov
        @author Mark Gates
 */
@@ -13,7 +13,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CLAHR2 reduces the first NB columns of a complex general n-BY-(n-k+1)
@@ -141,8 +141,8 @@
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
 
-    @ingroup magma_cgeev_aux
-    ********************************************************************/
+    @ingroup magma_lahr2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_clahr2(
     magma_int_t n, magma_int_t k, magma_int_t nb,

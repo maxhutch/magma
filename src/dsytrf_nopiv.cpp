@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Ichitaro Yamazaki
        @author Stan Tomov
 
-       @generated from src/zhetrf_nopiv.cpp normal z -> d, Mon May  2 23:30:12 2016
+       @generated from src/zhetrf_nopiv.cpp, normal z -> d, Tue Aug 30 09:38:12 2016
 */
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     =======
 
@@ -68,8 +68,8 @@
                   positive definite, and the factorization could not be
                   completed.
 
-    @ingroup magma_dsysv_comp
-    ******************************************************************* */
+    @ingroup magma_hetrf_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dsytrf_nopiv(
     magma_uplo_t uplo, magma_int_t n,
@@ -101,12 +101,12 @@ magma_dsytrf_nopiv(
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
 
     /* Quick return */
     if ( n == 0 )
-      return MAGMA_SUCCESS;
+      return *info;
 
     ldda = magma_roundup( n, 32 );
     nb = magma_get_dsytrf_nopiv_nb(n);
@@ -293,5 +293,5 @@ magma_dsytrf_nopiv(
     magma_free(dW);
     magma_free(dA);
     
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_dsytrf_nopiv */

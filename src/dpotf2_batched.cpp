@@ -1,26 +1,22 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
        @author Ahmad Abdelfattah
 
-       @generated from src/zpotf2_batched.cpp normal z -> d, Mon May  2 23:30:27 2016
+       @generated from src/zpotf2_batched.cpp, normal z -> d, Tue Aug 30 09:38:25 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
 #define REAL
 
-/////////////////////////////////////////////////////////////////
-/**
-    \n
-    This is an internal routine.
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_dpotf2_dtrsm_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -35,7 +31,7 @@ magma_dpotf2_dtrsm_batched(
     magma_int_t arginfo = 0;
     if ( m > MAX_NTHREADS )
     {
-        printf("magma_dpotf2_dtrsm_batched m=%d > %d not supported today\n", (int) m, (int) MAX_NTHREADS);
+        printf("magma_dpotf2_dtrsm_batched m=%lld > %lld not supported today\n", (long long) m, (long long) MAX_NTHREADS );
         arginfo = -13;
         return arginfo;
     }
@@ -49,7 +45,7 @@ magma_dpotf2_dtrsm_batched(
     double beta  = MAGMA_D_ONE;
 
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        printf("Upper side is unavailable\n");
     }
     else {
         for (j = 0; j < n; j++) {
@@ -81,15 +77,8 @@ magma_dpotf2_dtrsm_batched(
     return arginfo;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
-    \n
-    This is an internal routine.
-    ********************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_dpotf2_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -117,7 +106,7 @@ magma_dpotf2_batched(
     magma_int_t crossover = magma_get_dpotrf_batched_crossover();
 
     if (uplo == MagmaUpper) {
-        printf("Upper side is unavailable \n");
+        printf("Upper side is unavailable\n");
     }
     else {
         if ( n <= crossover )
@@ -171,4 +160,3 @@ magma_dpotf2_batched(
 
     return arginfo;
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

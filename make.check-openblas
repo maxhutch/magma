@@ -1,0 +1,11 @@
+# check for OpenBLAS + LAPACK directories and give user hint how to set them
+
+# this assumes LAPACK is part of OpenBLAS library.
+
+ifeq ($(OPENBLASDIR),)
+$(error Set $$OPENBLASDIR, preferably in your environment, e.g., run "export OPENBLASDIR=/opt/openblas" in ~/.bashrc, or "setenv OPENBLASDIR /opt/atlas" in ~/.cshrc)
+endif
+
+ifeq ($(wildcard $(OPENBLASDIR)),)
+$(error $$OPENBLASDIR=$(OPENBLASDIR) does not exist. Please set $$OPENBLASDIR to where OPENBLAS is installed.)
+endif

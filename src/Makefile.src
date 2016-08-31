@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.0.2) --
+#   -- MAGMA (version 2.1.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2016
+#      @date August 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -19,12 +19,12 @@ cdir      := src
 
 # ----------
 # BLAS wrappers
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/cblas_z.cpp		\
 
 # ----------
 # Cholesky, GPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zcposv_gpu.cpp		\
 	\
 	$(cdir)/zposv_gpu.cpp		\
@@ -39,7 +39,7 @@ libmagma_zsrc += \
 	$(cdir)/zpotrf3_mgpu.cpp	\
 
 # Cholesky, CPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zposv.cpp		\
 	$(cdir)/zpotrf.cpp		\
 	$(cdir)/zpotri.cpp		\
@@ -50,7 +50,7 @@ libmagma_zsrc += \
 
 # ----------
 # LU, GPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zcgesv_gpu.cpp		\
 	$(cdir)/zcgetrs_gpu.cpp		\
 	\
@@ -68,7 +68,7 @@ libmagma_zsrc += \
 	$(cdir)/zgerbt_gpu.cpp		\
 
 # LU, CPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zgesv.cpp		\
 	$(cdir)/zgesv_rbt.cpp		\
 	$(cdir)/zgetrf.cpp		\
@@ -79,7 +79,7 @@ libmagma_zsrc += \
 
 # LU, auxiliary for multi-gpu-dynamic
 # moved to tiled directory
-#libmagma_zsrc += \
+#libmagma_src += \
 #	$(cdir)/zgetrf_incpiv_gpu.cpp	\
 #	$(cdir)/zgessm_gpu.cpp		\
 #	$(cdir)/zssssm_gpu.cpp		\
@@ -87,7 +87,7 @@ libmagma_zsrc += \
 
 # ----------
 # QR and least squares, GPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zcgeqrsv_gpu.cpp	\
 	\
 	$(cdir)/zgelqf_gpu.cpp		\
@@ -115,7 +115,7 @@ libmagma_zsrc += \
 	$(cdir)/zlaqps_gpu.cpp		\
 
 # QR, CPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zgelqf.cpp		\
 	$(cdir)/zgels.cpp		\
 	$(cdir)/zgeqlf.cpp		\
@@ -137,7 +137,9 @@ libmagma_zsrc += \
 
 # ----------
 # symmetric indefinite factorization, CPU interface
-libmagma_zsrc += \
+libmagma_src += \
+	$(cdir)/zchesv_gpu.cpp		\
+        \
 	$(cdir)/zhesv.cpp		\
 	$(cdir)/zhetrf.cpp		\
 	$(cdir)/zhetrf_aasen.cpp	\
@@ -154,7 +156,7 @@ libmagma_zsrc += \
 
 # ----------
 # symmetric eigenvalues, GPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/dsyevd_gpu.cpp		\
 	$(cdir)/dsyevdx_gpu.cpp		\
 	$(cdir)/zheevd_gpu.cpp		\
@@ -166,7 +168,7 @@ libmagma_zsrc += \
 	$(cdir)/zunmtr_gpu.cpp		\
 
 # symmetric eigenvalues, CPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/dsyevd.cpp		\
 	$(cdir)/dsyevdx.cpp		\
 	$(cdir)/zheevd.cpp		\
@@ -187,7 +189,7 @@ libmagma_zsrc += \
 	$(cdir)/zunmtr.cpp		\
 
 # symmetric eigenvalues, multi-GPU 
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zhetrd_mgpu.cpp		\
 	$(cdir)/zlatrd_mgpu.cpp		\
 	$(cdir)/dsyevd_m.cpp		\
@@ -202,17 +204,13 @@ libmagma_zsrc += \
 	$(cdir)/zunmtr_m.cpp		\
 
 # symmetric eigenvalues 2-stage
-libmagma_zsrc += \
-	$(cdir)/dbulge_aux.cpp		\
+libmagma_src += \
 	$(cdir)/zbulge_applyQ_v2.cpp	\
-	$(cdir)/zbulge_aux.cpp		\
-	$(cdir)/zbulge_kernel.cpp	\
-	$(cdir)/zbulge_kernel_v2.cpp	\
 	$(cdir)/zhetrd_he2hb.cpp	\
 	$(cdir)/zhetrd_hb2st.cpp	\
 	$(cdir)/zbulge_back.cpp		\
 	$(cdir)/zungqr_2stage_gpu.cpp	\
-	$(cdir)/zunmqr_gpu_2stage.cpp	\
+	$(cdir)/zunmqr_2stage_gpu.cpp	\
 	$(cdir)/zhegvdx_2stage.cpp	\
 	$(cdir)/zheevdx_2stage.cpp	\
 	\
@@ -227,7 +225,7 @@ libmagma_zsrc += \
 	$(cdir)/core_zhbtype3cb.cpp	\
 
 # generalized symmetric eigenvalues
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/dsygvd.cpp		\
 	$(cdir)/dsygvdx.cpp		\
 	$(cdir)/zhegst.cpp		\
@@ -246,7 +244,7 @@ libmagma_zsrc += \
 
 # ----------
 # non-symmetric eigenvalues
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/dgeev.cpp		\
 	$(cdir)/zgeev.cpp		\
 	$(cdir)/zgehrd.cpp		\
@@ -262,12 +260,8 @@ libmagma_zsrc += \
 	$(cdir)/ztrevc3_mt.cpp		\
 	$(cdir)/zunghr.cpp		\
 
-# use ztrevc3 and ztrevc3_mt instead
-	#$(cdir)/lapack_dtrevc3.f	\
-	#$(cdir)/lapack_ztrevc3.f	\
-
 # non-symmetric eigenvalues, multi-GPU
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/dgeev_m.cpp		\
 	$(cdir)/zgeev_m.cpp		\
 	$(cdir)/zgehrd_m.cpp		\
@@ -277,7 +271,7 @@ libmagma_zsrc += \
 
 # ----------
 # SVD
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/dgesdd.cpp		\
 	$(cdir)/zgesdd.cpp		\
 	$(cdir)/dgesvd.cpp		\
@@ -289,7 +283,7 @@ libmagma_zsrc += \
 
 # ----------
 # Batched, GPU interface
-libmagma_zsrc += \
+libmagma_src += \
 	$(cdir)/zgetf2_batched.cpp		\
 	$(cdir)/zgetf2_nopiv_batched.cpp	\
 	$(cdir)/zgetrf_panel_batched.cpp	\

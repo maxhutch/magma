@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 2.0.2) --
+# MAGMA (version 2.1.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date May 2016
+# @date August 2016
 
-## @file run_tests.py
+## @file
 #  @author Mark Gates
 #  @author Hartwig Anzt
 #
@@ -192,16 +192,19 @@ parser.add_option(      '--pbicg'            , action='store_true', dest='pbicg'
 
                                                                                            
 parser.add_option(      '--jacobi-prec'      , action='store_true', dest='jacobi_prec'   , help='run Jacobi preconditioner')
-parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'      , help='run ILU preconditioner')
-parser.add_option(      '--iter-ilu-prec'    , action='store_true', dest='iter_ilu_prec' , help='run iterative ILU preconditioner')
+parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_exact_prec', help='run ILU + exact solve preconditioner')
+parser.add_option(      '--ilu-jac'          , action='store_true', dest='ilu_jac_prec',   help='run ILU + Jacobi solve preconditioner')
+parser.add_option(      '--ilu-bjac'         , action='store_true', dest='ilu_bjac_prec',  help='run ILU + Block Jacobi solve preconditioner')
+parser.add_option(      '--ilu-isai-prec'    , action='store_true', dest='ilu_isai_prec' , help='run ILU + ISAI preconditioner')
+parser.add_option(      '--ilut-prec'        , action='store_true', dest='ilut_prec',      help='run threshold ILU + exact solve preconditioner')
 
 (opts, args) = parser.parse_args()
 
 # default if no sizes given is all sizes
 if ( not opts.small and not opts.med and not opts.large and not opts.nonsym ):
-    opts.small = True
-    opts.med   = True
-    opts.large = True
+    opts.small  = True
+    opts.med    = False
+    opts.large  = False
     opts.nonsym = True
 # end
 
@@ -218,14 +221,6 @@ if (     not opts.sparse_blas
     opts.csr         = True
     opts.ell         = True
     opts.sellp       = True
-# end
-
-# default if no sizes given is all sizes
-if ( not opts.small and not opts.med and not opts.large and not opts.nonsym ):
-    opts.small = True
-    opts.med   = True
-    opts.large = True
-    opts.nonsym = True
 # end
 
 # default if no solvers given is all solvers
@@ -290,10 +285,17 @@ if (     not opts.cg
 
 # default if no preconditioners given all
 if (     not opts.jacobi_prec
-     and not opts.ilu_prec ):
+     and not opts.ilu_exact_prec 
+     and not opts.ilut_prec
+     and not opts.ilu_jac_prec
+     and not opts.ilu_bjac_prec
+     and not opts.ilu_isai_prec ):
     opts.jacobi_prec      = True
     opts.ilu_prec         = True
-    opts.iter_ilu_prec    = True
+    opts.ilu_jac_prec     = True
+    opts.ilu_isai_prec    = True
+    opts.ilu_bjac_prec    = True
+    opts.ilut_prec        = True
 # end
 
 # default if no sizes given is all sizes
@@ -355,7 +357,7 @@ if ( opts.idr_merge ):
     solvers += ['--solver IDR']
 # end
 if ( opts.cgs ):
-    solvers += ['--solver CGS']
+    solvers += ['--solver CGS --basic']
 # end
 if ( opts.cgs_merge ):
     solvers += ['--solver CGS --basic']
@@ -367,10 +369,10 @@ if ( opts.qmr_merge ):
     solvers += ['--solver QMR']
 # end
 if ( opts.lsqr ):
-    solvers += ['--solver QMR']
+    solvers += ['--solver LSQR']
 # end
 if ( opts.bicg ):
-    solvers += ['--solver QMR']
+    solvers += ['--solver BICG']
 # end
 if ( opts.bombard ):
     solvers += ['--solver BOMBARDMENT']
@@ -394,21 +396,22 @@ if ( opts.pgmres ):
 if ( opts.pidr ):
     precsolvers += ['--solver PIDR']
 # end
-if ( opts.pidr ):
+if ( opts.pqmr ):
     precsolvers += ['--solver PQMR']
 # end
 if ( opts.pidr ):
     precsolvers += ['--solver PCGS']
 # end
 if ( opts.pbicg ):
-    precsolvers += ['--solver PCGS']
+    precsolvers += ['--solver PBICG']
 # end
 if ( opts.lsqr ):
-    precsolvers += ['--solver PCGS']
+    precsolvers += ['--solver PLSQR']
 # end
 
 
-# looping over IR
+
+# looping over eigensolvers
 IR = []
 if ( opts.iterref ):
     IR += ['--solver LOBPCG']
@@ -419,25 +422,34 @@ if ( opts.iterref ):
 # looping over preconditioners
 precs = ['--precond NONE']
 if ( opts.jacobi_prec ):
-    precs += ['--precond ILU']
-# end
-if ( opts.ilu_prec ):
     precs += ['--precond JACOBI']
 # end
-if ( opts.iter_ilu_prec ):
-    precs += ['--precond AILU']
+if ( opts.ilu_exact_prec ):
+    precs += ['--precond ILU']
+# end
+if ( opts.ilut_prec ):
+    precs += ['--precond PARILUT --prestart 1 --psweeps 5 --plevels 0 --prtol 0.05 --patol 0.2 ']
+# end
+if ( opts.ilu_jac_prec ):
+    precs += ['--precond ILU --trisolver JACOBI --ppattern 1 --piters 5 ']
+# end
+if ( opts.ilu_bjac_prec ):
+    precs += ['--precond ILU --trisolver JACOBI --ppattern 4 --piters 3 ']
+# end
+if ( opts.ilu_isai_prec ):
+    precs += ['--precond ILU --trisolver ISAI --ppattern 1 --piters 1 ']
 # end
 
 
-# looping over preconditioners
+# looping over preconditioners for Iter-Ref
 IRprecs = []
 if ( opts.iterref ):
     IRprecs += ['--precond CG']
     IRprecs += ['--precond CGS']
     IRprecs += ['--precond BICGSTAB']
+    IRprecs += ['--precond BICG']
     IRprecs += ['--precond GMRES']
     IRprecs += ['--precond QMR']
-    IRprecs += ['--precond BOMBARDMENT']
 # end
 
 

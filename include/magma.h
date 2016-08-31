@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #ifndef MAGMA_H
@@ -24,6 +24,7 @@
 #include "magmablas_v1.h"
 #include "magmablas_q.h"
 #include "magma_batched.h"
+#include "magma_vbatched.h"
 #include "magma_bulge.h"
 
 /* ------------------------------------------------------------
@@ -35,6 +36,6 @@
 #include "magma_s.h"
 #include "magma_zc.h"
 #include "magma_ds.h"
-#include "auxiliary.h"
+#include "magma_auxiliary.h"
 
 #endif        //  #ifndef MAGMA_H

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> c d s
 
@@ -138,12 +138,12 @@ magma_zgesellcmv(
     magma_queue_t queue )
 {
     // the kernel can only handle up to 65535 slices 
-   // (~2M rows for blocksize 32)
-   dim3 grid( slices, 1, 1);
-   magma_int_t threads = blocksize;
-   zgesellcmv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
-   ( m, n, blocksize, alpha,
+    // (~2M rows for blocksize 32)
+    dim3 grid( slices, 1, 1);
+    magma_int_t threads = blocksize;
+    zgesellcmv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
+    ( m, n, blocksize, alpha,
         dval, dcolind, drowptr, dx, beta, dy );
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }

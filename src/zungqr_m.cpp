@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -12,7 +12,7 @@
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZUNGQR generates an M-by-N COMPLEX_16 matrix Q with orthonormal columns,
@@ -72,8 +72,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_zgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_ungqr
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zungqr_m(
     magma_int_t m, magma_int_t n, magma_int_t k,
@@ -285,13 +285,13 @@ magma_zungqr_m(
         
         // copy result back to CPU
         trace_cpu_start( 0, "get", "get A" );
-        magma_zgetmatrix_1D_col_bcyclic( m, n, dA, ldda, A, lda, ngpu, nb, queues );
+        magma_zgetmatrix_1D_col_bcyclic( ngpu, m, n, nb, dA, ldda, A, lda, queues );
         trace_cpu_end( 0 );
     }
     
     #ifdef TRACING
     char name[80];
-    snprintf( name, sizeof(name), "zungqr-n%d-ngpu%d.svg", m, ngpu );
+    snprintf( name, sizeof(name), "zungqr-n%lld-ngpu%lld.svg", (long long) m, (long long) ngpu );
     trace_finalize( name, "trace.css" );
     #endif
     

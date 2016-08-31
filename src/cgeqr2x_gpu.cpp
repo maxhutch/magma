@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Stan Tomov
 
-       @generated from src/zgeqr2x_gpu.cpp normal z -> c, Mon May  2 23:30:06 2016
+       @generated from src/zgeqr2x_gpu.cpp, normal z -> c, Tue Aug 30 09:38:07 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEQR2 computes a QR factorization of a complex m by n matrix A:
@@ -94,8 +94,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_cgeqrf_aux
-    ********************************************************************/
+    @ingroup magma_geqr2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgeqr2x_gpu(
     magma_int_t m, magma_int_t n,

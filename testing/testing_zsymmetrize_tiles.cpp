@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -26,7 +26,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t    gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double           error, work[1];
@@ -35,7 +36,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex_ptr d_A;
     magma_int_t i, j, N, nb, size, lda, ldda, mstride, nstride, ntile, tile, offset;
     magma_int_t ione     = 1;
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
@@ -44,8 +45,8 @@ int main( int argc, char** argv)
     mstride = 2*nb;
     nstride = 3*nb;
     
-    printf("%% uplo = %s, nb = %d, mstride = %d, nstride = %d\n",
-            lapack_uplo_const(opts.uplo), (int) nb, (int) mstride, (int) nstride );
+    printf("%% uplo = %s, nb = %lld, mstride = %lld, nstride = %lld\n",
+            lapack_uplo_const(opts.uplo), (long long) nb, (long long) mstride, (long long) nstride );
     printf("%%   N ntile   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
     printf("%%==========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -64,10 +65,10 @@ int main( int argc, char** argv)
             // load each tile, save each tile
             gbytes = sizeof(magmaDoubleComplex) * 2.*nb*nb*ntile / 1e9;
             
-            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, size   );
-            TESTING_MALLOC_CPU( h_R, magmaDoubleComplex, size   );
+            TESTING_CHECK( magma_zmalloc_cpu( &h_A, size   ));
+            TESTING_CHECK( magma_zmalloc_cpu( &h_R, size   ));
             
-            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N );
+            TESTING_CHECK( magma_zmalloc( &d_A, ldda*N ));
             
             /* Initialize the matrix */
             for( j = 0; j < N; ++j ) {
@@ -115,16 +116,16 @@ int main( int argc, char** argv)
             blasf77_zaxpy(&size, &c_neg_one, h_A, &ione, h_R, &ione);
             error = lapackf77_zlange("f", &N, &N, h_R, &lda, work);
 
-            printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
-                   (int) N, (int) ntile,
+            printf("%5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
+                   (long long) N, (long long) ntile,
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    (error == 0. ? "ok" : "failed") );
             status += ! (error == 0.);
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_R );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_R );
             
-            TESTING_FREE_DEV( d_A );
+            magma_free( d_A );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -133,6 +134,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Mark Gates
 */
@@ -12,14 +12,6 @@
 
 #include "magma_operators.h"
 
-/**
-    @return Complex square root of x.
-    
-    @param[in]
-    x       COMPLEX_16
-    
-    @ingroup magma_zaux0
-    ********************************************************************/
 extern "C"
 magmaDoubleComplex magma_zsqrt( magmaDoubleComplex x )
 {
@@ -28,14 +20,6 @@ magmaDoubleComplex magma_zsqrt( magmaDoubleComplex x )
 }
 
 
-/**
-    @return Complex square root of x.
-    
-    @param[in]
-    x       COMPLEX
-    
-    @ingroup magma_caux0
-    ********************************************************************/
 extern "C"
 magmaFloatComplex magma_csqrt( magmaFloatComplex x )
 {

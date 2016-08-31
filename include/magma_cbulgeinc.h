@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magma_zbulgeinc.h normal z -> c, Mon May  2 23:31:25 2016
+       @generated from include/magma_zbulgeinc.h, normal z -> c, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMA_CBULGEINC_H
@@ -18,39 +18,21 @@ extern "C" {
 #endif
 
 
-/***************************************************************************//**
- *  Configuration
- **/
+// =============================================================================
+// Configuration
 
- // maximum contexts
+// maximum contexts
 #define MAX_THREADS_BLG         256
 
-void findVTpos(magma_int_t N, magma_int_t NB, magma_int_t Vblksiz, magma_int_t sweep, magma_int_t st, magma_int_t *Vpos, magma_int_t *TAUpos, magma_int_t *Tpos, magma_int_t *myblkid);
-void findVTsiz(magma_int_t N, magma_int_t NB, magma_int_t Vblksiz, magma_int_t *blkcnt, magma_int_t *LDV);
+void findVTpos(
+    magma_int_t N, magma_int_t NB, magma_int_t Vblksiz,
+    magma_int_t sweep, magma_int_t st,
+    magma_int_t *Vpos, magma_int_t *TAUpos, magma_int_t *Tpos,
+    magma_int_t *myblkid);
 
-
-/*
-extern volatile magma_int_t barrier_in[MAX_THREADS_BLG];
-extern volatile magma_int_t barrier_out[MAX_THREADS_BLG];
-extern volatile magma_int_t *ss_prog;
-*/
-
- /***************************************************************************//**
- *  Static scheduler
- **/
-/*
-#define ssched_init(nbtiles) \
-{ \
-        volatile int   prog_ol[2*nbtiles+10]; \
-                 int   iamdone[MAX_THREADS_BLG]; \
-                 int   thread_num[MAX_THREADS_BLG]; \
-        pthread_t      thread_id[MAX_THREADS_BLG]; \
-        pthread_attr_t thread_attr; \
-}
-*/
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+void findVTsiz(
+    magma_int_t N, magma_int_t NB, magma_int_t Vblksiz,
+    magma_int_t *blkcnt, magma_int_t *LDV);
 
 struct gbstrct_blg {
     magmaFloatComplex *dQ1;

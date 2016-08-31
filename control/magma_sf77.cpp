@@ -112,10 +112,10 @@ magma_int_t magmaf_get_ssygst_nb( magma_int_t *n )
     return magma_get_ssygst_nb( *n );
 }
 
-#define magmaf_get_ssygst_nb_m FORTRAN_NAME( magmaf_get_ssygst_nb_m, MAGMAF_GET_SSYGST_NB_M )
-magma_int_t magmaf_get_ssygst_nb_m( magma_int_t *n )
+#define magmaf_get_ssygst_m_nb FORTRAN_NAME( magmaf_get_ssygst_m_nb, MAGMAF_GET_SSYGST_M_NB )
+magma_int_t magmaf_get_ssygst_m_nb( magma_int_t *n )
 {
-    return magma_get_ssygst_nb_m( *n );
+    return magma_get_ssygst_m_nb( *n );
 }
 
 #define magmaf_get_sgebrd_nb FORTRAN_NAME( magmaf_get_sgebrd_nb, MAGMAF_GET_SGEBRD_NB )

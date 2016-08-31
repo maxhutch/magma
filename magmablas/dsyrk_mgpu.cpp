@@ -1,27 +1,27 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from magmablas/zherk_mgpu.cpp normal z -> d, Mon May  2 23:30:39 2016
+       @generated from magmablas/zherk_mgpu.cpp, normal z -> d, Tue Aug 30 09:38:37 2016
 
 */
 #include "magma_internal.h"
 #include "trace.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     This dsyrk_mgpu is internal routine used by dpotrf_mgpu_right.
     It has specific assumption on the block diagonal.
     
-    @ingroup magma_dblas3_internal
-    ********************************************************************/
+    @ingroup magma_herk
+*******************************************************************************/
 extern "C" void
 magma_dsyrk_mgpu(
     magma_int_t ngpu,
@@ -39,6 +39,15 @@ magma_dsyrk_mgpu(
     magma_int_t i, id, ib, ii, kk, n1;
     double z_alpha = MAGMA_D_MAKE(alpha,0.0);
     double z_beta  = MAGMA_D_MAKE(beta, 0.0);
+    magma_trans_t transa, transb;
+    if (trans == MagmaNoTrans) {
+        transa = MagmaNoTrans;
+        transb = MagmaConjTrans;
+    }
+    else {
+        transa = MagmaConjTrans;
+        transb = MagmaNoTrans;
+    }
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
@@ -70,7 +79,7 @@ magma_dsyrk_mgpu(
             ii = nb*((i+c_offset)/(nb*ngpu));
 
             magma_setdevice(id);
-            magma_dgemm( MagmaNoTrans, MagmaConjTrans, i, ib, k,
+            magma_dgemm( transa, transb, i, ib, k,
                          z_alpha, dB(id, 0, 0 ), lddb,
                                   dB(id, i, 0 ), lddb,
                          z_beta,  dC(id, 0, ii), lddc, queues[id][kk] );
@@ -88,7 +97,7 @@ magma_dsyrk_mgpu(
             /* dgemm on off-diagonal blocks */
             magma_setdevice(id);
             trace_gpu_start( id, kk, "gemm_up", "gemm_up" );
-            magma_dgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
+            magma_dgemm( transa, transb, n1, ib, k,
                          z_alpha, dB(id, i+ib,           0 ), lddb,
                                   dB(id,  i,             0 ), lddb,
                          z_beta,  dC(id,  i+c_offset+ib, ii), lddc, queues[id][kk] );
@@ -109,7 +118,7 @@ magma_dsyrk_mgpu(
 #undef STREAM_ID
 
 
-// ----------------------------------------------------------------------
+/******************************************************************************/
 extern "C" void
 magma_dsyrk_mgpu2(
     magma_int_t ngpu,
@@ -127,6 +136,15 @@ magma_dsyrk_mgpu2(
     magma_int_t i, id, ib, ii, kk, n1;
     double z_alpha = MAGMA_D_MAKE(alpha,0.0);
     double z_beta  = MAGMA_D_MAKE(beta, 0.0);
+    magma_trans_t transa, transb;
+    if (trans == MagmaNoTrans) {
+        transa = MagmaNoTrans;
+        transb = MagmaConjTrans;
+    }
+    else {
+        transa = MagmaConjTrans;
+        transb = MagmaNoTrans;
+    }
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
@@ -152,7 +170,7 @@ magma_dsyrk_mgpu2(
             magma_setdevice(id);
 
             /* dgemm on diag and off-diagonal blocks */
-            magma_dgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
+            magma_dgemm( transa, transb, n1, ib, k,
                          z_alpha, dB(id, 0, 0 ), lddb,
                                   dB(id, i, 0 ), lddb,
                          z_beta,  dC(id, 0, ii), lddc, queues[id][kk] );
@@ -171,7 +189,7 @@ magma_dsyrk_mgpu2(
             
             trace_gpu_start( id, kk, "gemm_up", "gemm_up" );
             /* dgemm on diag and off-diagonal blocks */
-            magma_dgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
+            magma_dgemm( transa, transb, n1, ib, k,
                          z_alpha, dB(id, i,           0), lddb,
                                   dB(id, i,           0), lddb,
                          z_beta,  dC(id, i+c_offset, ii), lddc, queues[id][kk] );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
 */
@@ -39,6 +39,16 @@ magma_zcgetrs_gpu(
     magmaDoubleComplex_ptr dX, magma_int_t lddx,
     magmaFloatComplex_ptr dSX,
     magma_int_t *info );
+
+magma_int_t
+magma_zchesv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magmaDoubleComplex_ptr dworkd, magmaFloatComplex_ptr dworks,
+    magma_int_t *iter,
+    magma_int_t *info);
 
 magma_int_t
 magma_zcposv_gpu(

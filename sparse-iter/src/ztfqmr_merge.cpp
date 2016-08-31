@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -268,7 +268,6 @@ magma_ztfqmr_merge(
         queue );
         
         magma_zcopy( dofs, u_mp1.dval, 1, u_m.dval, 1, queue ); 
-    
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
     

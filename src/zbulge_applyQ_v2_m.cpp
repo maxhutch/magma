@@ -1,50 +1,49 @@
 /*
- * Copyright (c) 2011      The University of Tennessee and The University
- *                         of Tennessee Research Foundation.  All rights
- *                         reserved.
- *
- *
- *     @author Azzam Haidar
- *     @author Stan Tomov
- *     @author Raffaele Solca
- *
- *     @precisions normal z -> s d c
- *
- */
+    -- MAGMA (version 2.1.0) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date August 2016
+
+       @author Azzam Haidar
+       @author Stan Tomov
+       @author Raffaele Solca
+  
+       @precisions normal z -> s d c
+*/
 #include <cuda_runtime.h>
 
 #include "magma_internal.h"
 #include "magma_bulge.h"
 #include "magma_zbulgeinc.h"
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 #ifdef HAVE_clBLAS
-#define dE(dev, i,j)  (dE[dev], (dE_offset + (i) + ldde*(j)))
+#define dE(dev,i,j)  (dE[dev], (dE_offset + (i) + ldde*(j)))
 #else
-#define dE(dev, i,j)  (dE[dev]+(i) + ldde*(j))
+#define dE(dev,i,j)  (dE[dev] + (i) + ldde*(j))
 #endif
 #define V(j)     (V+(j))
 #define T(j)     (T+(j))
-/***************************************************************************
- *  Parallel apply Q2 from bulgechasing symetric matrices - static scheduling
- *  Lower case is treated
- **/
-    /*
-     * side == magmaLeft:
-     *     meaning apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so
-     *     traverse Vs in reverse order (forward) from q_n to q_1 Also
-     *     E is splitten by block of col over cores because each apply
-     *     consist in a block of row (horizontal block)
-     */
-    /*
-     * side == magmaRight:
-     *     meaning apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so
-     *     traverse Vs in normal order (forward) from q_1 to q_n Also
-     *     E is splitten by block of row over core because each apply
-     *     consist in a block of col (vertical block)
-     */
-/***************************************************************************/
+
+/***************************************************************************//**
+    Parallel apply Q2 from bulgechasing symetric matrices - static scheduling
+    Lower case is treated
+    
+    side == magmaLeft:
+        meaning apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so
+        traverse Vs in reverse order (forward) from q_n to q_1 Also
+        E is splitten by block of col over cores because each apply
+        consist in a block of row (horizontal block)
+    
+    
+    side == magmaRight:
+        meaning apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so
+        traverse Vs in normal order (forward) from q_1 to q_n Also
+        E is splitten by block of row over core because each apply
+        consist in a block of col (vertical block)
+    
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zbulge_applyQ_v2_m(
     magma_int_t ngpu,
@@ -111,8 +110,6 @@ magma_zbulge_applyQ_v2_m(
         }
     }
 
-
-
     // Azzam 21/11/2012
     // NOTE THAT dwork was of size 2*NE*Vblksiz+...
     // but I am thinking why not modifing it to NE*Vblksiz+...
@@ -168,15 +165,15 @@ magma_zbulge_applyQ_v2_m(
     
     flip = 0;
 
-
     /* SIDE LEFT  meaning apply E = Q*E = (q_1*q_2*.....*q_n) * E ==> so traverse Vs in reverse order (forward) from q_n to q_1
      *            Also E is splitten by row meaning each apply consist in a block of row (horizontal block) */
     /* SIDE RIGHT meaning apply E = E*Q = E * (q_1*q_2*.....*q_n) ==> so tarverse Vs in normal  order (forward) from q_1 to q_n
      *            Also E is splitten by col meaning each apply consist in a block of col (vertical block) */
 
     #ifdef ENABLE_DEBUG
-    printf("  APPLY Q_v22_m GPU with NGPU %d  N %d, NE %d,  NB %d, Vblksiz %d, versionL %d versionR %d  SIDE %c \n",
-          ngpu, N, NE, NB, Vblksiz, versionL, versionR, side);
+    printf("  APPLY Q_v22_m GPU with NGPU %lld  N %lld, NE %lld,  NB %lld, Vblksiz %lld, versionL %lld versionR %lld  SIDE %d\n",
+           (long long) ngpu, (long long) N, (long long) NE, (long long) NB,
+           (long long) Vblksiz, (long long) versionL, (long long) versionR, side);
     #endif
 
 
@@ -196,14 +193,14 @@ magma_zbulge_applyQ_v2_m(
             for (blkj=nt-1; blkj >= 0; blkj--) {
                 /* the index of the first row on the top of block (blkj) */
                 firstrow = blkj * Vblksiz + 1;
-                /*find the number of tile for this block */
+                /* find the number of tile for this block */
                 if ( blkj == nt-1 )
                     mt = magma_ceildiv( N -  firstrow,    NB);
                 else
                     mt = magma_ceildiv( N - (firstrow+1), NB);
-                /*loop over the tiles find the size of the Vs and apply it */
+                /* loop over the tiles find the size of the Vs and apply it */
                 for (blki=mt; blki > 0; blki--) {
-                    /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                    /* calculate the size of each losange of Vs= (Vm,Vn) */
                     myrow     = firstrow + (mt-blki)*NB;
                     mycol     = blkj*Vblksiz;
                     Vm = min( NB+Vblksiz-1, N-myrow);
@@ -212,10 +209,10 @@ magma_zbulge_applyQ_v2_m(
                     } else {
                         Vn = min (Vblksiz, Vm-1);
                     }
-                    /*calculate the pointer to the Vs and the Ts.
+                    /* calculate the pointer to the Vs and the Ts.
                      * Note that Vs and Ts have special storage done
-                     * by the bulgechasing function*/
-                    //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d vpos %d \n",blkj,blki,Vm, Vn,mycol,vpos);
+                     * by the bulgechasing function */
+                    //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d vpos %d\n",blkj,blki,Vm, Vn,mycol,vpos);
                     magma_bulge_findpos113(N, NB, Vblksiz, mycol, myrow, &blkid);
                
                     // COPY Vchunksiz Vs and Vchunksiz Ts to GPU and store it in dV0/dV1 and dT0/dT1
@@ -274,7 +271,7 @@ magma_zbulge_applyQ_v2_m(
                         locpos = blkid%Vchunksiz;
                         magma_int_t lcvpos   = locpos*Vblksiz*lddv;
                         magma_int_t lctpos   = locpos*Vblksiz*lddt;
-                        //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d locvpos %5d loctpos %5d  blkid %2d  using data in dV%1d dT%1d \n",blkj,blki,Vm, Vn,mycol,lcvpos,lctpos, blkid,flip,flip);
+                        //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d locvpos %5d loctpos %5d  blkid %2d  using data in dV%1d dT%1d\n",blkj,blki,Vm, Vn,mycol,lcvpos,lctpos, blkid,flip,flip);
                         if (flip == 0) {
                             for( dev = 0; dev < ngpu; ++dev ) {
                                 magma_int_t ie_loc   = min(ne_loc, NE - ne_loc*dev);
@@ -324,14 +321,14 @@ magma_zbulge_applyQ_v2_m(
             for (blki = mt; blki > 0; blki--) {
                 /* nbcolinvolvd = number of column corresponding to this block_row (blki) */
                 nbcolinvolvd = min(N-1, blki*NB);
-                /*find the number of tile for this block (diagonal row of tiles) */
+                /* find the number of tile for this block (diagonal row of tiles) */
                 nt = magma_ceildiv(nbcolinvolvd,Vblksiz);
-                /*loop over the tiles find the size of the Vs and apply it */
+                /* loop over the tiles find the size of the Vs and apply it */
                 for (blkj = nt-1; blkj >= 0; blkj--) {
                     /* the index of the first row of the first col meaning
                      * the block on the top left (blki) */
                     firstrow = (mt-blki)*NB+1;
-                    /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                    /* calculate the size of each losange of Vs= (Vm,Vn) */
                     myrow    = firstrow + blkj*Vblksiz;
                     mycol    = blkj*Vblksiz;
                     Vm = min( NB+Vblksiz-1, N-myrow);
@@ -342,9 +339,9 @@ magma_zbulge_applyQ_v2_m(
                     }
 
                     if ((Vm > 0) && (Vn > 0)) {
-                        /*calculate the pointer to the Vs and the Ts.
+                        /* calculate the pointer to the Vs and the Ts.
                          * Note that Vs and Ts have special storage done
-                         * by the bulgechasing function*/
+                         * by the bulgechasing function */
                         /*
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
                         magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, queues[dev][0]);
@@ -374,14 +371,14 @@ magma_zbulge_applyQ_v2_m(
             for (blkj=0; blkj < nt; blkj++) {
                 /* the index of the first myrow on the top of block (blkj) */
                 firstrow = blkj * Vblksiz + 1;
-                /*find the number of tile for this block */
+                /* find the number of tile for this block */
                 if ( blkj == nt-1 )
                     mt = magma_ceildiv( N -  firstrow,    NB);
                 else
                     mt = magma_ceildiv( N - (firstrow+1), NB);
-                /*loop over the tiles find the size of the Vs and apply it */
+                /* loop over the tiles find the size of the Vs and apply it */
                 for (blki=1; blki <= mt; blki++) {
-                    /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                    /* calculate the size of each losange of Vs= (Vm,Vn) */
                     myrow  = firstrow + (mt-blki)*NB;
                     Vm = min( NB+Vblksiz-1, N-myrow);
                     if ( (blkj == nt-1) && (blki == mt) ) {
@@ -391,9 +388,9 @@ magma_zbulge_applyQ_v2_m(
                     }
                     mycol     = blkj*Vblksiz;
                     if ((Vm > 0) && (Vn > 0)) {
-                        /*calculate the pointer to the Vs and the Ts.
+                        /* calculate the pointer to the Vs and the Ts.
                          * Note that Vs and Ts have special storage done
-                         * by the bulgechasing function*/
+                         * by the bulgechasing function */
                         /*
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
                         magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, queues[dev][0]);
@@ -412,14 +409,14 @@ magma_zbulge_applyQ_v2_m(
             for (blki = 1; blki <= mt; blki++) {
                 /* nbcolinvolvd = number of column corresponding to this block_row (blki) */
                 nbcolinvolvd = min(N-1, blki*NB);
-                /*find the number of tile for this block (diagonal row of tiles) */
+                /* find the number of tile for this block (diagonal row of tiles) */
                 nt = magma_ceildiv(nbcolinvolvd,Vblksiz);
-                /*loop over the tiles find the size of the Vs and apply it */
+                /* loop over the tiles find the size of the Vs and apply it */
                 for (blkj = 0; blkj < nt; blkj++) {
                     /* the index of the first row of the first col meaning
                      * the block on the top left (blki) */
                     firstrow = (mt-blki)*NB+1;
-                    /*calculate the size of each losange of Vs= (Vm,Vn)*/
+                    /* calculate the size of each losange of Vs= (Vm,Vn) */
                     myrow    = firstrow + blkj*Vblksiz;
                     mycol    = blkj*Vblksiz;
                     Vm = min( NB+Vblksiz-1, N-myrow);
@@ -429,9 +426,9 @@ magma_zbulge_applyQ_v2_m(
                         Vn = min (Vblksiz, Vm-1);
                     }
                     if ((Vm > 0) && (Vn > 0)) {
-                        /*calculate the pointer to the Vs and the Ts.
+                        /* calculate the pointer to the Vs and the Ts.
                          * Note that Vs and Ts have special storage done
-                         * by the bulgechasing function*/
+                         * by the bulgechasing function */
                         /*
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
                         magma_zsetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, queues[dev][0]);
@@ -473,7 +470,7 @@ magma_zbulge_applyQ_v2_m(
     magma_setdevice( orig_dev );
     return *info;
 }
+
 #undef V
 #undef T
 #undef dE
-////////////////////////////////////////////////////////////////////////////////////////////////////

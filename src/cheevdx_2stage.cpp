@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zheevdx_2stage.cpp normal z -> c, Mon May  2 23:30:18 2016
+       @generated from src/zheevdx_2stage.cpp, normal z -> c, Tue Aug 30 09:38:18 2016
 
 */
 #include "magma_internal.h"
@@ -17,7 +17,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CHEEVD_2STAGE computes all eigenvalues and, optionally, eigenvectors of a
@@ -105,9 +105,9 @@
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LWSTG2 + N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= LWSTG2 + 2*N + N**2.
+     -      If N <= 1,                      LWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LWORK >= LWSTG2 + N + N*NB.
+     -      If JOBZ = MagmaVec   and N > 1, LWORK >= LWSTG2 + 2*N + N**2.
             where LWSTG2 is the size needed to store the matrices of stage 2
             and is returned by magma_cbulge_getlwstg2.
     \n
@@ -117,6 +117,10 @@
             the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
+*/
+#ifdef COMPLEX
+/**
+
     @param[out]
     rwork   (workspace) REAL array,
                                            dimension (LRWORK)
@@ -125,15 +129,19 @@
     @param[in]
     lrwork  INTEGER
             The dimension of the array RWORK.
-            If N <= 1,                      LRWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
-            If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
+     -      If N <= 1,                      LRWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LRWORK >= N.
+     -      If JOBZ = MagmaVec   and N > 1, LRWORK >= 1 + 5*N + 2*N**2.
     \n
             If LRWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
             and IWORK arrays, returns these values as the first entries
             of the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
+
+*/
+#endif
+/**
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
@@ -142,9 +150,9 @@
     @param[in]
     liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                      LIWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
-            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+     -      If N <= 1,                      LIWORK >= 1.
+     -      If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+     -      If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK, RWORK
@@ -172,8 +180,8 @@
 
     Modified description of INFO. Sven, 16 Feb 05.
 
-    @ingroup magma_cheevd_driver
-    ********************************************************************/
+    @ingroup magma_heevdx
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cheevdx_2stage(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
@@ -336,14 +344,14 @@ magma_cheevdx_2stage(
     }
 
 
-    timer_printf("using %d parallel_threads\n", (int) parallel_threads);
+    timer_printf("using %lld parallel_threads\n", (long long) parallel_threads );
 
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
     magma_int_t ntiles = n/nb;
     if ( ( ntiles < 2 ) || ( n <= 128 ) ) {
         #ifdef ENABLE_DEBUG
         printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
+        printf("  warning matrix too small N=%lld NB=%lld, calling lapack on CPU\n", (long long) n, (long long) nb );
         printf("--------------------------------------------------------------\n");
         #endif
         lapackf77_cheevd(jobz_, uplo_, &n,
@@ -439,7 +447,7 @@ magma_cheevdx_2stage(
     magma_chetrd_he2hb(uplo, n, nb, A, lda, TAU1, Wstg1, lwstg1, dT1, info);
 
     timer_stop( time );
-    timer_printf( "  N= %10d  nb= %5d time chetrd_he2hb= %6.2f\n", (int)n, (int)nb, time );
+    timer_printf( "  N= %10lld  nb= %5lld time chetrd_he2hb= %6.2f\n", (long long) n, (long long) nb, time );
     timer_start( time );
 
     /* copy the input matrix into WORK(INDWRK) with band storage */
@@ -458,15 +466,15 @@ magma_cheevdx_2stage(
     }
 
     timer_stop( time );
-    timer_printf( "  N= %10d  nb= %5d time chetrd_convert = %6.2f\n", (int)n, (int)nb, time );
+    timer_printf( "  N= %10lld  nb= %5lld time chetrd_convert = %6.2f\n", (long long) n, (long long) nb, time );
     timer_start( time );
 
     magma_chetrd_hb2st(uplo, n, nb, Vblksiz, A2, lda2, W, E, V2, ldv, TAU2, wantz, T2, ldt);
 
     timer_stop( time );
     timer_stop( time_total );
-    timer_printf( "  N= %10d  nb= %5d time chetrd_hb2st= %6.2f\n", (int)n, (int)nb, time );
-    timer_printf( "  N= %10d  nb= %5d time chetrd= %6.2f\n", (int)n, (int)nb, time_total );
+    timer_printf( "  N= %10lld  nb= %5lld time chetrd_hb2st= %6.2f\n", (long long) n, (long long) nb, time );
+    timer_printf( "  N= %10lld  nb= %5lld time chetrd= %6.2f\n", (long long) n, (long long) nb, time_total );
 
     /* For eigenvalues only, call SSTERF.  For eigenvectors, first call
        CSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
@@ -479,7 +487,7 @@ magma_cheevdx_2stage(
         magma_smove_eig(range, n, W, &il, &iu, vl, vu, m);
 
         timer_stop( time );
-        timer_printf( "  N= %10d  nb= %5d time dstedc = %6.2f\n", (int)n, (int)nb, time );
+        timer_printf( "  N= %10lld  nb= %5lld time dstedc = %6.2f\n", (long long) n, (long long) nb, time );
     }
     else {
         timer_start( time_total );
@@ -499,7 +507,7 @@ magma_cheevdx_2stage(
 
 
         timer_stop( time );
-        timer_printf( "  N= %10d  nb= %5d time cstedx = %6.2f\n", (int)n, (int)nb, time );
+        timer_printf( "  N= %10lld  nb= %5lld time cstedx = %6.2f\n", (long long) n, (long long) nb, time );
         magma_free( dwedc );
         magma_smove_eig(range, n, W, &il, &iu, vl, vu, m);
 
@@ -518,7 +526,7 @@ magma_cheevdx_2stage(
                           V2, ldv, TAU2, T2, ldt, info);
 
         timer_stop( time );
-        timer_printf( "  N= %10d  nb= %5d time cbulge_back = %6.2f\n", (int)n, (int)nb, time );
+        timer_printf( "  N= %10lld  nb= %5lld time cbulge_back = %6.2f\n", (long long) n, (long long) nb, time );
 
         magmaFloatComplex *dA;
         magma_int_t ldda = n;
@@ -537,8 +545,8 @@ magma_cheevdx_2stage(
 
         magma_csetmatrix( n, n, A, lda, dA, ldda, queue );
 
-        magma_cunmqr_gpu_2stages(MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, dA+nb, ldda,
-                                 dZ+nb, n, dT1, nb, info);
+        magma_cunmqr_2stage_gpu( MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, dA+nb, ldda,
+                                 dZ+nb, n, dT1, nb, info );
 
         magma_cgetmatrix( n, *m, dZ, lddz, A, lda, queue );
 
@@ -546,11 +554,11 @@ magma_cheevdx_2stage(
         magma_queue_destroy( queue );
 
         timer_stop( time );
-        timer_printf( "  N= %10d  nb= %5d time cunmqr + copy = %6.2f\n", (int)n, (int)nb, time );
+        timer_printf( "  N= %10lld  nb= %5lld time cunmqr + copy = %6.2f\n", (long long) n, (long long) nb, time );
         magma_free(dZ);
         magma_free(dA);
         timer_stop( time_total );
-        timer_printf( "  N= %10d  nb= %5d time eigenvectors backtransf. = %6.2f\n", (int)n, (int)nb, time_total );
+        timer_printf( "  N= %10lld  nb= %5lld time eigenvectors backtransf. = %6.2f\n", (long long) n, (long long) nb, time_total );
     }
 
     magma_free(dT1);

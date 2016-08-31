@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -48,7 +48,7 @@
     queue       magma_queue_t
                 Queue to execute in.
 
-    @ingroup    magmasparse_zgesv
+    @ingroup magmasparse_zgesv
     ********************************************************************/
 
 extern "C" magma_int_t
@@ -297,7 +297,6 @@ magma_zqmr(
         if ( res/nomb <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
- 
     }
     while ( solver_par->numiter+1 <= solver_par->maxiter );
     

@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zgetrf_nopiv_batched.cpp normal z -> d, Mon May  2 23:31:22 2016
+   @generated from testing/testing_zgetrf_nopiv_batched.cpp, normal z -> d, Tue Aug 30 09:39:18 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -34,8 +34,8 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     double *L, *U;
     double work[1], matnorm, residual;
     
-    TESTING_MALLOC_CPU( L, double, M*min_mn);
-    TESTING_MALLOC_CPU( U, double, min_mn*N);
+    TESTING_CHECK( magma_dmalloc_cpu( &L, M*min_mn ));
+    TESTING_CHECK( magma_dmalloc_cpu( &U, min_mn*N ));
     memset( L, 0, M*min_mn*sizeof(double) );
     memset( U, 0, min_mn*N*sizeof(double) );
 
@@ -58,8 +58,8 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     }
     residual = lapackf77_dlange("f", &M, &N, LU, &lda, work);
 
-    TESTING_FREE_CPU(L);
-    TESTING_FREE_CPU(U);
+    magma_free_cpu( L );
+    magma_free_cpu( U );
 
     return residual / (matnorm * N);
 }
@@ -69,7 +69,8 @@ double get_LU_error(magma_int_t M, magma_int_t N,
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, magma_perf, magma_time, cublas_perf=0., cublas_time=0., cpu_perf=0, cpu_time=0;
     double          error;
@@ -86,7 +87,7 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t batchCount;
-    magma_int_t status = 0;
+    int status = 0;
 
     magma_opts opts( MagmaOptsBatched );
     opts.parse_opts( argc, argv );
@@ -109,17 +110,17 @@ int main( int argc, char** argv)
             ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_DGETRF( M, N ) / 1e9 * batchCount;
             
-            TESTING_MALLOC_CPU( cpu_info, magma_int_t, batchCount );
-            TESTING_MALLOC_CPU( ipiv, magma_int_t,     min_mn * batchCount );
-            TESTING_MALLOC_CPU( h_A,  double, n2 );
-            TESTING_MALLOC_CPU( h_R,  double, n2 );
+            TESTING_CHECK( magma_imalloc_cpu( &cpu_info, batchCount ));
+            TESTING_CHECK( magma_imalloc_cpu( &ipiv, min_mn * batchCount ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A,  n2 ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_R,  n2 ));
             
-            TESTING_MALLOC_DEV( dA_magma,  double, ldda*N * batchCount );
-            TESTING_MALLOC_DEV( dipiv_magma,  magma_int_t, min_mn * batchCount );
-            TESTING_MALLOC_DEV( dinfo_magma,  magma_int_t, batchCount );
+            TESTING_CHECK( magma_dmalloc( &dA_magma,  ldda*N * batchCount ));
+            TESTING_CHECK( magma_imalloc( &dipiv_magma,  min_mn * batchCount ));
+            TESTING_CHECK( magma_imalloc( &dinfo_magma,  batchCount ));
 
-            TESTING_MALLOC_DEV( dA_array,    double*, batchCount );
-            TESTING_MALLOC_DEV( dipiv_array, magma_int_t*,        batchCount );
+            TESTING_CHECK( magma_malloc( (void**) &dA_array,    batchCount * sizeof(double*) ));
+            TESTING_CHECK( magma_malloc( (void**) &dipiv_array, batchCount * sizeof(magma_int_t*) ));
 
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
@@ -148,12 +149,12 @@ int main( int argc, char** argv)
             for (int i=0; i < batchCount; i++)
             {
                 if (cpu_info[i] != 0 ) {
-                    printf("magma_dgetrf_batched matrix %d returned internal error %d\n", i, (int)cpu_info[i] );
+                    printf("magma_dgetrf_batched matrix %lld returned internal error %lld\n", (long long) i, (long long) cpu_info[i] );
                 }
             }
             if (info != 0) {
-                printf("magma_dgetrf_batched returned argument error %d: %s.\n",
-                        (int) info, magma_strerror( info ));
+                printf("magma_dgetrf_batched returned argument error %lld: %s.\n",
+                        (long long) info, magma_strerror( info ));
             }
 
             /* =====================================================================
@@ -168,8 +169,8 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0) {
-                    printf("lapackf77_dgetrf returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                    printf("lapackf77_dgetrf returned error %lld: %s.\n",
+                           (long long) info, magma_strerror( info ));
                 }
             }
             
@@ -177,12 +178,17 @@ int main( int argc, char** argv)
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%10d %5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)     %7.2f (%7.2f)",
-                       (int) batchCount, (int) M, (int) N, cpu_perf, cpu_time*1000., magma_perf, magma_time*1000., cublas_perf*cublas_enable, cublas_time*1000.*cublas_enable  );
+                printf("%10lld %5lld %5lld   %7.2f (%7.2f)    %7.2f (%7.2f)     %7.2f (%7.2f)",
+                       (long long) batchCount, (long long) M, (long long) N,
+                       cpu_perf, cpu_time*1000.,
+                       magma_perf, magma_time*1000.,
+                       cublas_perf*cublas_enable, cublas_time*1000.*cublas_enable  );
             }
             else {
-                printf("%10d %5d %5d     ---   (  ---  )    %7.2f (%7.2f)     %7.2f (%7.2f)",
-                       (int) batchCount, (int) M, (int) N, magma_perf, magma_time*1000., cublas_perf*cublas_enable, cublas_time*1000.*cublas_enable );
+                printf("%10lld %5lld %5lld     ---   (  ---  )    %7.2f (%7.2f)     %7.2f (%7.2f)",
+                       (long long) batchCount, (long long) M, (long long) N,
+                       magma_perf, magma_time*1000.,
+                       cublas_perf*cublas_enable, cublas_time*1000.*cublas_enable );
             }
 
             if ( opts.check ) {
@@ -214,16 +220,16 @@ int main( int argc, char** argv)
                 printf("     ---  \n");
             }
             
-            TESTING_FREE_CPU( cpu_info );
-            TESTING_FREE_CPU( ipiv );
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_R );
+            magma_free_cpu( cpu_info );
+            magma_free_cpu( ipiv );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_R );
 
-            TESTING_FREE_DEV( dA_magma );
-            TESTING_FREE_DEV( dinfo_magma );
-            TESTING_FREE_DEV( dipiv_magma );
-            TESTING_FREE_DEV( dipiv_array );
-            TESTING_FREE_DEV( dA_array );
+            magma_free( dA_magma );
+            magma_free( dinfo_magma );
+            magma_free( dipiv_magma );
+            magma_free( dipiv_array );
+            magma_free( dA_array );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -232,6 +238,6 @@ int main( int argc, char** argv)
     }
     
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

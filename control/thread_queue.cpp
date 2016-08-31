@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
 */
@@ -20,8 +20,10 @@ static void check( int err )
 }
 
 
-/**
+/***************************************************************************//**
     @class magma_thread_queue
+    
+    TODO: replace with OpenMP tasks.
     
     Purpose
     -------
@@ -77,16 +79,19 @@ static void check( int err )
     @endcode
     
     This is similar to python's queue class, but also implements worker threads
-    and adds quit mechanism. sync is like python's join, but threads do not
+    and adds quit() mechanism. sync() is like python's join, but threads do not
     exit, so join would be a misleading name.
-*/
+    
+    @ingroup magma_thread
+*******************************************************************************/
 
 
-// ---------------------------------------------
-/// Thread's main routine, executed by pthread_create.
-/// Executes tasks from queue (given as arg), until a NULL task is returned.
-/// Deletes each task when it is done.
-/// @param[in,out] arg    magma_thread_queue to get tasks from.
+/***************************************************************************//**
+    Thread's main routine, executed by pthread_create.
+    Executes tasks from queue (given as arg), until a NULL task is returned.
+    Deletes each task when it is done.
+    @param[in,out] arg    magma_thread_queue to get tasks from.
+*******************************************************************************/
 extern "C"
 void* magma_thread_main( void* arg )
 {
@@ -109,8 +114,9 @@ void* magma_thread_main( void* arg )
 }
 
 
-// ---------------------------------------------
-/// Creates queue with NO threads. Use \ref launch to create threads.
+/***************************************************************************//**
+    Creates queue with NO threads. Use launch() to create threads.
+*******************************************************************************/
 magma_thread_queue::magma_thread_queue():
     q        (),
     quit_flag( false ),
@@ -124,7 +130,9 @@ magma_thread_queue::magma_thread_queue():
 }
 
 
-/// Calls \ref quit, then deallocates data.
+/***************************************************************************//**
+    Calls quit(), then deallocates data.
+*******************************************************************************/
 magma_thread_queue::~magma_thread_queue()
 {
     quit();
@@ -134,8 +142,10 @@ magma_thread_queue::~magma_thread_queue()
 }
 
 
-/// Creates threads.
-/// @param[in] in_nthread    Number of threads to launch.
+/***************************************************************************//**
+    Creates threads.
+    @param[in] in_nthread    Number of threads to launch.
+*******************************************************************************/
 void magma_thread_queue::launch( magma_int_t in_nthread )
 {
     assert( threads == NULL );  // else launch was called previously
@@ -151,10 +161,12 @@ void magma_thread_queue::launch( magma_int_t in_nthread )
 }
 
 
-/// Add task to queue. Task must be allocated with C++ new.
-/// Increments number of outstanding tasks.
-/// Signals threads that are waiting in pop_task.
-/// @param[in] task    Task to queue.
+/***************************************************************************//**
+    Add task to queue. Task must be allocated with C++ new.
+    Increments number of outstanding tasks.
+    Signals threads that are waiting in pop_task().
+    @param[in] task    Task to queue.
+*******************************************************************************/
 void magma_thread_queue::push_task( magma_task* task )
 {
     check( pthread_mutex_lock( &mutex ));
@@ -170,12 +182,14 @@ void magma_thread_queue::push_task( magma_task* task )
 }
 
 
-/// Get next task from queue.
-/// @return next task, blocking until a task is inserted if necesary.
-/// @return NULL if queue is empty *and* \ref quit has been called.
-///
-/// This does *not* decrement number of outstanding tasks;
-/// thread should call \ref task_done when task is completed.
+/***************************************************************************//**
+    Get next task from queue.
+    @return next task, blocking until a task is inserted if necesary.
+    @return NULL if queue is empty *and* quit() has been called.
+    
+    This does *not* decrement number of outstanding tasks;
+    thread should call task_done() when task is completed.
+*******************************************************************************/
 magma_task* magma_thread_queue::pop_task()
 {
     magma_task* task = NULL;
@@ -194,8 +208,10 @@ magma_task* magma_thread_queue::pop_task()
 }
 
 
-/// Marks task as finished, decrementing number of outstanding tasks.
-/// Signals threads that are waiting in \ref sync.
+/***************************************************************************//**
+    Marks task as finished, decrementing number of outstanding tasks.
+    Signals threads that are waiting in sync().
+*******************************************************************************/
 void magma_thread_queue::task_done()
 {
     check( pthread_mutex_lock( &mutex ));
@@ -206,8 +222,10 @@ void magma_thread_queue::task_done()
 }
 
 
-/// Block until all outstanding tasks have been finished.
-/// Threads continue to be alive; more tasks can be pushed after sync.
+/***************************************************************************//**
+    Block until all outstanding tasks have been finished.
+    Threads continue to be alive; more tasks can be pushed after sync.
+*******************************************************************************/
 void magma_thread_queue::sync()
 {
     check( pthread_mutex_lock( &mutex ));
@@ -221,13 +239,15 @@ void magma_thread_queue::sync()
 }
 
 
-/// Sets quit_flag, so \ref pop_task will return NULL once queue is empty,
-/// telling threads to exit.
-/// Signals all threads that are waiting in pop_task.
-/// Waits for all threads to exit (i.e., joins them).
-/// It is safe to call quit multiple times -- the first time all the threads are
-/// joined; subsequent times it does nothing.
-/// (Destructor also calls quit, but you may prefer to call it explicitly.)
+/***************************************************************************//**
+    Sets quit_flag, so pop_task() will return NULL once queue is empty,
+    telling threads to exit.
+    Signals all threads that are waiting in pop_task().
+    Waits for all threads to exit (i.e., joins them).
+    It is safe to call quit multiple times -- the first time all the threads are
+    joined; subsequent times it does nothing.
+    (Destructor also calls quit, but you may prefer to call it explicitly.)
+*******************************************************************************/
 void magma_thread_queue::quit()
 {
     // first, set quit_flag and signal waiting threads
@@ -256,7 +276,9 @@ void magma_thread_queue::quit()
 }
 
 
-/// Mostly for debugging, returns thread index in range 0, ..., nthread-1.
+/***************************************************************************//**
+    Mostly for debugging, returns thread index in range 0, ..., nthread-1.
+*******************************************************************************/
 magma_int_t magma_thread_queue::get_thread_index( pthread_t thread ) const
 {
     for( magma_int_t i=0; i < nthread; ++i ) {

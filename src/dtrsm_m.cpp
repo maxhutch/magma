@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Raffaele Solca
 
-       @generated from src/ztrsm_m.cpp normal z -> d, Mon May  2 23:30:21 2016
+       @generated from src/ztrsm_m.cpp, normal z -> d, Tue Aug 30 09:38:20 2016
 */
 #include "magma_internal.h"
 
 extern "C" magma_int_t
 magma_get_dtrsm_m_nb() { return 128; }
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DTRSM solves one of the matrix equations
@@ -112,8 +112,8 @@ magma_get_dtrsm_m_nb() { return 128; }
             in the calling (sub) program. LDB must be at least
             max( 1, m ).
 
-    @ingroup magma_dblas3
-    ********************************************************************/
+    @ingroup magma_trsm
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dtrsm_m(
     magma_int_t ngpu,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/dznrm2.cu normal z -> d, Mon May  2 23:30:34 2016
+       @generated from magmablas/dznrm2.cu, normal z -> d, Tue Aug 30 09:38:33 2016
 
 */
 #include "magma_internal.h"
@@ -20,7 +20,7 @@
 #define REAL
 
 
-//==============================================================================
+/******************************************************************************/
 __global__ void
 magmablas_dnrm2_kernel(
     int m,
@@ -52,7 +52,7 @@ magmablas_dnrm2_kernel(
 }
 
 
-//==============================================================================
+/******************************************************************************/
 __global__ void
 magmablas_dnrm2_check_kernel(
     int m,
@@ -87,6 +87,8 @@ magmablas_dnrm2_check_kernel(
         dxnorm[blockIdx.x] = sqrt(sum[0]);
 }
 
+
+/******************************************************************************/
 extern "C" void
 magmablas_dnrm2_check_q(
     magma_int_t m, magma_int_t n,
@@ -103,7 +105,7 @@ magmablas_dnrm2_check_q(
 }
 
 
-//==============================================================================
+/******************************************************************************/
 __global__ void
 magmablas_dnrm2_smkernel(
     int m, int n,
@@ -139,6 +141,7 @@ magmablas_dnrm2_smkernel(
 }
 
 
+/******************************************************************************/
 /*
     Compute the dnrm2 of each column of m-by-n matrix dA.
     The resulting norms are written in the dxnorm array.
@@ -159,7 +162,7 @@ magmablas_dnrm2_sm_q(
 }
 
 
-//==============================================================================
+/******************************************************************************/
 __global__ void
 magma_dnrm2_adjust_kernel(double *xnorm, double *c)
 {
@@ -178,6 +181,7 @@ magma_dnrm2_adjust_kernel(double *xnorm, double *c)
 }
 
 
+/******************************************************************************/
 /*
     Adjust the norm of c to give the norm of c[k+1:], assuming that
     c was changed with orthogonal transformations.
@@ -197,7 +201,7 @@ magmablas_dnrm2_adjust_q(
 }
 
 
-//==============================================================================
+/******************************************************************************/
 
 #define BS 256
 
@@ -227,6 +231,8 @@ magma_dnrm2_row_check_adjust_kernel(
     magma_sum_reduce_n( blockDim.x, tx, lsticc );
 }
 
+
+/******************************************************************************/
 /*
     Adjust the norm of C[,1:k] to give the norm of C[k+1:,1:k], assuming that
     C was changed with orthogonal transformations.
@@ -249,8 +255,7 @@ magmablas_dnrm2_row_check_adjust_q(
 }
 
 
-//==============================================================================
-
+/******************************************************************************/
 /*
     Compute the dnrm2 of each column of m-by-n matrix dA.
     The resulting norms are written in the dxnorm array. 

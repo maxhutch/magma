@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zgeqrs3_gpu.cpp normal z -> c, Mon May  2 23:30:07 2016
+       @generated from src/zgeqrs3_gpu.cpp, normal z -> c, Tue Aug 30 09:38:08 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEQRS solves the least squares problem
@@ -85,8 +85,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_cgels_comp
-    ********************************************************************/
+    @ingroup magma_geqrs
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgeqrs3_gpu(
     magma_int_t m, magma_int_t n, magma_int_t nrhs,

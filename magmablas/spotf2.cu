@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
-       @generated from magmablas/zpotf2.cu normal z -> s, Mon May  2 23:30:40 2016
+       @generated from magmablas/zpotf2.cu, normal z -> s, Tue Aug 30 09:38:37 2016
 */
 #include "magma_internal.h"
 
@@ -22,7 +22,7 @@ void magmablas_slacgv( magma_int_t n, float *x, magma_int_t incx, magma_queue_t 
 
 
 // TODO: this function could be in .cpp file -- it has no CUDA code in it.
-/**
+/***************************************************************************//**
     Purpose
     -------
 
@@ -79,8 +79,8 @@ void magmablas_slacgv( magma_int_t n, float *x, magma_int_t incx, magma_queue_t 
                  positive definite, and the factorization could not be
                  completed.
 
-    @ingroup magma_sposv_aux
-    ********************************************************************/
+    @ingroup magma_potf2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_spotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
@@ -214,7 +214,8 @@ void spotf2_sdot(
 
     */
     if (n > sdot_max_bs) {
-        fprintf( stderr, "n = %d > %d is not supported in spotf2_sdot\n", (int) n, (int) sdot_max_bs);
+        fprintf( stderr, "n = %lld > %lld is not supported in spotf2_sdot\n",
+                 (long long) n, (long long) sdot_max_bs );
         return;
     }
     int threadSize;
@@ -285,7 +286,7 @@ __global__ void kernel_slacgv(int n, float *x, int incx)
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
 
@@ -311,8 +312,8 @@ __global__ void kernel_slacgv(int n, float *x, int incx)
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_saux1
-    ********************************************************************/
+    @ingroup magma_lacgv
+*******************************************************************************/
 void magmablas_slacgv(
     magma_int_t n, float *x, magma_int_t incx,
     magma_queue_t queue )

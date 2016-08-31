@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 */
 
 #ifndef MAGMABLAS_V2_H
@@ -21,14 +21,14 @@ extern "C" {
 #endif
 
 
-// ========================================
+// =============================================================================
 // queue support
 // new magma_queue_create adds device
 #undef magma_queue_create
 
 #define magma_queue_create  magma_queue_create_v2
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set copies host to device
 // get copies device to host
@@ -43,7 +43,7 @@ extern "C" {
 #define magma_copyvector   magma_copyvector_q
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 // set  copies host to device
 // get  copies device to host
@@ -58,7 +58,7 @@ extern "C" {
 #define magma_copymatrix   magma_copymatrix_q
 
 
-// ========================================
+// =============================================================================
 // copying vectors - version for magma_int_t
 
 #undef magma_isetvector
@@ -70,7 +70,7 @@ extern "C" {
 #define magma_icopyvector   magma_icopyvector_q
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices - version for magma_int_t
 
 #undef magma_isetmatrix
@@ -82,7 +82,7 @@ extern "C" {
 #define magma_icopymatrix   magma_icopymatrix_q
 
 
-// ========================================
+// =============================================================================
 // copying vectors - version for magma_index_t
 
 #undef magma_index_setvector
@@ -94,7 +94,7 @@ extern "C" {
 #define magma_index_copyvector   magma_index_copyvector_q
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices - version for magma_index_t
 
 #undef magma_index_setmatrix

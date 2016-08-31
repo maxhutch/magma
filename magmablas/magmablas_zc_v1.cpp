@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
 
@@ -16,11 +16,10 @@
 
 #include "common_magma.h"
 
+// These MAGMA v1 routines are all deprecated.
+// See corresponding v2 functions for documentation.
 
-/**
-    @see magmablas_zcaxpycp_q
-    @ingroup magma_zblas1
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zcaxpycp(
     magma_int_t m,
@@ -33,10 +32,7 @@ magmablas_zcaxpycp(
 }
 
 
-/**
-    @see magmablas_clag2z_q
-    @ingroup magma_caux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_clag2z(
     magma_int_t m, magma_int_t n,
@@ -48,10 +44,7 @@ magmablas_clag2z(
 }
 
 
-/**
-    @see magmablas_clat2z_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_clat2z(
     magma_uplo_t uplo, magma_int_t n,
@@ -63,10 +56,7 @@ magmablas_clat2z(
 }
 
 
-/**
-    @see magmablas_zlag2c_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlag2c(
     magma_int_t m, magma_int_t n,
@@ -78,10 +68,7 @@ magmablas_zlag2c(
 }
 
 
-/**
-    @see magmablas_zlat2c_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zlat2c(
     magma_uplo_t uplo, magma_int_t n,
@@ -93,11 +80,7 @@ magmablas_zlat2c(
 }
 
 
-/**
-    Note magmablas_zclaswp_q also adds ldsa. This assumes ldsa = lda.
-    @see magmablas_zclaswp_q
-    @ingroup magma_zaux2
-    ********************************************************************/
+/******************************************************************************/
 extern "C" void
 magmablas_zclaswp(
     magma_int_t n,

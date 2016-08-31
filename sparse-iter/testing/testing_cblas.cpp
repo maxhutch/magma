@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from sparse-iter/testing/testing_zblas.cpp normal z -> c, Mon May  2 23:31:23 2016
+       @generated from sparse-iter/testing/testing_zblas.cpp, normal z -> c, Tue Aug 30 09:39:19 2016
        @author Hartwig Anzt
 */
 
@@ -16,12 +16,10 @@
 #include <math.h>
 
 // includes, project
-#include "flops.h"
 #include "magma_v2.h"
-#include "magma_lapack.h"
+#include "magmasparse.h"
+#include "magma_operators.h"
 #include "testings.h"
-#include "magmasparse_internal.h"
-
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -31,7 +29,8 @@ int main(  int argc, char** argv )
 {
     magma_int_t info = 0;
     /* Initialize */
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
     magma_queue_t queue=NULL;
     magma_queue_create( 0, &queue );
 
@@ -42,11 +41,11 @@ int main(  int argc, char** argv )
     magmaFloatComplex two = MAGMA_C_MAKE( 2.0, 0.0 );
 
     magma_c_matrix a={Magma_CSR}, ad={Magma_CSR}, bd={Magma_CSR}, cd={Magma_CSR};
-    CHECK( magma_cvinit( &a, Magma_CPU, n, 1, one, queue ));
-    CHECK( magma_cvinit( &bd, Magma_DEV, n, 1, two, queue ));
-    CHECK( magma_cvinit( &cd, Magma_DEV, n, 1, one, queue ));
+    TESTING_CHECK( magma_cvinit( &a, Magma_CPU, n, 1, one, queue ));
+    TESTING_CHECK( magma_cvinit( &bd, Magma_DEV, n, 1, two, queue ));
+    TESTING_CHECK( magma_cvinit( &cd, Magma_DEV, n, 1, one, queue ));
     
-    CHECK( magma_cmtransfer( a, &ad, Magma_CPU, Magma_DEV, queue ));
+    TESTING_CHECK( magma_cmtransfer( a, &ad, Magma_CPU, Magma_DEV, queue ));
 
     real_Double_t start, end, res;
     
@@ -98,7 +97,6 @@ int main(  int argc, char** argv )
         info = -1;
     }
 
-cleanup:
     magma_cmfree( &a, queue);
     magma_cmfree(&ad, queue);
     magma_cmfree(&bd, queue);

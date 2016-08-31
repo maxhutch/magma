@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
-       @generated from src/zhetrf_aasen.cpp normal z -> d, Mon May  2 23:30:12 2016
+       @generated from src/zhetrf_aasen.cpp, normal z -> d, Tue Aug 30 09:38:12 2016
 */
 #include "magma_internal.h"
 #include "trace.h"
@@ -14,7 +14,7 @@
 #define REAL
 
 
-/**
+/***************************************************************************//**
     Purpose
     =======
  
@@ -71,8 +71,8 @@
                   has been completed, but the block diagonal matrix D is
                   exactly singular, and division by zero will occur if it
                   is used to solve a system of equations.
-    @ingroup magma_dsysv_comp
-    ********************************************************************/
+    @ingroup magma_hetrf_aasen
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dsytrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
                    double *A, magma_int_t lda, 
@@ -210,7 +210,7 @@ magma_dsytrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
                 trace_gpu_start( 0, 1, "gemm", "compH" );
                 for (magma_int_t i=1; i < j; i++)
                 {
-                    //printf( " > compute H(%d,%d)\n", i, j);
+                    //printf( " > compute H(%lld,%lld)\n", (long long) i, (long long) j );
                     // > H(i,j) = T(i,i) * L(j,i)', Y
                     magma_dgemm( MagmaNoTrans, MagmaConjTrans,
                                  nb, jb, nb,
@@ -361,7 +361,7 @@ magma_dsytrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
                         trace_cpu_start( 0, "getrf", "getrf" );
                         lapackf77_dgetrf( &ib, &jb, A(j+1,j), &lda, &ipiv[(1+j)*nb], &iinfo);
                         if (iinfo != 0) {
-                            printf( " dgetrf failed with %d\n", (int) iinfo );
+                            printf( " dgetrf failed with %lld\n", (long long) iinfo );
                             // TODO handle error
                         }
                         trace_cpu_end( 0 );
@@ -424,7 +424,7 @@ magma_dsytrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
                             perm[rows[2*ii+1]] = rows[2*ii+1];
                         }
                         //for (magma_int_t k=0; k < n; k++) {
-                        //    printf( "%d ", perm[k] );
+                        //    printf( "%lld ", (long long) perm[k] );
                         //}
                         //printf( "\n" );
                     }

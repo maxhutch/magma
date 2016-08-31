@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Tingxing Dong
 
@@ -17,14 +17,12 @@
 
 #define COMPLEX
 
+/******************************************************************************/
 /*
-
-       //lapack zlarfg, compute the norm, scale and generate the householder vector   
-       //assume swork, sscale, scale are already allocated in shared memory
-       //BLOCK_SIZE is set outside, the size of swork is BLOCK_SIZE
-      
+    lapack zlarfg, compute the norm, scale and generate the householder vector   
+    assume swork, sscale, scale are already allocated in shared memory
+    BLOCK_SIZE is set outside, the size of swork is BLOCK_SIZE
 */
-
 static __device__ void
 zlarfg_device(
     magma_int_t n,
@@ -57,7 +55,7 @@ zlarfg_device(
             #else
             swork[tx] = max( swork[tx], fabs(tmp) );
             #endif
-         }
+        }
     }
 
     magma_max_reduce<BLOCK_SIZE>( tx, swork );
@@ -111,6 +109,5 @@ zlarfg_device(
         }
     }
 }
-
 
 #endif /* MAGMABLAS_ZLARFG_DEVICES_Z_H  */

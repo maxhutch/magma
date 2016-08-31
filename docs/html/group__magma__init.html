@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>MAGMA: Initialization</title>
+<title>MAGMA: Initialize/finalize</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.0.2</span>
+   &#160;<span id="projectnumber">2.1.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -56,8 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="modules.html"><span>Modules</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="modules.html"><span>Routines</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -110,7 +109,7 @@ $(document).ready(function(){initNavTree('group__magma__init.html','');});
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">Initialization</div>  </div>
+<div class="title">Initialize/finalize</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -123,13 +122,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#ga7cc179c267eb6c5f154ffd40d4759ab3">magma_init</a> ()</td></tr>
 <tr class="memdesc:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the MAGMA library.  <a href="#ga7cc179c267eb6c5f154ffd40d4759ab3">More...</a><br /></td></tr>
 <tr class="separator:ga7cc179c267eb6c5f154ffd40d4759ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae7463bee75a4c738929f1169b930938b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gae7463bee75a4c738929f1169b930938b"></a>
-magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b">magma_finalize</a> ()</td></tr>
-<tr class="memdesc:gae7463bee75a4c738929f1169b930938b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees information used by the MAGMA library. <br /></td></tr>
+<tr class="memitem:gae7463bee75a4c738929f1169b930938b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b">magma_finalize</a> ()</td></tr>
+<tr class="memdesc:gae7463bee75a4c738929f1169b930938b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees information used by the MAGMA library.  <a href="#gae7463bee75a4c738929f1169b930938b">More...</a><br /></td></tr>
 <tr class="separator:gae7463bee75a4c738929f1169b930938b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad4ab03f6f03a9a3ee635187b21317008"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__init.html#gad4ab03f6f03a9a3ee635187b21317008">magma_print_environment</a> ()</td></tr>
-<tr class="memdesc:gad4ab03f6f03a9a3ee635187b21317008"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the available GPU devices.  <a href="#gad4ab03f6f03a9a3ee635187b21317008">More...</a><br /></td></tr>
-<tr class="separator:gad4ab03f6f03a9a3ee635187b21317008"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <hr/>
@@ -141,6 +136,7 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">magma_int_t magma_init </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -148,27 +144,37 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 
 <p>Initializes the MAGMA library. </p>
-<p>Caches information about available CUDA devices. When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init. When setting CUDA device flags, call cudaSetDeviceFlags before calling magma_init.</p>
+<p>Caches information about available CUDA devices.</p>
 <p>Every magma_init call must be paired with a magma_finalize call. Only one thread needs to call magma_init and magma_finalize, but every thread may call it. If n threads call magma_init, the n-th call to magma_finalize will release resources.</p>
+<p>When renumbering CUDA devices, call cudaSetValidDevices before calling magma_init. When setting CUDA device flags, call cudaSetDeviceFlags before calling magma_init.</p>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">MAGMA_SUCCESS</td><td></td></tr>
+    <tr><td class="paramname">MAGMA_ERR_CUDA</td><td></td></tr>
+    <tr><td class="paramname">MAGMA_ERR_HOST_ALLOC</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__init.html#gae7463bee75a4c738929f1169b930938b" title="Frees information used by the MAGMA library. ">magma_finalize</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="gad4ab03f6f03a9a3ee635187b21317008"></a>
+<a class="anchor" id="gae7463bee75a4c738929f1169b930938b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void magma_print_environment </td>
+          <td class="memname">magma_int_t magma_finalize </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Print the available GPU devices. </p>
-<p>Used in testing. </p>
+<p>Frees information used by the MAGMA library. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__init.html#ga7cc179c267eb6c5f154ffd40d4759ab3" title="Initializes the MAGMA library. ">magma_init</a> </dd></dl>
 
 </div>
 </div>
@@ -177,7 +183,7 @@ magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Mon May 2 2016 23:31:40 for MAGMA by
+    <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

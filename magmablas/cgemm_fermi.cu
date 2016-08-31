@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgemm_fermi.cu normal z -> c, Mon May  2 23:30:38 2016
+       @generated from magmablas/zgemm_fermi.cu, normal z -> c, Tue Aug 30 09:38:28 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -26,13 +26,9 @@
 
 #define PRECISION_c
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include "cgemm_fermi_kernels.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGEMM performs one of the matrix-matrix operations
@@ -140,8 +136,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cblas3
-    ********************************************************************/
+    @ingroup magma_gemm
+*******************************************************************************/
 extern "C" void
 magmablas_cgemm_q(
     magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,

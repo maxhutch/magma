@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hartwig Anzt
 
@@ -58,7 +58,7 @@ magma_ziterilusetup(
     magma_z_matrix hAh={Magma_CSR}, hA={Magma_CSR}, hL={Magma_CSR}, hU={Magma_CSR},
     hAcopy={Magma_CSR}, hAL={Magma_CSR}, hAU={Magma_CSR}, hAUt={Magma_CSR},
     hUT={Magma_CSR}, hAtmp={Magma_CSR}, hACSRCOO={Magma_CSR}, dAinitguess={Magma_CSR},
-    dL={Magma_CSR}, dU={Magma_CSR}, DL={Magma_CSR}, RL={Magma_CSR}, DU={Magma_CSR}, RU={Magma_CSR};
+    dL={Magma_CSR}, dU={Magma_CSR};
 
     // copy original matrix as CSRCOO to device
     CHECK( magma_zmtransfer(A, &hAh, A.memory_location, Magma_CPU, queue ));
@@ -113,11 +113,11 @@ magma_ziterilusetup(
 
     magma_zmfree(&hAtmp, queue );
 
-    CHECK( magma_zcsrsplit( 0, 256, hAL, &DL, &RL , queue ));
-    CHECK( magma_zcsrsplit( 0, 256, hAU, &DU, &RU , queue ));
-
-    CHECK( magma_zmtransfer( DL, &precond->LD, Magma_CPU, Magma_DEV , queue ));
-    CHECK( magma_zmtransfer( DU, &precond->UD, Magma_CPU, Magma_DEV , queue ));
+    // CHECK( magma_zcsrsplit( 0, 256, hAL, &DL, &RL , queue ));
+    // CHECK( magma_zcsrsplit( 0, 256, hAU, &DU, &RU , queue ));
+    // 
+    // CHECK( magma_zmtransfer( DL, &precond->LD, Magma_CPU, Magma_DEV , queue ));
+    // CHECK( magma_zmtransfer( DU, &precond->UD, Magma_CPU, Magma_DEV , queue ));
 
     // for cusparse uncomment this
     CHECK( magma_zmtransfer( hAL, &precond->L, Magma_CPU, Magma_DEV , queue ));
@@ -160,10 +160,10 @@ magma_ziterilusetup(
 
     magma_zmfree(&hAL, queue );
     magma_zmfree(&hAU, queue );
-    magma_zmfree(&DL, queue );
-    magma_zmfree(&RL, queue );
-    magma_zmfree(&DU, queue );
-    magma_zmfree(&RU, queue );
+    // magma_zmfree(&DL, queue );
+    // magma_zmfree(&RL, queue );
+    // magma_zmfree(&DU, queue );
+    // magma_zmfree(&RU, queue );
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
@@ -187,8 +187,8 @@ magma_ziterilusetup(
         CUSPARSE_OPERATION_NON_TRANSPOSE, precond->U.num_rows,
         precond->U.nnz, descrU,
         precond->U.val, precond->U.row, precond->U.col, precond->cuinfoU ));
-
-
+    
+    
 cleanup:
     cusparseDestroy( cusparseHandle );
     cusparseDestroyMatDescr( descrL );
@@ -210,10 +210,10 @@ cleanup:
     magma_zmfree( &dAinitguess, queue );
     magma_zmfree( &dL, queue );
     magma_zmfree( &dU, queue );
-    magma_zmfree( &DL, queue );
-    magma_zmfree( &DU, queue );
-    magma_zmfree( &RL, queue );
-    magma_zmfree( &RU, queue );
+    // magma_zmfree( &DL, queue );
+    // magma_zmfree( &DU, queue );
+    // magma_zmfree( &RL, queue );
+    // magma_zmfree( &RU, queue );
 
     return info;
 }
@@ -267,9 +267,7 @@ magma_ziteriluupdate(
     hUT={Magma_CSR}, hAtmp={Magma_CSR},
     dL={Magma_CSR}, dU={Magma_CSR};
 
-        
-    if( updates > 0 ){
-        
+    if ( updates > 0 ){
         CHECK( magma_zmtransfer( precond->M, &hAcopy, Magma_DEV, Magma_CPU , queue ));
         // in case using fill-in
         CHECK( magma_zsymbilu( &hAcopy, precond->levels, &hAL, &hAUt,  queue ));
@@ -549,7 +547,6 @@ magma_zitericupdate(
 
         CHECK( magma_zjacobisetup_diagscal( precond->L, &precond->d, queue ));
         CHECK( magma_zjacobisetup_diagscal( precond->U, &precond->d2, queue ));
-    
     }
     
 cleanup:

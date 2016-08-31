@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from src/dtrevc3_mt.cpp normal d -> s, Mon May  2 23:30:23 2016
+       @generated from src/dtrevc3_mt.cpp, normal d -> s, Tue Aug 30 09:38:21 2016
 */
 #include "thread_queue.hpp"
 #include "magma_timer.h"
@@ -42,7 +42,7 @@ public:
         magma_int_t info = 0;
         magma_slaqtrsd( trans, n, T, ldt, x, incx, cnorm, &info );
         if ( info != 0 ) {
-            fprintf( stderr, "slaqtrsd info %d\n", (int) info );
+            fprintf( stderr, "slaqtrsd info %lld\n", (long long) info );
         }
     }
     
@@ -111,7 +111,7 @@ private:
 };
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     STREVC3_MT computes some or all of the right and/or left eigenvectors of
@@ -258,8 +258,8 @@ private:
     magnitude has magnitude 1; here the magnitude of a complex number
     (x,y) is taken to be |x| + |y|.
 
-    @ingroup magma_sgeev_comp
-    ********************************************************************/
+    @ingroup magma_trevc
+*******************************************************************************/
 extern "C"
 magma_int_t magma_strevc3_mt(
     magma_side_t side, magma_vec_t howmany,
@@ -403,11 +403,11 @@ magma_int_t magma_strevc3_mt(
     magma_set_lapack_numthreads( 1 );
     magma_thread_queue queue;
     queue.launch( nthread );
-    //printf( "nthread %d, %d\n", nthread, lapack_nthread );
+    //printf( "nthread %lld, %lld\n", (long long) nthread, (long long) lapack_nthread );
     
     // gemm_nb = N/thread, rounded up to multiple of 16,
     // but avoid multiples of page size, e.g., 512*8 bytes = 4096.
-    magma_int_t gemm_nb = magma_int_t( ceil( ceil( ((float)n) / nthread ) / 16. ) * 16. );
+    magma_int_t gemm_nb = magma_roundup( magma_ceildiv( n, nthread ), 16 );
     if ( gemm_nb % 512 == 0 ) {
         gemm_nb += 32;
     }

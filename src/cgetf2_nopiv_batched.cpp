@@ -1,22 +1,20 @@
 /*
-   -- MAGMA (version 2.0.2) --
+   -- MAGMA (version 2.1.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date May 2016
+   @date August 2016
 
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from src/zgetf2_nopiv_batched.cpp normal z -> c, Mon May  2 23:30:25 2016
+   @generated from src/zgetf2_nopiv_batched.cpp, normal z -> c, Tue Aug 30 09:38:24 2016
 */
 
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
-#define A(i, j)  (A + (i) + (j)*ldda)   // A(i, j) means at i row, j column
 
-///////////////////////////////////////////////////////////////////////////////////////
-/**
+/***************************************************************************//**
     Purpose
     -------
     CGETF2 computes an LU factorization of a general M-by-N matrix A without pivoting
@@ -84,9 +82,8 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_cgesv_aux
-    ********************************************************************/
-
+    @ingroup magma_getf2_nopiv_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cgetf2_nopiv_batched(
     magma_int_t m, magma_int_t n,
@@ -98,6 +95,8 @@ magma_cgetf2_nopiv_batched(
     magma_int_t gbstep, 
     magma_int_t batchCount, magma_queue_t queue)
 {
+    #define A(i, j)  (A + (i) + (j)*ldda)
+    
     magma_int_t arginfo = 0;
     if (m < 0) {
         arginfo = -1;
@@ -170,6 +169,3 @@ magma_cgetf2_nopiv_batched(
 
     return 0;
 }
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////

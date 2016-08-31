@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -24,7 +24,7 @@
 
 #define version(s,v) s ## _V_ ## v
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGEMM performs one of the matrix-matrix operations
@@ -80,7 +80,7 @@
             On entry, ALPHA specifies the scalar alpha.
     
     @param[in]
-    dA_array      Array of pointers, dimension (batchCount). 
+    dA_array      Array of pointers, dimension (batchCount).
              Each is a COMPLEX_16 array A of DIMENSION ( ldda, ka ), where ka is
              k  when  transA = MagmaNoTrans,  and is  m  otherwise.
              Before entry with  transA = MagmaNoTrans,  the leading  m by k
@@ -139,17 +139,20 @@
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zblas3
-    ********************************************************************/
+    @ingroup magma_gemm_batched
+*******************************************************************************/
 void
-magmablas_zgemm_batched(
-    magma_trans_t transA, magma_trans_t transB, 
+magmablas_zgemm_batched_core(
+    magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex alpha,
     magmaDoubleComplex const * const * dA_array, magma_int_t ldda,
     magmaDoubleComplex const * const * dB_array, magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex **dC_array, magma_int_t lddc, 
+    magmaDoubleComplex **dC_array, magma_int_t lddc,
+    magma_int_t roffA, magma_int_t coffA,
+    magma_int_t roffB, magma_int_t coffB,
+    magma_int_t roffC, magma_int_t coffC,
     magma_int_t batchCount, magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -177,7 +180,7 @@ magmablas_zgemm_batched(
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
-        fprintf( stderr, "%s: CUDA arch < 200 not supported\n", __func__ ); // TODO call cublas
+        printf("arch < 200 not supported \n"); // TODO call cublas
         return;
     }
     
@@ -195,19 +198,12 @@ magmablas_zgemm_batched(
     else if (transA == MagmaConjTrans && transB == MagmaTrans)     { shape = 7; } // ct
     else if (transA == MagmaConjTrans && transB == MagmaConjTrans) { shape = 8; } // cc
     
-    //TODO: probably the texture init code should be placed here
-
-    size_t offsetA = 0;
-    size_t offsetB = 0;
-    offsetA = offsetA/sizeof(magmaDoubleComplex);
-    offsetB = offsetB/sizeof(magmaDoubleComplex);
-    
     switch(shape)
     {
         case 0: // nn
             {
                 gemm_template_batched_nn<magmaDoubleComplex, version(NN,18), 0, 0>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         case 1: // nt
@@ -216,13 +212,13 @@ magmablas_zgemm_batched(
                 {
                     // version 58
                     gemm_template_batched_nt<magmaDoubleComplex, version(NT,58), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     // version 29
                     gemm_template_batched_nt<magmaDoubleComplex, version(NT,29), 0, 0>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -232,13 +228,13 @@ magmablas_zgemm_batched(
                 {
                     // version 58
                     gemm_template_batched_nt<magmaDoubleComplex, version(NT,58), 0, 1>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
                 else
                 {
                     // version 29
                     gemm_template_batched_nt<magmaDoubleComplex, version(NT,29), 0, 1>
-                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                    (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
                 }
             }
             break;
@@ -246,45 +242,44 @@ magmablas_zgemm_batched(
             {
                 // version 72
                 gemm_template_batched_tn<magmaDoubleComplex, version(TN,72), 0, 0>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         case 6: // cn
             {
                 // version 72
                 gemm_template_batched_tn<magmaDoubleComplex, version(TN,72), 1, 0>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         case 4: // tt
             {
                 // version 13
                 gemm_template_batched_tt<magmaDoubleComplex, version(TT,13), 0, 0>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         case 5: // tc
             {
                 // version 13
                 gemm_template_batched_tt<magmaDoubleComplex, version(TT,13), 0, 1>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         case 7: // ct
             {
                 // version 13
                 gemm_template_batched_tt<magmaDoubleComplex, version(TT,13), 1, 0>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         case 8: // cc
             {
                 // version 13
                 gemm_template_batched_tt<magmaDoubleComplex, version(TT,13), 1, 1>
-                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, offsetA, offsetB, batchCount, queue);
+                (m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta, roffA, coffA, roffB, coffB, roffC, coffC, batchCount, queue);
             }
             break;
         default:; // propose something
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////

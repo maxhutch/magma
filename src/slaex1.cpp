@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Raffaele Solca
        
-       @generated from src/dlaex1.cpp normal d -> s, Mon May  2 23:30:14 2016
+       @generated from src/dlaex1.cpp, normal d -> s, Tue Aug 30 09:38:15 2016
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SLAEX1 computes the updated eigensystem of a diagonal
@@ -125,8 +125,8 @@
        at Berkeley, USA
     Modified by Francoise Tisseur, University of Tennessee.
 
-    @ingroup magma_ssyev_aux
-    ********************************************************************/
+    @ingroup magma_laex1
+*******************************************************************************/
 extern "C" magma_int_t
 magma_slaex1(
     magma_int_t n,

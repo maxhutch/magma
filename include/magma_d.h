@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magma_z.h normal z -> d, Mon May  2 23:31:25 2016
+       @generated from include/magma_z.h, normal z -> d, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMA_D_H
@@ -45,7 +45,7 @@ magma_int_t magma_get_dgelqf_nb( magma_int_t m, magma_int_t n );
 magma_int_t magma_get_dgehrd_nb( magma_int_t n );
 magma_int_t magma_get_dsytrd_nb( magma_int_t n );
 magma_int_t magma_get_dsygst_nb( magma_int_t n );
-magma_int_t magma_get_dsygst_nb_m( magma_int_t n );
+magma_int_t magma_get_dsygst_m_nb( magma_int_t n );
 
 // SVD
 magma_int_t magma_get_dgebrd_nb( magma_int_t m, magma_int_t n );

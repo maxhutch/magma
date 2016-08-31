@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Hatem Ltaief
        @author Mark Gates
        
-       @generated from src/ztrtri.cpp normal z -> c, Mon May  2 23:30:01 2016
+       @generated from src/ztrtri.cpp, normal z -> c, Tue Aug 30 09:38:03 2016
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     CTRTRI computes the inverse of a real upper or lower triangular
@@ -62,8 +62,8 @@
       -     > 0: if INFO = i, A(i,i) is exactly zero.  The triangular
                     matrix is singular and its inverse cannot be computed.
 
-    @ingroup magma_cgesv_comp
-    ********************************************************************/
+    @ingroup magma_trtri
+*******************************************************************************/
 extern "C" magma_int_t
 magma_ctrtri(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from testing/testing_zgeadd_batched.cpp normal z -> d, Mon May  2 23:31:21 2016
+       @generated from testing/testing_zgeadd_batched.cpp, normal z -> d, Tue Aug 30 09:39:16 2016
        @author Mark Gates
 
 */
@@ -27,7 +27,8 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT();
+    TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double           error, norm, work[1];
@@ -39,7 +40,7 @@ int main( int argc, char** argv)
     magma_int_t j, M, N, mb, nb, size, lda, ldda, mstride, nstride, ntile, offset, tile;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t status = 0;
+    int status = 0;
     
     magma_opts opts( MagmaOptsBatched );
     opts.parse_opts( argc, argv );
@@ -50,7 +51,7 @@ int main( int argc, char** argv)
     mstride = 2*mb;
     nstride = 3*nb;
     
-    printf("%% mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
+    printf("%% mb=%lld, nb=%lld, mstride=%lld, nstride=%lld\n", (long long) mb, (long long) nb, (long long) mstride, (long long) nstride );
     printf("%%   M     N ntile   CPU Gflop/s (ms)    GPU Gflop/s (ms)    error   \n");
     printf("%%===================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -69,15 +70,15 @@ int main( int argc, char** argv)
             }
             gflops = 2.*mb*nb*ntile / 1e9;
             
-            TESTING_MALLOC_CPU( h_A, double, lda *N );
-            TESTING_MALLOC_CPU( h_B, double, lda *N );
-            TESTING_MALLOC_DEV( d_A, double, ldda*N );
-            TESTING_MALLOC_DEV( d_B, double, ldda*N );
+            TESTING_CHECK( magma_dmalloc_cpu( &h_A, lda *N ));
+            TESTING_CHECK( magma_dmalloc_cpu( &h_B, lda *N ));
+            TESTING_CHECK( magma_dmalloc( &d_A, ldda*N ));
+            TESTING_CHECK( magma_dmalloc( &d_B, ldda*N ));
             
-            TESTING_MALLOC_CPU( hAarray, double*, ntile );
-            TESTING_MALLOC_CPU( hBarray, double*, ntile );
-            TESTING_MALLOC_DEV( dAarray, double*, ntile );
-            TESTING_MALLOC_DEV( dBarray, double*, ntile );
+            TESTING_CHECK( magma_malloc_cpu( (void**) &hAarray, ntile * sizeof(double*) ));
+            TESTING_CHECK( magma_malloc_cpu( (void**) &hBarray, ntile * sizeof(double*) ));
+            TESTING_CHECK( magma_malloc( (void**) &dAarray, ntile * sizeof(double*) ));
+            TESTING_CHECK( magma_malloc( (void**) &dBarray, ntile * sizeof(double*) ));
             
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
@@ -128,20 +129,20 @@ int main( int argc, char** argv)
             bool okay = (error < tol);
             status += ! okay;
 
-            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                   (int) M, (int) N, (int) ntile,
+            printf("%5lld %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                   (long long) M, (long long) N, (long long) ntile,
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    error, (okay ? "ok" : "failed"));
             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_B );
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_B );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_B );
+            magma_free( d_A );
+            magma_free( d_B );
             
-            TESTING_FREE_CPU( hAarray );
-            TESTING_FREE_CPU( hBarray );
-            TESTING_FREE_DEV( dAarray );
-            TESTING_FREE_DEV( dBarray );
+            magma_free_cpu( hAarray );
+            magma_free_cpu( hBarray );
+            magma_free( dAarray );
+            magma_free( dBarray );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -150,6 +151,6 @@ int main( int argc, char** argv)
     }
 
     opts.cleanup();
-    TESTING_FINALIZE();
+    TESTING_CHECK( magma_finalize() );
     return status;
 }

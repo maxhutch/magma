@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from include/magmablas_z_q.h normal z -> s, Mon May  2 23:31:25 2016
+       @generated from include/magmablas_z_q.h, normal z -> s, Tue Aug 30 09:39:21 2016
 */
 
 #ifndef MAGMABLAS_S_Q_H
@@ -51,18 +51,18 @@ magmablas_stranspose_q(
 
 void
 magmablas_sgetmatrix_transpose_q(
-    magma_int_t m, magma_int_t n,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloat_const_ptr dAT,   magma_int_t ldda,
     float          *hA,    magma_int_t lda,
-    magmaFloat_ptr       dwork, magma_int_t lddwork, magma_int_t nb,
+    magmaFloat_ptr       dwork, magma_int_t lddw,
     magma_queue_t queues[2] );
 
 void
 magmablas_ssetmatrix_transpose_q(
-    magma_int_t m, magma_int_t n,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     const float *hA,    magma_int_t lda,
     magmaFloat_ptr    dAT,   magma_int_t ldda,
-    magmaFloat_ptr    dwork, magma_int_t lddwork, magma_int_t nb,
+    magmaFloat_ptr    dwork, magma_int_t lddw,
     magma_queue_t queues[2] );
 
   /*
@@ -95,51 +95,53 @@ magmablas_sprbt_mtv_q(
    */
 void
 magma_sgetmatrix_1D_col_bcyclic_q(
-    magma_int_t m, magma_int_t n,
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloat_const_ptr const dA[], magma_int_t ldda,
     float                *hA,   magma_int_t lda,
-    magma_int_t ngpu, magma_int_t nb,
-    magma_queue_t queue[ MagmaMaxGPUs ] );
+    magma_queue_t queue[] );
 
 void
 magma_ssetmatrix_1D_col_bcyclic_q(
-    magma_int_t m, magma_int_t n,
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     const float *hA,   magma_int_t lda,
     magmaFloat_ptr    dA[], magma_int_t ldda,
-    magma_int_t ngpu, magma_int_t nb,
-    magma_queue_t queue[ MagmaMaxGPUs ] );
+    magma_queue_t queue[] );
 
 void
 magma_sgetmatrix_1D_row_bcyclic_q(
-    magma_int_t m, magma_int_t n,
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloat_const_ptr const dA[], magma_int_t ldda,
     float                *hA,   magma_int_t lda,
-    magma_int_t ngpu, magma_int_t nb,
-    magma_queue_t queue[ MagmaMaxGPUs ] );
+    magma_queue_t queue[] );
 
 void
 magma_ssetmatrix_1D_row_bcyclic_q(
-    magma_int_t m, magma_int_t n,
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     const float *hA,   magma_int_t lda,
     magmaFloat_ptr    dA[], magma_int_t ldda,
-    magma_int_t ngpu, magma_int_t nb,
-    magma_queue_t queue[ MagmaMaxGPUs ] );
+    magma_queue_t queue[] );
 
 void
 magmablas_sgetmatrix_transpose_mgpu(
-    magma_int_t ngpu, magma_queue_t queues[][2],
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloat_const_ptr const dAT[],    magma_int_t ldda,
     float                *hA,       magma_int_t lda,
     magmaFloat_ptr             dwork[],  magma_int_t lddw,
-    magma_int_t m, magma_int_t n, magma_int_t nb );
+    magma_queue_t queues[][2] );
 
 void
 magmablas_ssetmatrix_transpose_mgpu(
-    magma_int_t ngpu, magma_queue_t queues[][2],
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
     const float *hA,      magma_int_t lda,
     magmaFloat_ptr    dAT[],   magma_int_t ldda,
     magmaFloat_ptr    dwork[], magma_int_t lddw,
-    magma_int_t m, magma_int_t n, magma_int_t nb );
+    magma_queue_t queues[][2] );
 
 // in src/ssytrd_mgpu.cpp
 // TODO rename ssetmatrix_sy or similar
@@ -627,16 +629,6 @@ magmablas_strsv_outofplace(
     magma_int_t flag );
 
 void
-magmablas_strsv_work_batched(
-    magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
-    magma_int_t n,
-    magmaFloat_ptr *dA_array, magma_int_t lda,
-    magmaFloat_ptr *db_array, magma_int_t incb,
-    magmaFloat_ptr *dx_array,
-    magma_int_t batchCount,
-    magma_queue_t queue );
-
-void
 magmablas_sgemv_q(
     magma_trans_t trans, magma_int_t m, magma_int_t n, 
     float alpha,
@@ -825,7 +817,7 @@ magmablas_strsm_work_q(
    * These wrap CUBLAS or AMD OpenCL BLAS functions.
    */
 
-// ========================================
+// =============================================================================
 // copying vectors
 // set  copies host   to device
 // get  copies device to host
@@ -833,21 +825,33 @@ magmablas_strsm_work_q(
 // (with CUDA unified addressing, copy can be between same or different devices)
 // Add the function, file, and line for error-reporting purposes.
 
+/// Type-safe version of magma_setvector() for float arrays.
+/// @ingroup magma_setvector
 #define magma_ssetvector_q(           n, hx_src, incx, dy_dst, incy, queue ) \
         magma_ssetvector_q_internal(  n, hx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_getvector() for float arrays.
+/// @ingroup magma_getvector
 #define magma_sgetvector_q(           n, dx_src, incx, hy_dst, incy, queue ) \
         magma_sgetvector_q_internal(  n, dx_src, incx, hy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_copyvector() for float arrays.
+/// @ingroup magma_copyvector
 #define magma_scopyvector_q(          n, dx_src, incx, dy_dst, incy, queue ) \
         magma_scopyvector_q_internal( n, dx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_setvector_async() for float arrays.
+/// @ingroup magma_setvector
 #define magma_ssetvector_async(           n, hx_src, incx, dy_dst, incy, queue ) \
         magma_ssetvector_async_internal(  n, hx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_getvector_async() for float arrays.
+/// @ingroup magma_getvector
 #define magma_sgetvector_async(           n, dx_src, incx, hy_dst, incy, queue ) \
         magma_sgetvector_async_internal(  n, dx_src, incx, hy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_copyvector_async() for float arrays.
+/// @ingroup magma_copyvector
 #define magma_scopyvector_async(          n, dx_src, incx, dy_dst, incy, queue ) \
         magma_scopyvector_async_internal( n, dx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
@@ -906,24 +910,36 @@ magma_scopyvector_async_internal(
 { magma_copyvector_async_internal( n, sizeof(float), dx_src, incx, dy_dst, incy, queue, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // copying sub-matrices (contiguous columns)
 
+/// Type-safe version of magma_setmatrix() for float arrays.
+/// @ingroup magma_setmatrix
 #define magma_ssetmatrix_q(           m, n, hA_src, lda,  dB_dst, lddb, queue ) \
         magma_ssetmatrix_q_internal(  m, n, hA_src, lda,  dB_dst, lddb, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_getmatrix() for float arrays.
+/// @ingroup magma_getmatrix
 #define magma_sgetmatrix_q(           m, n, dA_src, ldda, hB_dst, ldb,  queue ) \
         magma_sgetmatrix_q_internal(  m, n, dA_src, ldda, hB_dst, ldb,  queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_copymatrix() for float arrays.
+/// @ingroup magma_copymatrix
 #define magma_scopymatrix_q(          m, n, dA_src, ldda, dB_dst, lddb, queue ) \
         magma_scopymatrix_q_internal( m, n, dA_src, ldda, dB_dst, lddb, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_setmatrix_async() for float arrays.
+/// @ingroup magma_setmatrix
 #define magma_ssetmatrix_async(           m, n, hA_src, lda, dB_dst, lddb, queue ) \
         magma_ssetmatrix_async_internal(  m, n, hA_src, lda, dB_dst, lddb, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_getmatrix_async() for float arrays.
+/// @ingroup magma_getmatrix
 #define magma_sgetmatrix_async(           m, n, dA_src, ldda, hB_dst, ldb, queue ) \
         magma_sgetmatrix_async_internal(  m, n, dA_src, ldda, hB_dst, ldb, queue, __func__, __FILE__, __LINE__ )
 
+/// Type-safe version of magma_copymatrix_async() for float arrays.
+/// @ingroup magma_copymatrix
 #define magma_scopymatrix_async(          m, n, dA_src, ldda, dB_dst, lddb, queue ) \
         magma_scopymatrix_async_internal( m, n, dA_src, ldda, dB_dst, lddb, queue, __func__, __FILE__, __LINE__ )
 
@@ -982,7 +998,7 @@ magma_scopymatrix_async_internal(
 { magma_copymatrix_async_internal( m, n, sizeof(float), dA_src, ldda, dB_dst, lddb, queue, func, file, line ); }
 
 
-// ========================================
+// =============================================================================
 // Level 1 BLAS (alphabetical order)
 
 // in cublas_v2, result returned through output argument
@@ -1060,6 +1076,12 @@ magma_srot_q(
     float dc, float ds,
     magma_queue_t queue );
 
+void
+magma_srotg_q(
+    float *a, float *b,
+    float             *c, float *s,
+    magma_queue_t queue );
+
 #ifdef REAL
 void
 magma_srotm_q(
@@ -1098,7 +1120,7 @@ magma_sswap_q(
     magmaFloat_ptr dy, magma_int_t incy,
     magma_queue_t queue );
 
-// ========================================
+// =============================================================================
 // Level 2 BLAS (alphabetical order)
 
 void
@@ -1121,6 +1143,7 @@ magma_sger_q(
     magmaFloat_ptr       dA, magma_int_t ldda,
     magma_queue_t queue );
 
+#ifdef COMPLEX
 void
 magma_sger_q(
     magma_int_t m, magma_int_t n,
@@ -1129,6 +1152,37 @@ magma_sger_q(
     magmaFloat_const_ptr dy, magma_int_t incy,
     magmaFloat_ptr       dA, magma_int_t ldda,
     magma_queue_t queue );
+
+void
+magma_ssymv_q(
+    magma_uplo_t uplo,
+    magma_int_t n,
+    float alpha,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    float beta,
+    magmaFloat_ptr       dy, magma_int_t incy,
+    magma_queue_t queue );
+
+void
+magma_ssyr_q(
+    magma_uplo_t uplo,
+    magma_int_t n,
+    float alpha,
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_ptr       dA, magma_int_t ldda,
+    magma_queue_t queue );
+
+void
+magma_ssyr2_q(
+    magma_uplo_t uplo,
+    magma_int_t n,
+    float alpha,
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_const_ptr dy, magma_int_t incy,
+    magmaFloat_ptr       dA, magma_int_t ldda,
+    magma_queue_t queue );
+#endif // COMPLEX
 
 void
 magma_ssymv_q(
@@ -1176,7 +1230,7 @@ magma_strsv_q(
     magmaFloat_ptr       dx, magma_int_t incx,
     magma_queue_t queue );
 
-// ========================================
+// =============================================================================
 // Level 3 BLAS (alphabetical order)
 
 void
@@ -1202,6 +1256,27 @@ magma_ssymm_q(
     magma_queue_t queue );
 
 void
+magma_ssyr2k_q(
+    magma_uplo_t uplo, magma_trans_t trans,
+    magma_int_t n, magma_int_t k,
+    float alpha,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dB, magma_int_t lddb,
+    float beta,
+    magmaFloat_ptr       dC, magma_int_t lddc,
+    magma_queue_t queue );
+
+void
+magma_ssyrk_q(
+    magma_uplo_t uplo, magma_trans_t trans,
+    magma_int_t n, magma_int_t k,
+    float alpha,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    float beta,
+    magmaFloat_ptr       dC, magma_int_t lddc,
+    magma_queue_t queue );
+
+void
 magma_ssymm_q(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
@@ -1219,27 +1294,6 @@ magma_ssyr2k_q(
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_const_ptr dB, magma_int_t lddb,
-    float beta,
-    magmaFloat_ptr       dC, magma_int_t lddc,
-    magma_queue_t queue );
-
-void
-magma_ssyr2k_q(
-    magma_uplo_t uplo, magma_trans_t trans,
-    magma_int_t n, magma_int_t k,
-    float alpha,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
-    magmaFloat_const_ptr dB, magma_int_t lddb,
-    float beta,
-    magmaFloat_ptr       dC, magma_int_t lddc,
-    magma_queue_t queue );
-
-void
-magma_ssyrk_q(
-    magma_uplo_t uplo, magma_trans_t trans,
-    magma_int_t n, magma_int_t k,
-    float alpha,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
     float beta,
     magmaFloat_ptr       dC, magma_int_t lddc,
     magma_queue_t queue );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Adrien REMY
@@ -11,6 +11,7 @@
 #include "magma_internal.h"
 
 
+/******************************************************************************/
 static void
 init_butterfly(
         magma_int_t n,
@@ -28,7 +29,7 @@ init_butterfly(
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGERBT solves a system of linear equations
@@ -111,8 +112,8 @@ init_butterfly(
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zgesv_comp
-    ********************************************************************/
+    @ingroup magma_gerbt_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgerbt_batched(
     magma_bool_t gen, magma_int_t n, magma_int_t nrhs,

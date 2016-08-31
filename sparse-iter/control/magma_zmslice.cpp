@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -211,7 +211,6 @@ magma_zmslice(
         B->nnz = k;
         *start = lstart;
         *end = lend;
-        
     }
     else {
         printf("error: mslice only supported for CSR matrices on the CPU: %d %d.\n", 
@@ -221,7 +220,3 @@ magma_zmslice(
 cleanup:
     return info;
 }
-
-
-
-

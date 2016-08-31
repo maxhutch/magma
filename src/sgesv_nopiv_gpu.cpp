@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        @author Adrien REMY
 
-       @generated from src/zgesv_nopiv_gpu.cpp normal z -> s, Mon May  2 23:30:02 2016
+       @generated from src/zgesv_nopiv_gpu.cpp, normal z -> s, Tue Aug 30 09:38:04 2016
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGESV solves a system of linear equations
@@ -57,9 +57,8 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    @ingroup magma_sgesv_driver
-    ********************************************************************/
-
+    @ingroup magma_gesv_nopiv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgesv_nopiv_gpu(
     magma_int_t n, magma_int_t nrhs,

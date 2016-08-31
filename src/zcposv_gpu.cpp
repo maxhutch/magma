@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions mixed zc -> ds
 
 */
 #include "magma_internal.h"
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZCPOSV computes the solution to a complex system of linear equations
@@ -128,8 +128,8 @@
                   factorization could not be completed, and the solution
                   has not been computed.
 
-    @ingroup magma_zposv_driver
-    ********************************************************************/
+    @ingroup magma_posv
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zcposv_gpu(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
@@ -196,7 +196,7 @@ magma_zcposv_gpu(
     
     eps  = lapackf77_dlamch("Epsilon");
     Anrm = magmablas_zlanhe( MagmaInfNorm, uplo, n, dA, ldda, (double*)dworkd, n*nrhs, queue );
-    cte  = Anrm * eps * magma_dsqrt( n ) * BWDMAX;
+    cte  = Anrm * eps * magma_dsqrt( (double) n ) * BWDMAX;
 
     /*
      * Convert to single precision

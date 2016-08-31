@@ -1,23 +1,23 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from src/zgeqrf3_gpu.cpp normal z -> d, Mon May  2 23:30:06 2016
+       @generated from src/zgeqrf3_gpu.cpp, normal z -> d, Tue Aug 30 09:38:07 2016
 */
 #include "magma_internal.h"
 
-/* ////////////////////////////////////////////////////////////////////////////
-   -- Auxiliary function: "A" is pointer to the current panel holding the
-      Householder vectors for the QR factorization of the panel. This routine
-      puts ones on the diagonal and zeros in the upper triangular part of "A".
-      The upper triangular values are stored in work.
- */
+/***************************************************************************//**
+    Auxiliary function: "A" is pointer to the current panel holding the
+    Householder vectors for the QR factorization of the panel. This routine
+    puts ones on the diagonal and zeros in the upper triangular part of "A".
+    The upper triangular values are stored in work.
+*******************************************************************************/
 void dsplit_diag_block(
     magma_int_t ib, double *A, magma_int_t lda,
     double *work )
@@ -40,7 +40,8 @@ void dsplit_diag_block(
     }
 }
 
-/**
+
+/***************************************************************************//**
     Purpose
     -------
     DGEQRF3 computes a QR factorization of a real M-by-N matrix A:
@@ -113,8 +114,8 @@ void dsplit_diag_block(
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_dgeqrf_comp
-    ********************************************************************/
+    @ingroup magma_geqrf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dgeqrf3_gpu(
     magma_int_t m, magma_int_t n,

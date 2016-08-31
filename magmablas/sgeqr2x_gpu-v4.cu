@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zgeqr2x_gpu-v4.cu normal z -> s, Mon May  2 23:30:40 2016
+       @generated from magmablas/zgeqr2x_gpu-v4.cu, normal z -> s, Tue Aug 30 09:38:37 2016
 
 */
 #include "magma_internal.h"
@@ -15,7 +15,7 @@
 #define BLOCK_SIZE 512
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     SGEQR2 computes a QR factorization of a real m by n matrix A:
@@ -99,8 +99,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_sgeqrf_aux
-    ********************************************************************/
+    @ingroup magma_geqr2
+*******************************************************************************/
 extern "C" magma_int_t
 magma_sgeqr2x4_gpu(
     magma_int_t m, magma_int_t n,

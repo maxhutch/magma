@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Raffaele Solca
        
@@ -28,8 +28,8 @@ void magma_dvrange(
 {
     magma_int_t i;
 
-    *il=1;
-    *iu=k;
+    *il = 1;
+    *iu = k;
     for (i = 0; i < k; ++i) {
         if (d[i] > vu) {
             *iu = i;
@@ -69,7 +69,7 @@ void magma_dirange(
 #endif
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     DLAEX3 finds the roots of the secular equation, as defined by the
@@ -80,9 +80,8 @@ void magma_dirange(
     which is solved here.
 
     It is used in the last step when only a part of the eigenvectors
-    is required.
-    It compute only the required part of the eigenvectors and the rest
-    is not used.
+    is required. It computes only the required portion of the eigenvectors
+    and the rest is not used.
 
     This code makes very mild assumptions about floating point
     arithmetic. It will work on machines with a guard digit in
@@ -174,7 +173,7 @@ void magma_dirange(
             i.e. D( INDXQ( I = 1, N ) ) will be in ascending order.
 
     @param
-    dwork   (workspace) DOUBLE PRECISION array, dimension (3*N*N/2+3*N)
+    dwork   (workspace) DOUBLE PRECISION array, dimension (3*N*N/2 + 3*N)
 
     @param[in]
     range   magma_range_t
@@ -188,7 +187,7 @@ void magma_dirange(
     vl      DOUBLE PRECISION
     @param[in]
     vu      DOUBLE PRECISION
-            if RANGE=MagmaRangeV, the lower and upper bounds of the interval to
+            if RANGE = MagmaRangeV, the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.
 
@@ -196,7 +195,7 @@ void magma_dirange(
     il      INTEGER
     @param[in]
     iu      INTEGER
-            if RANGE=MagmaRangeI, the indices (in ascending order) of the
+            if RANGE = MagmaRangeI, the indices (in ascending order) of the
             smallest and largest eigenvalues to be returned.
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
@@ -214,8 +213,8 @@ void magma_dirange(
     at Berkeley, USA
     Modified by Francoise Tisseur, University of Tennessee.
 
-    @ingroup magma_dsyev_aux
-    ********************************************************************/
+    @ingroup magma_laex3
+*******************************************************************************/
 extern "C" magma_int_t
 magma_dlaex3(
     magma_int_t k, magma_int_t n, magma_int_t n1,
@@ -255,11 +254,11 @@ magma_dlaex3(
     *info = 0;
 
     if (k < 0)
-        *info=-1;
+        *info = -1;
     else if (n < k)
-        *info=-2;
+        *info = -2;
     else if (ldq < max(1,n))
-        *info=-6;
+        *info = -6;
     else if (! (alleig || valeig || indeig))
         *info = -15;
     else {
@@ -318,32 +317,32 @@ magma_dlaex3(
     magma_dsetvector_async( lq2, Q2, 1, dQ2(0,0), 1, queue );
 
 #ifdef _OPENMP
-    /////////////////////////////////////////////////////////////////////////////////
-    //openmp implementation
-    /////////////////////////////////////////////////////////////////////////////////
-    //magma_timer_t time=0;
+    // -------------------------------------------------------------------------
+    // openmp implementation
+    // -------------------------------------------------------------------------
+    //magma_timer_t time = 0;
     //timer_start( time );
 
     #pragma omp parallel private(i, j, tmp, temp)
     {
-        magma_int_t id = omp_get_thread_num();
-        magma_int_t tot = omp_get_num_threads();
+        magma_int_t tid     = omp_get_thread_num();
+        magma_int_t nthread = omp_get_num_threads();
 
-        magma_int_t ib = (  id   * k) / tot; //start index of local loop
-        magma_int_t ie = ((id+1) * k) / tot; //end index of local loop
-        magma_int_t ik = ie - ib;           //number of local indices
+        magma_int_t ibegin = ( tid    * k) / nthread; // start index of local loop
+        magma_int_t iend   = ((tid+1) * k) / nthread; // end   index of local loop
+        magma_int_t ik     = iend - ibegin;           // number of local indices
 
-        for (i = ib; i < ie; ++i)
-            dlamda[i]=lapackf77_dlamc3(&dlamda[i], &dlamda[i]) - dlamda[i];
+        for (i = ibegin; i < iend; ++i)
+            dlamda[i] = lapackf77_dlamc3(&dlamda[i], &dlamda[i]) - dlamda[i];
 
-        for (j = ib; j < ie; ++j) {
-            magma_int_t tmpp=j+1;
+        for (j = ibegin; j < iend; ++j) {
+            magma_int_t tmpp = j+1;
             magma_int_t iinfo = 0;
             lapackf77_dlaed4(&k, &tmpp, dlamda, w, Q(0,j), &rho, &d[j], &iinfo);
             // If the zero finder fails, the computation is terminated.
             if (iinfo != 0) {
                 #pragma omp critical (info)
-                *info=iinfo;
+                *info = iinfo;
                 break;
             }
         }
@@ -353,11 +352,11 @@ magma_dlaex3(
         if (*info == 0) {
             #pragma omp single
             {
-                //Prepare the INDXQ sorting permutation.
+                // Prepare the INDXQ sorting permutation.
                 magma_int_t nk = n - k;
                 lapackf77_dlamrg( &k, &nk, d, &ione, &ineg_one, indxq);
 
-                //compute the lower and upper bound of the non-deflated eigenvectors
+                // compute the lower and upper bound of the non-deflated eigenvectors
                 if (valeig) {
                     magma_dvrange(k, d, &iil, &iiu, vl, vu);
                 }
@@ -387,48 +386,48 @@ magma_dlaex3(
             }
             else if (k != 1) {
                 // Compute updated W.
-                blasf77_dcopy( &ik, &w[ib], &ione, &s[ib], &ione);
+                blasf77_dcopy( &ik, &w[ibegin], &ione, &s[ibegin], &ione);
 
                 // Initialize W(I) = Q(I,I)
                 tmp = ldq + 1;
-                blasf77_dcopy( &ik, Q(ib,ib), &tmp, &w[ib], &ione);
+                blasf77_dcopy( &ik, Q(ibegin,ibegin), &tmp, &w[ibegin], &ione);
 
                 for (j = 0; j < k; ++j) {
-                    magma_int_t i_tmp = min(j, ie);
-                    for (i = ib; i < i_tmp; ++i)
+                    magma_int_t i_tmp = min(j, iend);
+                    for (i = ibegin; i < i_tmp; ++i)
                         w[i] = w[i] * ( *Q(i, j) / ( dlamda[i] - dlamda[j] ) );
-                    i_tmp = max(j+1, ib);
-                    for (i = i_tmp; i < ie; ++i)
+                    i_tmp = max(j+1, ibegin);
+                    for (i = i_tmp; i < iend; ++i)
                         w[i] = w[i] * ( *Q(i, j) / ( dlamda[i] - dlamda[j] ) );
                 }
 
-                for (i = ib; i < ie; ++i)
+                for (i = ibegin; i < iend; ++i)
                     w[i] = copysign( sqrt( -w[i] ), s[i]);
 
                 #pragma omp barrier
 
-                //reduce the number of used threads to have enough S workspace
-                tot = min(n1, omp_get_num_threads());
+                // reduce the number of threads used to have enough S workspace
+                nthread = min(n1, omp_get_num_threads());
 
-                if (id < tot) {
-                    ib = (  id   * rk) / tot + iil - 1;
-                    ie = ((id+1) * rk) / tot + iil - 1;
-                    ik = ie - ib;
+                if (tid < nthread) {
+                    ibegin = ( tid    * rk) / nthread + iil - 1;
+                    iend   = ((tid+1) * rk) / nthread + iil - 1;
+                    ik     = iend - ibegin;
                 }
                 else {
-                    ib = -1;
-                    ie = -1;
-                    ik = -1;
+                    ibegin = -1;
+                    iend   = -1;
+                    ik     = -1;
                 }
 
                 // Compute eigenvectors of the modified rank-1 modification.
-                for (j = ib; j < ie; ++j) {
+                for (j = ibegin; j < iend; ++j) {
                     for (i = 0; i < k; ++i)
-                        s[id*k + i] = w[i] / *Q(i,j);
-                    temp = magma_cblas_dnrm2( k, s+id*k, 1 );
+                        s[tid*k + i] = w[i] / *Q(i,j);
+                    temp = magma_cblas_dnrm2( k, s + tid*k, 1 );
                     for (i = 0; i < k; ++i) {
                         magma_int_t iii = indx[i] - 1;
-                        *Q(i,j) = s[id*k + iii] / temp;
+                        *Q(i,j) = s[tid*k + iii] / temp;
                     }
                 }
             }
@@ -441,31 +440,31 @@ magma_dlaex3(
     //timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
 
 #else
-    /////////////////////////////////////////////////////////////////////////////////
+    // -------------------------------------------------------------------------
     // Non openmp implementation
-    /////////////////////////////////////////////////////////////////////////////////
-   // magma_timer_t time=0;
-   // timer_start( time );
+    // -------------------------------------------------------------------------
+    // magma_timer_t time = 0;
+    // timer_start( time );
 
     for (i = 0; i < k; ++i)
-        dlamda[i]=lapackf77_dlamc3(&dlamda[i], &dlamda[i]) - dlamda[i];
+        dlamda[i] = lapackf77_dlamc3(&dlamda[i], &dlamda[i]) - dlamda[i];
 
     for (j = 0; j < k; ++j) {
-        magma_int_t tmpp=j+1;
+        magma_int_t tmpp = j+1;
         magma_int_t iinfo = 0;
         lapackf77_dlaed4(&k, &tmpp, dlamda, w, Q(0,j), &rho, &d[j], &iinfo);
         // If the zero finder fails, the computation is terminated.
         if (iinfo != 0)
-            *info=iinfo;
+            *info = iinfo;
     }
     if (*info != 0)
         return *info;
 
-    //Prepare the INDXQ sorting permutation.
+    // Prepare the INDXQ sorting permutation.
     magma_int_t nk = n - k;
     lapackf77_dlamrg( &k, &nk, d, &ione, &ineg_one, indxq);
 
-    //compute the lower and upper bound of the non-deflated eigenvectors
+    // compute the lower and upper bound of the non-deflated eigenvectors
     if (valeig) {
         magma_dvrange(k, d, &iil, &iiu, vl, vu);
     }
@@ -522,7 +521,7 @@ magma_dlaex3(
     //timer_stop( time );
     //timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
 
-#endif //_OPENMP
+#endif // _OPENMP
     // Compute the updated eigenvectors.
 
     //timer_start( time );
@@ -534,7 +533,8 @@ magma_dlaex3(
                 lapackf77_dlacpy("A", &n23, &rk, Q(ctot[0],iil-1), &ldq, s, &n23);
                 blasf77_dgemm("N", "N", &n2, &rk, &n23, &d_one, &Q2[iq2], &n2,
                               s, &n23, &d_zero, Q(n1,iil-1), &ldq );
-            } else {
+            }
+            else {
                 magma_dsetmatrix( n23, rk, Q(ctot[0],iil-1), ldq, dS(0,0), n23, queue );
                 magma_dgemm( MagmaNoTrans, MagmaNoTrans, n2, rk, n23,
                              d_one,  dQ2(iq2,0), n2,
@@ -542,15 +542,18 @@ magma_dlaex3(
                              d_zero, dQ(0,0), lddq, queue );
                 magma_dgetmatrix( n2, rk, dQ(0,0), lddq, Q(n1,iil-1), ldq, queue );
             }
-        } else
+        }
+        else {
             lapackf77_dlaset("A", &n2, &rk, &d_zero, &d_zero, Q(n1,iil-1), &ldq);
+        }
 
         if ( n12 != 0 ) {
             if (rk < magma_get_dlaed3_k()) {
                 lapackf77_dlacpy("A", &n12, &rk, Q(0,iil-1), &ldq, s, &n12);
                 blasf77_dgemm("N", "N", &n1, &rk, &n12, &d_one, Q2, &n1,
                               s, &n12, &d_zero, Q(0,iil-1), &ldq);
-            } else {
+            }
+            else {
                 magma_dsetmatrix( n12, rk, Q(0,iil-1), ldq, dS(0,0), n12, queue );
                 magma_dgemm( MagmaNoTrans, MagmaNoTrans, n1, rk, n12,
                              d_one,  dQ2(0,0), n1,
@@ -558,8 +561,10 @@ magma_dlaex3(
                              d_zero, dQ(0,0), lddq, queue );
                 magma_dgetmatrix( n1, rk, dQ(0,0), lddq, Q(0,iil-1), ldq, queue );
             }
-        } else
+        }
+        else {
             lapackf77_dlaset("A", &n1, &rk, &d_zero, &d_zero, Q(0,iil-1), &ldq);
+        }
     }
     //timer_stop( time );
     //timer_printf( "gemms = %6.2f\n", time );

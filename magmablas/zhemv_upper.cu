@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CONJ.
        
@@ -26,7 +26,7 @@
 #define half_NB_X    32
 
 
-/*******************************************************************************
+/***************************************************************************//**
     Upper case, compute block multiply, work = A*x, for any size n:
     
            [ (A11*x1 + A12*x2 + A13*x3)     ---                 ---    ]   [ A11    A12    A13 ]   [ x1 ]
@@ -48,7 +48,7 @@
     Columns past the right edge are explicitly ignored when loading.
     x values past the bottom are set to zero, thus, extra columns are zeroed
     when multiplying.
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 zhemv_kernel_U(
     int n,
@@ -441,7 +441,7 @@ zhemv_kernel_U(
 // end zhemv_kernel_U
 
 
-/**************************************************************
+/***************************************************************************//**
     Upper case, sum up final results
     Each block sums one block row; each thread sums one row.
     
@@ -454,7 +454,7 @@ zhemv_kernel_U(
               [ (A11*x1 + A12*x2 + A13*x3)         ]
     y = alpha*[ (A12^H*x1) + (A22*x2 + A23*x3)     ] + beta*y
               [ (A13^H*x1) + (A23^H*x2) + (A33*x3) ]
-    ********************************************************************/
+*******************************************************************************/
 __global__ void
 zhemv_kernel_U_sum(
     int n,

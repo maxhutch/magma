@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @author Mathieu Faverge
        @author Mark Gates
@@ -11,9 +11,9 @@
        Based on PLASMA common.h
 */
 
-/***************************************************************************//**
- *  MAGMA facilities of interest to both src and magmablas directories
- **/
+// =============================================================================
+// MAGMA facilities of interest to both src and magmablas directories
+
 #ifndef MAGMA_INTERNAL_H
 #define MAGMA_INTERNAL_H
 
@@ -50,7 +50,7 @@
     #include <pthread.h>
     #include <unistd.h>
     #include <inttypes.h>
-    
+
     // our magma_winthread doesn't have pthread_key;
     // assume other platforms (Linux, MacOS, etc.) do.
     #define HAVE_PTHREAD_KEY
@@ -60,7 +60,8 @@
 // provide our own support for pthread_barrier on MacOS and Windows
 #include "pthread_barrier.h"
 
-// MAGMA_SOURCE is defined in common_magma.h, so it can #include this file but get the right magma.h header.
+// MAGMA_SOURCE is defined in common_magma.h, so it can #include this file
+// but get the right magma.h header.
 #if MAGMA_SOURCE == 1
     #include "magma.h"
 #else
@@ -72,26 +73,51 @@
 #include "transpose.h"
 #include "magma_threadsetting.h"
 
-/** ****************************************************************************
- *  Define magma_queue structure
- */
+/***************************************************************************//**
+    Define magma_queue structure, which wraps around CUDA and OpenCL queues.
+    In C, this is a simple struct.
+    In C++, it is a class with getter member functions.
+    For both C/C++, use magma_queue_create() and magma_queue_destroy()
+    to create and destroy a queue. Global getter functions exist to query the
+    queue.
 
+    @see magma_queue_create
+    @see magma_queue_create_v2
+    @see magma_queue_destroy
+    @see magma_queue_get_device
+    @see magma_queue_get_cuda_stream
+    @see magma_queue_get_cublas_handle
+    @see magma_queue_get_cusparse_handle
+
+    @ingroup magma_queue
+*******************************************************************************/
 struct magma_queue
 {
 #ifdef __cplusplus
 public:
-    /* getters */
-    int              device()          { return device__;   }
+    /// @return device associated with this queue
+    magma_device_t   device()          { return device__;   }
+
+    #ifdef HAVE_CUBLAS
+    /// @return CUDA stream associated with this queue; requires CUDA.
     cudaStream_t     cuda_stream()     { return stream__;   }
+
+    /// @return cuBLAS handle associated with this queue; requires CUDA.
+    /// MAGMA assumes the handle won't be changed, e.g., its stream won't be modified.
     cublasHandle_t   cublas_handle()   { return cublas__;   }
+
+    /// @return cuSparse handle associated with this queue; requires CUDA.
+    /// MAGMA assumes the handle won't be changed, e.g., its stream won't be modified.
     cusparseHandle_t cusparse_handle() { return cusparse__; }
-    
+    #endif
+
 protected:
     friend
     void magma_queue_create_v2_internal(
         magma_device_t device, magma_queue_t* queuePtr,
         const char* func, const char* file, int line );
-    
+
+    #ifdef HAVE_CUBLAS
     friend
     void magma_queue_create_from_cuda_internal(
         magma_device_t   device,
@@ -100,20 +126,23 @@ protected:
         cusparseHandle_t cusparse_handle,
         magma_queue_t*   queuePtr,
         const char* func, const char* file, int line );
-    
+    #endif
+
     friend
     void magma_queue_destroy_internal(
         magma_queue_t queue,
         const char* func, const char* file, int line );
 #endif // __cplusplus
-    
-    /* private members -- access through getters */
+
+    // protected members -- access through getters
+    // bitmask whether MAGMA owns the CUDA stream, cuBLAS and cuSparse handles
     int              own__;
-    int              device__;
+    magma_device_t   device__;      // associated device ID
+
     #ifdef HAVE_CUBLAS
-    cudaStream_t     stream__;
-    cublasHandle_t   cublas__;
-    cusparseHandle_t cusparse__;
+    cudaStream_t     stream__;      // associated CUDA stream; may be NULL
+    cublasHandle_t   cublas__;      // associated cuBLAS handle
+    cusparseHandle_t cusparse__;    // associated cuSparse handle
     #endif
 };
 
@@ -129,19 +158,22 @@ magma_queue_t magmablasGetQueue();
 #endif
 
 
-/** ****************************************************************************
- *  Determine if weak symbols are allowed
- */
+// =============================================================================
+// Determine if weak symbols are allowed
+
 #if defined(linux) || defined(__linux) || defined(__linux__)
 #if defined(__GNUC_EXCL__) || defined(__GNUC__)
 #define MAGMA_HAVE_WEAK    1
 #endif
 #endif
 
-/***************************************************************************//**
- *  Global utilities
- *  in both magma_internal.h and testings.h
- **/
+
+// =============================================================================
+// Global utilities
+// in both magma_internal.h and testings.h
+// These generally require that magma_internal.h be the last header,
+// as max() and min() often conflict with system and library headers.
+
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
@@ -150,7 +182,10 @@ magma_queue_t magmablasGetQueue();
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-// suppress "warning: unused variable" in a portable fashion
+/***************************************************************************//**
+    Suppress "warning: unused variable" in a portable fashion.
+    @ingroup magma_internal
+*******************************************************************************/
 #define MAGMA_UNUSED(var)  ((void)var)
 
 #endif /* MAGMA_INTERNAL_H */

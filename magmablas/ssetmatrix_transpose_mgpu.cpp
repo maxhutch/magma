@@ -1,30 +1,43 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from magmablas/zsetmatrix_transpose_mgpu.cpp normal z -> s, Mon May  2 23:30:38 2016
+       @generated from magmablas/zsetmatrix_transpose_mgpu.cpp, normal z -> s, Tue Aug 30 09:38:36 2016
        @author Ichitaro Yamazaki
 */
 #include "magma_internal.h"
 
-//
-//    m, n - dimensions in the source (input) matrix.
-//             This routine copies the hA matrix from the CPU
-//             to dAT on the GPU. In addition, the output matrix
-//             is transposed. The routine uses a buffer of size
-//             2*lddw*nb pointed to by dwork (lddw > m) on the GPU. 
-//             Note that lda >= m and lddat >= n.
-//
-extern "C" void 
+/***************************************************************************//**
+    Copy and transpose matrix hA on CPU host to dAT, which is distributed
+    row block cyclic over multiple GPUs.
+
+    @param[in]  ngpu    Number of GPUs over which dAT is distributed.
+    @param[in]  m       Number of rows    of input matrix hA. m >= 0.
+    @param[in]  n       Number of columns of input matrix hA. n >= 0.
+    @param[in]  nb      Block size. nb >= 0.
+    @param[out] hA      The m-by-n matrix A on the CPU, of dimension (lda,n).
+    @param[in]  lda     Leading dimension of matrix hA. lda >= m.
+    @param[in]  dAT     Array of ngpu pointers, one per GPU, that store the
+                        disributed n-by-m matrix A^T on the GPUs, each of dimension (ldda,m).
+    @param[in]  ldda    Leading dimension of each matrix dAT on each GPU. ngpu*ldda >= n.
+    @param[out] dwork   Array of ngpu pointers, one per GPU, that store the
+                        workspaces on each GPU, each of dimension (2*lddw*nb).
+    @param[in]  lddw    Leading dimension of dwork. lddw >= m.
+    @param[in]  queues  2D array of dimension (ngpu,2), with two queues per GPU.
+
+    @ingroup magma_setmatrix_transpose
+*******************************************************************************/
+extern "C" void
 magmablas_ssetmatrix_transpose_mgpu(
-    magma_int_t ngpu, magma_queue_t queues[][2],
-    const float *hA,       magma_int_t lda, 
-    magmaFloat_ptr    dAT[],    magma_int_t ldda, 
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n, magma_int_t nb,
+    const float *hA,       magma_int_t lda,
+    magmaFloat_ptr    dAT[],    magma_int_t ldda,
     magmaFloat_ptr    dwork[],  magma_int_t lddw,
-    magma_int_t m, magma_int_t n, magma_int_t nb)
+    magma_queue_t queues[][2] )
 {
 #define hA(j)       (hA         + (j)*lda)
 #define dwork(d, j) (dwork[(d)] + (j)*nb*lddw)
@@ -37,8 +50,11 @@ magmablas_ssetmatrix_transpose_mgpu(
         return;
     
     if (lda < m || ngpu*ldda < n || lddw < m) {
-        fprintf( stderr, "%s: wrong arguments (%d<%d), (%d*%d<%d), or (%d<%d).\n",
-                 __func__, (int) lda, (int) m, (int) ngpu, (int) ldda, (int) n, (int) lddw, (int) m );
+        fprintf( stderr, "%s: wrong arguments (%lld < %lld), (%lld*%lld < %lld), or (%lld < %lld).\n",
+                 __func__,
+                 (long long) lda, (long long) m,
+                 (long long) ngpu, (long long) ldda, (long long) n,
+                 (long long) lddw, (long long) m );
         return;
     }
     
@@ -52,7 +68,7 @@ magmablas_ssetmatrix_transpose_mgpu(
         ib = min(n-j, nb);
         magma_ssetmatrix_async( m, ib,
                                 hA(j),        lda,
-                                dwork(d, id), lddw, 
+                                dwork(d, id), lddw,
                                 queues[d][id] );
         
         magmablas_stranspose_q( m, ib, dwork(d,id), lddw, dAT(d,j_local), ldda, queues[d][id] );

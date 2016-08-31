@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -13,7 +13,7 @@
        See [zcds]gemm_fermi.cu for description of related files.
 */
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // reset variables from previous includes of this file.
 #undef TRANS_A
 #undef TRANS_B
@@ -36,7 +36,7 @@
 #undef devfunc_name_
 #undef devfunc_name
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 
 #if   (version == trans_nn)
   #define batched_gemm_kernel_name_(p)  p ## gemm_kernel_fermi_nn_batched
@@ -132,13 +132,13 @@
 #define gemm_kernel_name(p) gemm_kernel_name_(p)
 #define devfunc_name(p) devfunc_name_(p)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 
 // size of work for a thread
 #define THR_M ( BLK_M / DIM_X )
 #define THR_N ( BLK_N / DIM_Y )
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 extern "C" static __device__
 void devfunc_name(precision) (
     int M, int N, int K,

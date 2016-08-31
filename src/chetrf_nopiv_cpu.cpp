@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
-       @generated from src/zhetrf_nopiv_cpu.cpp normal z -> c, Mon May  2 23:30:12 2016
+       @generated from src/zhetrf_nopiv_cpu.cpp, normal z -> c, Tue Aug 30 09:38:13 2016
  
 */
 #include "magma_internal.h"
@@ -17,6 +17,8 @@
 #define  C(i, j) ( C[(j)*ldc  + (i)])
 #define  D(i)    ( D[(i)*incD] )
 
+
+/******************************************************************************/
 // TODO: change alpha and beta to be float, per BLAS, instead of float-complex
 // trailing submatrix update with inner-blocking
 magma_int_t cherk_d(
@@ -31,29 +33,34 @@ magma_int_t cherk_d(
     magmaFloatComplex *Akj;
 
     /* Check input arguments */
+    magma_int_t info = 0;
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
-        return -1;
+        info = -1;
     }
     if (m < 0) {
-        return -3;
+        info = -3;
     }
     if (n < 0) {
-        return -4;
+        info = -4;
     }
     if ((lda < max(1, m)) && (m > 0)) {
-        return -7;
+        info = -7;
     }
     if ((ldc < max(1, m)) && (m > 0)) {
-        return -10;
+        info = -10;
     }
     if ( incD < 0 ) {
-        return -12;
+        info = -12;
+    }
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;
     }
 
     /* Quick return */
     if (m == 0 || n == 0 ||
         ((alpha == 0.0 || m == 0) && beta == 1.0) ) {
-        return MAGMA_SUCCESS;
+        return info;
     }
 
     if ( uplo == MagmaLower ) {
@@ -84,10 +91,11 @@ magma_int_t cherk_d(
             }
         }
     }
-    return MAGMA_SUCCESS;
+    return info;
 }
 
 
+/******************************************************************************/
 // TODO: change alpha and beta to be float, per BLAS, instead of float-complex
 // trailing submatrix update with inner-blocking, using workshpace that
 // stores D*L'
@@ -101,26 +109,31 @@ magma_int_t cherk_d_workspace(
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
     /* Check input arguments */
+    magma_int_t info = 0;
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
-        return -1;
+        info = -1;
     }
     if (n < 0) {
-        return -2;
+        info = -2;
     }
     if (k < 0) {
-        return -3;
+        info = -3;
     }
     if ((lda < max(1,n)) && (n > 0)) {
-        return -6;
+        info = -6;
     }
     if ((ldc < max(1,n)) && (n > 0)) {
-        return -9;
+        info = -9;
+    }
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;
     }
 
     /* Quick return */
     if (n == 0 || k == 0 ||
         ((alpha == 0.0 || k == 0) && beta == 1.0) ) {
-        return MAGMA_SUCCESS;
+        return info;
     }
 
     if ( uplo == MagmaLower ) {
@@ -137,26 +150,35 @@ magma_int_t cherk_d_workspace(
                                    A,    &lda,
                        &c_one,     C,    &ldc );
     }
-    return MAGMA_SUCCESS;
+    return info;
 }
 
 
+/******************************************************************************/
 // diagonal factorization with inner-block
 magma_int_t chetrf_diag_nopiv(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex *A, magma_int_t lda)
 {
+    const magma_int_t ione = 1;
+    const float d_one = 1.0;
+    
+    /* Check input arguments */
+    magma_int_t info = 0;
+    if (lda < n) {
+        info = -4;
+    }
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;
+    }
+
     /* Quick return */
     if (n == 1)
-        return 0;
-    if (lda < n)
-        return -1;
+        return info;
 
-    /**/
-    magma_int_t info = 0, ione = 1;
     magmaFloatComplex *Ak1k = NULL;
     magmaFloatComplex *Akk = NULL;
-    float d_one = 1.0;
     float alpha;
 
     if ( uplo == MagmaLower ) {
@@ -233,6 +255,7 @@ magma_int_t chetrf_diag_nopiv(
 }
 
 
+/******************************************************************************/
 // main routine
 extern "C" magma_int_t
 magma_chetrf_nopiv_cpu(
@@ -247,12 +270,12 @@ magma_chetrf_nopiv_cpu(
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
     /* Check input arguments */
+    *info = 0;
     if (lda < n) {
         *info = -1;
         return *info;
     }
 
-    *info = 0;
     /* Quick return */
     if (n == 1) {
         return *info;

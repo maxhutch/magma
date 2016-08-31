@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.0.2) --
+    -- MAGMA (version 2.1.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2016
+       @date August 2016
 
        @precisions normal z -> s d c
 
@@ -12,7 +12,7 @@
 
 #define COMPLEX
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     ZGELQF computes an LQ factorization of a COMPLEX_16 M-by-N matrix dA:
@@ -84,8 +84,8 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:n) is stored on exit in A(i,i+1:n),
     and tau in TAU(i).
 
-    @ingroup magma_zgelqf_comp
-    ********************************************************************/
+    @ingroup magma_gelqf
+*******************************************************************************/
 extern "C" magma_int_t
 magma_zgelqf_gpu(
     magma_int_t m, magma_int_t n,
