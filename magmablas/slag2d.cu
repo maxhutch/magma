@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/clag2z.cu, mixed zc -> ds, Tue Aug 30 09:38:30 2016
+       @generated from magmablas/clag2z.cu, mixed zc -> ds, Sun Nov 20 20:20:27 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -100,7 +100,7 @@ void slag2d_kernel(
     @ingroup magma_lag2
 *******************************************************************************/
 extern "C" void
-magmablas_slag2d_q(
+magmablas_slag2d(
     magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr SA, magma_int_t ldsa,
     magmaDouble_ptr       A, magma_int_t lda,

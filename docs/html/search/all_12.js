@@ -97,7 +97,6 @@ var searchData=
   ['slaswp_5fparams_5ft',['slaswp_params_t',['../structslaswp__params__t.html',1,'']]],
   ['slaswp_5fsym_5fparams_5ft',['slaswp_sym_params_t',['../structslaswp__sym__params__t.html',1,'']]],
   ['sparse',['Sparse',['../group__sparse.html',1,'']]],
-  ['sparse_20overview',['Sparse Overview',['../sparse-iter.html',1,'']]],
   ['sparse_20auxiliary',['Sparse auxiliary',['../group__sparse__aux.html',1,'']]],
   ['sparse_20blas',['Sparse BLAS',['../group__sparse__blas.html',1,'']]],
   ['sparse_20eigenvalues',['Sparse eigenvalues',['../group__sparse__eigenvalue.html',1,'']]],

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from src/zunmtr_m.cpp, normal z -> c, Tue Aug 30 09:38:17 2016
+       @generated from src/zunmtr_m.cpp, normal z -> c, Sun Nov 20 20:20:24 2016
 
 */
 #include "magma_internal.h"

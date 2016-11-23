@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlarfg.cu, normal z -> s, Tue Aug 30 09:38:31 2016
+       @generated from magmablas/zlarfg.cu, normal z -> s, Sun Nov 20 20:20:28 2016
        
        @author Mark Gates
 */
@@ -163,7 +163,7 @@ slarfg_kernel(
     @ingroup magma_larfg
 *******************************************************************************/
 extern "C"
-void magmablas_slarfg_q(
+void magmablas_slarfg(
     magma_int_t n,
     magmaFloat_ptr dalpha,
     magmaFloat_ptr dx, magma_int_t incx,

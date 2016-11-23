@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> c d s
 
@@ -56,4 +56,4 @@ magmablas_zapply_transpose_vector_kernel_batched(
     magma_int_t n,
     magmaDoubleComplex *du, magma_int_t offsetu, magmaDoubleComplex **db_array, magma_int_t offsetb );
 
-#endif        //  #ifndef ZGERBT_H
+#endif // ZGERBT_H

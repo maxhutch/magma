@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from testing/testing_zgeqrf_batched.cpp, normal z -> s, Tue Aug 30 09:39:17 2016
+       @generated from testing/testing_zgeqrf_batched.cpp, normal z -> s, Sun Nov 20 20:20:38 2016
 
 */
 
@@ -93,7 +93,7 @@ int main( int argc, char** argv)
     real_Double_t    gflops, magma_perf, magma_time, cublas_perf=0, cublas_time=0, cpu_perf, cpu_time;
     float           magma_error, cublas_error, magma_error2, cublas_error2;
 
-    float *h_A, *h_R, *h_Amagma, *tau, *h_work, tmp[1];
+    float *h_A, *h_R, *h_Amagma, *tau, *h_work, tmp[1], unused[1];
     float *d_A, *dtau_magma, *dtau_cublas;
 
     float **dA_array = NULL;
@@ -148,7 +148,7 @@ int main( int argc, char** argv)
         
             // to determine the size of lwork
             lwork = -1;
-            lapackf77_sgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
+            lapackf77_sgeqrf( &M, &N, unused, &M, unused, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_S_REAL( tmp[0] );
             lwork = max(lwork, N*N);
            
@@ -209,7 +209,7 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
-            if ( opts.check ) {
+            if ( opts.lapack ) {
                 cpu_time = magma_wtime();
                 // #define BATCHED_DISABLE_PARCPU
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
@@ -238,9 +238,22 @@ int main( int argc, char** argv)
                     printf("lapackf77_sgeqrf returned error %lld: %s.\n",
                            (long long) info, magma_strerror( info ));
                 }
-                
+                printf("%10lld %5lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (long long) batchCount, (long long) M, (long long) N,
+                       magma_perf,  1000.*magma_time,
+                       cublas_perf, 1000.*cublas_time,
+                       cpu_perf,    1000.*cpu_time );
+            }
+            else {
+                printf("%10lld %5lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)     ---  (  ---  )",
+                       (long long) batchCount, (long long) M, (long long) N,
+                       magma_perf,  1000.*magma_time,
+                       cublas_perf, 1000.*cublas_time );
+            }
+            
+            if (opts.check) {
                 /* =====================================================================
-                   Check the MAGMA CUBLAS result compared to LAPACK
+                   Check the MAGMA and CUBLAS results by computing residuals 
                    =================================================================== */
                 magma_int_t ldq = M;
                 magma_int_t ldr = min_mn;
@@ -262,13 +275,8 @@ int main( int argc, char** argv)
                              h_Amagma + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn,
                              Q, ldq, R, ldr, h_work, lwork,
                              work, &err, &err2);
-
-                    if ( isnan(err) || isinf(err) ) {
-                        magma_error = err;
-                        break;
-                    }
-                    magma_error  = max( err,  magma_error  );
-                    magma_error2 = max( err2, magma_error2 );
+                    magma_error  = magma_max_nan( err,  magma_error  );
+                    magma_error2 = magma_max_nan( err2, magma_error2 );
                 }
 
                 /* check cublas result */
@@ -284,13 +292,8 @@ int main( int argc, char** argv)
                              h_A + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn,
                              Q, ldq, R, ldr, h_work, lwork,
                              work, &err, &err2);
-
-                    if ( isnan(err) || isinf(err) ) {
-                        cublas_error = err;
-                        break;
-                    }
-                    cublas_error  = max( err,  cublas_error  );
-                    cublas_error2 = max( err2, cublas_error2 );
+                    cublas_error  = magma_max_nan( err,  cublas_error  );
+                    cublas_error2 = magma_max_nan( err2, cublas_error2 );
                 }
                 #endif
 
@@ -299,23 +302,15 @@ int main( int argc, char** argv)
                 magma_free_cpu( work );  work = NULL;
 
                 bool okay = (magma_error < tol && magma_error2 < tol);
-                //bool okay_cublas = (cublas_error < tol && cublas_error2 < tol);
                 status += ! okay;
 
-                printf("%10lld %5lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)   %7.2f (%7.2f)   %15.2e   %15.2e   %15.2e   %15.2e   %s\n",
-                       (long long) batchCount, (long long) M, (long long) N,
-                       magma_perf,  1000.*magma_time,
-                       cublas_perf, 1000.*cublas_time,
-                       cpu_perf,    1000.*cpu_time,
+                printf("   %15.2e   %15.2e   %15.2e   %15.2e   %s\n",
                        magma_error, magma_error2,
                        cublas_error, cublas_error2,
                        (okay ? "ok" : "failed") );
             }
             else {
-                printf("%10lld %5lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)     ---   (  ---  )   ---\n",
-                       (long long) batchCount, (long long) M, (long long) N,
-                       magma_perf,  1000.*magma_time,
-                       cublas_perf, 1000.*cublas_time );
+                printf("\n");
             }
             
             magma_free_cpu( tau    );

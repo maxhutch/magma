@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -14,6 +14,50 @@
 
 #include "magma_timer.h"
 //#include "../testing/flops.h"
+
+
+/******************************************************************************/
+extern "C" magma_int_t
+magma_zgetrf_piv(
+    magma_int_t m, magma_int_t n, magma_int_t NB,
+    magmaDoubleComplex *A, magma_int_t lda, magma_int_t *ipiv,
+    magma_int_t *info)
+{
+    #define A(i,j) (A + (j)*lda + (i))
+    
+    magma_int_t I, k1, k2, incx, minmn;
+    *info = 0;
+    if (m < 0)
+        *info = -1;
+    else if (n < 0)
+        *info = -2;
+    else if (lda < max(1,m))
+        *info = -4;
+
+    if (*info != 0) {
+        magma_xerbla( __func__, -(*info) );
+        return *info;
+    }
+
+    /* Quick return if possible */
+    if (m == 0 || n == 0)
+        return *info;
+
+    /* initialize nb */
+    minmn = min(m,n);
+
+    for( I=0; I < minmn-NB; I += NB ) {
+        k1 = 1+I+NB;
+        k2 = minmn;
+        incx = 1;
+        lapackf77_zlaswp(&NB, A(0,I), &lda, &k1, &k2, ipiv, &incx);
+    }
+
+    return *info;
+    
+    #undef A
+} /* magma_zgetrf_piv */
+
 
 /***************************************************************************//**
     Purpose
@@ -252,8 +296,8 @@ magma_zgetrf_m(
                 /* applying the pivot from the previous big-panel */
                 for( d=0; d < ngpu; d++ ) {
                     magma_setdevice(d);
-                    magmablas_zlaswp_q( ldn_local, dAT(d,0,0), ldn_local, offset+1, offset+NBk, ipiv, 1, 
-                                        queues[d][1] );
+                    magmablas_zlaswp( ldn_local, dAT(d,0,0), ldn_local, offset+1, offset+NBk, ipiv, 1, 
+                                      queues[d][1] );
                 }
                 
                 /* going through each block-column of previous big-panels */
@@ -357,85 +401,6 @@ magma_zgetrf_m(
         magma_zgetrf_piv(m, n, NB, A, lda, ipiv, info);
     return *info;
 } /* magma_zgetrf_m */
-
-
-/******************************************************************************/
-extern "C" magma_int_t
-magma_zgetrf_piv(
-    magma_int_t m, magma_int_t n, magma_int_t NB,
-    magmaDoubleComplex *A, magma_int_t lda, magma_int_t *ipiv,
-    magma_int_t *info)
-{
-    magma_int_t I, k1, k2, incx, minmn;
-    *info = 0;
-    if (m < 0)
-        *info = -1;
-    else if (n < 0)
-        *info = -2;
-    else if (lda < max(1,m))
-        *info = -4;
-
-    if (*info != 0) {
-        magma_xerbla( __func__, -(*info) );
-        return *info;
-    }
-
-    /* Quick return if possible */
-    if (m == 0 || n == 0)
-        return *info;
-
-    /* initialize nb */
-    minmn = min(m,n);
-
-    for( I=0; I < minmn-NB; I += NB ) {
-        k1 = 1+I+NB;
-        k2 = minmn;
-        incx = 1;
-        lapackf77_zlaswp(&NB, A(0,I), &lda, &k1, &k2, ipiv, &incx);
-    }
-
-    return *info;
-} /* magma_zgetrf_piv */
-
-
-/******************************************************************************/
-extern "C" magma_int_t
-magma_zgetrf2_piv(
-    magma_int_t m, magma_int_t n, magma_int_t start, magma_int_t end,
-    magmaDoubleComplex *A, magma_int_t lda, magma_int_t *ipiv,
-    magma_int_t *info)
-{
-    magma_int_t I, k1, k2, nb, incx, minmn;
-
-    *info = 0;
-
-    if (m < 0)
-        *info = -1;
-    else if (n < 0)
-        *info = -2;
-    else if (lda < max(1,m))
-        *info = -4;
-
-    if (*info != 0)
-        return *info;
-
-    /* Quick return if possible */
-    if (m == 0 || n == 0)
-        return *info;
-
-    /* initialize nb */
-    nb = magma_get_zgetrf_nb( m, n );
-    minmn = min( end, min(m,n) );
-
-    for( I=start; I < end-nb; I += nb ) {
-        incx = 1;
-        k1 = 1+I+nb;
-        k2 = minmn;
-        lapackf77_zlaswp(&nb, A(0,I), &lda, &k1, &k2, ipiv, &incx);
-    }
-
-    return *info;
-} /* magma_zgetrf_piv */
 
 
 #undef dAT

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/ztrsm_batched.cpp, normal z -> d, Tue Aug 30 09:38:39 2016
+       @generated from magmablas/ztrsm_batched.cpp, normal z -> d, Sun Nov 20 20:20:34 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -480,7 +480,6 @@ void magmablas_dtrsm_outofplace_batched(
         }
     }
 }
-
 /***************************************************************************//**
     Purpose
     -------
@@ -866,8 +865,8 @@ void magmablas_dtrsm_batched(
         magma_xerbla( __func__, -(info) );
         return;
     }
-    magmablas_dlaset_q(MagmaFull, size_dinvA, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, size_dinvA, queue);
-    magmablas_dlaset_q(MagmaFull, lddx, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dX, lddx, queue);
+    magmablas_dlaset(MagmaFull, size_dinvA, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, size_dinvA, queue);
+    magmablas_dlaset(MagmaFull, lddx, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dX, lddx, queue);
 
     magma_dset_pointer( dX_array, dX, lddx, 0, 0, size_x, batchCount, queue );
     magma_dset_pointer( dinvA_array, dinvA, DTRTRI_BATCHED_NB, 0, 0, size_dinvA, batchCount, queue );

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from magmablas/zbcyclic.cpp, normal z -> s, Tue Aug 30 09:38:36 2016
+       @generated from magmablas/zbcyclic.cpp, normal z -> s, Sun Nov 20 20:20:30 2016
 */
 #include "magma_internal.h"
 
@@ -40,7 +40,7 @@
     @ingroup magma_setmatrix_bcyclic
 *******************************************************************************/
 extern "C" void
-magma_ssetmatrix_1D_col_bcyclic_q(
+magma_ssetmatrix_1D_col_bcyclic(
     magma_int_t ngpu,
     magma_int_t m, magma_int_t n, magma_int_t nb,
     const float *hA, magma_int_t lda,
@@ -109,7 +109,7 @@ magma_ssetmatrix_1D_col_bcyclic_q(
     @ingroup magma_getmatrix_bcyclic
 *******************************************************************************/
 extern "C" void
-magma_sgetmatrix_1D_col_bcyclic_q(
+magma_sgetmatrix_1D_col_bcyclic(
     magma_int_t ngpu,
     magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloat_const_ptr const *dA, magma_int_t ldda,
@@ -178,7 +178,7 @@ magma_sgetmatrix_1D_col_bcyclic_q(
     @ingroup magma_setmatrix_bcyclic
 *******************************************************************************/
 extern "C" void
-magma_ssetmatrix_1D_row_bcyclic_q(
+magma_ssetmatrix_1D_row_bcyclic(
     magma_int_t ngpu,
     magma_int_t m, magma_int_t n, magma_int_t nb,
     const float    *hA, magma_int_t lda,
@@ -247,7 +247,7 @@ magma_ssetmatrix_1D_row_bcyclic_q(
     @ingroup magma_getmatrix_bcyclic
 *******************************************************************************/
 extern "C" void
-magma_sgetmatrix_1D_row_bcyclic_q(
+magma_sgetmatrix_1D_row_bcyclic(
     magma_int_t ngpu,
     magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloat_const_ptr const *dA, magma_int_t ldda,

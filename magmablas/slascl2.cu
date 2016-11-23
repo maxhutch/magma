@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlascl2.cu, normal z -> s, Tue Aug 30 09:38:31 2016
+       @generated from magmablas/zlascl2.cu, normal z -> s, Sun Nov 20 20:20:29 2016
 
        @author Theo Mary
 */
@@ -114,7 +114,7 @@ slascl2_upper(int m, int n, const float *D, float* A, int lda)
     @ingroup magma_lascl_diag
 *******************************************************************************/
 extern "C" void
-magmablas_slascl2_q(
+magmablas_slascl2(
     magma_type_t type, magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr dD,
     magmaFloat_ptr dA, magma_int_t ldda,

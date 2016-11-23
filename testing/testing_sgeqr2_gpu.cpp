@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zgeqr2_gpu.cpp, normal z -> s, Tue Aug 30 09:39:10 2016
+       @generated from testing/testing_zgeqr2_gpu.cpp, normal z -> s, Sun Nov 20 20:20:35 2016
        @author Stan Tomov
 
 */
@@ -67,7 +67,7 @@ int main( int argc, char** argv)
             
             // query for workspace size
             lwork = -1;
-            lapackf77_sgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
+            lapackf77_sgeqrf( &M, &N, tmp, &M, tmp, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_S_REAL( tmp[0] );
             
             TESTING_CHECK( magma_smalloc_cpu( &tau,    min_mn ));

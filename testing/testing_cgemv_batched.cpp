@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zgemv_batched.cpp, normal z -> c, Tue Aug 30 09:39:16 2016
+       @generated from testing/testing_zgemv_batched.cpp, normal z -> c, Sun Nov 20 20:20:38 2016
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
@@ -29,7 +29,7 @@
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing cgemm_batched
+   -- Testing cgemv_batched
 */
 int main( int argc, char** argv)
 {
@@ -37,7 +37,7 @@ int main( int argc, char** argv)
     magma_print_environment();
 
     real_Double_t   gflops, magma_perf, magma_time, cpu_perf, cpu_time;
-    float          magma_error, work[1];
+    float          error, magma_error, normalize, work[1];
     magma_int_t M, N, Xm, Ym, lda, ldda;
     magma_int_t sizeA, sizeX, sizeY;
     magma_int_t incx = 1;
@@ -52,20 +52,27 @@ int main( int argc, char** argv)
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex alpha = MAGMA_C_MAKE(  0.29, -0.86 );
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.48,  0.38 );
-    magmaFloatComplex **A_array = NULL;
-    magmaFloatComplex **X_array = NULL;
-    magmaFloatComplex **Y_array = NULL;
+    magmaFloatComplex **d_A_array = NULL;
+    magmaFloatComplex **d_X_array = NULL;
+    magmaFloatComplex **d_Y_array = NULL;
 
     magma_opts opts( MagmaOptsBatched );
     opts.parse_opts( argc, argv );
-    batchCount = opts.batchcount;
     opts.lapack |= opts.check;
-
-    float tol = opts.tolerance * lapackf77_slamch("E");
-
+    batchCount = opts.batchcount;
+    
+    float *Anorm, *Xnorm, *Ynorm;
+    TESTING_CHECK( magma_smalloc_cpu( &Anorm, batchCount ));
+    TESTING_CHECK( magma_smalloc_cpu( &Xnorm, batchCount ));
+    TESTING_CHECK( magma_smalloc_cpu( &Ynorm, batchCount ));
+    
+    // See testing_cgemm about tolerance.
+    float eps = lapackf77_slamch("E");
+    float tol = 3*eps;
+    
     printf("%% trans = %s\n", lapack_trans_const(opts.transA) );
-    printf("%% BatchCount   M     N   MAGMA Gflop/s (ms)    CPU Gflop/s (ms)   MAGMA error\n");
-    printf("%%============================================================================\n");
+    printf("%% BatchCount     M     N   MAGMA Gflop/s (ms)   CPU Gflop/s (ms)   MAGMA error\n");
+    printf("%%=============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -77,7 +84,8 @@ int main( int argc, char** argv)
             if ( opts.transA == MagmaNoTrans ) {
                 Xm = N;
                 Ym = M;
-            } else {
+            }
+            else {
                 Xm = M;
                 Ym = N;
             }
@@ -95,14 +103,21 @@ int main( int argc, char** argv)
             TESTING_CHECK( magma_cmalloc( &d_X, sizeX ));
             TESTING_CHECK( magma_cmalloc( &d_Y, sizeY ));
 
-            TESTING_CHECK( magma_malloc( (void**) &A_array, batchCount * sizeof(magmaFloatComplex*) ));
-            TESTING_CHECK( magma_malloc( (void**) &X_array, batchCount * sizeof(magmaFloatComplex*) ));
-            TESTING_CHECK( magma_malloc( (void**) &Y_array, batchCount * sizeof(magmaFloatComplex*) ));
+            TESTING_CHECK( magma_malloc( (void**) &d_A_array, batchCount * sizeof(magmaFloatComplex*) ));
+            TESTING_CHECK( magma_malloc( (void**) &d_X_array, batchCount * sizeof(magmaFloatComplex*) ));
+            TESTING_CHECK( magma_malloc( (void**) &d_Y_array, batchCount * sizeof(magmaFloatComplex*) ));
 
             /* Initialize the matrices */
             lapackf77_clarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_clarnv( &ione, ISEED, &sizeX, h_X );
             lapackf77_clarnv( &ione, ISEED, &sizeY, h_Y );
+            
+            // Compute norms for error
+            for (int s = 0; s < batchCount; ++s) {
+                Anorm[s] = lapackf77_clange( "F", &M, &N,     &h_A[s*lda*N],   &lda,  work );
+                Xnorm[s] = lapackf77_clange( "F", &ione, &Xm, &h_X[s*Xm*incx], &incx, work );
+                Ynorm[s] = lapackf77_clange( "F", &ione, &Ym, &h_Y[s*Ym*incy], &incy, work );
+            }
             
             /* =====================================================================
                Performs operation using MAGMABLAS
@@ -111,15 +126,15 @@ int main( int argc, char** argv)
             magma_csetvector( Xm*batchCount, h_X, incx, d_X, incx, opts.queue );
             magma_csetvector( Ym*batchCount, h_Y, incy, d_Y, incy, opts.queue );
             
-            magma_cset_pointer( A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
-            magma_cset_pointer( X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue );
-            magma_cset_pointer( Y_array, d_Y, 1, 0, 0, incy*Ym, batchCount, opts.queue );
+            magma_cset_pointer( d_A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_cset_pointer( d_X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue );
+            magma_cset_pointer( d_Y_array, d_Y, 1, 0, 0, incy*Ym, batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_cgemv_batched(opts.transA, M, N,
-                             alpha, A_array, ldda,
-                                    X_array, incx,
-                             beta,  Y_array, incy, batchCount, opts.queue);
+                             alpha, d_A_array, ldda,
+                                    d_X_array, incx,
+                             beta,  d_Y_array, incy, batchCount, opts.queue);
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             magma_cgetvector( Ym*batchCount, d_Y, incy, h_Ymagma, incy, opts.queue );
@@ -137,12 +152,11 @@ int main( int argc, char** argv)
                 #endif
                 for (int i=0; i < batchCount; i++)
                 {
-                   blasf77_cgemv(
-                               lapack_trans_const(opts.transA),
-                               &M, &N,
-                               &alpha, h_A + i*lda*N, &lda,
-                                       h_X + i*Xm, &incx,
-                               &beta,  h_Y + i*Ym, &incy );
+                    blasf77_cgemv( lapack_trans_const(opts.transA),
+                                   &M, &N,
+                                   &alpha, h_A + i*lda*N, &lda,
+                                           h_X + i*Xm*incx, &incx,
+                                   &beta,  h_Y + i*Ym*incy, &incy );
                 }
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
                     magma_set_lapack_numthreads(nthreads);
@@ -155,48 +169,45 @@ int main( int argc, char** argv)
                Check the result
                =================================================================== */
             if ( opts.lapack ) {
-                // compute relative error for magma, relative to lapack,
-                // |C_magma - C_lapack| / |C_lapack|
+                // compute error compared lapack
+                // error = |dY - Y| / (gamma_{k+2}|A||X| + gamma_2|Yin|); k = Xn
                 magma_error = 0;
-                for (int s=0; s < batchCount; s++) {
-                    float Anorm = lapackf77_clange( "F", &M, &N, h_A + s * lda * N, &lda, work );
-                    float Xnorm = lapackf77_clange( "F", &Xm, &ione, h_X + s * Xm, &Xm, work );
-                    
-                    blasf77_caxpy( &Ym, &c_neg_one, h_Y + s * Ym, &incy, h_Ymagma + s * Ym, &incy );
-                    float err = lapackf77_clange( "F", &Ym, &ione, h_Ymagma + s * Ym, &Ym, work ) / (Anorm * Xnorm);
-
-                    if ( isnan(err) || isinf(err) ) {
-                      magma_error = err;
-                      break;
-                    }
-                    magma_error = max( err, magma_error );
+                
+                for (int s=0; s < batchCount; s++){
+                    normalize = sqrt(float(Xm+2))*Anorm[s]*Xnorm[s] + 2*Ynorm[s];
+                    if (normalize == 0)
+                        normalize = 1;
+                    blasf77_caxpy( &Ym, &c_neg_one, &h_Y[s*Ym*incy], &incy, &h_Ymagma[s*Ym*incy], &incy );
+                    error = lapackf77_clange( "F", &ione, &Ym, &h_Ymagma[s*Ym*incy], &incy, work )
+                          / normalize;
+                    magma_error = magma_max_nan( error, magma_error );
                 }
 
                 bool okay = (magma_error < tol);
                 status += ! okay;
-                printf("%10lld %5lld %5lld    %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
-                   (long long) batchCount, (long long) M, (long long) N,
-                   magma_perf,  1000.*magma_time,
-                   cpu_perf,    1000.*cpu_time,
-                   magma_error, (okay ? "ok" : "failed"));
+                printf("  %10lld %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
+                       (long long) batchCount, (long long) M, (long long) N,
+                       magma_perf,  1000.*magma_time,
+                       cpu_perf,    1000.*cpu_time,
+                       magma_error, (okay ? "ok" : "failed"));
             }
             else {
-                printf("%10lld %5lld %5lld    %7.2f (%7.2f)     ---   (  ---  )     ---\n",
-                   (long long) batchCount, (long long) M, (long long) N,
-                   magma_perf,  1000.*magma_time);
+                printf("  %10lld %5lld %5lld   %7.2f (%7.2f)     ---   (  ---  )     ---\n",
+                       (long long) batchCount, (long long) M, (long long) N,
+                       magma_perf,  1000.*magma_time);
             }
             
-            magma_free_cpu( h_A  );
-            magma_free_cpu( h_X  );
-            magma_free_cpu( h_Y  );
-            magma_free_cpu( h_Ymagma  );
+            magma_free_cpu( h_A );
+            magma_free_cpu( h_X );
+            magma_free_cpu( h_Y );
+            magma_free_cpu( h_Ymagma );
 
             magma_free( d_A );
             magma_free( d_X );
             magma_free( d_Y );
-            magma_free( A_array );
-            magma_free( X_array );
-            magma_free( Y_array );
+            magma_free( d_A_array );
+            magma_free( d_X_array );
+            magma_free( d_Y_array );
 
             fflush( stdout);
         }
@@ -204,6 +215,10 @@ int main( int argc, char** argv)
             printf( "\n" );
         }
     }
+
+    magma_free_cpu( Anorm );
+    magma_free_cpu( Xnorm );
+    magma_free_cpu( Ynorm );
 
     opts.cleanup();
     TESTING_CHECK( magma_finalize() );

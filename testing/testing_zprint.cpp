@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
   
        @precisions normal z -> c d s
        @author Mark Gates
@@ -77,7 +77,7 @@ int main( int argc, char** argv)
             magma_zprint( M, N, hA, lda );
             
             printf( "dA=" );
-            magma_zprint_gpu( M, N, dA, ldda );
+            magma_zprint_gpu( M, N, dA, ldda, opts.queue );
             
             magma_free_cpu( hA );
             magma_free( dA );

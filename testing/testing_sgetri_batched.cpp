@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Azzam Haidar
    @author Mark Gates
 
-   @generated from testing/testing_zgetri_batched.cpp, normal z -> s, Tue Aug 30 09:39:18 2016
+   @generated from testing/testing_zgetri_batched.cpp, normal z -> s, Sun Nov 20 20:20:38 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -41,13 +41,13 @@ int main( int argc, char** argv)
     const float c_neg_one = MAGMA_S_NEG_ONE;
     
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    float *h_A, *h_Ainv, *h_R, *work;
+    float *h_A, *h_Ainv, *h_R, *work, unused[1];
     magmaFloat_ptr d_A, d_invA;
     magmaFloat_ptr *dA_array;
     magmaFloat_ptr *dinvA_array;
     magma_int_t **dipiv_array;
     magma_int_t *dinfo_array;
-    magma_int_t *ipiv, *cpu_info;
+    magma_int_t *ipiv, *cpu_info, iunused[1];
     magma_int_t *d_ipiv, *d_info;
     magma_int_t N, n2, lda, ldda, info, info1, info2, lwork;
     magma_int_t ione     = 1;
@@ -78,7 +78,7 @@ int main( int argc, char** argv)
 
             // query for workspace size
             lwork = -1;
-            lapackf77_sgetri( &N, NULL, &lda, NULL, &tmp, &lwork, &info );
+            lapackf77_sgetri( &N, unused, &lda, iunused, &tmp, &lwork, &info );
             if (info != 0) {
                 printf("lapackf77_sgetri returned error %lld: %s.\n",
                        (long long) info, magma_strerror( info ));

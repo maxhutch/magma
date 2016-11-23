@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -352,6 +352,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">d2</td><td>magmaFloatComplex_ptr temporary vector</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dh</td><td>magmaFloatComplex_ptr input vector x</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dr</td><td>magmaFloatComplex_ptr input/output vector r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dd</td><td>magmaFloatComplex_ptr input/output vector d</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">skp</td><td>magmaFloatComplex_ptr array for parameters</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
@@ -444,8 +445,12 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>int dimension n</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">d1</td><td>magmaFloatComplex_ptr temporary vector</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">d2</td><td>magmaFloatComplex_ptr temporary vector</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dh</td><td>magmaFloatComplex_ptr input vector x</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">diag</td><td>magmaFloatComplex_ptr inverse diagonal (Jacobi preconditioner)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>magmaFloatComplex_ptr iteration vector x</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dr</td><td>magmaFloatComplex_ptr input/output vector r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dd</td><td>magmaFloatComplex_ptr input vector d</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dz</td><td>magmaFloatComplex_ptr input vector z</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dh</td><td>magmaFloatComplex_ptr input vector h</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">skp</td><td>magmaFloatComplex_ptr array for parameters</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>

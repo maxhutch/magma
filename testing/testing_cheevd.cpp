@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zheevd.cpp, normal z -> c, Tue Aug 30 09:39:13 2016
+       @generated from testing/testing_zheevd.cpp, normal z -> c, Sun Nov 20 20:20:37 2016
 
 */
 
@@ -41,12 +41,12 @@ int main( int argc, char** argv)
     
     /* Local variables */
     real_Double_t   gpu_time, cpu_time;
-    magmaFloatComplex *h_A, *h_R, *h_Z, *h_work, aux_work[1];
+    magmaFloatComplex *h_A, *h_R, *h_Z, *h_work, aux_work[1], unused[1];
     #ifdef COMPLEX
     float *rwork, aux_rwork[1];
     magma_int_t lrwork;
     #endif
-    float *w1, *w2, result[4]={0, 0, 0, 0}, eps, abstol;
+    float *w1, *w2, result[4]={0, 0, 0, 0}, eps, abstol, runused[1];
     magma_int_t *iwork, *isuppz, *ifail, aux_iwork[1];
     magma_int_t N, n2, info, lwork, liwork, lda;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -294,13 +294,13 @@ int main( int argc, char** argv)
                 magmaFloatComplex *work;
                 TESTING_CHECK( magma_cmalloc_cpu( &work, 2*N*N ));
                 
-                // e=NULL is unused since kband=0; tau=NULL is unused since itype=1
+                // e is unused since kband=0; tau is unused since itype=1
                 lapackf77_chet21( &ione, lapack_uplo_const(opts.uplo), &N, &izero,
                                   h_A, &lda,
-                                  w1, NULL,
+                                  w1, runused,
                                   h_R, &lda,
                                   h_R, &lda,
-                                  NULL, work,
+                                  unused, work,
                                   #ifdef COMPLEX
                                   rwork,
                                   #endif

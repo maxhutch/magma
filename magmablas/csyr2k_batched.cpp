@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zsyr2k_batched.cpp, normal z -> c, Tue Aug 30 09:38:40 2016
+       @generated from magmablas/zsyr2k_batched.cpp, normal z -> c, Sun Nov 20 20:20:32 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -161,10 +161,10 @@ magmablas_csyr2k_batched(
     } else if ( k < 0 ) {
         info = -4;
     } else if ( ((trans == MagmaNoTrans) && ldda < max(1,n)) ||
-                ((trans == MagmaTrans)   && ldda < max(1,k)) ) {
+                ((trans != MagmaNoTrans) && ldda < max(1,k)) ) {
         info = -7;
     } else if ( ((trans == MagmaNoTrans) && lddb < max(1,n)) ||
-                ((trans == MagmaTrans)   && lddb < max(1,k)) ) {
+                ((trans != MagmaNoTrans) && lddb < max(1,k)) ) {
         info = -9;
     } else if ( lddc < max(1,n) ) {
         info = -12;
@@ -188,7 +188,7 @@ magmablas_csyr2k_batched(
         magmablas_csyrk_internal_batched(uplo, MagmaNoTrans, n, k, alpha, dA_array, ldda, dB_array, lddb, beta, dC_array, lddc, batchCount, queue );
         magmablas_csyrk_internal_batched(uplo, MagmaNoTrans, n, k, alpha, dB_array, lddb, dA_array, ldda, c_one, dC_array, lddc, batchCount, queue );    
     }else{
-        magmablas_csyrk_internal_batched(uplo, MagmaTrans, n, k, alpha, dA_array, ldda, dB_array, lddb, beta, dC_array, lddc, batchCount, queue );
-        magmablas_csyrk_internal_batched(uplo, MagmaTrans, n, k, alpha, dB_array, lddb, dA_array, ldda, c_one, dC_array, lddc, batchCount, queue );
+        magmablas_csyrk_internal_batched(uplo, MagmaConjTrans, n, k, alpha, dA_array, ldda, dB_array, lddb, beta, dC_array, lddc, batchCount, queue );
+        magmablas_csyrk_internal_batched(uplo, MagmaConjTrans, n, k, alpha, dB_array, lddb, dA_array, ldda, c_one, dC_array, lddc, batchCount, queue );
     }
 }

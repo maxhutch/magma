@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zher2k_batched.cpp, normal z -> d, Tue Aug 30 09:39:16 2016
+       @generated from testing/testing_zher2k_batched.cpp, normal z -> d, Sun Nov 20 20:20:38 2016
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
@@ -28,7 +28,7 @@
 #endif
 #include "../control/magma_threadsetting.h"  // internal header
 
-#define PRECISION_d
+#define REAL
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dsyr2k_batched
@@ -36,9 +36,10 @@
 int main( int argc, char** argv)
 {
     TESTING_CHECK( magma_init() );
+    magma_print_environment();
 
     real_Double_t   gflops, magma_perf, magma_time, cpu_perf, cpu_time;
-    double          magma_error, Cnorm, work[1];
+    double          error, magma_error, normalize, work[1];
     magma_int_t N, K;
     magma_int_t An, Ak, Bn, Bk;
     magma_int_t sizeA, sizeB, sizeC;
@@ -50,45 +51,47 @@ int main( int argc, char** argv)
 
     double *h_A, *h_B, *h_C, *h_Cmagma;
     double *d_A, *d_B, *d_C;
+    double **d_A_array = NULL;
+    double **d_B_array = NULL;
+    double **d_C_array = NULL;
+
     double c_neg_one = MAGMA_D_NEG_ONE;
     double alpha = MAGMA_D_MAKE(  0.29, -0.86 );
     double beta  = MAGMA_D_MAKE( -0.48,  0.38 );
     
-    double **A_array = NULL;
-    double **B_array = NULL;
-    double **C_array = NULL;
-
     magma_opts opts( MagmaOptsBatched );
     opts.parse_opts( argc, argv );
-    
-    batchCount = opts.batchcount;
-
-    double tol = opts.tolerance * lapackf77_dlamch("E");
     opts.lapack |= opts.check;
+    batchCount = opts.batchcount;
     
-    TESTING_CHECK( magma_malloc((void**)&A_array, batchCount*sizeof(double*)) );
-    TESTING_CHECK( magma_malloc((void**)&B_array, batchCount*sizeof(double*)) );
-    TESTING_CHECK( magma_malloc((void**)&C_array, batchCount*sizeof(double*)) );
-            
-    printf("%% If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
-           "%% relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "%% uplo = %s, trans = %s\n",
-           lapack_uplo_const(opts.uplo),
-           lapack_trans_const(opts.transA));
-    #if defined (PRECISION_c) || defined(PRECISION_z)
-    if(opts.transA == MagmaTrans){
+    double *Anorm, *Bnorm, *Cnorm;
+    TESTING_CHECK( magma_dmalloc_cpu( &Anorm, batchCount ));
+    TESTING_CHECK( magma_dmalloc_cpu( &Bnorm, batchCount ));
+    TESTING_CHECK( magma_dmalloc_cpu( &Cnorm, batchCount ));
+    
+    TESTING_CHECK( magma_malloc((void**)&d_A_array, batchCount*sizeof(double*)) );
+    TESTING_CHECK( magma_malloc((void**)&d_B_array, batchCount*sizeof(double*)) );
+    TESTING_CHECK( magma_malloc((void**)&d_C_array, batchCount*sizeof(double*)) );
+    
+    // See testing_dgemm about tolerance.
+    double eps = lapackf77_dlamch("E");
+    double tol = 3*eps;
+    
+    #ifdef COMPLEX
+    if (opts.transA == MagmaTrans) {
         opts.transA = MagmaConjTrans;
         printf("%% WARNING: transA = MagmaTrans changed to MagmaConjTrans\n");
     }
-    #else
-    if(opts.transA == MagmaConjTrans){
-        opts.transA = MagmaTrans;
-        printf("%% WARNING: transA = MagmaConjTrans changed to MagmaTrans\n");
-    }
     #endif
     
-    printf("%% BatchCount   N     K   MAGMA Gflop/s (ms)   CPU Gflop/s (ms)    MAGMA error\n");
-    printf("%%======================================================================================================================\n");
+    printf("%% If running lapack (option --lapack), MAGMA error is computed\n"
+           "%% relative to CPU BLAS result.\n\n"
+           "%% uplo = %s, trans = %s\n",
+           lapack_uplo_const(opts.uplo),
+           lapack_trans_const(opts.transA));
+    
+    printf("%% BatchCount     N     K   MAGMA Gflop/s (ms)   CPU Gflop/s (ms)   MAGMA error\n");
+    printf("%%=============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -100,7 +103,8 @@ int main( int argc, char** argv)
                 ldb = Bn = N;
                 Ak = K;
                 Bk = K;
-            } else {
+            }
+            else {
                 lda = An = K;
                 ldb = Bn = K;
                 Ak = N;
@@ -130,10 +134,14 @@ int main( int argc, char** argv)
             lapackf77_dlarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_dlarnv( &ione, ISEED, &sizeB, h_B );
             lapackf77_dlarnv( &ione, ISEED, &sizeC, h_C );
-            for (int i=0; i < batchCount; i++){
-                magma_dmake_symmetric( N, h_C + i * ldc * N, ldc );
-            }
             
+            // Compute norms for error
+            for (int s = 0; s < batchCount; ++s) {
+                Anorm[s] = lapackf77_dlange( "F", &An, &Ak, &h_A[s*lda*Ak], &lda, work );
+                Bnorm[s] = lapackf77_dlange( "F", &Bn, &Bk, &h_B[s*ldb*Bk], &ldb, work );
+                Cnorm[s] = safe_lapackf77_dlansy( "F", lapack_uplo_const(opts.uplo), &N, &h_C[s*ldc*N], &ldc, work );
+            }
+
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
@@ -141,15 +149,15 @@ int main( int argc, char** argv)
             magma_dsetmatrix( Bn, Bk*batchCount, h_B, ldb, d_B, lddb, opts.queue );
             magma_dsetmatrix( N, N*batchCount, h_C, ldc, d_C, lddc, opts.queue );
             
-            magma_dset_pointer( A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue );
-            magma_dset_pointer( B_array, d_B, lddb, 0, 0, lddb*Bk, batchCount, opts.queue );
-            magma_dset_pointer( C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, opts.queue );
+            magma_dset_pointer( d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue );
+            magma_dset_pointer( d_B_array, d_B, lddb, 0, 0, lddb*Bk, batchCount, opts.queue );
+            magma_dset_pointer( d_C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_dsyr2k_batched(opts.uplo, opts.transA, N, K, 
-                             alpha, A_array, ldda, 
-                                    B_array, lddb, 
-                             beta, C_array, lddc, batchCount, opts.queue );
+                             alpha, d_A_array, ldda, 
+                                    d_B_array, lddb, 
+                             beta,  d_C_array, lddc, batchCount, opts.queue );
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             magma_dgetmatrix( N, N*batchCount, d_C, lddc, h_Cmagma, ldc, opts.queue );
@@ -167,12 +175,12 @@ int main( int argc, char** argv)
                 #endif
                 for (int i=0; i < batchCount; i++)
                 {
-                   blasf77_dsyr2k(
-                               lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA),
-                               &N, &K,
-                               &alpha, h_A + i*lda*Ak, &lda,
-                                       h_B + i*ldb*Bk, &ldb,
-                               &beta,  h_C + i*ldc*N, &ldc );
+                    blasf77_dsyr2k( lapack_uplo_const(opts.uplo),
+                                    lapack_trans_const(opts.transA),
+                                    &N, &K,
+                                    &alpha, h_A + i*lda*Ak, &lda,
+                                            h_B + i*ldb*Bk, &ldb,
+                                    &beta,  h_C + i*ldc*N, &ldc );
                 }
                 #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
                     magma_set_lapack_numthreads(nthreads);
@@ -185,33 +193,33 @@ int main( int argc, char** argv)
                Check the result
                =================================================================== */
             if ( opts.lapack ) {
-                // compute relative error of magma relative to lapack,
-                // |C_magma - C_lapack| / |C_lapack|
-                magma_error  = 0;
-                for (int s=0; s < batchCount; s++)
-                {
-                    magma_int_t C_batchSize = ldc * N;
-                    
-                    Cnorm = safe_lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_C + s*C_batchSize, &ldc, work );
+                // compute error compared lapack
+                // error = |dC - C| / (2*gamma_{k+2}|A||B| + gamma_2|Cin|)
+                magma_error = 0;
 
-                    // ----- magma error
-                    blasf77_daxpy( &C_batchSize, &c_neg_one, h_C + s*C_batchSize, &ione, h_Cmagma + s*C_batchSize, &ione );
-                    double err = safe_lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_Cmagma + s*C_batchSize, &ldc, work ) / Cnorm;
-
-                    if ( isnan(err) || isinf(err) ) {
-                        magma_error = err;
-                        break;
-                    }
-                    magma_error = max( err, magma_error );
+                for (int s=0; s < batchCount; s++) {
+                    normalize = 2*sqrt(double(K+2))*Anorm[s]*Bnorm[s] + 2*Cnorm[s];
+                    if (normalize == 0)
+                        normalize = 1;
+                    magma_int_t Csize = ldc * N;
+                    blasf77_daxpy( &Csize, &c_neg_one, &h_C[s*ldc*N], &ione, &h_Cmagma[s*ldc*N], &ione );
+                    error = safe_lapackf77_dlansy( "F", lapack_uplo_const(opts.uplo), &N, &h_Cmagma[s*ldc*N], &ldc, work )
+                          / normalize;
+                    magma_error = magma_max_nan( error, magma_error );
                 }
                 
                 bool okay = (magma_error < tol);
                 status += ! okay;
-                printf("%10lld %5lld %5lld    %7.2f (%7.2f)     %7.2f (%7.2f)     %8.2e  %s\n",
-                   (long long) batchCount, (long long) N, (long long) K,
-                   magma_perf,  1000.*magma_time,
-                   cpu_perf,    1000.*cpu_time,
-                   magma_error, (okay ? "ok" : "failed"));
+                printf("  %10lld %5lld %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
+                       (long long) batchCount, (long long) N, (long long) K,
+                       magma_perf,  1000.*magma_time,
+                       cpu_perf,    1000.*cpu_time,
+                       magma_error, (okay ? "ok" : "failed"));
+            }
+            else {
+                printf("  %10lld %5lld %5lld   %7.2f (%7.2f)     ---   (  ---  )     ---\n",
+                       (long long) batchCount, (long long) N, (long long) K,
+                       magma_perf,  1000.*magma_time);
             }
             
             magma_free_cpu( h_A  );
@@ -222,7 +230,7 @@ int main( int argc, char** argv)
             magma_free( d_A );
             magma_free( d_B );
             magma_free( d_C );
-            
+
             fflush( stdout);
         }
         if ( opts.niter > 1 ) {
@@ -230,10 +238,14 @@ int main( int argc, char** argv)
         }
     }
     
-    magma_free( A_array );
-    magma_free( B_array );
-    magma_free( C_array );
+    magma_free_cpu( Anorm );
+    magma_free_cpu( Bnorm );
+    magma_free_cpu( Cnorm );
 
+    magma_free( d_A_array );
+    magma_free( d_B_array );
+    magma_free( d_C_array );
+    
     opts.cleanup();
     TESTING_CHECK( magma_finalize() );
     return status;

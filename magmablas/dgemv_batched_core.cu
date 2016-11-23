@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
@@ -57,7 +57,7 @@
 
 
     @param[in]
-    dA_array 	Array of pointers, dimension (batchCount).
+    dA_array     Array of pointers, dimension (batchCount).
              Each is a DOUBLE PRECISION array A of DIMENSION ( ldda, n ) on the GPU
    
     @param[in]
@@ -65,7 +65,7 @@
             LDDA specifies the leading dimension of A.
 
     @param[in]
-    dx_array 	Array of pointers, dimension (batchCount).
+    dx_array     Array of pointers, dimension (batchCount).
             Each is a DOUBLE PRECISION array of dimension
             n if trans == MagmaNoTrans
             m if trans == MagmaTrans or MagmaConjTrans
@@ -80,7 +80,7 @@
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    dy_array 	Array of pointers, dimension (batchCount).
+    dy_array     Array of pointers, dimension (batchCount).
             Each is a DOUBLE PRECISION array of dimension
             m if trans == MagmaNoTrans
             n if trans == MagmaTrans or MagmaConjTrans

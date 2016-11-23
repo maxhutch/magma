@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
-       @generated from magmablas/zset_pointer.cu, normal z -> c, Tue Aug 30 09:38:39 2016
+       @generated from magmablas/zset_pointer.cu, normal z -> c, Sun Nov 20 20:20:32 2016
        @author Azzam Haidar
        @author Tingxing Dong
 
@@ -22,6 +22,20 @@ __global__ void kernel_cset_pointer(
     magma_int_t batch_offset)
 {
     output_array[blockIdx.x] =  input + blockIdx.x * batch_offset + row + column * lda;
+    //printf("==> kernel_set_pointer input_array %p output_array %p  \n",input+ blockIdx.x * batch_offset,output_array[blockIdx.x]);
+}
+/******************************************************************************/
+// set pointer with variable size matrices, batch_offset becomes an array with accumulated sum of sizes 
+// batch_offset[i] = sum( matrix_size[0], matrix_size[1], ..., matrix_size[i-1])
+// batch_offset is usually the output of a prefix sum operation
+__global__ void kernel_cset_pointer_var(
+    magmaFloatComplex **output_array,
+    magmaFloatComplex *input,
+    magma_int_t *lda,
+    magma_int_t row, magma_int_t column, 
+    magma_int_t *batch_offset)
+{
+    output_array[blockIdx.x] =  input + batch_offset[blockIdx.x] + row + column * lda[blockIdx.x];
     //printf("==> kernel_set_pointer input_array %p output_array %p  \n",input+ blockIdx.x * batch_offset,output_array[blockIdx.x]);
 }
 
@@ -83,6 +97,21 @@ void magma_cset_pointer(
         <<< batchCount, 1, 0, queue->cuda_stream() >>>
         (output_array, input, lda,  row, column, batch_offset);
 }
+/******************************************************************************/
+extern "C"
+void magma_cset_pointer_var_cc(
+    magmaFloatComplex **output_array,
+    magmaFloatComplex *input,
+    magma_int_t *lda,
+    magma_int_t row, magma_int_t column, 
+    magma_int_t *batch_offset,
+    magma_int_t batchCount, 
+    magma_queue_t queue)
+{
+    kernel_cset_pointer_var
+        <<< batchCount, 1, 0, queue->cuda_stream() >>>
+        (output_array, input, lda,  row, column, batch_offset);
+}
 
 
 /******************************************************************************/
@@ -93,7 +122,60 @@ __global__ void zdisplace_pointers_kernel(magmaFloatComplex **output_array,
     magmaFloatComplex *inpt = input_array[blockIdx.x];
     output_array[blockIdx.x] = &inpt[row + column * lda];
 }
-
+/******************************************************************************/
+/*  Variable pointer displacement kernels                                     */
+/******************************************************************************/
+// variable leading dimension, constant row and column offsets
+__global__ void zdisplace_pointers_var_cc_kernel(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t row, magma_int_t column)
+{
+    const int bid = blockIdx.x;
+    magmaFloatComplex *inpt = input_array[blockIdx.x];
+    if(inpt == NULL || row < 0 || column < 0) 
+        output_array[bid] = NULL;
+    else
+        output_array[bid] = &inpt[row + column * lda[blockIdx.x] ];
+}
+/******************************************************************************/
+// variable leading dimension, constant row offset and variable column offsets
+__global__ void zdisplace_pointers_var_cv_kernel(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t row, magma_int_t *column)
+{
+    const int bid = blockIdx.x;
+    magmaFloatComplex *inpt = input_array[blockIdx.x];
+    if(inpt == NULL || row < 0 || column[bid] < 0) 
+        output_array[bid] = NULL;
+    else
+        output_array[bid] = &inpt[row + column[bid] * lda[blockIdx.x] ];
+}
+/******************************************************************************/
+// variable leading dimension, variable row offset and  constant column offsets
+__global__ void zdisplace_pointers_var_vc_kernel(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t *row, magma_int_t column)
+{
+    const int bid = blockIdx.x;
+    magmaFloatComplex *inpt = input_array[blockIdx.x];
+    if(inpt == NULL || row[bid] < 0 || column < 0) 
+        output_array[bid] = NULL;
+    else
+        output_array[bid] = &inpt[row[bid] + column * lda[blockIdx.x] ];
+}
+/******************************************************************************/
+// variable leading dimension, variable row and column offsets
+__global__ void zdisplace_pointers_var_vv_kernel(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t* row, magma_int_t* column)
+{
+    const int bid = blockIdx.x;
+    magmaFloatComplex *inpt = input_array[bid];
+    if(inpt == NULL || row[bid] < 0 || column[bid] < 0) 
+        output_array[bid] = NULL;  
+    else
+        output_array[bid] = &inpt[ row[bid] + column[bid] * lda[bid] ];
+}
 
 /***************************************************************************//**
     Purpose
@@ -147,4 +229,60 @@ void magma_cdisplace_pointers(magmaFloatComplex **output_array,
     zdisplace_pointers_kernel
         <<< batchCount, 1, 0, queue->cuda_stream() >>>
         (output_array, input_array, lda, row, column);
+}
+/******************************************************************************/
+extern "C"
+void magma_cdisplace_pointers_var_cc(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t row, magma_int_t column, 
+               magma_int_t batchCount, magma_queue_t queue)
+{
+/*
+    compute the offset for all the matrices and save the displacment of the new pointer on output_array.
+    input_array contains the pointers to the initial position.
+    output_array[i] = input_array[i] + row + lda[i] * column; 
+*/
+    zdisplace_pointers_var_cc_kernel<<<batchCount, 1, 0, queue->cuda_stream()>>>(output_array, input_array, lda, row, column);
+}
+/******************************************************************************/
+extern "C"
+void magma_cdisplace_pointers_var_cv(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t row, magma_int_t* column, 
+               magma_int_t batchCount, magma_queue_t queue)
+{
+/*
+    compute the offset for all the matrices and save the displacment of the new pointer on output_array.
+    input_array contains the pointers to the initial position.
+    output_array[i] = input_array[i] + row + lda[i] * column[i]; 
+*/
+    zdisplace_pointers_var_cv_kernel<<<batchCount, 1, 0, queue->cuda_stream()>>>(output_array, input_array, lda, row, column);
+}
+/******************************************************************************/
+extern "C"
+void magma_cdisplace_pointers_var_vc(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t *row, magma_int_t column, 
+               magma_int_t batchCount, magma_queue_t queue)
+{
+/*
+    compute the offset for all the matrices and save the displacment of the new pointer on output_array.
+    input_array contains the pointers to the initial position.
+    output_array[i] = input_array[i] + row[i] + lda[i] * column; 
+*/
+    zdisplace_pointers_var_vc_kernel<<<batchCount, 1, 0, queue->cuda_stream()>>>(output_array, input_array, lda, row, column);
+}
+/******************************************************************************/
+extern "C"
+void magma_cdisplace_pointers_var_vv(magmaFloatComplex **output_array,
+               magmaFloatComplex **input_array, magma_int_t* lda,
+               magma_int_t* row, magma_int_t* column, 
+               magma_int_t batchCount, magma_queue_t queue)
+{
+/*
+    compute the offset for all the matrices and save the displacment of the new pointer on output_array.
+    input_array contains the pointers to the initial position.
+    output_array[i] = input_array[i] + row[i] + lda[i] * column[i]; 
+*/
+    zdisplace_pointers_var_vv_kernel<<<batchCount, 1, 0, queue->cuda_stream()>>>(output_array, input_array, lda, row, column);
 }

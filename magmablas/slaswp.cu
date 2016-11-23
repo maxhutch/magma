@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlaswp.cu, normal z -> s, Tue Aug 30 09:38:32 2016
+       @generated from magmablas/zlaswp.cu, normal z -> s, Sun Nov 20 20:20:30 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -112,7 +112,7 @@ __global__ void slaswp_kernel(
 *******************************************************************************/
 // used in sgessm, sgetrf_incpiv.
 extern "C" void
-magmablas_slaswp_q(
+magmablas_slaswp(
     magma_int_t n,
     magmaFloat_ptr dAT, magma_int_t ldda,
     magma_int_t k1, magma_int_t k2,
@@ -155,10 +155,6 @@ magmablas_slaswp_q(
     
     #undef dAT
 }
-
-
-
-
 
 
 /******************************************************************************/
@@ -253,7 +249,7 @@ __global__ void slaswpx_kernel(
     @ingroup magma_laswp
 *******************************************************************************/
 extern "C" void
-magmablas_slaswpx_q(
+magmablas_slaswpx(
     magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldx, magma_int_t ldy,
     magma_int_t k1, magma_int_t k2,
@@ -294,10 +290,6 @@ magmablas_slaswpx_q(
     
     #undef dA
 }
-
-
-
-
 
 
 /******************************************************************************/
@@ -388,7 +380,7 @@ __global__ void slaswp2_kernel(
     @ingroup magma_laswp
 *******************************************************************************/
 extern "C" void
-magmablas_slaswp2_q(
+magmablas_slaswp2(
     magma_int_t n,
     magmaFloat_ptr dAT, magma_int_t ldda,
     magma_int_t k1, magma_int_t k2,

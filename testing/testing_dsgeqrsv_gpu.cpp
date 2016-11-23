@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zcgeqrsv_gpu.cpp, mixed zc -> ds, Tue Aug 30 09:39:09 2016
+       @generated from testing/testing_zcgeqrsv_gpu.cpp, mixed zc -> ds, Sun Nov 20 20:20:34 2016
 
 */
 
@@ -34,7 +34,7 @@ int main( int argc, char** argv)
     double          error, gpu_error, cpu_error, Anorm, work[1];
     double c_one     = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
-    double *h_A, *h_A2, *h_B, *h_X, *h_R;
+    double *h_A, *h_A2, *h_B, *h_X, *h_R, unused[1];
     magmaDouble_ptr d_A, d_B, d_X, d_T;
     float  *d_SA, *d_SB;
     double *h_workd, *tau, tmp[1];
@@ -84,7 +84,9 @@ int main( int argc, char** argv)
             // query for workspace size
             lhwork = -1;
             lapackf77_dgels( MagmaNoTransStr, &M, &N, &nrhs,
-                             NULL, &lda, NULL, &ldb, tmp, &lhwork, &info );
+                             unused, &lda,
+                             unused, &ldb,
+                             tmp, &lhwork, &info );
             lhwork = (magma_int_t) MAGMA_D_REAL( tmp[0] );
             lhwork = max( lhwork, lworkgpu );
             

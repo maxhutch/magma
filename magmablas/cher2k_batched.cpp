@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zher2k_batched.cpp, normal z -> c, Tue Aug 30 09:38:40 2016
+       @generated from magmablas/zher2k_batched.cpp, normal z -> c, Sun Nov 20 20:20:31 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -18,21 +18,22 @@
 #include "commonblas_c.h"
 
 #define PRECISION_c
+#define COMPLEX
 
 /***************************************************************************//**
     Purpose
     -------
-   CHER2K  performs one of the Hermitian rank 2k operations
+    CHER2K  performs one of the Hermitian rank 2k operations
    
-      C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
+        C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
    
-   or
+    or
    
-      C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
+        C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
    
-   where  alpha and beta  are scalars with  beta  real,  C is an  n by n
-   Hermitian matrix and  A and B  are  n by k matrices in the first case
-   and  k by n  matrices in the second case.
+    where  alpha and beta  are scalars with  beta  real,  C is an  n by n
+    Hermitian matrix and  A and B  are  n by k matrices in the first case
+    and  k by n  matrices in the second case.
     
     Parameters
     ----------
@@ -155,17 +156,21 @@ magmablas_cher2k_batched(
     
     if ( uplo != MagmaLower && uplo != MagmaUpper) {
         info = -1; 
-    } else if ( trans != MagmaNoTrans && trans != Magma_ConjTrans) {
+    #ifdef COMPLEX
+    } else if ( trans != MagmaNoTrans && trans != MagmaConjTrans) {
+    #else
+    } else if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans) {
+    #endif
         info = -2;
     } else if ( n < 0 ) {
         info = -3;
     } else if ( k < 0 ) {
         info = -4;
-    } else if ( ((trans == MagmaNoTrans)    && ldda < max(1,n)) ||
-                ((trans == Magma_ConjTrans) && ldda < max(1,k)) ) {
+    } else if ( ((trans == MagmaNoTrans) && ldda < max(1,n)) ||
+                ((trans != MagmaNoTrans) && ldda < max(1,k)) ) {
         info = -7;
-    } else if ( ((trans == MagmaNoTrans)    && lddb < max(1,n)) ||
-                ((trans == Magma_ConjTrans) && lddb < max(1,k)) ) {
+    } else if ( ((trans == MagmaNoTrans) && lddb < max(1,n)) ||
+                ((trans != MagmaNoTrans) && lddb < max(1,k)) ) {
         info = -9;
     } else if ( lddc < max(1,n) ) {
         info = -12;

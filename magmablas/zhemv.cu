@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CONJ.
        
@@ -745,7 +745,7 @@ magmablas_zhemv_work(
 *******************************************************************************/
 extern "C"
 magma_int_t
-magmablas_zhemv_q(
+magmablas_zhemv(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex alpha,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,

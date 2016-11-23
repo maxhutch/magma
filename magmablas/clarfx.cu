@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlarfx.cu, normal z -> c, Tue Aug 30 09:38:31 2016
+       @generated from magmablas/zlarfx.cu, normal z -> c, Sun Nov 20 20:20:28 2016
 
 */
 #include "magma_internal.h"
@@ -162,7 +162,7 @@ void magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *t, ma
     LAPACK's clarf routine. 
 */
 extern "C" void
-magma_clarfx_gpu_q(
+magma_clarfx_gpu(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr v,
     magmaFloatComplex_ptr tau,

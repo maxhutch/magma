@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zcaxpycp.cu, mixed zc -> ds, Tue Aug 30 09:38:27 2016
+       @generated from magmablas/zcaxpycp.cu, mixed zc -> ds, Sun Nov 20 20:20:26 2016
 
 */
 #include "magma_internal.h"
@@ -39,7 +39,7 @@ dsaxpycp_kernel(
     copies w = b
 *******************************************************************************/
 extern "C" void
-magmablas_dsaxpycp_q(
+magmablas_dsaxpycp(
     magma_int_t m,
     magmaFloat_ptr r,
     magmaDouble_ptr x,

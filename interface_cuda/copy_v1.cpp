@@ -1,16 +1,19 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
 */
 #ifndef MAGMA_NO_V1
 
-#include "common_magma.h"
+#include "magma_internal.h"
+#include "magmablas_v1.h"  // includes v1 prototypes; does NOT map routine names
 #include "error.h"
+
+#include <cuda_runtime.h>
 
 #ifdef HAVE_CUBLAS
 
@@ -23,13 +26,13 @@
 
 /******************************************************************************/
 extern "C" void
-magma_setvector_internal(
+magma_setvector_v1_internal(
     magma_int_t n, magma_int_t elemSize,
     void const* hx_src, magma_int_t incx,
     magma_ptr   dy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
 {
-    magma_setvector_q_internal(
+    magma_setvector_internal(
         n, elemSize,
         hx_src, incx,
         dy_dst, incy,
@@ -40,13 +43,13 @@ magma_setvector_internal(
 
 /******************************************************************************/
 extern "C" void
-magma_getvector_internal(
+magma_getvector_v1_internal(
     magma_int_t n, magma_int_t elemSize,
     magma_const_ptr dx_src, magma_int_t incx,
     void*           hy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
 {
-    magma_getvector_q_internal(
+    magma_getvector_internal(
         n, elemSize,
         dx_src, incx,
         hy_dst, incy,
@@ -57,13 +60,13 @@ magma_getvector_internal(
 
 /******************************************************************************/
 extern "C" void
-magma_copyvector_internal(
+magma_copyvector_v1_internal(
     magma_int_t n, magma_int_t elemSize,
     magma_const_ptr dx_src, magma_int_t incx,
     magma_ptr       dy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
 {
-    magma_copyvector_q_internal(
+    magma_copyvector_internal(
         n, elemSize,
         dx_src, incx,
         dy_dst, incy,
@@ -74,7 +77,7 @@ magma_copyvector_internal(
 
 /******************************************************************************/
 extern "C" void
-magma_setmatrix_internal(
+magma_setmatrix_v1_internal(
     magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* hA_src, magma_int_t lda,
     magma_ptr   dB_dst, magma_int_t lddb,
@@ -86,12 +89,13 @@ magma_setmatrix_internal(
         hA_src, int(lda),
         dB_dst, int(lddb) );
     check_xerror( status, func, file, line );
+    MAGMA_UNUSED( status );
 }
 
 
 /******************************************************************************/
 extern "C" void
-magma_getmatrix_internal(
+magma_getmatrix_v1_internal(
     magma_int_t m, magma_int_t n, magma_int_t elemSize,
     magma_const_ptr dA_src, magma_int_t ldda,
     void*           hB_dst, magma_int_t ldb,
@@ -103,12 +107,13 @@ magma_getmatrix_internal(
         dA_src, int(ldda),
         hB_dst, int(ldb) );
     check_xerror( status, func, file, line );
+    MAGMA_UNUSED( status );
 }
 
 
 /******************************************************************************/
 extern "C" void
-magma_copymatrix_internal(
+magma_copymatrix_v1_internal(
     magma_int_t m, magma_int_t n, magma_int_t elemSize,
     magma_const_ptr dA_src, magma_int_t ldda,
     magma_ptr       dB_dst, magma_int_t lddb,
@@ -120,6 +125,7 @@ magma_copymatrix_internal(
         dA_src, int(ldda*elemSize),
         int(m*elemSize), int(n), cudaMemcpyDeviceToDevice );
     check_xerror( status, func, file, line );
+    MAGMA_UNUSED( status );
 }
 
 #endif // HAVE_CUBLAS

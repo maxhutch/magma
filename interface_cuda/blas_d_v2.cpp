@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from interface_cuda/blas_z_v2.cpp, normal z -> d, Tue Aug 30 09:38:00 2016
+       @generated from interface_cuda/blas_z_v2.cpp, normal z -> d, Sun Nov 20 20:20:20 2016
 */
 #include "magma_internal.h"
 #include "error.h"
@@ -39,7 +39,7 @@
     @ingroup magma_iamax
 *******************************************************************************/
 extern "C" magma_int_t
-magma_idamax_q(
+magma_idamax(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -71,7 +71,7 @@ magma_idamax_q(
     @ingroup magma_iamin
 *******************************************************************************/
 extern "C" magma_int_t
-magma_idamin_q(
+magma_idamin(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -103,7 +103,7 @@ magma_idamin_q(
     @ingroup magma_asum
 *******************************************************************************/
 extern "C" double
-magma_dasum_q(
+magma_dasum(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -144,7 +144,7 @@ magma_dasum_q(
     @ingroup magma_axpy
 *******************************************************************************/
 extern "C" void
-magma_daxpy_q(
+magma_daxpy(
     magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
@@ -182,7 +182,7 @@ magma_daxpy_q(
     @ingroup magma_copy
 *******************************************************************************/
 extern "C" void
-magma_dcopy_q(
+magma_dcopy(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_ptr       dy, magma_int_t incy,
@@ -293,7 +293,7 @@ double magma_ddot(
     @ingroup magma_nrm2
 *******************************************************************************/
 extern "C" double
-magma_dnrm2_q(
+magma_dnrm2(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -341,7 +341,7 @@ magma_dnrm2_q(
     @ingroup magma_rot
 *******************************************************************************/
 extern "C" void
-magma_drot_q(
+magma_drot(
     magma_int_t n,
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy,
@@ -390,7 +390,7 @@ magma_drot_q(
     @ingroup magma_rot
 *******************************************************************************/
 extern "C" void
-magma_drot_q(
+magma_drot(
     magma_int_t n,
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy,
@@ -437,7 +437,7 @@ magma_drot_q(
     @ingroup magma_rotg
 *******************************************************************************/
 extern "C" void
-magma_drotg_q(
+magma_drotg(
     double *a, double *b,
     double             *c, double *s,
     magma_queue_t queue )
@@ -453,7 +453,7 @@ magma_drotg_q(
     @ingroup magma_rotm
 *******************************************************************************/
 extern "C" void
-magma_drotm_q(
+magma_drotm(
     magma_int_t n,
     double *dx, magma_int_t incx,
     double *dy, magma_int_t incy,
@@ -472,7 +472,7 @@ magma_drotm_q(
     @ingroup magma_rotmg
 *******************************************************************************/
 extern "C" void
-magma_drotmg_q(
+magma_drotmg(
     double *d1, double       *d2,
     double *x1, const double *y1,
     double *param,
@@ -506,7 +506,7 @@ magma_drotmg_q(
     @ingroup magma_scal
 *******************************************************************************/
 extern "C" void
-magma_dscal_q(
+magma_dscal(
     magma_int_t n,
     double alpha,
     magmaDouble_ptr dx, magma_int_t incx,
@@ -540,7 +540,7 @@ magma_dscal_q(
     @ingroup magma_scal
 *******************************************************************************/
 extern "C" void
-magma_dscal_q(
+magma_dscal(
     magma_int_t n,
     double alpha,
     magmaDouble_ptr dx, magma_int_t incx,
@@ -578,7 +578,7 @@ magma_dscal_q(
     @ingroup magma_swap
 *******************************************************************************/
 extern "C" void
-magma_dswap_q(
+magma_dswap(
     magma_int_t n,
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy,
@@ -642,7 +642,7 @@ magma_dswap_q(
     @ingroup magma_gemv
 *******************************************************************************/
 extern "C" void
-magma_dgemv_q(
+magma_dgemv(
     magma_trans_t transA,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -703,7 +703,7 @@ magma_dgemv_q(
     @ingroup magma_ger
 *******************************************************************************/
 extern "C" void
-magma_dger_q(
+magma_dger(
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
@@ -761,7 +761,7 @@ magma_dger_q(
     @ingroup magma_ger
 *******************************************************************************/
 extern "C" void
-magma_dger_q(
+magma_dger(
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
@@ -823,7 +823,7 @@ magma_dger_q(
     @ingroup magma_hemv
 *******************************************************************************/
 extern "C" void
-magma_dsymv_q(
+magma_dsymv(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -879,7 +879,7 @@ magma_dsymv_q(
     @ingroup magma_her
 *******************************************************************************/
 extern "C" void
-magma_dsyr_q(
+magma_dsyr(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -939,7 +939,7 @@ magma_dsyr_q(
     @ingroup magma_her2
 *******************************************************************************/
 extern "C" void
-magma_dsyr2_q(
+magma_dsyr2(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -1003,7 +1003,7 @@ magma_dsyr2_q(
     @ingroup magma_symv
 *******************************************************************************/
 extern "C" void
-magma_dsymv_q(
+magma_dsymv(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -1057,7 +1057,7 @@ magma_dsymv_q(
     @ingroup magma_syr
 *******************************************************************************/
 extern "C" void
-magma_dsyr_q(
+magma_dsyr(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -1115,7 +1115,7 @@ magma_dsyr_q(
     @ingroup magma_syr2
 *******************************************************************************/
 extern "C" void
-magma_dsyr2_q(
+magma_dsyr2(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -1173,7 +1173,7 @@ magma_dsyr2_q(
     @ingroup magma_trmv
 *******************************************************************************/
 extern "C" void
-magma_dtrmv_q(
+magma_dtrmv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
     magmaDouble_const_ptr dA, magma_int_t ldda,
@@ -1231,7 +1231,7 @@ magma_dtrmv_q(
     @ingroup magma_trsv
 *******************************************************************************/
 extern "C" void
-magma_dtrsv_q(
+magma_dtrsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
     magmaDouble_const_ptr dA, magma_int_t ldda,
@@ -1306,7 +1306,7 @@ magma_dtrsv_q(
     @ingroup magma_gemm
 *******************************************************************************/
 extern "C" void
-magma_dgemm_q(
+magma_dgemm(
     magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     double alpha,
@@ -1381,7 +1381,7 @@ magma_dgemm_q(
     @ingroup magma_hemm
 *******************************************************************************/
 extern "C" void
-magma_dsymm_q(
+magma_dsymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -1451,7 +1451,7 @@ magma_dsymm_q(
     @ingroup magma_herk
 *******************************************************************************/
 extern "C" void
-magma_dsyrk_q(
+magma_dsyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -1527,7 +1527,7 @@ magma_dsyrk_q(
     @ingroup magma_her2k
 *******************************************************************************/
 extern "C" void
-magma_dsyr2k_q(
+magma_dsyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -1602,7 +1602,7 @@ magma_dsyr2k_q(
     @ingroup magma_symm
 *******************************************************************************/
 extern "C" void
-magma_dsymm_q(
+magma_dsymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -1670,7 +1670,7 @@ magma_dsymm_q(
     @ingroup magma_syrk
 *******************************************************************************/
 extern "C" void
-magma_dsyrk_q(
+magma_dsyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -1744,7 +1744,7 @@ magma_dsyrk_q(
     @ingroup magma_syr2k
 *******************************************************************************/
 extern "C" void
-magma_dsyr2k_q(
+magma_dsyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -1814,7 +1814,7 @@ magma_dsyr2k_q(
     @ingroup magma_trmm
 *******************************************************************************/
 extern "C" void
-magma_dtrmm_q(
+magma_dtrmm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -1885,7 +1885,7 @@ magma_dtrmm_q(
     @ingroup magma_trsm
 *******************************************************************************/
 extern "C" void
-magma_dtrsm_q(
+magma_dtrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,

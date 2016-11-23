@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from testing/magma_zgesvd_check.cpp, normal z -> d, Tue Aug 30 09:39:01 2016
+       @generated from testing/magma_zgesvd_check.cpp, normal z -> d, Sun Nov 20 20:20:32 2016
 */
 
 #include "magma_v2.h"
@@ -38,6 +38,7 @@ void check_dgesvd(
     double *VT, magma_int_t ldv,
     double result[4] )
 {
+    double unused[1];
     const magma_int_t izero = 0;
     double eps = lapackf77_dlamch( "E" );
     
@@ -80,9 +81,9 @@ void check_dgesvd(
         TESTING_CHECK( magma_dmalloc_cpu( &rwork_err, max(m,n) ));
         
         if ( U != NULL && VT != NULL ) {
-            // since KD=0 (3rd arg), E is not referenced so pass NULL (9th arg)
+            // since KD=0 (3rd arg), E is not referenced so pass unused (9th arg)
             lapackf77_dbdt01( &m, &n, &izero, A, &lda,
-                              U, &ldu, S, NULL, VT, &ldv,
+                              U, &ldu, S, unused, VT, &ldv,
                               work_err,
                               #ifdef COMPLEX
                               rwork_err,

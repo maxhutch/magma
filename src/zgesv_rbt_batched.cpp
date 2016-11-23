@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
 
@@ -165,8 +165,7 @@ magma_zgesv_rbt_batched(
     for (i = 0; i < nrhs; i++)
         magmablas_zprbt_mv_batched(n, dv, dB_array+(i), batchCount, queue);
 
- //   magma_zgetmatrix( n, nrhs, db, nn, B, ldb, queue );
-
+    //magma_zgetmatrix( n, nrhs, db, nn, B, ldb, queue );
 
     return info;
 }

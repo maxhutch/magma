@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/ztranspose_conj_inplace.cu, normal z -> c, Tue Aug 30 09:38:34 2016
+       @generated from magmablas/ztranspose_conj_inplace.cu, normal z -> c, Sun Nov 20 20:20:30 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -165,7 +165,7 @@ __global__ void ctranspose_conj_inplace_even( int n, magmaFloatComplex *matrix, 
     @ingroup magma_transpose
 *******************************************************************************/
 extern "C" void
-magmablas_ctranspose_conj_inplace_q(
+magmablas_ctranspose_conj_inplace(
     magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magma_queue_t queue )

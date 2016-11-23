@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from magmablas/zlanhe.cu, normal z -> d, Tue Aug 30 09:38:30 2016
+       @generated from magmablas/zlanhe.cu, normal z -> d, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -623,7 +623,7 @@ dlansy_max(
     @ingroup magma_lanhe
 *******************************************************************************/
 extern "C" double
-magmablas_dlansy_q(
+magmablas_dlansy(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr dwork, magma_int_t lwork,

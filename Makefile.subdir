@@ -18,6 +18,7 @@ targets := \
 	cleandep             \
 	cleangen             \
 	cleanmake            \
+	clmagmablas          \
 	control              \
 	dense                \
 	echo                 \
@@ -25,15 +26,16 @@ targets := \
 	include              \
 	install              \
 	interface_cuda       \
+	interface_opencl     \
 	lib                  \
 	magmablas            \
 	shared               \
+	sparsela             \
 	sparse               \
-	sparse-iter          \
-	sparse-iter/blas     \
-	sparse-iter/control  \
-	sparse-iter/src      \
-	sparse-iter/testing  \
+	sparse/blas          \
+	sparse/control       \
+	sparse/src           \
+	sparse/testing       \
 	sparse-lib           \
 	sparse-shared        \
 	sparse-static        \

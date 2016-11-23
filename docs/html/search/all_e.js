@@ -2,6 +2,7 @@ var searchData=
 [
   ['orthogonal_2funitary_20factorizations',['Orthogonal/unitary factorizations',['../group__group__orthogonal.html',1,'']]],
   ['orthogonal_2funitary_20factorizations',['Orthogonal/unitary factorizations',['../group__group__orthogonal__batched.html',1,'']]],
+  ['overview',['Overview',['../MAGMA-sparse.html',1,'']]],
   ['or_2fungbr_3a_20generate_20_20_20_20q_20or_20p_20from_20bidiagonal_20reduction',['or/ungbr: Generate    Q or P from bidiagonal reduction',['../group__magma__ungbr.html',1,'']]],
   ['or_2funghr_3a_20generate_20_20_20_20q_20from_20hessenberg_20reduction',['or/unghr: Generate    Q from Hessenberg reduction',['../group__magma__unghr.html',1,'']]],
   ['or_2funglq_3a_20generate_20_20_20_20q_20from_20lq_20factorization',['or/unglq: Generate    Q from LQ factorization',['../group__magma__unglq.html',1,'']]],

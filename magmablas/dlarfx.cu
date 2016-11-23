@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlarfx.cu, normal z -> d, Tue Aug 30 09:38:31 2016
+       @generated from magmablas/zlarfx.cu, normal z -> d, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -162,7 +162,7 @@ void magma_dtrmv_tkernel(double *T, int ldt, double *t, double *y)
     LAPACK's dlarf routine. 
 */
 extern "C" void
-magma_dlarfx_gpu_q(
+magma_dlarfx_gpu(
     magma_int_t m, magma_int_t n,
     magmaDouble_ptr v,
     magmaDouble_ptr tau,

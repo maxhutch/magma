@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -98,7 +98,7 @@ void magma_zlarfg_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComplex
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
-magma_zlarfg_gpu_q(
+magma_zlarfg_gpu(
     magma_int_t n,
     magmaDoubleComplex_ptr dx0,
     magmaDoubleComplex_ptr dx,
@@ -112,7 +112,7 @@ magma_zlarfg_gpu_q(
 
     /* recomputing the norm */
     //magmablas_dznrm2_cols(n, 1, dx0, n, dxnorm);
-    magmablas_dznrm2_cols_q(n-1, 1, dx0+1, n, dxnorm, queue);
+    magmablas_dznrm2_cols(n-1, 1, dx0+1, n, dxnorm, queue);
 
     magma_zlarfg_gpu_kernel
         <<< blocks, threads, 0, queue->cuda_stream() >>>

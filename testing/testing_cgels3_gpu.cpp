@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zgels3_gpu.cpp, normal z -> c, Tue Aug 30 09:39:10 2016
+       @generated from testing/testing_zgels3_gpu.cpp, normal z -> c, Sun Nov 20 20:20:36 2016
 
 */
 
@@ -34,7 +34,7 @@ int main( int argc, char** argv)
     float           gpu_error, cpu_error, error, Anorm, work[1];
     magmaFloatComplex  c_one     = MAGMA_C_ONE;
     magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
-    magmaFloatComplex *h_A, *h_A2, *h_B, *h_X, *h_R, *tau, *h_work, tmp[1];
+    magmaFloatComplex *h_A, *h_A2, *h_B, *h_X, *h_R, *tau, *h_work, tmp[1], unused[1];
     magmaFloatComplex_ptr d_A, d_B;
     magma_int_t M, N, size, nrhs, lda, ldb, ldda, lddb, min_mn, max_mn, nb, info;
     magma_int_t lworkgpu, lhwork, lhwork2;
@@ -74,13 +74,15 @@ int main( int argc, char** argv)
             
             // query for workspace size
             lhwork = -1;
-            lapackf77_cgeqrf(&M, &N, NULL, &M, NULL, tmp, &lhwork, &info);
+            lapackf77_cgeqrf( &M, &N, unused, &M, unused, tmp, &lhwork, &info );
             lhwork2 = (magma_int_t) MAGMA_C_REAL( tmp[0] );
             
             lhwork = -1;
             lapackf77_cunmqr( MagmaLeftStr, Magma_ConjTransStr,
-                              &M, &nrhs, &min_mn, NULL, &lda, NULL,
-                              NULL, &ldb, tmp, &lhwork, &info);
+                              &M, &nrhs, &min_mn,
+                              unused, &lda, unused,
+                              unused, &ldb,
+                              tmp, &lhwork, &info);
             lhwork = (magma_int_t) MAGMA_C_REAL( tmp[0] );
             lhwork = max( max( lhwork, lhwork2 ), lworkgpu );
             

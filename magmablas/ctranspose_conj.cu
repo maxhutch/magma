@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/ztranspose_conj.cu, normal z -> c, Tue Aug 30 09:38:34 2016
+       @generated from magmablas/ztranspose_conj.cu, normal z -> c, Sun Nov 20 20:20:30 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -160,7 +160,7 @@ void ctranspose_conj_kernel_batched(
     @ingroup magma_transpose
 *******************************************************************************/
 extern "C" void
-magmablas_ctranspose_conj_q(
+magmablas_ctranspose_conj(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr dA,  magma_int_t ldda,
     magmaFloatComplex_ptr       dAT, magma_int_t lddat,

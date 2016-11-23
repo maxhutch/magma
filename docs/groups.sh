@@ -10,7 +10,7 @@
 
 cd .. && make generate && cd docs
 
-egrep -h '@(addto|in)group' ../*/*.{h,c,cu,cpp} ../sparse-iter/*/*.{h,cu,cpp} | \
+egrep -h '@(addto|in)group' ../*/*.{h,c,cu,cpp} ../sparse/*/*.{h,cu,cpp} | \
 	perl -pe 's#/// +##;  s/^ *\*//;  s/^ +//;  s/\@(addto|in)group/\@group/;' | \
 	sort --unique > ingroup
 

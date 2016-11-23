@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Mark Gates
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from magmablas/zgemv_fermi.cu, normal z -> d, Tue Aug 30 09:38:28 2016
+       @generated from magmablas/zgemv_fermi.cu, normal z -> d, Sun Nov 20 20:20:28 2016
 */
 #include "magma_internal.h"
 #include "commonblas_d.h"
@@ -177,7 +177,7 @@ dgemvc_template_fermi(
     @ingroup magma_gemv
 *******************************************************************************/
 extern "C" void
-magmablas_dgemv_q(
+magmablas_dgemv(
     magma_trans_t trans, magma_int_t m, magma_int_t n, 
     double alpha,
     magmaDouble_const_ptr dA, magma_int_t ldda,

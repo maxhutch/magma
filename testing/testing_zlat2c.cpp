@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @precisions mixed zc -> ds
@@ -107,8 +107,8 @@ int main( int argc, char** argv )
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_zprint( n, n, A,  lda );
                 printf( "SA= " );  magma_cprint( n, n, SA, lda );
-                printf( "dA= " );  magma_zprint_gpu( n, n, dA,  ldda );
-                printf( "dSA=" );  magma_cprint_gpu( n, n, dSA, ldda );
+                printf( "dA= " );  magma_zprint_gpu( n, n, dA,  ldda, opts.queue );
+                printf( "dSA=" );  magma_cprint_gpu( n, n, dSA, ldda, opts.queue );
             }
             
             /* =====================================================================
@@ -178,8 +178,8 @@ int main( int argc, char** argv )
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_zprint( n, n, A,  lda );
                 printf( "SA= " );  magma_cprint( n, n, SA, lda );
-                printf( "dA= " );  magma_zprint_gpu( n, n, dA,  ldda );
-                printf( "dSA=" );  magma_cprint_gpu( n, n, dSA, ldda );
+                printf( "dA= " );  magma_zprint_gpu( n, n, dA,  ldda, opts.queue );
+                printf( "dSA=" );  magma_cprint_gpu( n, n, dSA, ldda, opts.queue );
             }
             
             /* =====================================================================

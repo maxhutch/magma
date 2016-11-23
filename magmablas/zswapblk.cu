@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -75,7 +75,7 @@ __global__ void magmagpu_zswapblkcm( magmagpu_zswapblk_params_t params )
     @ingroup magma_swapblk
 *******************************************************************************/
 extern "C" void 
-magmablas_zswapblk_q(
+magmablas_zswapblk(
     magma_order_t order, magma_int_t n, 
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr dB, magma_int_t lddb,

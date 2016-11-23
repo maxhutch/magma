@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from src/zlarfb_gpu_gemm.cpp, normal z -> s, Tue Aug 30 09:38:08 2016
+       @generated from src/zlarfb_gpu_gemm.cpp, normal z -> s, Sun Nov 20 20:20:21 2016
 */
 #include "magma_internal.h"
 
@@ -141,7 +141,7 @@
     @ingroup magma_larfb
 *******************************************************************************/
 extern "C" magma_int_t
-magma_slarfb_gpu_gemm_q(
+magma_slarfb_gpu_gemm(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaFloat_const_ptr dV,    magma_int_t lddv,

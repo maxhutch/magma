@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from src/zheevx_gpu.cpp, normal z -> c, Tue Aug 30 09:38:14 2016
+       @generated from src/zheevx_gpu.cpp, normal z -> c, Sun Nov 20 20:20:23 2016
 
  */
 #include "magma_internal.h"
@@ -309,7 +309,6 @@ magma_cheevx_gpu(
     }
 
     if (MAGMA_SUCCESS != magma_smalloc( &dwork, n )) {
-        fprintf (stderr, "!!!! device memory allocation error (magma_cheevx_gpu)\n");
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -470,6 +469,7 @@ magma_cheevx_gpu(
     work[1] = magma_cmake_lwork( lopt );
     
     magma_queue_destroy( queue );
-    
+    magma_free( dwork );
+
     return *info;
 } /* magma_cheevx_gpu */

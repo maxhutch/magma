@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @author Azzam Haidar
+       @author Ichitaro Yamazaki
        
-       @generated from magmablas/zlacpy_sym_in.cu, normal z -> c, Tue Aug 30 09:38:29 2016
+       @generated from magmablas/zlacpy_sym_in.cu, normal z -> c, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -179,7 +180,7 @@ void clacpy_sym_in_upper_kernel(
 /***************************************************************************//**
     Purpose
     -------
-    CLACPY_Q copies all or part of a two-dimensional matrix dA to another
+    CLACPY_SYM_IN copies all or part of a two-dimensional matrix dA to another
     matrix dB.
     
     This is the same as CLACPY, but adds queue argument.
@@ -237,7 +238,7 @@ void clacpy_sym_in_upper_kernel(
     @ingroup magma_lacpy
 *******************************************************************************/
 extern "C" void
-magmablas_clacpy_sym_in_q(
+magmablas_clacpy_sym_in(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magma_int_t *rows, magma_int_t *perm,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,

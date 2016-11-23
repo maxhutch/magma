@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zhesv.cpp, normal z -> c, Tue Aug 30 09:39:07 2016
+       @generated from testing/testing_zhesv.cpp, normal z -> c, Sun Nov 20 20:20:36 2016
        @author Ichitaro Yamazaki
 */
 // includes, system

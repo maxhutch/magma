@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -67,7 +67,7 @@ int main( int argc, char** argv)
             
             // query for workspace size
             lwork = -1;
-            lapackf77_zgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
+            lapackf77_zgeqrf( &M, &N, tmp, &M, tmp, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
             
             TESTING_CHECK( magma_zmalloc_cpu( &tau,    min_mn ));

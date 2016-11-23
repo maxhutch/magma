@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/ztrtri_diag.cu, normal z -> d, Tue Aug 30 09:38:35 2016
+       @generated from magmablas/ztrtri_diag.cu, normal z -> d, Sun Nov 20 20:20:30 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -78,7 +78,7 @@
     @ingroup magma_trtri_diag
 *******************************************************************************/
 extern "C" void
-magmablas_dtrtri_diag_q(
+magmablas_dtrtri_diag(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr d_dinvA,

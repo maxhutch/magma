@@ -1,0 +1,89 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 2.2.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      @date November 2016
+#//////////////////////////////////////////////////////////////////////////////
+
+# push previous directory
+dir_stack := $(dir_stack) $(cdir)
+cdir      := sparse/blas
+# ----------------------------------------------------------------------
+
+
+# alphabetic order by base name (ignoring precision)
+libsparse_src += \
+	$(cdir)/magma_z_blaswrapper.cpp       \
+	$(cdir)/zbajac_csr.cu                 \
+	$(cdir)/zbajac_csr_overlap.cu         \
+	$(cdir)/zgeaxpy.cu                    \
+	$(cdir)/zgecsr5mv.cu                  \
+	$(cdir)/zgecsrmv.cu                   \
+	$(cdir)/zgeellmv.cu                   \
+	$(cdir)/zgeelltmv.cu                  \
+	$(cdir)/zgeellrtmv.cu                 \
+	$(cdir)/zgesellcmv.cu                 \
+	$(cdir)/zgesellcmmv.cu                \
+	$(cdir)/zjacobisetup.cu               \
+	$(cdir)/zlobpcg_shift.cu              \
+	$(cdir)/zlobpcg_residuals.cu          \
+	$(cdir)/zlobpcg_maxpy.cu              \
+	$(cdir)/zmdotc.cu                     \
+	$(cdir)/zgemvmdot.cu                  \
+	$(cdir)/zmdot_shfl.cu                 \
+	$(cdir)/zmergebicgstab2.cu            \
+	$(cdir)/zmergebicgstab3.cu            \
+	$(cdir)/zmergeidr.cu                  \
+	$(cdir)/zmergecg.cu                   \
+	$(cdir)/zmergecgs.cu                  \
+	$(cdir)/zmergeqmr.cu                  \
+	$(cdir)/zmergebicgstab.cu             \
+	$(cdir)/zmergetfqmr.cu                \
+	$(cdir)/zmgecsrmv.cu                  \
+	$(cdir)/zmgeellmv.cu                  \
+	$(cdir)/zmgeelltmv.cu                 \
+	$(cdir)/zmgesellcmmv.cu               \
+	$(cdir)/zpipelinedgmres.cu            \
+	
+# Wrappers to cusparse functions
+libsparse_src += \
+	$(cdir)/zilu.cpp                      \
+	$(cdir)/magma_zcuspmm.cpp             \
+	$(cdir)/magma_zcuspaxpy.cpp           \
+
+# Iterative factorizations
+libsparse_src += \
+	$(cdir)/zparilu.cpp		      \
+	$(cdir)/zparilu_kernels.cu            \
+	$(cdir)/zparic_kernels.cu             \
+	
+# Auxiliary routines
+libsparse_src += \
+	$(cdir)/zcompact.cu                   \
+	$(cdir)/magma_zmcsrcompressor_gpu.cu  \
+	$(cdir)/magma_zdiagcheck.cu           \
+	$(cdir)/zgecsrreimsplit.cu            \
+	$(cdir)/zgedensereimsplit.cu          \
+	$(cdir)/magma_zmconjugate.cu          \
+	
+# ISAI
+libsparse_src += \
+	$(cdir)/zgeisai.cu	\
+	$(cdir)/zgeisai_8.cu      \
+	$(cdir)/zgeisai_16.cu      \
+	$(cdir)/zgeisai_32.cu      \
+	$(cdir)/zgeisai_trsv.cu           \
+	$(cdir)/zgeblockstruct.cu	\
+	$(cdir)/zgeisai_maxblock.cu	\
+	$(cdir)/zgeisai_batched32.cu      \
+
+# Tester routines
+libsparse_src += \
+	$(cdir)/zmergeblockkrylov.cu          \
+
+
+# ----------------------------------------------------------------------
+# pop first directory
+cdir      := $(firstword $(dir_stack))
+dir_stack := $(wordlist 2, $(words $(dir_stack)), $(dir_stack))

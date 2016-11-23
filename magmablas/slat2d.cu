@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/clat2z.cu, mixed zc -> ds, Tue Aug 30 09:38:33 2016
+       @generated from magmablas/clat2z.cu, mixed zc -> ds, Sun Nov 20 20:20:28 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -148,7 +148,7 @@ void slat2d_upper(
     @ingroup magma_lat2
 *******************************************************************************/
 extern "C" void
-magmablas_slat2d_q(
+magmablas_slat2d(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloat_const_ptr SA, magma_int_t ldsa,
     magmaDouble_ptr      A,  magma_int_t lda,

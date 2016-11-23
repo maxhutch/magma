@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -179,7 +179,10 @@ int main( int argc, char** argv)
             // ||b - 1/alpha*A*x|| / (||A||*||x||)
             magmaDoubleComplex inv_alpha = MAGMA_Z_DIV( c_one, alpha );
             double normR, normX, normA;
-            normA = lapackf77_zlange( "M", &Ak, &Ak, hA, &lda, work );
+            normA = lapackf77_zlantr( "M",
+                                      lapack_uplo_const(opts.uplo),
+                                      lapack_diag_const(opts.diag),
+                                      &Ak, &Ak, hA, &lda, work );
             
             #if defined(HAVE_CUBLAS)
                 // check magma

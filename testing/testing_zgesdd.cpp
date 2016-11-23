@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -388,13 +388,13 @@ int main( int argc, char** argv)
     // Local variables
     real_Double_t   gpu_time=0, cpu_time=0;
     magmaDoubleComplex *hA, *hR, *U, *Umalloc, *VT, *VTmalloc, *hwork;
-    magmaDoubleComplex dummy[1];
-    double *S, *Sref, work[1];
+    magmaDoubleComplex dummy[1], unused[1];
+    double *S, *Sref, work[1], runused[1];
     #ifdef COMPLEX
     lwork_formula_t lrwork;
     double *rwork;
     #endif
-    magma_int_t *iwork;
+    magma_int_t *iwork, iunused[1];
     magma_int_t M, N, N_U, M_VT, lda, ldu, ldv, n2, min_mn, info;
     magma_int_t ISEED[4] = {0,0,0,1};
     int status = 0;
@@ -470,20 +470,26 @@ int main( int argc, char** argv)
                =================================================================== */
             magma_int_t query_magma, query_lapack;
             magma_zgesdd( *jobz, M, N,
-                          NULL, lda, NULL, NULL, ldu, NULL, ldv, dummy, ineg_one,
+                          unused, lda, runused,
+                          unused, ldu,
+                          unused, ldv,
+                          dummy, ineg_one,
                           #ifdef COMPLEX
-                          NULL,
+                          runused,
                           #endif
-                          NULL, &info );
+                          iunused, &info );
             assert( info == 0 );
             query_magma = (magma_int_t) MAGMA_Z_REAL( dummy[0] );
             
             lapackf77_zgesdd( lapack_vec_const(*jobz), &M, &N,
-                              NULL, &lda, NULL, NULL, &ldu, NULL, &ldv, dummy, &ineg_one,
+                              unused, &lda, runused,
+                              unused, &ldu,
+                              unused, &ldv,
+                              dummy, &ineg_one,
                               #ifdef COMPLEX
-                              NULL,
+                              runused,
                               #endif
-                              NULL, &info );
+                              iunused, &info );
             assert( info == 0 );
             query_lapack = (magma_int_t) MAGMA_Z_REAL( dummy[0] );
             

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -201,7 +201,7 @@ void zlat2c_upper(
     @ingroup magma_lat2
 *******************************************************************************/
 extern "C" void
-magmablas_zlat2c_q(
+magmablas_zlat2c(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_const_ptr  A, magma_int_t lda,
     magmaFloatComplex_ptr        SA, magma_int_t ldsa,

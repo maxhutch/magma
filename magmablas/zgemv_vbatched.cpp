@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
        
@@ -59,9 +59,10 @@ magmablas_zgemv_vbatched_nocheck(
     // compute the max. dimensions
     magma_imax_size_2(m, n, batchCount, queue);
     magma_int_t max_m, max_n; 
-    magma_getvector(1, sizeof(magma_int_t), &m[batchCount], 1, &max_m, 1, queue);
-    magma_getvector(1, sizeof(magma_int_t), &n[batchCount], 1, &max_n, 1, queue);
-    
+    magma_igetvector_async(1, &m[batchCount], 1, &max_m, 1, queue);
+    magma_igetvector_async(1, &n[batchCount], 1, &max_n, 1, queue);
+    magma_queue_sync( queue );
+
     magmablas_zgemv_vbatched_max_nocheck( 
             trans, 
             m, n, 
@@ -110,7 +111,7 @@ magmablas_zgemv_vbatched_nocheck(
 
 
     @param[in]
-    dA_array 	Array of pointers, dimension (batchCount).
+    dA_array     Array of pointers, dimension (batchCount).
              Each is a COMPLEX_16 array A of DIMENSION ( LDDA, N ) on the GPU
    
     @param[in]
@@ -118,7 +119,7 @@ magmablas_zgemv_vbatched_nocheck(
             Each INTEGER LDDA specifies the leading dimension of each matrix A.
 
     @param[in]
-    dx_array 	Array of pointers, dimension (batchCount).
+    dx_array     Array of pointers, dimension (batchCount).
             Each is a COMPLEX_16 array of dimension
             N if trans == MagmaNoTrans
             M if trans == MagmaTrans or MagmaConjTrans
@@ -135,7 +136,7 @@ magmablas_zgemv_vbatched_nocheck(
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    dy_array 	Array of pointers, dimension (batchCount).
+    dy_array     Array of pointers, dimension (batchCount).
             Each is a COMPLEX_16 array of dimension
             M if trans == MagmaNoTrans
             N if trans == MagmaTrans or MagmaConjTrans
@@ -178,9 +179,10 @@ magmablas_zgemv_vbatched(
     // compute the max. dimensions
     magma_imax_size_2(m, n, batchCount, queue);
     magma_int_t max_m, max_n; 
-    magma_getvector(1, sizeof(magma_int_t), &m[batchCount], 1, &max_m, 1, queue);
-    magma_getvector(1, sizeof(magma_int_t), &n[batchCount], 1, &max_n, 1, queue);
-    
+    magma_igetvector_async(1, &m[batchCount], 1, &max_m, 1, queue);
+    magma_igetvector_async(1, &n[batchCount], 1, &max_n, 1, queue);
+    magma_queue_sync( queue );
+
     magmablas_zgemv_vbatched_max_nocheck( 
             trans, 
             m, n, 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zgetmatrix_transpose.cpp, normal z -> c, Tue Aug 30 09:38:29 2016
+       @generated from magmablas/zgetmatrix_transpose.cpp, normal z -> c, Sun Nov 20 20:20:27 2016
 
 */
 #include "magma_internal.h"
@@ -27,7 +27,7 @@
     @ingroup magma_getmatrix_transpose
 *******************************************************************************/
 extern "C" void
-magmablas_cgetmatrix_transpose_q(
+magmablas_cgetmatrix_transpose(
     magma_int_t m, magma_int_t n, magma_int_t nb,
     magmaFloatComplex_const_ptr dAT, magma_int_t ldda,
     magmaFloatComplex          *hA,  magma_int_t lda,
@@ -54,7 +54,7 @@ magmablas_cgetmatrix_transpose_q(
         /* Move data from GPU to CPU using 2 buffers; 1st transpose the data on the GPU */
         ib = min(n-i, nb);
         
-        magmablas_ctranspose_q( ib, m, dAT(i,0), ldda, dwork(0,(j%2)*nb), lddw, queues[j%2] );
+        magmablas_ctranspose( ib, m, dAT(i,0), ldda, dwork(0,(j%2)*nb), lddw, queues[j%2] );
         magma_cgetmatrix_async( m, ib,
                                 dwork(0,(j%2)*nb), lddw,
                                 hA(0,i), lda, queues[j%2] );

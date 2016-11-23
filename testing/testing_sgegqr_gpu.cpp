@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zgegqr_gpu.cpp, normal z -> s, Tue Aug 30 09:39:09 2016
+       @generated from testing/testing_zgegqr_gpu.cpp, normal z -> s, Sun Nov 20 20:20:35 2016
        @author Stan Tomov
 
 */
@@ -35,7 +35,7 @@ int main( int argc, char** argv)
     float c_neg_one = MAGMA_S_NEG_ONE;
     float c_one     = MAGMA_S_ONE;
     float c_zero    = MAGMA_S_ZERO;
-    float *h_A, *h_R, *tau, *dtau, *h_work, *h_rwork, tmp[1];
+    float *h_A, *h_R, *tau, *dtau, *h_work, *h_rwork, tmp[1], unused[1];
 
     magmaFloat_ptr d_A, dwork;
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn;
@@ -83,7 +83,7 @@ int main( int argc, char** argv)
             
             // query for workspace size
             lwork = -1;
-            lapackf77_sgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
+            lapackf77_sgeqrf( &M, &N, unused, &M, unused, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_S_REAL( tmp[0] );
             lwork = max(lwork, 3*N*N);
             

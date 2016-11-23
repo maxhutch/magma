@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -93,6 +93,8 @@ int main( int argc, char** argv)
                         h_A[j + i*lda] = MAGMA_Z_CONJ( h_A[i + j*lda] );
                     }
                 }
+                // real diagonal
+                h_A[j + j*lda] = MAGMA_Z_MAKE( MAGMA_Z_REAL( h_A[j + j*lda] ), 0 );
             }
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;

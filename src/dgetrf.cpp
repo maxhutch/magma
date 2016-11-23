@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Stan Tomov
        @author Mark Gates
        
-       @generated from src/zgetrf.cpp, normal z -> d, Tue Aug 30 09:38:05 2016
+       @generated from src/zgetrf.cpp, normal z -> d, Sun Nov 20 20:20:20 2016
 */
 #include "magma_internal.h"
 
@@ -149,7 +149,7 @@ magma_dgetrf(
         magma_queue_create( cdev, &queues[1] );
         
         /* check the memory requirement */
-        size_t mem_size = magma_queue_mem_size( queues[0] );
+        size_t mem_size = magma_mem_size( queues[0] );
         mem_size /= sizeof(double);
 
         magma_int_t h = 1+(2+ngpu);

@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
 
-       @generated from src/zgesv_rbt_batched.cpp, normal z -> s, Tue Aug 30 09:38:25 2016
+       @generated from src/zgesv_rbt_batched.cpp, normal z -> s, Sun Nov 20 20:20:26 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -165,8 +165,7 @@ magma_sgesv_rbt_batched(
     for (i = 0; i < nrhs; i++)
         magmablas_sprbt_mv_batched(n, dv, dB_array+(i), batchCount, queue);
 
- //   magma_sgetmatrix( n, nrhs, db, nn, B, ldb, queue );
-
+    //magma_sgetmatrix( n, nrhs, db, nn, B, ldb, queue );
 
     return info;
 }

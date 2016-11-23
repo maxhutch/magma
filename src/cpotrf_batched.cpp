@@ -1,85 +1,22 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
        @author Ahmad Abdelfattah
 
-       @generated from src/zpotrf_batched.cpp, normal z -> c, Tue Aug 30 09:38:26 2016
+       @generated from src/zpotrf_batched.cpp, normal z -> c, Sun Nov 20 20:20:28 2016
 */
 #include <cuda_runtime.h>
 
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
 
-/***************************************************************************//**
-    Purpose
-    -------
-    CPOTRF computes the Cholesky factorization of a complex Hermitian
-    positive definite matrix dA.
-
-    The factorization has the form
-        dA = U**H * U,   if UPLO = MagmaUpper, or
-        dA = L  * L**H,  if UPLO = MagmaLower,
-    where U is an upper triangular matrix and L is lower triangular.
-
-    This is the block version of the algorithm, calling Level 3 BLAS.
-
-    Arguments
-    ---------
-    @param[in]
-    uplo    magma_uplo_t
-      -     = MagmaUpper:  Upper triangle of dA is stored;
-      -     = MagmaLower:  Lower triangle of dA is stored.
-
-    @param[in]
-    n       INTEGER
-            The order of the matrix dA.  N >= 0.
-
-    @param[in,out]
-    dA_array      Array of pointers, dimension (batchCount).
-             Each is a COMPLEX array on the GPU, dimension (LDDA,N)
-             On entry, each pointer is a Hermitian matrix dA.  
-             If UPLO = MagmaUpper, the leading
-             N-by-N upper triangular part of dA contains the upper
-             triangular part of the matrix dA, and the strictly lower
-             triangular part of dA is not referenced.  If UPLO = MagmaLower, the
-             leading N-by-N lower triangular part of dA contains the lower
-             triangular part of the matrix dA, and the strictly upper
-             triangular part of dA is not referenced.
-    \n
-             On exit, if corresponding entry in info_array = 0, 
-             each pointer is the factor U or L from the Cholesky
-             factorization dA = U**H * U or dA = L * L**H.
-
-    @param[in]
-    ldda     INTEGER
-            The leading dimension of each array dA.  LDDA >= max(1,N).
-            To benefit from coalescent memory accesses LDDA must be
-            divisible by 16.
-
-    @param[out]
-    info_array    Array of INTEGERs, dimension (batchCount), for corresponding matrices.
-      -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument had an illegal value
-      -     > 0:  if INFO = i, the leading minor of order i is not
-                  positive definite, and the factorization could not be
-                  completed.
-    
-    @param[in]
-    batchCount  INTEGER
-                The number of matrices to operate on.
-
-    @param[in]
-    queue   magma_queue_t
-            Queue to execute in.
-
-    @ingroup magma_potrf_batched
-*******************************************************************************/
+/******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_lg_batched(
     magma_uplo_t uplo, magma_int_t n,
@@ -131,7 +68,7 @@ magma_cpotrf_lg_batched(
     magma_cmalloc( &dinvA, invA_msize * batchCount);
     magma_cmalloc( &dwork, dwork_msize * batchCount );
     magma_malloc_cpu((void**) &cpuAarray, batchCount*sizeof(magmaFloatComplex*));
-   /* check allocation */
+    /* check allocation */
     if ( dA_displ  == NULL || dW0_displ == NULL || dW1_displ   == NULL || dW2_displ   == NULL || 
          dW3_displ == NULL || dW4_displ == NULL || dinvA_array == NULL || dwork_array == NULL || 
          dinvA     == NULL || dwork     == NULL || cpuAarray   == NULL ) {
@@ -150,8 +87,8 @@ magma_cpotrf_lg_batched(
         magma_xerbla( __func__, -(info) );
         return info;
     }
-    magmablas_claset_q( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
-    magmablas_claset_q( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
+    magmablas_claset( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
+    magmablas_claset( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
     magma_cset_pointer( dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue );
     magma_cset_pointer( dinvA_array, dinvA, CTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
@@ -231,14 +168,14 @@ magma_cpotrf_lg_batched(
                             (const magmaFloatComplex*) cpuAarray[k] + j+ib+j*ldda, ldda, 
                             d_beta,
                             cpuAarray[k] + j+ib+(j+ib)*ldda, ldda, queues[streamid] );
-                     }
-                     // need to synchronise to be sure that panel do not start before
-                     // finishing the update at least of the next panel
-                     // if queue is NULL, no need to sync
-                     if ( queue != NULL ) {
-                         for (magma_int_t s=0; s < nbstreams; s++)
-                             magma_queue_sync(queues[s]);
-                     }
+                    }
+                    // need to synchronise to be sure that panel do not start before
+                    // finishing the update at least of the next panel
+                    // if queue is NULL, no need to sync
+                    if (queue != NULL) {
+                        for (magma_int_t s=0; s < nbstreams; s++)
+                            magma_queue_sync(queues[s]);
+                    }
                 }
                 else
                 {
@@ -284,7 +221,72 @@ fin:
 }
 
 
-/******************************************************************************/
+/***************************************************************************//**
+    Purpose
+    -------
+    CPOTRF computes the Cholesky factorization of a complex Hermitian
+    positive definite matrix dA.
+
+    The factorization has the form
+        dA = U**H * U,   if UPLO = MagmaUpper, or
+        dA = L  * L**H,  if UPLO = MagmaLower,
+    where U is an upper triangular matrix and L is lower triangular.
+
+    This is the block version of the algorithm, calling Level 3 BLAS.
+    This is the fixed size batched version of the operation. 
+
+    Arguments
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of dA is stored;
+      -     = MagmaLower:  Lower triangle of dA is stored.
+            Only MagmaLower is supported.
+
+    @param[in]
+    n       INTEGER
+            The order of the matrix dA.  N >= 0.
+
+    @param[in,out]
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array on the GPU, dimension (LDDA,N)
+             On entry, each pointer is a Hermitian matrix dA.  
+             If UPLO = MagmaUpper, the leading
+             N-by-N upper triangular part of dA contains the upper
+             triangular part of the matrix dA, and the strictly lower
+             triangular part of dA is not referenced.  If UPLO = MagmaLower, the
+             leading N-by-N lower triangular part of dA contains the lower
+             triangular part of the matrix dA, and the strictly upper
+             triangular part of dA is not referenced.
+    \n
+             On exit, if corresponding entry in info_array = 0, 
+             each pointer is the factor U or L from the Cholesky
+             factorization dA = U**H * U or dA = L * L**H.
+
+    @param[in]
+    ldda     INTEGER
+            The leading dimension of each array dA.  LDDA >= max(1,N).
+            To benefit from coalescent memory accesses LDDA must be
+            divisible by 16.
+
+    @param[out]
+    info_array    Array of INTEGERs, dimension (batchCount), for corresponding matrices.
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i, the leading minor of order i is not
+                  positive definite, and the factorization could not be
+                  completed.
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_potrf_batched
+*******************************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_batched(
     magma_uplo_t uplo, magma_int_t n,

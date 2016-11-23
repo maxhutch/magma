@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zlaset.cpp, normal z -> s, Tue Aug 30 09:39:04 2016
+       @generated from testing/testing_zlaset.cpp, normal z -> s, Sun Nov 20 20:20:34 2016
        @author Mark Gates
 */
 
@@ -18,8 +18,8 @@
 // includes, project
 #include "magma_v2.h"
 #include "magma_lapack.h"
-#include "testings.h"
 #include "magma_operators.h"
+#include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing slaset
@@ -124,7 +124,7 @@ int main( int argc, char** argv)
             
             if ( opts.verbose ) {
                 printf( "A= " );  magma_sprint(     M, N, h_A, lda );
-                printf( "dA=" );  magma_sprint_gpu( M, N, d_A, ldda );
+                printf( "dA=" );  magma_sprint_gpu( M, N, d_A, ldda, opts.queue );
             }
             
             /* =====================================================================

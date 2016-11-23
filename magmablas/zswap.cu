@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Mark Gates
 
@@ -64,7 +64,7 @@ __global__ void zswap_kernel(
     @ingroup magma_swap
 *******************************************************************************/
 extern "C" void 
-magmablas_zswap_q(
+magmablas_zswap(
     magma_int_t n,
     magmaDoubleComplex_ptr dx, magma_int_t incx, 
     magmaDoubleComplex_ptr dy, magma_int_t incy,

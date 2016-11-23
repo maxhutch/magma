@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Raffaele Solca
        
-       @generated from src/dlaex3.cpp, normal d -> s, Tue Aug 30 09:38:15 2016
+       @generated from src/dlaex3.cpp, normal d -> s, Sun Nov 20 20:20:24 2016
 */
 
 #ifdef _OPENMP

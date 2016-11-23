@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions mixed zc -> ds
 
@@ -114,7 +114,7 @@ zclaswp_inv_kernel(
     @ingroup magma_laswp
 *******************************************************************************/
 extern "C" void
-magmablas_zclaswp_q(
+magmablas_zclaswp(
     magma_int_t n,
     magmaDoubleComplex_ptr A, magma_int_t lda,
     magmaFloatComplex_ptr SA, magma_int_t ldsa,

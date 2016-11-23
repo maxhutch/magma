@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
 
-       @generated from src/zungbr.cpp, normal z -> d, Tue Aug 30 09:38:23 2016
+       @generated from src/zungbr.cpp, normal z -> d, Sun Nov 20 20:20:26 2016
 
 */
 #include "magma_internal.h"

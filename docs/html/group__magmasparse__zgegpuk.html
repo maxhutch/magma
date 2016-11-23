@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -145,12 +145,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga810f356ed644ff76d5f00c3da2761ca6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga810f356ed644ff76d5f00c3da2761ca6">magma_zmprepare_batched_gpu</a> (magma_uplo_t uplotype, magma_trans_t transtype, magma_diag_t diagtype, magma_z_matrix L, magma_z_matrix LC, magma_index_t *sizes, magma_index_t *locations, magmaDoubleComplex *trisystems, magmaDoubleComplex *rhs, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga810f356ed644ff76d5f00c3da2761ca6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine prepares the batch of small triangular systems that need to be solved for computing the ISAI preconditioner.  <a href="#ga810f356ed644ff76d5f00c3da2761ca6">More...</a><br /></td></tr>
 <tr class="separator:ga810f356ed644ff76d5f00c3da2761ca6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga85e413a7c8d147d07784318ebb2fa158"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga85e413a7c8d147d07784318ebb2fa158">magma_ziteric_csr</a> (magma_z_matrix A, magma_z_matrix A_CSR, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga85e413a7c8d147d07784318ebb2fa158"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine iteratively computes an incomplete Cholesky factorization.  <a href="#ga85e413a7c8d147d07784318ebb2fa158">More...</a><br /></td></tr>
-<tr class="separator:ga85e413a7c8d147d07784318ebb2fa158"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0c82f0806c5d7d9741db0a05c67dd700"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga0c82f0806c5d7d9741db0a05c67dd700">magma_ziterilu_csr</a> (magma_z_matrix A, magma_z_matrix L, magma_z_matrix U, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga0c82f0806c5d7d9741db0a05c67dd700"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine iteratively computes an incomplete LU factorization.  <a href="#ga0c82f0806c5d7d9741db0a05c67dd700">More...</a><br /></td></tr>
-<tr class="separator:ga0c82f0806c5d7d9741db0a05c67dd700"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaff9e47182d4908b083777296f9ed99fc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#gaff9e47182d4908b083777296f9ed99fc">magma_zjacobisetup_vector_gpu</a> (magma_int_t num_rows, magma_z_matrix b, magma_z_matrix d, magma_z_matrix c, magma_z_matrix *x, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gaff9e47182d4908b083777296f9ed99fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#gaff9e47182d4908b083777296f9ed99fc">More...</a><br /></td></tr>
 <tr class="separator:gaff9e47182d4908b083777296f9ed99fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -253,6 +247,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gacd4c6220893ea7dfbc36af52d7b4ccb5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#gacd4c6220893ea7dfbc36af52d7b4ccb5">magma_ztfqmr_5</a> (magma_int_t num_rows, magma_int_t num_cols, magmaDoubleComplex alpha, magmaDoubleComplex sigma, magmaDoubleComplex_ptr v, magmaDoubleComplex_ptr Au, magmaDoubleComplex_ptr u_mp1, magmaDoubleComplex_ptr w, magmaDoubleComplex_ptr d, magmaDoubleComplex_ptr Ad, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gacd4c6220893ea7dfbc36af52d7b4ccb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gacd4c6220893ea7dfbc36af52d7b4ccb5">More...</a><br /></td></tr>
 <tr class="separator:gacd4c6220893ea7dfbc36af52d7b4ccb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga03da2be39cae50f7b486b7602caabe75"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga03da2be39cae50f7b486b7602caabe75">magma_zparic_csr</a> (magma_z_matrix A, magma_z_matrix A_CSR, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga03da2be39cae50f7b486b7602caabe75"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine iteratively computes an incomplete Cholesky factorization.  <a href="#ga03da2be39cae50f7b486b7602caabe75">More...</a><br /></td></tr>
+<tr class="separator:ga03da2be39cae50f7b486b7602caabe75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7f426d88830a2229a687e18c7c26403b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga7f426d88830a2229a687e18c7c26403b">magma_zparilu_csr</a> (magma_z_matrix A, magma_z_matrix L, magma_z_matrix U, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga7f426d88830a2229a687e18c7c26403b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine iteratively computes an incomplete LU factorization.  <a href="#ga7f426d88830a2229a687e18c7c26403b">More...</a><br /></td></tr>
+<tr class="separator:ga7f426d88830a2229a687e18c7c26403b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -385,10 +385,10 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">localiters</td><td>magma_int_t number of local Jacobi-like updates</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">D1</td><td>magma_z_matrix input matrix with diagonal blocks</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">R1</td><td>magma_z_matrix input matrix with non-diagonal parts</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">D2</td><td>magma_z_matrix input matrix with diagonal blocks</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">R2</td><td>magma_z_matrix input matrix with non-diagonal parts</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">matrices</td><td>magma_int_t number of sub-matrices</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">overlap</td><td>magma_int_t size of the overlap</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">D</td><td>magma_z_matrix* set of matrices with diagonal blocks</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">R</td><td>magma_z_matrix* set of matrices with non-diagonal parts</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_z_matrix RHS</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>magma_z_matrix* iterate/solution</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
@@ -973,101 +973,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">locations</td><td>magma_index_t* array containing the locations in the respective column of L</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">trisystems</td><td>magmaDoubleComplex* batch of generated small triangular systems. All systems are embedded in uniform memory blocks of size BLOCKSIZE x BLOCKSIZE</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">rhs</td><td>magmaDoubleComplex* RHS of the small triangular systems</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga85e413a7c8d147d07784318ebb2fa158"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ziteric_csr </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>A_CSR</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine iteratively computes an incomplete Cholesky factorization. </p>
-<p>The idea is according to Edmond Chow's presentation at SIAM 2014. This routine was used in the ISC 2015 paper: E. Chow et al.: 'Study of an Asynchronous Iterative Algorithm for Computing Incomplete Factorizations on GPUs'</p>
-<p>The input format of the initial guess matrix A is Magma_CSRCOO, A_CSR is CSR or CSRCOO format.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A - initial guess (lower triangular)</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A_CSR</td><td>magma_z_matrix input/output matrix containing the IC approximation</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga0c82f0806c5d7d9741db0a05c67dd700"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ziterilu_csr </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>U</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine iteratively computes an incomplete LU factorization. </p>
-<p>The idea is according to Edmond Chow's presentation at SIAM 2014. This routine was used in the ISC 2015 paper: E. Chow et al.: 'Study of an Asynchronous Iterative Algorithm for Computing Incomplete Factorizations on GPUs'</p>
-<p>The input format of the matrix is Magma_CSRCOO for the upper and lower triangular parts. Note however, that we flip col and rowidx for the U-part. Every component of L and U is handled by one thread.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A determing initial guess &amp; processing order</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">L</td><td>magma_z_matrix input/output matrix L containing the ILU approximation</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">U</td><td>magma_z_matrix input/output matrix U containing the ILU approximation</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -2754,7 +2659,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pde</td><td>magmaDoubleComplex scalar</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">qde</td><td>magmaDoubleComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rde</td><td>magmaDoubleComplex scalar</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>magmaDoubleComplex_ptr vector</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">z</td><td>magmaDoubleComplex_ptr vector</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">p</td><td>magmaDoubleComplex_ptr vector</td></tr>
@@ -3722,6 +3627,101 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">w</td><td>magmaDoubleComplex_ptr vector</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">d</td><td>magmaDoubleComplex_ptr vector</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">Ad</td><td>magmaDoubleComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga03da2be39cae50f7b486b7602caabe75"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zparic_csr </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A_CSR</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine iteratively computes an incomplete Cholesky factorization. </p>
+<p>The idea is according to Edmond Chow's presentation at SIAM 2014. This routine was used in the ISC 2015 paper: E. Chow et al.: 'Study of an Asynchronous Iterative Algorithm for Computing Incomplete Factorizations on GPUs'</p>
+<p>The input format of the initial guess matrix A is Magma_CSRCOO, A_CSR is CSR or CSRCOO format.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A - initial guess (lower triangular)</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A_CSR</td><td>magma_z_matrix input/output matrix containing the IC approximation</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga7f426d88830a2229a687e18c7c26403b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zparilu_csr </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>L</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>U</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine iteratively computes an incomplete LU factorization. </p>
+<p>The idea is according to Edmond Chow's presentation at SIAM 2014. This routine was used in the ISC 2015 paper: E. Chow et al.: 'Study of an Asynchronous Iterative Algorithm for Computing Incomplete Factorizations on GPUs'</p>
+<p>The input format of the matrix is Magma_CSRCOO for the upper and lower triangular parts. Note however, that we flip col and rowidx for the U-part. Every component of L and U is handled by one thread.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A determing initial guess &amp; processing order</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">L</td><td>magma_z_matrix input/output matrix L containing the ILU approximation</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">U</td><td>magma_z_matrix input/output matrix U containing the ILU approximation</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>

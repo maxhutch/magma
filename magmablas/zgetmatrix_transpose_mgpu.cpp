@@ -1,9 +1,9 @@
     /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
        @author Ichitaro Yamazaki
@@ -67,7 +67,7 @@ magmablas_zgetmatrix_transpose_mgpu(
         magma_setdevice(d);
         
         ib = min(n-j, nb);
-        magmablas_ztranspose_q( ib, m, dAT(d,j_local), ldda, dwork(d,id), lddw, queues[d][id] );
+        magmablas_ztranspose( ib, m, dAT(d,j_local), ldda, dwork(d,id), lddw, queues[d][id] );
         magma_zgetmatrix_async( m, ib,
                                 dwork(d, id), lddw,
                                 hA(j),        lda,

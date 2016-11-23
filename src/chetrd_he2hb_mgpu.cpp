@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from src/zhetrd_he2hb_mgpu.cpp, normal z -> c, Tue Aug 30 09:38:19 2016
+       @generated from src/zhetrd_he2hb_mgpu.cpp, normal z -> c, Sun Nov 20 20:20:25 2016
 
 */
 #include <cuda_runtime.h>
@@ -319,7 +319,6 @@ magma_chetrd_he2hb_mgpu(
                 //printf("Receiving panel ofsize %d %d from idev %d A(%d,%d)\n",(pm+pn), pn,idev,i-1,di);
                 magma_setdevice( idev );
 
-                //magma_device_sync();
                 magma_cgetmatrix_async( (pm+pn), pn,
                                         dA(idev, i, di+1), ldda,
                                         A( i, i), lda, queues[ idev ][ nqueue-1 ] );
@@ -473,8 +472,8 @@ magma_chetrd_he2hb_mgpu(
                an update of the form:  A := A - V*W' - W*V'
                ==========================================================  */
             if (i + nb <= n-nb) {
-                /* There would be next iteration;
-                   do lookahead - update the next panel */
+                // There would be next iteration;
+                // do lookahead - update the next panel
                 // below a -1 was added and then a -1 was done on di because of the fortran indexing
                 iblock = ((indi-1) / distblk) / ngpu;          // local block id
                 di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix

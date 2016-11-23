@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zsymmetrize.cu, normal z -> d, Tue Aug 30 09:38:34 2016
+       @generated from magmablas/zsymmetrize.cu, normal z -> d, Sun Nov 20 20:20:29 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -28,12 +28,13 @@ dsymmetrize_lower( int m, double *dA, int ldda )
     if ( i < m ) {
         dA  += i;
         dAT += i*ldda;
-        double *dAend = dA + i*ldda;
+        double *dAend = dA + i*ldda;  // end at diagonal dA(i,i)
         while( dA < dAend ) {
             *dAT = MAGMA_D_CONJ(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
+        *dA = MAGMA_D_MAKE( MAGMA_D_REAL(*dA), 0 );  // make diagonal real
     }
 }
 
@@ -48,12 +49,13 @@ dsymmetrize_upper( int m, double *dA, int ldda )
     if ( i < m ) {
         dA  += i;
         dAT += i*ldda;
-        double *dAend = dA + i*ldda;
+        double *dAend = dA + i*ldda;  // end at diagonal dA(i,i)
         while( dA < dAend ) {
             *dA = MAGMA_D_CONJ(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
+        *dA = MAGMA_D_MAKE( MAGMA_D_REAL(*dA), 0 );  // make diagonal real
     }
 }
 
@@ -64,6 +66,7 @@ dsymmetrize_upper( int m, double *dA, int ldda )
     
     DSYMMETRIZE copies lower triangle to upper triangle, or vice-versa,
     to make dA a general representation of a symmetric matrix.
+    In Complex, it sets the diagonal to be Real.
     
     Arguments
     ---------
@@ -93,7 +96,7 @@ dsymmetrize_upper( int m, double *dA, int ldda )
     @ingroup magma_symmetrize
 *******************************************************************************/
 extern "C" void
-magmablas_dsymmetrize_q(
+magmablas_dsymmetrize(
     magma_uplo_t uplo, magma_int_t m,
     magmaDouble_ptr dA, magma_int_t ldda,
     magma_queue_t queue )

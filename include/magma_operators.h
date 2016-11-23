@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
  
        @author Mathieu Faverge
        @author Mark Gates
@@ -16,6 +16,11 @@
 
 // __host__ and __device__ are defined in CUDA headers.
 #include "magma_types.h"
+
+#ifdef HAVE_clBLAS
+#define __host__
+#define __device__
+#endif
 
 /// @addtogroup magma_complex
 /// In C++, including magma_operators.h defines the usual unary and binary
@@ -564,6 +569,11 @@ operator != (const float s, const magmaFloatComplex a)
 {
     return ! (a == s);
 }
+
+#ifdef HAVE_clBLAS
+#undef __host__
+#undef __device__
+#endif
 
 #endif /* __cplusplus */
 

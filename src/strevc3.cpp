@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from src/dtrevc3.cpp, normal d -> s, Tue Aug 30 09:38:21 2016
+       @generated from src/dtrevc3.cpp, normal d -> s, Sun Nov 20 20:20:26 2016
 */
 #include "magma_timer.h"
 

@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Azzam Haidar
    @author Ahmad Ahmad
 
-   @generated from magmablas/zpotf2_kernels.cu, normal z -> d, Tue Aug 30 09:38:39 2016
+   @generated from magmablas/zpotf2_kernels.cu, normal z -> d, Sun Nov 20 20:20:32 2016
  */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -35,6 +35,48 @@
 
 #include "dpotf2_devicesfunc.cuh"
 
+#define A(i_, j_)  (dA + (i_) + (j_)*ldda)
+/******************************************************************************/
+__global__ void dpotf2_smlpin_fixwidth_kernel(int m, double *dA, int ldda, int localstep, int gbstep, magma_int_t *dinfo)
+{
+    #pragma unroll
+    for(int i = 0; i < m; i+= POTF2_NB){
+        if(threadIdx.x < m-i){
+            dpotf2_smlpout_fixwidth_device(m-i, A(localstep+i, 0), A(localstep+i, localstep+i), ldda, localstep+i, gbstep, dinfo);
+        }
+    }
+}
+/******************************************************************************/
+__global__ void dpotf2_smlpin_anywidth_kernel(int m, double *dA, int ldda, int localstep, int gbstep, magma_int_t *dinfo)
+{
+    #pragma unroll
+    for(int i = 0; i < m; i+= POTF2_NB){
+        int ib = min(m-i, POTF2_NB);
+        if(threadIdx.x < m-i){
+            dpotf2_smlpout_anywidth_device(m-i, ib, A(localstep+i, 0), A(localstep+i, localstep+i), ldda, localstep+i, gbstep, dinfo);
+        }
+    }
+}
+
+/******************************************************************************/
+__global__ void dpotf2_smlpout_fixwidth_kernel(int m, 
+        double *dA, int lda, 
+        int localstep, int gbstep, magma_int_t *dinfo)
+{
+    dpotf2_smlpout_fixwidth_device(m, dA+localstep, dA+localstep+localstep*lda, lda, localstep, gbstep, dinfo );
+}
+
+
+/******************************************************************************/
+__global__ void dpotf2_smlpout_anywidth_kernel(int m, int n, 
+        double *dA, int lda, 
+        int localstep, int gbstep, magma_int_t *dinfo)
+{
+    dpotf2_smlpout_anywidth_device(m, n, dA+localstep, dA+localstep+localstep*lda, lda, localstep, gbstep, dinfo );
+}
+
+
+
 /******************************************************************************/
 __global__ void dpotf2_smlpout_fixwidth_kernel_batched(int m, 
         double **dA_array, int lda, 
@@ -55,7 +97,6 @@ __global__ void dpotf2_smlpout_anywidth_kernel_batched(int m, int n,
     if (batchid >= batchCount) return;
     dpotf2_smlpout_anywidth_device(m, n, dA_array[batchid]+localstep, dA_array[batchid]+localstep+localstep*lda, lda, localstep, gbstep, &(info_array[batchid]));
 }
-
 
 /******************************************************************************/
 extern "C" magma_int_t
@@ -123,7 +164,7 @@ magma_dpotrf_lpout_batched(
             magma_xerbla( __func__, -(arginfo) );
             return arginfo;
         }
-
+        
         if (ib == POTF2_NB)
         {
             dpotf2_smlpout_fixwidth_kernel_batched
@@ -136,5 +177,115 @@ magma_dpotrf_lpout_batched(
         }
     }
 
+    return arginfo;
+}
+
+
+
+/******************************************************************************/
+extern "C" magma_int_t
+magma_dpotf2_lpout(
+        magma_uplo_t uplo, magma_int_t n, 
+        double *dA, magma_int_t lda, magma_int_t gbstep,
+        magma_int_t *dinfo, magma_queue_t queue)
+{
+    magma_int_t m = n;
+    magma_int_t arginfo = 0;
+
+    if ( uplo != MagmaUpper && uplo != MagmaLower) {
+        arginfo = -1;
+    } else if (m < 0 || n < 0 ) {
+        arginfo = -2;
+    } else if (lda < max(1,m)) {
+        arginfo = -4;
+    } else if (m < n) {
+        arginfo = -10;
+    }
+    if (uplo == MagmaUpper) {
+        fprintf( stderr, "%s: uplo=upper is not yet implemented\n", __func__ );
+        arginfo = -1;
+    }
+
+    if (arginfo != 0) {
+        magma_xerbla( __func__, -(arginfo) );
+        return arginfo;
+    }
+
+    // Quick return if possible
+    if (m == 0 || n == 0) {
+        return arginfo;
+    }
+
+    magma_int_t roundup_m = m;
+    // rounding up need more investigation since it coul dmodify the matrix out of its bound
+    //magma_int_t m8  = magma_roundup( m, 8 );
+    //magma_int_t roundup_m = m8 > lda ? m : m8;
+    //magma_int_t m32 = magma_roundup( m, 32 );
+    //magma_int_t roundup_m = m32 > lda ? m : m32;
+
+    magma_int_t  ib, rows;
+    
+    for (magma_int_t j = 0; j < n; j += POTF2_NB) {
+        ib   = min(POTF2_NB, n-j);
+        rows = roundup_m-j;
+        
+        dim3 dimGrid(1, 1, 1);
+        magma_int_t nbth = rows;
+        magma_int_t shared_mem_size = sizeof(double)*(nbth+POTF2_NB)*POTF2_NB;
+        dim3 threads(nbth, 1, 1);
+        
+        if (shared_mem_size > 47000) 
+        {
+            arginfo = -33;
+            magma_xerbla( __func__, -(arginfo) );
+            return arginfo;
+        }
+
+        if (ib == POTF2_NB)
+        {
+            dpotf2_smlpout_fixwidth_kernel
+                <<< dimGrid, threads, shared_mem_size, queue->cuda_stream() >>>
+                (rows, dA, lda, j, gbstep, dinfo );
+        } else {
+            dpotf2_smlpout_anywidth_kernel
+                <<< dimGrid, threads, shared_mem_size, queue->cuda_stream() >>>
+                (rows, ib, dA, lda, j, gbstep, dinfo );
+        }
+    }
+
+    return arginfo;
+}
+
+/******************************************************************************/
+extern "C" magma_int_t
+magma_dpotf2_lpin(
+        magma_uplo_t uplo, magma_int_t n, 
+        double *dA, magma_int_t ldda, magma_int_t gbstep,
+        magma_int_t *dinfo, magma_queue_t queue)
+{
+    magma_int_t arginfo = 0;
+    // Quick return if possible
+    if ( n == 0 ) {
+        return arginfo;
+    }
+    dim3 grid(1, 1, 1);
+    dim3 threads(n, 1, 1);
+    magma_int_t shared_mem_size = sizeof(double) * (n+POTF2_NB)*POTF2_NB;
+    if (shared_mem_size > 47000) {
+        arginfo = -33;
+        magma_xerbla( __func__, -(arginfo) );
+        return arginfo;
+    }
+    
+    if( n % POTF2_NB == 0){
+        dpotf2_smlpin_fixwidth_kernel
+            <<< grid, threads, shared_mem_size, queue->cuda_stream() >>>
+            (n, dA, ldda, 0, gbstep, dinfo);
+    }
+    else{
+        dpotf2_smlpin_anywidth_kernel
+            <<< grid, threads, shared_mem_size, queue->cuda_stream() >>>
+            (n, dA, ldda, 0, gbstep, dinfo);
+    }
     return arginfo;
 }

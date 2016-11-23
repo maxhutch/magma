@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zswapblk.cu, normal z -> s, Tue Aug 30 09:38:33 2016
+       @generated from magmablas/zswapblk.cu, normal z -> s, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -75,7 +75,7 @@ __global__ void magmagpu_sswapblkcm( magmagpu_sswapblk_params_t params )
     @ingroup magma_swapblk
 *******************************************************************************/
 extern "C" void 
-magmablas_sswapblk_q(
+magmablas_sswapblk(
     magma_order_t order, magma_int_t n, 
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dB, magma_int_t lddb,

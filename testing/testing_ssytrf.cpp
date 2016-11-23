@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zhetrf.cpp, normal z -> s, Tue Aug 30 09:39:08 2016
+       @generated from testing/testing_zhetrf.cpp, normal z -> s, Sun Nov 20 20:20:36 2016
        @author Ichitaro Yamazaki
 */
 // includes, system
@@ -180,40 +180,40 @@ float get_residual_aasen(
     TESTING_CHECK( magma_imalloc_cpu( &p, n ));
     //#define SSYSV_USE_SGESV
     #ifdef SSYSV_USE_SGESV
-      // using SGESV on banded matrix
-      #define  T(i,j) ( T[(i) + (j)*n])
-      // extract T
-      TESTING_CHECK( magma_smalloc_cpu( &T, n*n ));
-      memset( T, 0, n*n*sizeof(float) );
-      for (i=0; i < n; i++) {
-          magma_int_t istart = max(0, i-nb);
-          for (j=istart; j <= i; j++) {
-              T(i,j) = A(i,j);
-          }
-          for (j=istart; j < i; j++) {
-              T(j,i) = MAGMA_S_CONJ(A(i,j));
-          }
-      }
-      // solve with T
-      lapackf77_sgesv( &n, &nrhs, &T(0, 0), &n, p, x, &n, &info );
+        // using SGESV on banded matrix
+        #define  T(i,j) ( T[(i) + (j)*n])
+        // extract T
+        TESTING_CHECK( magma_smalloc_cpu( &T, n*n ));
+        memset( T, 0, n*n*sizeof(float) );
+        for (i=0; i < n; i++) {
+            magma_int_t istart = max(0, i-nb);
+            for (j=istart; j <= i; j++) {
+                T(i,j) = A(i,j);
+            }
+            for (j=istart; j < i; j++) {
+                T(j,i) = MAGMA_S_CONJ(A(i,j));
+            }
+        }
+        // solve with T
+        lapackf77_sgesv( &n, &nrhs, &T(0, 0), &n, p, x, &n, &info );
     #else
-      // using SGBSV on banded matrix
-      magma_int_t ldtb = 3*nb+1;
-      // extract T
-      TESTING_CHECK( magma_smalloc_cpu( &T, ldtb * n ));
-      memset( T, 0, ldtb*n*sizeof(float) );
-      for (j=0; j<n; j++) {
-          magma_int_t i0 = max(0, j-nb);
-          magma_int_t i1 = min(n-1, j+nb);
-          for (i=i0; i<j; i++) {
-              T[nb + i-(j-nb) + j*ldtb] = MAGMA_S_CONJ(A(j,i));
-          }
-          for (i=j; i<=i1; i++) {
-              T[nb + i-(j-nb) + j*ldtb] = A(i,j);
-          }
-      }
-      // solve with T
-      lapackf77_sgbsv(&n,&nb,&nb, &nrhs, T,&ldtb, p,x,&n, &info);
+        // using SGBSV on banded matrix
+        magma_int_t ldtb = 3*nb+1;
+        // extract T
+        TESTING_CHECK( magma_smalloc_cpu( &T, ldtb * n ));
+        memset( T, 0, ldtb*n*sizeof(float) );
+        for (j=0; j<n; j++) {
+            magma_int_t i0 = max(0, j-nb);
+            magma_int_t i1 = min(n-1, j+nb);
+            for (i=i0; i<j; i++) {
+                T[nb + i-(j-nb) + j*ldtb] = MAGMA_S_CONJ(A(j,i));
+            }
+            for (i=j; i<=i1; i++) {
+                T[nb + i-(j-nb) + j*ldtb] = A(i,j);
+            }
+        }
+        // solve with T
+        lapackf77_sgbsv(&n,&nb,&nb, &nrhs, T,&ldtb, p,x,&n, &info);
     #endif
     magma_free_cpu( p );
 

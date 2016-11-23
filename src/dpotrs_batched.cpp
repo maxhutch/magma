@@ -1,14 +1,14 @@
 
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
 
-       @generated from src/zpotrs_batched.cpp, normal z -> d, Tue Aug 30 09:38:26 2016
+       @generated from src/zpotrs_batched.cpp, normal z -> d, Sun Nov 20 20:20:28 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -116,7 +116,7 @@ magma_dpotrs_batched(
     double* dwork      = NULL; // dinvA and dwork are workspace in dtrsm
     magma_dmalloc( &dinvA, invA_msize * batchCount);
     magma_dmalloc( &dwork, dwork_msize * batchCount );
-   /* check allocation */
+    /* check allocation */
     if ( dW1_displ == NULL || dW2_displ == NULL || dW3_displ   == NULL || dW4_displ   == NULL || 
          dinvA_array == NULL || dwork_array == NULL || dinvA     == NULL || dwork     == NULL ) {
         magma_free(dW1_displ);
@@ -132,8 +132,8 @@ magma_dpotrs_batched(
         return info;
     }
 
-    magmablas_dlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, invA_msize, queue );
-    magmablas_dlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, dwork_msize, queue );
+    magmablas_dlaset( MagmaFull, invA_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, invA_msize, queue );
+    magmablas_dlaset( MagmaFull, dwork_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, dwork_msize, queue );
     magma_dset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
     magma_dset_pointer( dinvA_array, dinvA, DTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 

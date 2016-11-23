@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zgerbt.h, normal z -> d, Tue Aug 30 09:39:22 2016
+       @generated from magmablas/zgerbt.h, normal z -> d, Sun Nov 20 20:20:47 2016
 
        @author Adrien Remy
        @author Azzam Haidar
@@ -56,4 +56,4 @@ magmablas_dapply_transpose_vector_kernel_batched(
     magma_int_t n,
     double *du, magma_int_t offsetu, double **db_array, magma_int_t offsetb );
 
-#endif        //  #ifndef DGERBT_H
+#endif // DGERBT_H

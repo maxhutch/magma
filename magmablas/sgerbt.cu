@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zgerbt.cu, normal z -> s, Tue Aug 30 09:38:28 2016
+       @generated from magmablas/zgerbt.cu, normal z -> s, Sun Nov 20 20:20:27 2016
 
 
        @author Adrien REMY
@@ -43,7 +43,7 @@
             Queue to execute in.
 *******************************************************************************/
 extern "C" void
-magmablas_sprbt_mtv_q(
+magmablas_sprbt_mtv(
     magma_int_t n, 
     float *du, float *db,
     magma_queue_t queue)
@@ -88,7 +88,7 @@ magmablas_sprbt_mtv_q(
             Queue to execute in.
 *******************************************************************************/
 extern "C" void
-magmablas_sprbt_mv_q(
+magmablas_sprbt_mv(
     magma_int_t n, 
     float *dv, float *db,
     magma_queue_t queue)
@@ -139,7 +139,7 @@ magmablas_sprbt_mv_q(
             Queue to execute in.
 *******************************************************************************/
 extern "C" void 
-magmablas_sprbt_q(
+magmablas_sprbt(
     magma_int_t n, 
     float *dA, magma_int_t ldda, 
     float *du, float *dv,

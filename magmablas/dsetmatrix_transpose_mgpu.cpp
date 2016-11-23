@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zsetmatrix_transpose_mgpu.cpp, normal z -> d, Tue Aug 30 09:38:36 2016
+       @generated from magmablas/zsetmatrix_transpose_mgpu.cpp, normal z -> d, Sun Nov 20 20:20:30 2016
        @author Ichitaro Yamazaki
 */
 #include "magma_internal.h"
@@ -71,6 +71,6 @@ magmablas_dsetmatrix_transpose_mgpu(
                                 dwork(d, id), lddw,
                                 queues[d][id] );
         
-        magmablas_dtranspose_q( m, ib, dwork(d,id), lddw, dAT(d,j_local), ldda, queues[d][id] );
+        magmablas_dtranspose( m, ib, dwork(d,id), lddw, dAT(d,j_local), ldda, queues[d][id] );
     }
 }

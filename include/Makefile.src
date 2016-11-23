@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.1.0) --
+#   -- MAGMA (version 2.2.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2016
+#      @date November 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -17,12 +17,12 @@ cdir      := include
 hdr += \
 	$(cdir)/magma_z.h		\
 	$(cdir)/magma_zc.h		\
-	$(cdir)/magmablas_z_q.h		\
+	$(cdir)/magmablas_z.h		\
 	$(cdir)/magmablas_z_v1.h	\
-	$(cdir)/magmablas_z_v2.h	\
-	$(cdir)/magmablas_zc_q.h	\
+	$(cdir)/magmablas_z_v1_map.h	\
+	$(cdir)/magmablas_zc.h		\
 	$(cdir)/magmablas_zc_v1.h	\
-	$(cdir)/magmablas_zc_v2.h	\
+	$(cdir)/magmablas_zc_v1_map.h	\
 	$(cdir)/magma_zlapack.h		\
 	$(cdir)/magma_zbulge.h		\
 	$(cdir)/magma_zbulgeinc.h	\

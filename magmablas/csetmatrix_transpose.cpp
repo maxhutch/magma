@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zsetmatrix_transpose.cpp, normal z -> c, Tue Aug 30 09:38:33 2016
+       @generated from magmablas/zsetmatrix_transpose.cpp, normal z -> c, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -27,7 +27,7 @@
     @ingroup magma_setmatrix_transpose
 *******************************************************************************/
 extern "C" void
-magmablas_csetmatrix_transpose_q(
+magmablas_csetmatrix_transpose(
     magma_int_t m, magma_int_t n, magma_int_t nb,
     const magmaFloatComplex     *hA, magma_int_t lda,
     magmaFloatComplex_ptr       dAT, magma_int_t ldda,
@@ -68,10 +68,10 @@ magmablas_csetmatrix_transpose_q(
         /* Note that the previous panel (i.e., j%2) comes through the queue
            for the kernel so there is no need to synchronize.             */
         // TODO should this be ib not nb?
-        magmablas_ctranspose_q( m, nb, dwork(0,(j%2)*nb), lddw, dAT(i-nb,0), ldda, queues[j%2] );
+        magmablas_ctranspose( m, nb, dwork(0,(j%2)*nb), lddw, dAT(i-nb,0), ldda, queues[j%2] );
     }
 
     /* Transpose the last part of the matrix.                            */
     j++;
-    magmablas_ctranspose_q( m, ib, dwork(0,(j%2)*nb), lddw, dAT(i-nb,0), ldda, queues[j%2] );
+    magmablas_ctranspose( m, ib, dwork(0,(j%2)*nb), lddw, dAT(i-nb,0), ldda, queues[j%2] );
 }

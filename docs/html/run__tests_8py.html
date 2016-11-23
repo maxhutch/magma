@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>MAGMA: /mnt/scratch/mgates/magma-trunk/magma-2.1.0/testing/run_tests.py File Reference</title>
+<title>MAGMA: /Users/mgates/Documents/magma/magma-2.2.0/testing/run_tests.py File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -120,8 +120,8 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
 <p>Script to run testers with various matrix sizes.</p>
 <p>See also the run_summarize.py script, which post-processes the output, sorting it into errors (segfaults, etc.), accuracy failures, and known failures. run_summarize.py can apply a different (larger) tolerance without re-running the tests.</p>
 <p>Small sizes are chosen around block sizes (e.g., 30...34 around 32) to detect bugs that occur at the block size, and the switch over from LAPACK to MAGMA code. Tall and wide sizes are chosen to exercise different aspect ratios, e.g., nearly square, 2:1, 10:1, 1:2, 1:10. The -h or &ndash;help option provides a summary of the options.</p>
-<h2>Non-interactive vs. interactive mode </h2>
-<p>When output is redirected to a file, it runs in non-interactive mode, printing a short summary to stderr on the console and all other output to the file. For example: </p><pre class="fragment">  ./run_tests.py --lu --precision s --small &gt; lu.txt
+<h2>Output to file vs. console </h2>
+<p>When output is redirected to a file, it prints a short summary to stderr on the console and all other output to the file. For example: </p><pre class="fragment">  ./run_tests.py --lu --precision s --small &gt; lu.txt
   testing_sgesv_gpu -c                      ok
   testing_sgetrf_gpu -c2                    ok
   testing_sgetf2_gpu -c                     ok
@@ -138,9 +138,9 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
       0 errors detected (crashes, CUDA errors, etc.)
   routines with failures:
       testing_sgetri_gpu -c
-</pre><p>When output is to console (tty), it runs in interactive mode, pausing after each test. At the pause, typing "M" re-makes and re-runs that tester, while typing enter goes to the next tester. For example (some output suppressed with ... for brevity): </p><pre class="fragment">  ./run_tests.py --lu --precision s --small
+</pre><p>When using &ndash;interactive with output to console (TTY), it pauses after each test. At the pause, typing "M" re-makes and re-runs that tester, while typing enter goes to the next tester. For example (some output suppressed with ... for brevity): </p><pre class="fragment">  ./run_tests.py --lu --precision s --small --interactive
   ****************************************************************************************************
-  ./testing_sgesv_gpu -c --range 1:20:1 ...
+  ./testing_sgesv_gpu -c -n 1:20:1 ...
   ****************************************************************************************************
       N  NRHS   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||B - AX|| / N*||A||*||X||
   ================================================================================
@@ -152,7 +152,7 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
   [enter to continue; M to make and re-run]
 
   ****************************************************************************************************
-  ./testing_sgetri_gpu -c --range 1:20:1 ...
+  ./testing_sgetri_gpu -c -n 1:20:1 ...
   ****************************************************************************************************
   % MAGMA 1.4.0 svn compiled for CUDA capability &gt;= 3.0
   % CUDA runtime 6000, driver 6000. MAGMA not compiled with OpenMP.
@@ -180,7 +180,7 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
       testing_sgetri_gpu -c
 </pre><h2>What tests are run </h2>
 <p>The &ndash;blas, &ndash;aux, &ndash;chol, &ndash;hesv, &ndash;lu, &ndash;qr, &ndash;syev, &ndash;sygv, &ndash;geev, &ndash;svd, &ndash;batched options run particular sets of tests. By default, all tests are run, except batched because we don't want to run batched with, say, N=1000. &ndash;mgpu runs only multi-GPU tests from the above sets. These may be negated with &ndash;no-blas, &ndash;no-aux, etc.</p>
-<p>The &ndash;start option skips all testers before the given one, then continues with testers from there. This is helpful to restart a non-interactive set of tests. For example: </p><pre class="fragment">  ./run_tests.py --start testing_spotrf &gt; output.log
+<p>The &ndash;start option skips all testers before the given one, then continues with testers from there. This is helpful to restart a set of tests. For example: </p><pre class="fragment">  ./run_tests.py --start testing_spotrf &gt; output.log
 </pre><p>If specific testers are named on the command line, only those are run. For example: </p><pre class="fragment">  ./run_tests.py testing_spotrf testing_sgetrf
 </pre><p>The -p/&ndash;precision option controls what precisions are tested, the default being "sdcz" for all four precisions. For example, to run single and double: </p><pre class="fragment">  ./run_tests.py -p sd
 </pre><p>The -s/&ndash;small, -m/&ndash;medium, -l/&ndash;large options control what sizes are tested, the default being all three sets. -s/&ndash;small does small tests, N &lt; 300. -m/&ndash;medium does medium tests, N &lt; 1000. -l/&ndash;large does large tests, N &gt; 1000. For example, running small and medium tests: </p><pre class="fragment">  ./run_tests.py -s -m
@@ -240,7 +240,7 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
   ########################################################################################################################
   other (lines that did not get matched):              0 commands,      0 tests
 </pre><p>The &ndash;dev option sets which GPU device to use.</p>
-<p>By default, a wide range of sizes and shapes (square, tall, wide) are tested, as applicable. The -N and &ndash;range options override these.</p>
+<p>By default, a wide range of sizes and shapes (square, tall, wide) are tested, as applicable. The -n option overrides these.</p>
 <p>For multi-GPU codes, &ndash;ngpu specifies the number of GPUs, default 2. Most testers accept &ndash;ngpu -1 to test the multi-GPU code on a single GPU. (Using &ndash;ngpu 1 will usually invoke the single-GPU code.) </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->

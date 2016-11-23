@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
        @author Ahmad Abdelfattah
@@ -26,6 +26,11 @@ extern "C" {
 #define CPOTRF_SWITCH 224
 #define DPOTRF_SWITCH 384
 #define SPOTRF_SWITCH 432
+
+#define ZPOTRF_VBATCHED_SWITCH 448
+#define CPOTRF_VBATCHED_SWITCH 384
+#define DPOTRF_VBATCHED_SWITCH 480
+#define SPOTRF_VBATCHED_SWITCH 704
 
 /***************************************************************************//**
     Returns in nb and recnb the crossover points for potrf based on n
@@ -195,6 +200,31 @@ magma_int_t magma_get_dpotrf_batched_crossover()
 magma_int_t magma_get_spotrf_batched_crossover()
 {
     return SPOTRF_SWITCH;
+}
+/***************************************************************************//**
+    @return the crossover point between the _lg or the kernel directly
+*******************************************************************************/
+magma_int_t magma_get_zpotrf_vbatched_crossover()
+{
+    return ZPOTRF_VBATCHED_SWITCH;
+}
+
+/// @see magma_get_zpotrf_vbatched_crossover
+magma_int_t magma_get_cpotrf_vbatched_crossover()
+{
+    return CPOTRF_VBATCHED_SWITCH;
+}
+
+/// @see magma_get_zpotrf_vbatched_crossover
+magma_int_t magma_get_dpotrf_vbatched_crossover()
+{
+    return DPOTRF_VBATCHED_SWITCH;
+}
+
+/// @see magma_get_zpotrf_vbatched_crossover
+magma_int_t magma_get_spotrf_vbatched_crossover()
+{
+    return SPOTRF_VBATCHED_SWITCH;
 }
 
 

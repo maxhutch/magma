@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 */
@@ -139,4 +139,4 @@ zhemv_kernel_U_mgpu_sum(
 }
 #endif
 
-#endif /* COMMONBLAS_Z_H */
+#endif // COMMONBLAS_Z_H

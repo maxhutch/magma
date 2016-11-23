@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -115,18 +115,15 @@ $(document).ready(function(){initNavTree('group__magmasparse__cblas.html','');})
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaca0092a8aec1dbc1a29d0f322c2ed513"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#gaca0092a8aec1dbc1a29d0f322c2ed513">magma_ccuspaxpy</a> (magmaFloatComplex *alpha, magma_c_matrix A, magmaFloatComplex *beta, magma_c_matrix B, magma_c_matrix *AB, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:gaca0092a8aec1dbc1a29d0f322c2ed513"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the cuSPARSE routine csrgeam computing the sum of two sparse matrices stored in csr format:  <a href="#gaca0092a8aec1dbc1a29d0f322c2ed513">More...</a><br /></td></tr>
-<tr class="separator:gaca0092a8aec1dbc1a29d0f322c2ed513"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga33d9ed31ebfc9eba0e62a4fc85546015"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#ga33d9ed31ebfc9eba0e62a4fc85546015">magma_ccuspmm</a> (magma_c_matrix A, magma_c_matrix B, magma_c_matrix *AB, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga33d9ed31ebfc9eba0e62a4fc85546015"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format.  <a href="#ga33d9ed31ebfc9eba0e62a4fc85546015">More...</a><br /></td></tr>
-<tr class="separator:ga33d9ed31ebfc9eba0e62a4fc85546015"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacdfa4d4f7901609708be9dfc1ba950cd"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#gacdfa4d4f7901609708be9dfc1ba950cd">magma_ccustomspmv</a> (magmaFloatComplex alpha, magma_c_matrix x, magmaFloatComplex beta, magma_c_matrix y, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gacdfa4d4f7901609708be9dfc1ba950cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to any custom sparse matrix vector product.  <a href="#gacdfa4d4f7901609708be9dfc1ba950cd">More...</a><br /></td></tr>
 <tr class="separator:gacdfa4d4f7901609708be9dfc1ba950cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad1bab429582de7e87e806cd752d52d17"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#gad1bab429582de7e87e806cd752d52d17">magma_cgeaxpy</a> (magmaFloatComplex alpha, magma_c_matrix X, magmaFloatComplex beta, magma_c_matrix *Y, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gad1bab429582de7e87e806cd752d52d17"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes Y = alpha * X + beta * Y on the GPU.  <a href="#gad1bab429582de7e87e806cd752d52d17">More...</a><br /></td></tr>
 <tr class="separator:gad1bab429582de7e87e806cd752d52d17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabad82ce3075ae6ffddf3255f7d445405"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#gabad82ce3075ae6ffddf3255f7d445405">magma_cgecsr5mv</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magma_int_t p, magmaFloatComplex alpha, magma_int_t sigma, magma_int_t bit_y_offset, magma_int_t bit_scansum_offset, magma_int_t num_packet, magmaUIndex_ptr dtile_ptr, magmaUIndex_ptr dtile_desc, magmaIndex_ptr dtile_desc_offset_ptr, magmaIndex_ptr dtile_desc_offset, magmaFloatComplex_ptr dcalibrator, magma_int_t tail_tile_start, magmaFloatComplex_ptr dval, magmaIndex_ptr drowptr, magmaIndex_ptr dcolind, magmaFloatComplex_ptr dx, magmaFloatComplex beta, magmaFloatComplex_ptr dy, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:gabad82ce3075ae6ffddf3255f7d445405"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * A * x + beta * y on the GPU.  <a href="#gabad82ce3075ae6ffddf3255f7d445405">More...</a><br /></td></tr>
+<tr class="separator:gabad82ce3075ae6ffddf3255f7d445405"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0962837cc1eafc9e51b8da10e14bb320"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#ga0962837cc1eafc9e51b8da10e14bb320">magma_cgecsrmv</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magmaFloatComplex alpha, magmaFloatComplex_ptr dval, magmaIndex_ptr drowptr, magmaIndex_ptr dcolind, magmaFloatComplex_ptr dx, magmaFloatComplex beta, magmaFloatComplex_ptr dy, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga0962837cc1eafc9e51b8da10e14bb320"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * A * x + beta * y on the GPU.  <a href="#ga0962837cc1eafc9e51b8da10e14bb320">More...</a><br /></td></tr>
 <tr class="separator:ga0962837cc1eafc9e51b8da10e14bb320"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,6 +202,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga3406ef4a28ad3a1324b7b8d24c43dcd3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#ga3406ef4a28ad3a1324b7b8d24c43dcd3">magma_c_spmm</a> (magmaFloatComplex alpha, magma_c_matrix A, magma_c_matrix B, magma_c_matrix *C, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga3406ef4a28ad3a1324b7b8d24c43dcd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and B and scalar alpha, the wrapper determines the suitable SpMV computing C = alpha * A * B.  <a href="#ga3406ef4a28ad3a1324b7b8d24c43dcd3">More...</a><br /></td></tr>
 <tr class="separator:ga3406ef4a28ad3a1324b7b8d24c43dcd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaca0092a8aec1dbc1a29d0f322c2ed513"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#gaca0092a8aec1dbc1a29d0f322c2ed513">magma_ccuspaxpy</a> (magmaFloatComplex *alpha, magma_c_matrix A, magmaFloatComplex *beta, magma_c_matrix B, magma_c_matrix *AB, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:gaca0092a8aec1dbc1a29d0f322c2ed513"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the cuSPARSE routine csrgeam computing the sum of two sparse matrices stored in csr format:  <a href="#gaca0092a8aec1dbc1a29d0f322c2ed513">More...</a><br /></td></tr>
+<tr class="separator:gaca0092a8aec1dbc1a29d0f322c2ed513"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga33d9ed31ebfc9eba0e62a4fc85546015"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#ga33d9ed31ebfc9eba0e62a4fc85546015">magma_ccuspmm</a> (magma_c_matrix A, magma_c_matrix B, magma_c_matrix *AB, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga33d9ed31ebfc9eba0e62a4fc85546015"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format.  <a href="#ga33d9ed31ebfc9eba0e62a4fc85546015">More...</a><br /></td></tr>
+<tr class="separator:ga33d9ed31ebfc9eba0e62a4fc85546015"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaad02d3c8319dd66481ff40986f0e64b0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cblas.html#gaad02d3c8319dd66481ff40986f0e64b0">magma_smdotc1</a> (magma_int_t n, magmaFloat_ptr v0, magmaFloat_ptr w0, magmaFloat_ptr d1, magmaFloat_ptr d2, magmaFloat_ptr skp, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gaad02d3c8319dd66481ff40986f0e64b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the scalar product of a set of 1 vectors such that.  <a href="#gaad02d3c8319dd66481ff40986f0e64b0">More...</a><br /></td></tr>
 <tr class="separator:gaad02d3c8319dd66481ff40986f0e64b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -226,119 +229,6 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="gaca0092a8aec1dbc1a29d0f322c2ed513"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ccuspaxpy </td>
-          <td>(</td>
-          <td class="paramtype">magmaFloatComplex *&#160;</td>
-          <td class="paramname"><em>alpha</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_c_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloatComplex *&#160;</td>
-          <td class="paramname"><em>beta</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_c_matrix&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_c_matrix *&#160;</td>
-          <td class="paramname"><em>AB</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This is an interface to the cuSPARSE routine csrgeam computing the sum of two sparse matrices stored in csr format: </p>
-<p>C = alpha * A + beta * B</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex* scalar</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix input matrix</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex* scalar</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>magma_c_matrix input matrix</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">AB</td><td>magma_c_matrix* output matrix AB = alpha * A + beta * B</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga33d9ed31ebfc9eba0e62a4fc85546015"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ccuspmm </td>
-          <td>(</td>
-          <td class="paramtype">magma_c_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_c_matrix&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_c_matrix *&#160;</td>
-          <td class="paramname"><em>AB</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix input matrix</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>magma_c_matrix input matrix</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">AB</td><td>magma_c_matrix* output matrix AB = A * B</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="gacdfa4d4f7901609708be9dfc1ba950cd"></a>
 <div class="memitem">
 <div class="memproto">
@@ -446,6 +336,183 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">X</td><td>magma_c_matrix input/output matrix Y.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar multiplier.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">Y</td><td>magma_c_matrix* input matrix X. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gabad82ce3075ae6ffddf3255f7d445405"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cgecsr5mv </td>
+          <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>transA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>sigma</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>bit_y_offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>bit_scansum_offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_packet</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaUIndex_ptr&#160;</td>
+          <td class="paramname"><em>dtile_ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaUIndex_ptr&#160;</td>
+          <td class="paramname"><em>dtile_desc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaIndex_ptr&#160;</td>
+          <td class="paramname"><em>dtile_desc_offset_ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaIndex_ptr&#160;</td>
+          <td class="paramname"><em>dtile_desc_offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dcalibrator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>tail_tile_start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dval</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaIndex_ptr&#160;</td>
+          <td class="paramname"><em>drowptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaIndex_ptr&#160;</td>
+          <td class="paramname"><em>dcolind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine computes y = alpha * A * x + beta * y on the GPU. </p>
+<p>The input format is CSR5 (val (tile-wise column-major), row_pointer, col (tile-wise column-major), tile_pointer, tile_desc).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">transA</td><td>magma_trans_t transposition parameter for A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>magma_int_t number of rows in A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>magma_int_t number of columns in A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>magma_int_t number of tiles in A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar multiplier</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sigma</td><td>magma_int_t sigma in A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bit_y_offset</td><td>magma_int_t bit_y_offset in A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bit_scansum_offset</td><td>magma_int_t bit_scansum_offset in A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_packet</td><td>magma_int_t num_packet in A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtile_ptr</td><td>magmaUIndex_ptr tilepointer of A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtile_desc</td><td>magmaUIndex_ptr tiledescriptor of A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtile_desc_offset_ptr</td><td>magmaIndex_ptr tiledescriptor_offsetpointer of A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dtile_desc_offset</td><td>magmaIndex_ptr tiledescriptor_offsetpointer of A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dcalibrator</td><td>magmaFloatComplex_ptr calibrator of A in CSR5</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tail_tile_start</td><td>magma_int_t start of the last tile in A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dval</td><td>magmaFloatComplex_ptr array containing values of A in CSR</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dval</td><td>magmaFloatComplex_ptr array containing values of A in CSR</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">drowptr</td><td>magmaIndex_ptr rowpointer of A in CSR</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dcolind</td><td>magmaIndex_ptr columnindices of A in CSR</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>magmaFloatComplex_ptr input vector x</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar multiplier</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dy</td><td>magmaFloatComplex_ptr input/output vector y</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -2941,6 +3008,119 @@ vector product with GPUs", (CIT 2010), and modified to provide correct values.</
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix sparse matrix A</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>magma_c_matrix sparse matrix C</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">C</td><td>magma_c_matrix * outpur sparse matrix C</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaca0092a8aec1dbc1a29d0f322c2ed513"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ccuspaxpy </td>
+          <td>(</td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>AB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This is an interface to the cuSPARSE routine csrgeam computing the sum of two sparse matrices stored in csr format: </p>
+<p>C = alpha * A + beta * B</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex* scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix input matrix</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex* scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>magma_c_matrix input matrix</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">AB</td><td>magma_c_matrix* output matrix AB = alpha * A + beta * B</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga33d9ed31ebfc9eba0e62a4fc85546015"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ccuspmm </td>
+          <td>(</td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>AB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix input matrix</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>magma_c_matrix input matrix</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">AB</td><td>magma_c_matrix* output matrix AB = A * B</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>

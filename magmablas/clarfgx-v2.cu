@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlarfgx-v2.cu, normal z -> c, Tue Aug 30 09:38:31 2016
+       @generated from magmablas/zlarfgx-v2.cu, normal z -> c, Sun Nov 20 20:20:28 2016
 
 */
 #include "magma_internal.h"
@@ -105,7 +105,7 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 *******************************************************************************/
 extern "C" void
-magma_clarfgx_gpu_q(
+magma_clarfgx_gpu(
     magma_int_t n,
     magmaFloatComplex_ptr dx0,
     magmaFloatComplex_ptr dx,
@@ -136,7 +136,7 @@ magma_clarfgx_gpu_q(
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 *******************************************************************************/
 extern "C" void
-magma_clarfgtx_gpu_q(
+magma_clarfgtx_gpu(
     magma_int_t n,
     magmaFloatComplex_ptr dx0,
     magmaFloatComplex_ptr dx,
@@ -149,12 +149,12 @@ magma_clarfgtx_gpu_q(
     magma_queue_t queue )
 {
     /*  Generate the elementary reflector H(iter)  */
-    magma_clarfgx_gpu_q(n, dx0, dx, dtau, dxnorm, dA, iter, queue);
+    magma_clarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, iter, queue);
     
     if (iter == 0) {
         magmaFloatComplex tt = MAGMA_C_ONE;
-        magmablas_clacpy_q( MagmaFull, 1, 1, dtau, 1, T+iter+iter*ldt, 1, queue );
-        magma_csetmatrix_q( 1, 1, &tt, 1, dx0, 1, queue );
+        magmablas_clacpy( MagmaFull, 1, 1, dtau, 1, T+iter+iter*ldt, 1, queue );
+        magma_csetmatrix( 1, 1, &tt, 1, dx0, 1, queue );
     }
     else {
         /* Compute the iter-th column of T */

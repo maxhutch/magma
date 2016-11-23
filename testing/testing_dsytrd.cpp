@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zhetrd.cpp, normal z -> d, Tue Aug 30 09:39:14 2016
+       @generated from testing/testing_zhetrd.cpp, normal z -> d, Sun Nov 20 20:20:37 2016
 
 */
 

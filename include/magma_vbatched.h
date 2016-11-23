@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 */
 
 #ifndef MAGMA_VBATCHED_H
@@ -22,6 +22,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// checker routines - LAPACK
+magma_int_t 
+magma_potrf_vbatched_checker(
+        magma_uplo_t uplo, 
+        magma_int_t* n, magma_int_t* ldda,  
+        magma_int_t batchCount, magma_queue_t queue );
 
 // checker routines - Level 3 BLAS
 magma_int_t 
@@ -75,12 +82,25 @@ magma_trmm_vbatched_checker(
         magma_int_t* ldda, magma_int_t* lddb, 
         magma_int_t batchCount, magma_queue_t queue);
 
+magma_int_t 
+magma_hemm_vbatched_checker(
+        magma_side_t side, magma_uplo_t uplo, 
+        magma_int_t* m, magma_int_t* n, 
+        magma_int_t* ldda, magma_int_t* lddb, magma_int_t* lddc,  
+        magma_int_t batchCount, magma_queue_t queue );
+        
 // checker routines - Level 2 BLAS
 magma_int_t 
 magma_gemv_vbatched_checker(
         magma_trans_t trans, 
         magma_int_t* m, magma_int_t* n, 
         magma_int_t* ldda, magma_int_t* incx, magma_int_t* incy,  
+        magma_int_t batchCount, magma_queue_t queue );
+
+magma_int_t 
+magma_hemv_vbatched_checker(
+        magma_uplo_t uplo, 
+        magma_int_t* n, magma_int_t* ldda, magma_int_t* incx, magma_int_t* incy,  
         magma_int_t batchCount, magma_queue_t queue );
 
 // checker routines - Level 1 BLAS

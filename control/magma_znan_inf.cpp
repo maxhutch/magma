@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @precisions normal z -> s d c
@@ -80,7 +80,7 @@ int magma_z_isnan_inf( magmaDoubleComplex x )
     -------
     magma_znan_inf checks a matrix that is located on the CPU host
     for NAN (not-a-number) and INF (infinity) values.
-    
+
     NAN is created by 0/0 and similar.
     INF is created by x/0 and similar, where x != 0.
 
@@ -116,7 +116,7 @@ int magma_z_isnan_inf( magmaDoubleComplex x )
     @param[out]
     cnt_inf INTEGER*
             If non-NULL, on exit contains the number of INF values in A.
-            
+
     @return
       -     >= 0:  Returns number of NAN + number of INF values.
       -     <  0:  If it returns -i, the i-th argument had an illegal value,
@@ -188,7 +188,7 @@ magma_int_t magma_znan_inf(
     -------
     magma_znan_inf checks a matrix that is located on the CPU host
     for NAN (not-a-number) and INF (infinity) values.
-    
+
     NAN is created by 0/0 and similar.
     INF is created by x/0 and similar, where x != 0.
 
@@ -224,7 +224,11 @@ magma_int_t magma_znan_inf(
     @param[out]
     cnt_inf INTEGER*
             If non-NULL, on exit contains the number of INF values in A.
-            
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @return
       -     >= 0:  Returns number of NAN + number of INF values.
       -     <  0:  If it returns -i, the i-th argument had an illegal value,
@@ -237,7 +241,8 @@ magma_int_t magma_znan_inf_gpu(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magma_int_t *cnt_nan,
-    magma_int_t *cnt_inf )
+    magma_int_t *cnt_inf,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
@@ -258,14 +263,7 @@ magma_int_t magma_znan_inf_gpu(
     magmaDoubleComplex* A;
     magma_zmalloc_cpu( &A, lda*n );
 
-    magma_queue_t queue;
-    magma_device_t cdev;
-    magma_getdevice( &cdev );
-    magma_queue_create( cdev, &queue );
-    
     magma_zgetmatrix( m, n, dA, ldda, A, lda, queue );
-    
-    magma_queue_destroy( queue );
     
     magma_int_t cnt = magma_znan_inf( uplo, m, n, A, lda, cnt_nan, cnt_inf );
     

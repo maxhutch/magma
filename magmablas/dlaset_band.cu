@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from magmablas/zlaset_band.cu, normal z -> d, Tue Aug 30 09:38:32 2016
+       @generated from magmablas/zlaset_band.cu, normal z -> d, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -176,7 +176,7 @@ void dlaset_band_lower(
     @ingroup magma_laset_band
 *******************************************************************************/
 extern "C" void
-magmablas_dlaset_band_q(
+magmablas_dlaset_band(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     double offdiag, double diag,
     magmaDouble_ptr dA, magma_int_t ldda,

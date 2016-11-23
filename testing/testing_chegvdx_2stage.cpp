@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing/testing_zhegvdx_2stage.cpp, normal z -> c, Tue Aug 30 09:39:14 2016
+       @generated from testing/testing_zhegvdx_2stage.cpp, normal z -> c, Sun Nov 20 20:20:37 2016
 
 */
 
@@ -23,7 +23,6 @@
 #include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "magma_cbulge.h"
 
 #include "../control/magma_threadsetting.h"  // internal header
 

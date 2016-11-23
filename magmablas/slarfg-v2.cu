@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlarfg-v2.cu, normal z -> s, Tue Aug 30 09:38:30 2016
+       @generated from magmablas/zlarfg-v2.cu, normal z -> s, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -98,7 +98,7 @@ void magma_slarfg_gpu_kernel( int n, float* dx0, float* dx,
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
-magma_slarfg_gpu_q(
+magma_slarfg_gpu(
     magma_int_t n,
     magmaFloat_ptr dx0,
     magmaFloat_ptr dx,
@@ -112,7 +112,7 @@ magma_slarfg_gpu_q(
 
     /* recomputing the norm */
     //magmablas_snrm2_cols(n, 1, dx0, n, dxnorm);
-    magmablas_snrm2_cols_q(n-1, 1, dx0+1, n, dxnorm, queue);
+    magmablas_snrm2_cols(n-1, 1, dx0+1, n, dxnorm, queue);
 
     magma_slarfg_gpu_kernel
         <<< blocks, threads, 0, queue->cuda_stream() >>>

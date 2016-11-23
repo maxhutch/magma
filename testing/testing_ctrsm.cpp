@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_ztrsm.cpp, normal z -> c, Tue Aug 30 09:39:02 2016
+       @generated from testing/testing_ztrsm.cpp, normal z -> c, Sun Nov 20 20:20:33 2016
        @author Chongxiao Cao
 */
 // includes, system
@@ -179,7 +179,10 @@ int main( int argc, char** argv)
             // ||b - 1/alpha*A*x|| / (||A||*||x||)
             magmaFloatComplex inv_alpha = MAGMA_C_DIV( c_one, alpha );
             float normR, normX, normA;
-            normA = lapackf77_clange( "M", &Ak, &Ak, hA, &lda, work );
+            normA = lapackf77_clantr( "M",
+                                      lapack_uplo_const(opts.uplo),
+                                      lapack_diag_const(opts.diag),
+                                      &Ak, &Ak, hA, &lda, work );
             
             #if defined(HAVE_CUBLAS)
                 // check magma

@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -142,9 +142,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga52602ce991a2c5c91f62663e375e5b36"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zposv.html#ga52602ce991a2c5c91f62663e375e5b36">magma_zidr_strms</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga52602ce991a2c5c91f62663e375e5b36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general complex N-by-N matrix A.  <a href="#ga52602ce991a2c5c91f62663e375e5b36">More...</a><br /></td></tr>
 <tr class="separator:ga52602ce991a2c5c91f62663e375e5b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga12f8a0aad34f3d3de77b495d741d8d82"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zposv.html#ga12f8a0aad34f3d3de77b495d741d8d82">magma_zpcg</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga12f8a0aad34f3d3de77b495d741d8d82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex Hermitian N-by-N positive definite matrix A.  <a href="#ga12f8a0aad34f3d3de77b495d741d8d82">More...</a><br /></td></tr>
-<tr class="separator:ga12f8a0aad34f3d3de77b495d741d8d82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4c5d7a3f9b58fc8091e07c16b47b6ae7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zposv.html#ga4c5d7a3f9b58fc8091e07c16b47b6ae7">magma_zpcg_merge</a> (magma_z_matrix A, magma_z_matrix b, magma_z_matrix *x, magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga4c5d7a3f9b58fc8091e07c16b47b6ae7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a complex matrix A.  <a href="#ga4c5d7a3f9b58fc8091e07c16b47b6ae7">More...</a><br /></td></tr>
 <tr class="separator:ga4c5d7a3f9b58fc8091e07c16b47b6ae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -690,70 +687,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_z_matrix RHS b</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_z_matrix* solution approximation</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_z_solver_par* solver parameters</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga12f8a0aad34f3d3de77b495d741d8d82"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zpcg </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_matrix&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_matrix *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_solver_par *&#160;</td>
-          <td class="paramname"><em>solver_par</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond_par</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Solves a system of linear equations A * X = B where A is a complex Hermitian N-by-N positive definite matrix A. </p>
-<p>This is a GPU implementation of the preconditioned Conjugate Gradient method.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_z_matrix RHS b</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_z_matrix* solution approximation</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_z_solver_par* solver parameters</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">precond_par</td><td>magma_z_preconditioner* preconditioner </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>

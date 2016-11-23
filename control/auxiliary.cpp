@@ -1,14 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
 */
-#include <cuda_runtime.h>
-
 #include "magma_internal.h"
 
 
@@ -50,8 +48,9 @@ magma_int_t magma_num_gpus( void )
     if ( ngpu_str != NULL ) {
         char* endptr;
         ngpu = strtol( ngpu_str, &endptr, 10 );
-        int ndevices;  // must be int
-        cudaGetDeviceCount( &ndevices );
+        magma_int_t ndevices;
+        magma_device_t devices[ MagmaMaxGPUs ];
+        magma_getdevices( devices, MagmaMaxGPUs, &ndevices );
         // if *endptr == '\0' then entire string was valid number (or empty)
         if ( ngpu < 1 || *endptr != '\0' ) {
             ngpu = 1;
@@ -60,8 +59,8 @@ magma_int_t magma_num_gpus( void )
         }
         else if ( ngpu > MagmaMaxGPUs || ngpu > ndevices ) {
             ngpu = min( ndevices, MagmaMaxGPUs );
-            fprintf( stderr, "$MAGMA_NUM_GPUS='%s' exceeds MagmaMaxGPUs=%d or available GPUs=%d; using %lld GPUs.\n",
-                     ngpu_str, MagmaMaxGPUs, ndevices, (long long) ngpu );
+            fprintf( stderr, "$MAGMA_NUM_GPUS='%s' exceeds MagmaMaxGPUs=%d or available GPUs=%lld; using %lld GPUs.\n",
+                     ngpu_str, MagmaMaxGPUs, (long long) ndevices, (long long) ngpu );
         }
         assert( 1 <= ngpu && ngpu <= ndevices );
     }

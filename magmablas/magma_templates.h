@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Mark Gates
 */
@@ -335,4 +335,4 @@ magma_sum_reduce_3d( int i, int j, int k, T x[m0][m1][m2] )
 }
 // end sum_reduce_3d
 
-#endif        //  #ifndef MAGMA_TEMPLATES_H
+#endif // MAGMA_TEMPLATES_H

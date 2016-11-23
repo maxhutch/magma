@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from include/magma_zbatched.h, normal z -> s, Tue Aug 30 09:39:21 2016
+       @generated from include/magma_zbatched.h, normal z -> s, Sun Nov 20 20:20:47 2016
 */
 
 #ifndef MAGMA_SBATCHED_H
@@ -257,24 +257,73 @@ void magmablas_strsv_outofplace_batched(
     float **x_array, 
     magma_int_t batchCount, magma_queue_t queue, magma_int_t flag);
 
+void 
+magmablas_strmm_batched_core(
+        magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, 
+        magma_int_t m, magma_int_t n, 
+        float alpha, 
+        float **dA_array, magma_int_t ldda,
+        float **dB_array, magma_int_t lddb, 
+        magma_int_t roffA, magma_int_t coffA, magma_int_t roffB, magma_int_t coffB, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_strmm_batched(
+        magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, 
+        magma_int_t m, magma_int_t n, 
+        float alpha, 
+        float **dA_array, magma_int_t ldda,
+        float **dB_array, magma_int_t lddb, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_ssymm_batched_core(
+        magma_side_t side, magma_uplo_t uplo, 
+        magma_int_t m, magma_int_t n, 
+        float alpha, 
+        float **dA_array, magma_int_t ldda,
+        float **dB_array, magma_int_t lddb, 
+        float beta, 
+        float **dC_array, magma_int_t lddc, 
+        magma_int_t roffA, magma_int_t coffA, magma_int_t roffB, magma_int_t coffB, magma_int_t roffC, magma_int_t coffC, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_ssymm_batched(
+        magma_side_t side, magma_uplo_t uplo, 
+        magma_int_t m, magma_int_t n, 
+        float alpha, 
+        float **dA_array, magma_int_t ldda,
+        float **dB_array, magma_int_t lddb, 
+        float beta, 
+        float **dC_array, magma_int_t lddc, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_ssymv_batched_core(
+        magma_uplo_t uplo, magma_int_t n, 
+        float alpha, 
+        float **dA_array, magma_int_t ldda,
+        float **dX_array, magma_int_t incx,
+        float beta, 
+        float **dY_array, magma_int_t incy,
+        magma_int_t offA, magma_int_t offX, magma_int_t offY, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_ssymv_batched(
+        magma_uplo_t uplo, magma_int_t n, 
+        float alpha, 
+        float **dA_array, magma_int_t ldda,
+        float **dX_array, magma_int_t incx,
+        float beta, 
+        float **dY_array, magma_int_t incy,
+        magma_int_t batchCount, magma_queue_t queue );
+
 magma_int_t 
 magma_spotrf_batched(
     magma_uplo_t uplo, magma_int_t n,
     float **dA_array, magma_int_t lda,
-    magma_int_t *info_array,
-    magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_spotrf_lg_vbatched(
-    magma_uplo_t uplo, magma_int_t n,
-    float **dA_array, magma_int_t ldda,
-    magma_int_t *info_array,
-    magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_spotrf_vbatched(
-    magma_uplo_t uplo, magma_int_t *n, magma_int_t nmax, 
-    float **dA_array, magma_int_t *ldda,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
 
@@ -893,13 +942,6 @@ magma_int_t
 magma_spotrf_v33_batched(
     magma_uplo_t uplo, magma_int_t n, 
     float **dA_array, magma_int_t lda,
-    magma_int_t *info_array,
-    magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_spotrf_lpout_vbatched(
-    magma_uplo_t uplo, magma_int_t *n, magma_int_t nmax,  
-    float **dA_array, magma_int_t *lda, magma_int_t gbstep,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
 

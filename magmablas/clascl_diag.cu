@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlascl_diag.cu, normal z -> c, Tue Aug 30 09:38:32 2016
+       @generated from magmablas/zlascl_diag.cu, normal z -> c, Sun Nov 20 20:20:29 2016
 */
 #include "magma_internal.h"
 
@@ -105,7 +105,7 @@ clascl_diag_upper(
     @ingroup magma_lascl_diag
 *******************************************************************************/
 extern "C" void
-magmablas_clascl_diag_q(
+magmablas_clascl_diag(
     magma_type_t type, magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr dD, magma_int_t lddd,
     magmaFloatComplex_ptr       dA, magma_int_t ldda,

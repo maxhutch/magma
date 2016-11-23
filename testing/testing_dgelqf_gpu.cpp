@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zgelqf_gpu.cpp, normal z -> d, Tue Aug 30 09:39:09 2016
+       @generated from testing/testing_zgelqf_gpu.cpp, normal z -> d, Sun Nov 20 20:20:36 2016
 
 */
 
@@ -39,7 +39,7 @@ int main( int argc, char** argv)
     
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf=0, cpu_time=0;
     double           Anorm, error=0, error2=0;
-    double *h_A, *h_R, *tau, *h_work, tmp[1];
+    double *h_A, *h_R, *tau, *h_work, tmp[1], unused[1];
     magmaDouble_ptr d_A;
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn, nb;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -65,7 +65,7 @@ int main( int argc, char** argv)
             
             // query for workspace size
             lwork = -1;
-            lapackf77_dgelqf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
+            lapackf77_dgelqf( &M, &N, unused, &M, unused, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_D_REAL( tmp[0] );
             lwork = max( lwork, M*nb );
             

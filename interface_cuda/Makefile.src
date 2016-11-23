@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 2.1.0) --
+#   -- MAGMA (version 2.2.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2016
+#      @date November 2016
 #//////////////////////////////////////////////////////////////////////////////
 
 # push previous directory
@@ -21,6 +21,7 @@ libmagma_src += \
 	$(cdir)/copy_v2.cpp	\
 	$(cdir)/error.cpp	\
 	$(cdir)/interface.cpp	\
+	$(cdir)/interface_v1.cpp	\
 
 
 # ----------------------------------------------------------------------

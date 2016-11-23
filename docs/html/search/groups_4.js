@@ -7,5 +7,6 @@ var searchData=
   ['copy_3a_20_20copy_20vector',['copy:  Copy vector',['../group__magma__copy.html',1,'']]],
   ['copy_3a_20_20copy_20vector',['copy:  Copy vector',['../group__magma__copy__batched.html',1,'']]],
   ['copymatrix_3a_20gpu_20_3d_3e_20gpu',['copymatrix: GPU =&gt; GPU',['../group__magma__copymatrix.html',1,'']]],
-  ['copyvector_3a_20gpu_20_3d_3e_20gpu',['copyvector: GPU =&gt; GPU',['../group__magma__copyvector.html',1,'']]]
+  ['copyvector_3a_20gpu_20_3d_3e_20gpu',['copyvector: GPU =&gt; GPU',['../group__magma__copyvector.html',1,'']]],
+  ['copy_20v_20to_20r',['copy V to R',['../group__magma__geqrf__copy__upper__batched.html',1,'']]]
 ];

@@ -9,7 +9,6 @@ var group__magmasparse__zposv =
     [ "magma_zidr", "group__magmasparse__zposv.html#ga244cff63ab136a7e045807183bc85c59", null ],
     [ "magma_zidr_merge", "group__magmasparse__zposv.html#gaa7d9456633e1233e53ba789f5a7d9bc9", null ],
     [ "magma_zidr_strms", "group__magmasparse__zposv.html#ga52602ce991a2c5c91f62663e375e5b36", null ],
-    [ "magma_zpcg", "group__magmasparse__zposv.html#ga12f8a0aad34f3d3de77b495d741d8d82", null ],
     [ "magma_zpcg_merge", "group__magmasparse__zposv.html#ga4c5d7a3f9b58fc8091e07c16b47b6ae7", null ],
     [ "magma_zpidr", "group__magmasparse__zposv.html#gae14ba7e9a0a0b3767091fde8e458530a", null ],
     [ "magma_zpidr_merge", "group__magmasparse__zposv.html#gac5614dc3e7ed831b1242330157c80e6b", null ],

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from src/zcposv_gpu.cpp, mixed zc -> ds, Tue Aug 30 09:38:00 2016
+       @generated from src/zcposv_gpu.cpp, mixed zc -> ds, Sun Nov 20 20:20:17 2016
 
 */
 #include "magma_internal.h"
@@ -156,7 +156,7 @@ magma_dsposv_gpu(
     magmaDouble_ptr dR;
     magmaFloat_ptr dSA, dSX;
     double Xnrmv, Rnrmv;
-    double          Anrm, Xnrm, Rnrm, cte, eps;
+    double          Anrm, Xnrm, Rnrm, cte, eps, work[1];
     magma_int_t     i, j, iiter, lddsa, lddsx, lddr;
 
     /* Check arguments */
@@ -243,11 +243,11 @@ magma_dsposv_gpu(
     for( j=0; j < nrhs; j++ ) {
         i = magma_idamax( n, dX(0,j), 1, queue ) - 1;
         magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
-        Xnrm = lapackf77_dlange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
+        Xnrm = lapackf77_dlange( "F", &ione, &ione, &Xnrmv, &ione, work );
 
         i = magma_idamax( n, dR(0,j), 1, queue ) - 1;
         magma_dgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
-        Rnrm = lapackf77_dlange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
+        Rnrm = lapackf77_dlange( "F", &ione, &ione, &Rnrmv, &ione, work );
 
         if ( Rnrm >  Xnrm*cte ) {
             goto refinement;
@@ -297,11 +297,11 @@ refinement:
         for( j=0; j < nrhs; j++ ) {
             i = magma_idamax( n, dX(0,j), 1, queue ) - 1;
             magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
-            Xnrm = lapackf77_dlange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
+            Xnrm = lapackf77_dlange( "F", &ione, &ione, &Xnrmv, &ione, work );
 
             i = magma_idamax( n, dR(0,j), 1, queue ) - 1;
             magma_dgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
-            Rnrm = lapackf77_dlange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
+            Rnrm = lapackf77_dlange( "F", &ione, &ione, &Rnrmv, &ione, work );
 
             if ( Rnrm >  Xnrm*cte ) {
                 goto L20;

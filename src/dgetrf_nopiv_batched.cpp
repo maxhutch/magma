@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from src/zgetrf_nopiv_batched.cpp, normal z -> d, Tue Aug 30 09:38:24 2016
+   @generated from src/zgetrf_nopiv_batched.cpp, normal z -> d, Sun Nov 20 20:20:26 2016
  */
 #include <cuda_runtime.h>
 
@@ -143,7 +143,7 @@ magma_dgetrf_nopiv_batched(
     magma_dmalloc( &dinvA, invA_msize * batchCount);
     magma_dmalloc( &dwork, dwork_msize * batchCount );
     magma_malloc_cpu((void**) &cpuAarray, batchCount*sizeof(double*));
-   /* check allocation */
+    /* check allocation */
     if ( dA_displ  == NULL || dW0_displ == NULL || dW1_displ   == NULL || dW2_displ   == NULL || 
          dW3_displ == NULL || dW4_displ == NULL || dinvA_array == NULL || dwork_array == NULL || 
          dinvA     == NULL || dwork     == NULL || cpuAarray   == NULL ) {
@@ -163,8 +163,8 @@ magma_dgetrf_nopiv_batched(
         return info;
     }
 
-    magmablas_dlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, invA_msize, queue );
-    magmablas_dlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, dwork_msize, queue );
+    magmablas_dlaset( MagmaFull, invA_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dinvA, invA_msize, queue );
+    magmablas_dlaset( MagmaFull, dwork_msize, batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, dwork_msize, queue );
     magma_dset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
     magma_dset_pointer( dinvA_array, dinvA, DTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 
@@ -261,9 +261,9 @@ magma_dgetrf_nopiv_batched(
                     // finishing the update at least of the next panel
                     // if queue is NULL, no need to sync
                     if ( queue != NULL ) {
-                         for (magma_int_t s=0; s < nbstreams; s++)
-                             magma_queue_sync(queues[s]);
-                     }
+                        for (magma_int_t s=0; s < nbstreams; s++)
+                            magma_queue_sync(queues[s]);
+                    }
                 }
                 //-------------------------------------------
                 //          USE BATCHED GEMM

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -292,7 +292,7 @@ magmablas_cherk_batched(
     magma_int_t info = 0;
     if      ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -1;
-    else if ( trans != MagmaNoTrans && trans != Magma_ConjTrans )
+    else if ( trans != MagmaNoTrans && trans != MagmaConjTrans )
         info = -2;
     else if ( n < 0 )
         info = -3;

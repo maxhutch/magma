@@ -1,15 +1,15 @@
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Mark gates
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zgesv_batched.cpp, normal z -> s, Tue Aug 30 09:39:17 2016
+   @generated from testing/testing_zgesv_batched.cpp, normal z -> s, Sun Nov 20 20:20:38 2016
  */
 // includes, system
 #include <stdio.h>

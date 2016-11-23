@@ -1,16 +1,17 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
- 
+       @date November 2016
+
        @author Mark Gates
-       @generated from interface_cuda/blas_z_v1.cpp, normal z -> d, Tue Aug 30 09:38:00 2016
+       @generated from interface_cuda/blas_z_v1.cpp, normal z -> d, Sun Nov 20 20:20:18 2016
 */
 #ifndef MAGMA_NO_V1
 
-#include "common_magma.h"
+#include "magma_internal.h"
+#include "magmablas_v1.h"  // includes v1 prototypes; does NOT map routine names
 #include "error.h"
 
 #define REAL
@@ -26,113 +27,113 @@
 
 /******************************************************************************/
 extern "C" magma_int_t
-magma_idamax(
+magma_idamax_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx )
 {
-    return magma_idamax_q( n, dx, incx, magmablasGetQueue() );
+    return magma_idamax( n, dx, incx, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 extern "C" magma_int_t
-magma_idamin(
+magma_idamin_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx )
 {
-    return magma_idamin_q( n, dx, incx, magmablasGetQueue() );
+    return magma_idamin( n, dx, incx, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 extern "C" double
-magma_dasum(
+magma_dasum_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx )
 {
-    return magma_dasum_q( n, dx, incx, magmablasGetQueue() );
+    return magma_dasum( n, dx, incx, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 extern "C" void
-magma_daxpy(
+magma_daxpy_v1(
     magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_ptr       dy, magma_int_t incy )
 {
-    magma_daxpy_q( n, alpha, dx, incx, dy, incy, magmablasGetQueue() );
+    magma_daxpy( n, alpha, dx, incx, dy, incy, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 extern "C" void
-magma_dcopy(
+magma_dcopy_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_ptr       dy, magma_int_t incy )
 {
-    magma_dcopy_q( n, dx, incx, dy, incy, magmablasGetQueue() );
+    magma_dcopy( n, dx, incx, dy, incy, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 extern "C"
-double magma_ddot(
+double magma_ddot_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_const_ptr dy, magma_int_t incy )
 {
-    return magma_ddot_q( n, dx, incx, dy, incy, magmablasGetQueue() );
+    return magma_ddot( n, dx, incx, dy, incy, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C"
-double magma_ddot(
+double magma_ddot_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_const_ptr dy, magma_int_t incy )
 {
-    return magma_ddot_q( n, dx, incx, dy, incy, magmablasGetQueue() );
+    return magma_ddot( n, dx, incx, dy, incy, magmablasGetQueue() );
 }
 #endif // COMPLEX
 
 
 /******************************************************************************/
 extern "C" double
-magma_dnrm2(
+magma_dnrm2_v1(
     magma_int_t n,
     magmaDouble_const_ptr dx, magma_int_t incx )
 {
-    return magma_dnrm2_q( n, dx, incx, magmablasGetQueue() );
+    return magma_dnrm2( n, dx, incx, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 extern "C" void
-magma_drot(
+magma_drot_v1(
     magma_int_t n,
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy,
     double c, double s )
 {
-    magma_drot_q( n, dx, incx, dy, incy, c, s, magmablasGetQueue() );
+    magma_drot( n, dx, incx, dy, incy, c, s, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C" void
-magma_drot(
+magma_drot_v1(
     magma_int_t n,
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy,
     double c, double s )
 {
-    magma_drot_q( n, dx, incx, dy, incy, c, s, magmablasGetQueue() );
+    magma_drot( n, dx, incx, dy, incy, c, s, magmablasGetQueue() );
 }
 #endif // COMPLEX
 
@@ -140,13 +141,13 @@ magma_drot(
 /******************************************************************************/
 #ifdef REAL
 extern "C" void
-magma_drotm(
+magma_drotm_v1(
     magma_int_t n,
     double *dx, magma_int_t incx,
     double *dy, magma_int_t incy,
     const double *param )
 {
-    magma_drotm_q( n, dx, incx, dy, incy, param, magmablasGetQueue() );
+    magma_drotm( n, dx, incx, dy, incy, param, magmablasGetQueue() );
 }
 #endif // REAL
 
@@ -154,48 +155,48 @@ magma_drotm(
 /******************************************************************************/
 #ifdef REAL
 extern "C" void
-magma_drotmg(
+magma_drotmg_v1(
     double *d1, double       *d2,
     double *x1, const double *y1,
     double *param )
 {
-    magma_drotmg_q( d1, d2, x1, y1, param, magmablasGetQueue() );
+    magma_drotmg( d1, d2, x1, y1, param, magmablasGetQueue() );
 }
 #endif // REAL
 
 
 /******************************************************************************/
 extern "C" void
-magma_dscal(
+magma_dscal_v1(
     magma_int_t n,
     double alpha,
     magmaDouble_ptr dx, magma_int_t incx )
 {
-    magma_dscal_q( n, alpha, dx, incx, magmablasGetQueue() );
+    magma_dscal( n, alpha, dx, incx, magmablasGetQueue() );
 }
 
 
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C" void
-magma_dscal(
+magma_dscal_v1(
     magma_int_t n,
     double alpha,
     magmaDouble_ptr dx, magma_int_t incx )
 {
-    magma_dscal_q( n, alpha, dx, incx, magmablasGetQueue() );
+    magma_dscal( n, alpha, dx, incx, magmablasGetQueue() );
 }
 #endif // COMPLEX
 
 
 /******************************************************************************/
 extern "C" void
-magma_dswap(
+magma_dswap_v1(
     magma_int_t n,
     magmaDouble_ptr dx, magma_int_t incx,
     magmaDouble_ptr dy, magma_int_t incy )
 {
-    magma_dswap_q( n, dx, incx, dy, incy, magmablasGetQueue() );
+    magma_dswap( n, dx, incx, dy, incy, magmablasGetQueue() );
 }
 
 
@@ -204,7 +205,7 @@ magma_dswap(
 
 /******************************************************************************/
 extern "C" void
-magma_dgemv(
+magma_dgemv_v1(
     magma_trans_t transA,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -213,7 +214,7 @@ magma_dgemv(
     double beta,
     magmaDouble_ptr       dy, magma_int_t incy )
 {
-    magma_dgemv_q(
+    magma_dgemv(
         transA,
         m, n,
         alpha, dA, ldda,
@@ -225,14 +226,14 @@ magma_dgemv(
 
 /******************************************************************************/
 extern "C" void
-magma_dger(
+magma_dger_v1(
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_const_ptr dy, magma_int_t incy,
     magmaDouble_ptr       dA, magma_int_t ldda )
 {
-    magma_dger_q(
+    magma_dger(
         m, n,
         alpha, dx, incx,
                dy, incy,
@@ -244,14 +245,14 @@ magma_dger(
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C" void
-magma_dger(
+magma_dger_v1(
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_const_ptr dy, magma_int_t incy,
     magmaDouble_ptr       dA, magma_int_t ldda )
 {
-    magma_dger_q(
+    magma_dger(
         m, n,
         alpha, dx, incx,
                dy, incy,
@@ -263,7 +264,7 @@ magma_dger(
 
 /******************************************************************************/
 extern "C" void
-magma_dsymv(
+magma_dsymv_v1(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -272,7 +273,7 @@ magma_dsymv(
     double beta,
     magmaDouble_ptr       dy, magma_int_t incy )
 {
-    magma_dsymv_q(
+    magma_dsymv(
         uplo,
         n,
         alpha, dA, ldda,
@@ -284,14 +285,14 @@ magma_dsymv(
 
 /******************************************************************************/
 extern "C" void
-magma_dsyr(
+magma_dsyr_v1(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dx, magma_int_t incx,
     magmaDouble_ptr       dA, magma_int_t ldda )
 {
-    magma_dsyr_q(
+    magma_dsyr(
         uplo,
         n,
         alpha, dx, incx,
@@ -302,7 +303,7 @@ magma_dsyr(
 
 /******************************************************************************/
 extern "C" void
-magma_dsyr2(
+magma_dsyr2_v1(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
@@ -310,7 +311,7 @@ magma_dsyr2(
     magmaDouble_const_ptr dy, magma_int_t incy,
     magmaDouble_ptr       dA, magma_int_t ldda )
 {
-    magma_dsyr2_q(
+    magma_dsyr2(
         uplo,
         n,
         alpha, dx, incx,
@@ -322,13 +323,13 @@ magma_dsyr2(
 
 /******************************************************************************/
 extern "C" void
-magma_dtrmv(
+magma_dtrmv_v1(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr       dx, magma_int_t incx )
 {
-    magma_dtrmv_q(
+    magma_dtrmv(
         uplo, trans, diag,
         n,
         dA, ldda,
@@ -339,13 +340,13 @@ magma_dtrmv(
 
 /******************************************************************************/
 extern "C" void
-magma_dtrsv(
+magma_dtrsv_v1(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr       dx, magma_int_t incx )
 {
-    magma_dtrsv_q(
+    magma_dtrsv(
         uplo, trans, diag,
         n,
         dA, ldda,
@@ -359,7 +360,7 @@ magma_dtrsv(
 
 /******************************************************************************/
 extern "C" void
-magma_dgemm(
+magma_dgemm_v1(
     magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     double alpha,
@@ -368,7 +369,7 @@ magma_dgemm(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dgemm_q(
+    magma_dgemm(
         transA, transB,
         m, n, k,
         alpha, dA, ldda,
@@ -380,7 +381,7 @@ magma_dgemm(
 
 /******************************************************************************/
 extern "C" void
-magma_dsymm(
+magma_dsymm_v1(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -389,7 +390,7 @@ magma_dsymm(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dsymm_q(
+    magma_dsymm(
         side, uplo,
         m, n,
         alpha, dA, ldda,
@@ -401,7 +402,7 @@ magma_dsymm(
 
 /******************************************************************************/
 extern "C" void
-magma_dsyrk(
+magma_dsyrk_v1(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -409,7 +410,7 @@ magma_dsyrk(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dsyrk_q(
+    magma_dsyrk(
         uplo, trans,
         n, k,
         alpha, dA, ldda,
@@ -420,7 +421,7 @@ magma_dsyrk(
 
 /******************************************************************************/
 extern "C" void
-magma_dsyr2k(
+magma_dsyr2k_v1(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -429,7 +430,7 @@ magma_dsyr2k(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dsyr2k_q(
+    magma_dsyr2k(
         uplo, trans,
         n, k,
         alpha, dA, ldda,
@@ -442,7 +443,7 @@ magma_dsyr2k(
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C" void
-magma_dsymm(
+magma_dsymm_v1(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -451,7 +452,7 @@ magma_dsymm(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dsymm_q(
+    magma_dsymm(
         side, uplo,
         m, n,
         alpha, dA, ldda,
@@ -465,7 +466,7 @@ magma_dsymm(
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C" void
-magma_dsyrk(
+magma_dsyrk_v1(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -473,7 +474,7 @@ magma_dsyrk(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dsyrk_q(
+    magma_dsyrk(
         uplo, trans,
         n, k,
         alpha, dA, ldda,
@@ -486,7 +487,7 @@ magma_dsyrk(
 /******************************************************************************/
 #ifdef COMPLEX
 extern "C" void
-magma_dsyr2k(
+magma_dsyr2k_v1(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
@@ -495,7 +496,7 @@ magma_dsyr2k(
     double beta,
     magmaDouble_ptr       dC, magma_int_t lddc )
 {
-    magma_dsyr2k_q(
+    magma_dsyr2k(
         uplo, trans,
         n, k,
         alpha, dA, ldda,
@@ -508,14 +509,14 @@ magma_dsyr2k(
 
 /******************************************************************************/
 extern "C" void
-magma_dtrmm(
+magma_dtrmm_v1(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr       dB, magma_int_t lddb )
 {
-    magma_dtrmm_q(
+    magma_dtrmm(
         side, uplo, trans, diag,
         m, n,
         alpha, dA, ldda,
@@ -526,14 +527,14 @@ magma_dtrmm(
 
 /******************************************************************************/
 extern "C" void
-magma_dtrsm(
+magma_dtrsm_v1(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr       dB, magma_int_t lddb )
 {
-    magma_dtrsm_q(
+    magma_dtrsm(
         side, uplo, trans, diag,
         m, n,
         alpha, dA, ldda,

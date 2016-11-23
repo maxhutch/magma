@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -162,7 +162,7 @@ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
     LAPACK's zlarf routine. 
 */
 extern "C" void
-magma_zlarfx_gpu_q(
+magma_zlarfx_gpu(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_ptr v,
     magmaDoubleComplex_ptr tau,

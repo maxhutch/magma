@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from interface_cuda/blas_z_v2.cpp, normal z -> c, Tue Aug 30 09:38:00 2016
+       @generated from interface_cuda/blas_z_v2.cpp, normal z -> c, Sun Nov 20 20:20:20 2016
 */
 #include "magma_internal.h"
 #include "error.h"
@@ -39,7 +39,7 @@
     @ingroup magma_iamax
 *******************************************************************************/
 extern "C" magma_int_t
-magma_icamax_q(
+magma_icamax(
     magma_int_t n,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -71,7 +71,7 @@ magma_icamax_q(
     @ingroup magma_iamin
 *******************************************************************************/
 extern "C" magma_int_t
-magma_icamin_q(
+magma_icamin(
     magma_int_t n,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -103,7 +103,7 @@ magma_icamin_q(
     @ingroup magma_asum
 *******************************************************************************/
 extern "C" float
-magma_scasum_q(
+magma_scasum(
     magma_int_t n,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -144,7 +144,7 @@ magma_scasum_q(
     @ingroup magma_axpy
 *******************************************************************************/
 extern "C" void
-magma_caxpy_q(
+magma_caxpy(
     magma_int_t n,
     magmaFloatComplex alpha,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
@@ -182,7 +182,7 @@ magma_caxpy_q(
     @ingroup magma_copy
 *******************************************************************************/
 extern "C" void
-magma_ccopy_q(
+magma_ccopy(
     magma_int_t n,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex_ptr       dy, magma_int_t incy,
@@ -293,7 +293,7 @@ magmaFloatComplex magma_cdotu(
     @ingroup magma_nrm2
 *******************************************************************************/
 extern "C" float
-magma_scnrm2_q(
+magma_scnrm2(
     magma_int_t n,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magma_queue_t queue )
@@ -341,7 +341,7 @@ magma_scnrm2_q(
     @ingroup magma_rot
 *******************************************************************************/
 extern "C" void
-magma_crot_q(
+magma_crot(
     magma_int_t n,
     magmaFloatComplex_ptr dx, magma_int_t incx,
     magmaFloatComplex_ptr dy, magma_int_t incy,
@@ -390,7 +390,7 @@ magma_crot_q(
     @ingroup magma_rot
 *******************************************************************************/
 extern "C" void
-magma_csrot_q(
+magma_csrot(
     magma_int_t n,
     magmaFloatComplex_ptr dx, magma_int_t incx,
     magmaFloatComplex_ptr dy, magma_int_t incy,
@@ -437,7 +437,7 @@ magma_csrot_q(
     @ingroup magma_rotg
 *******************************************************************************/
 extern "C" void
-magma_crotg_q(
+magma_crotg(
     magmaFloatComplex *a, magmaFloatComplex *b,
     float             *c, magmaFloatComplex *s,
     magma_queue_t queue )
@@ -453,7 +453,7 @@ magma_crotg_q(
     @ingroup magma_rotm
 *******************************************************************************/
 extern "C" void
-magma_crotm_q(
+magma_crotm(
     magma_int_t n,
     float *dx, magma_int_t incx,
     float *dy, magma_int_t incy,
@@ -472,7 +472,7 @@ magma_crotm_q(
     @ingroup magma_rotmg
 *******************************************************************************/
 extern "C" void
-magma_crotmg_q(
+magma_crotmg(
     float *d1, float       *d2,
     float *x1, const float *y1,
     float *param,
@@ -506,7 +506,7 @@ magma_crotmg_q(
     @ingroup magma_scal
 *******************************************************************************/
 extern "C" void
-magma_cscal_q(
+magma_cscal(
     magma_int_t n,
     magmaFloatComplex alpha,
     magmaFloatComplex_ptr dx, magma_int_t incx,
@@ -540,7 +540,7 @@ magma_cscal_q(
     @ingroup magma_scal
 *******************************************************************************/
 extern "C" void
-magma_csscal_q(
+magma_csscal(
     magma_int_t n,
     float alpha,
     magmaFloatComplex_ptr dx, magma_int_t incx,
@@ -578,7 +578,7 @@ magma_csscal_q(
     @ingroup magma_swap
 *******************************************************************************/
 extern "C" void
-magma_cswap_q(
+magma_cswap(
     magma_int_t n,
     magmaFloatComplex_ptr dx, magma_int_t incx,
     magmaFloatComplex_ptr dy, magma_int_t incy,
@@ -642,7 +642,7 @@ magma_cswap_q(
     @ingroup magma_gemv
 *******************************************************************************/
 extern "C" void
-magma_cgemv_q(
+magma_cgemv(
     magma_trans_t transA,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
@@ -703,7 +703,7 @@ magma_cgemv_q(
     @ingroup magma_ger
 *******************************************************************************/
 extern "C" void
-magma_cgerc_q(
+magma_cgerc(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
@@ -761,7 +761,7 @@ magma_cgerc_q(
     @ingroup magma_ger
 *******************************************************************************/
 extern "C" void
-magma_cgeru_q(
+magma_cgeru(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
     magmaFloatComplex_const_ptr dx, magma_int_t incx,
@@ -823,7 +823,7 @@ magma_cgeru_q(
     @ingroup magma_hemv
 *******************************************************************************/
 extern "C" void
-magma_chemv_q(
+magma_chemv(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
@@ -879,7 +879,7 @@ magma_chemv_q(
     @ingroup magma_her
 *******************************************************************************/
 extern "C" void
-magma_cher_q(
+magma_cher(
     magma_uplo_t uplo,
     magma_int_t n,
     float alpha,
@@ -939,7 +939,7 @@ magma_cher_q(
     @ingroup magma_her2
 *******************************************************************************/
 extern "C" void
-magma_cher2_q(
+magma_cher2(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
@@ -1003,7 +1003,7 @@ magma_cher2_q(
     @ingroup magma_symv
 *******************************************************************************/
 extern "C" void
-magma_csymv_q(
+magma_csymv(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
@@ -1057,7 +1057,7 @@ magma_csymv_q(
     @ingroup magma_syr
 *******************************************************************************/
 extern "C" void
-magma_csyr_q(
+magma_csyr(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
@@ -1115,7 +1115,7 @@ magma_csyr_q(
     @ingroup magma_syr2
 *******************************************************************************/
 extern "C" void
-magma_csyr2_q(
+magma_csyr2(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
@@ -1173,7 +1173,7 @@ magma_csyr2_q(
     @ingroup magma_trmv
 *******************************************************************************/
 extern "C" void
-magma_ctrmv_q(
+magma_ctrmv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
@@ -1231,7 +1231,7 @@ magma_ctrmv_q(
     @ingroup magma_trsv
 *******************************************************************************/
 extern "C" void
-magma_ctrsv_q(
+magma_ctrsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
@@ -1306,7 +1306,7 @@ magma_ctrsv_q(
     @ingroup magma_gemm
 *******************************************************************************/
 extern "C" void
-magma_cgemm_q(
+magma_cgemm(
     magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
@@ -1381,7 +1381,7 @@ magma_cgemm_q(
     @ingroup magma_hemm
 *******************************************************************************/
 extern "C" void
-magma_chemm_q(
+magma_chemm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
@@ -1451,7 +1451,7 @@ magma_chemm_q(
     @ingroup magma_herk
 *******************************************************************************/
 extern "C" void
-magma_cherk_q(
+magma_cherk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     float alpha,
@@ -1527,7 +1527,7 @@ magma_cherk_q(
     @ingroup magma_her2k
 *******************************************************************************/
 extern "C" void
-magma_cher2k_q(
+magma_cher2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
@@ -1602,7 +1602,7 @@ magma_cher2k_q(
     @ingroup magma_symm
 *******************************************************************************/
 extern "C" void
-magma_csymm_q(
+magma_csymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
@@ -1670,7 +1670,7 @@ magma_csymm_q(
     @ingroup magma_syrk
 *******************************************************************************/
 extern "C" void
-magma_csyrk_q(
+magma_csyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
@@ -1744,7 +1744,7 @@ magma_csyrk_q(
     @ingroup magma_syr2k
 *******************************************************************************/
 extern "C" void
-magma_csyr2k_q(
+magma_csyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
@@ -1814,7 +1814,7 @@ magma_csyr2k_q(
     @ingroup magma_trmm
 *******************************************************************************/
 extern "C" void
-magma_ctrmm_q(
+magma_ctrmm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
@@ -1885,7 +1885,7 @@ magma_ctrmm_q(
     @ingroup magma_trsm
 *******************************************************************************/
 extern "C" void
-magma_ctrsm_q(
+magma_ctrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,

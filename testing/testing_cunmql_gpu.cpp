@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from testing/testing_zunmql_gpu.cpp, normal z -> c, Tue Aug 30 09:39:11 2016
+       @generated from testing/testing_zunmql_gpu.cpp, normal z -> c, Sun Nov 20 20:20:36 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -52,7 +52,7 @@ int main( int argc, char** argv )
     magma_side_t  side [] = { MagmaLeft,       MagmaRight   };
     magma_trans_t trans[] = { Magma_ConjTrans, MagmaNoTrans };
 
-    printf("%%   M     N     K   side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
+    printf("%%   M     N     K   side   trans   CPU Gflop/s (sec)   GPU Gflop/s (sec)   ||R||_F / ||QC||_F\n");
     printf("%%==============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int iside = 0; iside < 2; ++iside ) {

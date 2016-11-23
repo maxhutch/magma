@@ -1,5 +1,10 @@
 var NAVTREEINDEX1 =
 {
+"group__magma__error__internal.html#ga3749ee7f1b2605dca2a7039b5edbaf01":[9,2,0,7],
+"group__magma__error__internal.html#ga85134bc6031fac9c8d78f681548c4649":[9,2,0,5],
+"group__magma__error__internal.html#ga85b76ba4fedbe601e5f8f30608de3659":[9,2,0,2],
+"group__magma__error__internal.html#ga880bcc62b0a3c20de962d8d997582ea4":[9,2,0,4],
+"group__magma__error__internal.html#ga9b07f190f47fc1e4d3d464a9686124b7":[9,2,0,6],
 "group__magma__error__internal.html#gaa53d2690becbc16deb33f972450b3aaf":[9,2,0,0],
 "group__magma__error__internal.html#gabcf16d5b1c728f1029ec9803b7f81209":[9,2,0,1],
 "group__magma__error__internal.html#gacade02c28163ee2dcb13dcdfcd79f133":[9,2,0,3],
@@ -207,6 +212,8 @@ var NAVTREEINDEX1 =
 "group__magma__geqrf__batched.html#ga9de2be60413a20186896b509fdbcfb4f":[9,4,1,0,0,1],
 "group__magma__geqrf__batched.html#gab8099632f391f152464daba50927d117":[9,4,1,0,0,7],
 "group__magma__geqrf__batched.html#gae786a49211836615f06993c334bd1f51":[9,4,1,0,0,0],
+"group__magma__geqrf__copy__upper__batched.html":[9,4,1,0,3,1],
+"group__magma__geqrf__copy__upper__batched.html#ga8a258d6a9a216d01675eaa56fb14344d":[9,4,1,0,3,1,0],
 "group__magma__geqrs.html":[9,3,1,0,5],
 "group__magma__geqrs.html#ga18688208aee9ee3c05dcc91f17508509":[9,3,1,0,5,6],
 "group__magma__geqrs.html#ga1d5068bb21175de5241427676dc3aa75":[9,3,1,0,5,1],
@@ -242,12 +249,5 @@ var NAVTREEINDEX1 =
 "group__magma__gerfs__nopiv.html":[9,3,0,0,5,4],
 "group__magma__gerfs__nopiv.html#ga2a9a41420e189ab25c7548ef9f523293":[9,3,0,0,5,4,2],
 "group__magma__gerfs__nopiv.html#gad35bdf441f541ce47a1606b5603508fb":[9,3,0,0,5,4,3],
-"group__magma__gerfs__nopiv.html#gae2032227406916e55d667b627627c501":[9,3,0,0,5,4,1],
-"group__magma__gerfs__nopiv.html#gafa464e9adeb3e9662aa85f25c3a34287":[9,3,0,0,5,4,0],
-"group__magma__gerqf.html":[9,3,1,1,0],
-"group__magma__gerqf__batched.html":[9,4,1,1,0],
-"group__magma__gesdd.html":[9,3,3,1],
-"group__magma__gesdd.html#ga1af7fbb2b1ea64aa347fc95e3924aca5":[9,3,3,1,2],
-"group__magma__gesdd.html#ga6ac1524e23541c747ef0a319fde3af2f":[9,3,3,1,1],
-"group__magma__gesdd.html#ga9670752d04d05fa07b6b44a55a51b643":[9,3,3,1,3]
+"group__magma__gerfs__nopiv.html#gae2032227406916e55d667b627627c501":[9,3,0,0,5,4,1]
 };

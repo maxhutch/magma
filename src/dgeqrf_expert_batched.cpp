@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from src/zgeqrf_expert_batched.cpp, normal z -> d, Tue Aug 30 09:38:27 2016
+       @generated from src/zgeqrf_expert_batched.cpp, normal z -> d, Sun Nov 20 20:20:27 2016
 */
 #include <cuda_runtime.h>
 
@@ -223,7 +223,7 @@ magma_dgeqrf_expert_batched(
     magma_ddisplace_pointers(dR_displ, dR_array, lddr, 0, 0, batchCount, queue); 
     magma_ddisplace_pointers(dT_displ, dT_array, lddt, 0, 0, batchCount, queue); 
     // set dwork to zero because our GEMM routine does propagate NAN when C=betaC+alphaA*B and beta=0
-    magmablas_dlaset_q( MagmaFull, 2*nb, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, 2*nb, queue );
+    magmablas_dlaset( MagmaFull, 2*nb, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dwork, 2*nb, queue );
 
     // set dR and dT to zero. if provide_RT == 0 only a tile of size nbxnb is used and overwritten at each step
     magmablas_dlaset_batched( MagmaFull, lddr, (provide_RT > 0 ? n:min(min_mn,nb)), MAGMA_D_ZERO, MAGMA_D_ZERO, dR_displ, lddr, batchCount, queue ); 
@@ -231,13 +231,13 @@ magma_dgeqrf_expert_batched(
     /*
     if ( provide_RT > 0 )
     {
-        magmablas_dlaset_q( MagmaFull, lddr, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dR, lddr, queue );
-        magmablas_dlaset_q( MagmaFull, lddt, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dT, lddt, queue );
+        magmablas_dlaset( MagmaFull, lddr, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dR, lddr, queue );
+        magmablas_dlaset( MagmaFull, lddt, n*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dT, lddt, queue );
     }
     else
     {
-        magmablas_dlaset_q( MagmaFull, lddr, nb*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dR, lddr, queue );
-        magmablas_dlaset_q( MagmaFull, lddt, nb*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dT, lddt, queue );
+        magmablas_dlaset( MagmaFull, lddr, nb*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dR, lddr, queue );
+        magmablas_dlaset( MagmaFull, lddt, nb*batchCount, MAGMA_D_ZERO, MAGMA_D_ZERO, dT, lddt, queue );
     }
     */
     magma_int_t streamid;

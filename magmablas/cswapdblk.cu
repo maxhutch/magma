@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zswapdblk.cu, normal z -> c, Tue Aug 30 09:38:33 2016
+       @generated from magmablas/zswapdblk.cu, normal z -> c, Sun Nov 20 20:20:30 2016
 
 */
 #include "magma_internal.h"
@@ -95,7 +95,7 @@ cswapdblk_kernel( int nb,
     @ingroup magma_swapdblk
 *******************************************************************************/
 extern "C" void 
-magmablas_cswapdblk_q(
+magmablas_cswapdblk(
     magma_int_t n, magma_int_t nb,
     magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t inca,
     magmaFloatComplex_ptr dB, magma_int_t lddb, magma_int_t incb,

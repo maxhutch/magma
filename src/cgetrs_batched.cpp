@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Azzam Haidar
 
-       @generated from src/zgetrs_batched.cpp, normal z -> c, Tue Aug 30 09:38:24 2016
+       @generated from src/zgetrs_batched.cpp, normal z -> c, Sun Nov 20 20:20:26 2016
 */
 #include "magma_internal.h"
 #include "batched_kernel_param.h"
@@ -152,8 +152,8 @@ magma_cgetrs_batched(
         return info;
     }
 
-    magmablas_claset_q( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
-    magmablas_claset_q( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
+    magmablas_claset( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
+    magmablas_claset( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
     magma_cset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
     magma_cset_pointer( dinvA_array, dinvA, CTRTRI_BATCHED_NB, 0, 0, invA_msize, batchCount, queue );
 

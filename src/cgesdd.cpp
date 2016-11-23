@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from src/zgesdd.cpp, normal z -> c, Tue Aug 30 09:38:23 2016
+       @generated from src/zgesdd.cpp, normal z -> c, Sun Nov 20 20:20:32 2016
 
 */
 #include "magma_internal.h"
@@ -228,8 +228,8 @@ magma_cgesdd(
     // Local variables
     magma_int_t lnwork, i__1;
     magma_int_t i, ie, il, ir, iu, ib;
-    magmaFloatComplex dummy[1];
-    float rdummy[1];
+    magmaFloatComplex dummy[1], unused[1];
+    float rdummy[1], runused[1];
     float anrm, bignum, eps, smlnum;
     magma_int_t ivt, iscl;
     magma_int_t idummy[1], ierr, itau;
@@ -313,79 +313,79 @@ magma_cgesdd(
             // Compute space preferred for each routine
             // For MAGMA, these are all required
             #if VERSION == 1
-            lapackf77_cgebrd( &m, &n, NULL, &m, NULL, NULL, NULL, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cgebrd( &m, &n, unused, &m, runused, runused, unused, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cgebrd(      m,  n, NULL,  m, NULL, NULL, NULL, NULL, dummy,  ineg_one, &ierr );
+            magma_cgebrd(      m,  n, unused,  m, runused, runused, unused, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cgebrd_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cgebrd( &n, &n, NULL, &n, NULL, NULL, NULL, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cgebrd( &n, &n, unused, &n, runused, runused, unused, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cgebrd(      n,  n, NULL,  n, NULL, NULL, NULL, NULL, dummy,  ineg_one, &ierr );
+            magma_cgebrd(      n,  n, unused,  n, runused, runused, unused, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cgebrd_nn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cgeqrf( &m, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cgeqrf( &m, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cgeqrf(      m,  n, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cgeqrf(      m,  n, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cgeqrf_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cungbr( "P", &n, &n, &n, NULL, &n, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungbr( "P", &n, &n, &n, unused, &n, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cungbr( MagmaP,   n,  n,  n, NULL,  n, NULL, dummy,  ineg_one, &ierr );
+            magma_cungbr( MagmaP,   n,  n,  n, unused,  n, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cungbr_p_nn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cungbr( "Q", &m, &m, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungbr( "Q", &m, &m, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cungbr( MagmaQ,   m,  m,  n, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cungbr( MagmaQ,   m,  m,  n, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cungbr_q_mm = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cungbr( "Q", &m, &n, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungbr( "Q", &m, &n, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cungbr( MagmaQ,   m,  n,  n, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cungbr( MagmaQ,   m,  n,  n, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cungbr_q_mn = magma_int_t( real( dummy[0] ));
             
             // magma_cungqr2 does not take workspace; use LAPACK's for compatability
-            lapackf77_cungqr( &m, &m, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungqr( &m, &m, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             magma_int_t lwork_cungqr_mm = magma_int_t( real( dummy[0] ));
             
-            lapackf77_cungqr( &m, &n, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungqr( &m, &n, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             magma_int_t lwork_cungqr_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "P", "R", "C",                  &n, &n, &n, NULL, &n, NULL, NULL, &n, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "P", "R", "C",                  &n, &n, &n, unused, &n, unused, unused, &n, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  n,  n,  n, NULL,  n, NULL, NULL,  n, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  n,  n,  n, unused,  n, unused, unused,  n, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_prc_nn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "Q", "L", "N",               &m, &m, &n, NULL, &m, NULL, NULL, &m, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "Q", "L", "N",               &m, &m, &n, unused, &m, unused, unused, &m, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  m,  m,  n, NULL,  m, NULL, NULL,  m, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  m,  m,  n, unused,  m, unused, unused,  m, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_qln_mm = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "Q", "L", "N",               &m, &n, &n, NULL, &m, NULL, NULL, &m, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "Q", "L", "N",               &m, &n, &n, unused, &m, unused, unused, &m, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  m,  n,  n, NULL,  m, NULL, NULL,  m, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  m,  n,  n, unused,  m, unused, unused,  m, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_qln_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "Q", "L", "N",               &n, &n, &n, NULL, &n, NULL, NULL, &n, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "Q", "L", "N",               &n, &n, &n, unused, &n, unused, unused, &n, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  n,  n,  n, NULL,  n, NULL, NULL,  n, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  n,  n,  n, unused,  n, unused, unused,  n, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_qln_nn = magma_int_t( real( dummy[0] ));
             
@@ -517,86 +517,86 @@ magma_cgesdd(
             // Compute space preferred for each routine
             // For MAGMA, these are all required
             #if VERSION == 1
-            lapackf77_cgebrd( &m, &n, NULL, &m, NULL, NULL, NULL, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cgebrd( &m, &n, unused, &m, runused, runused, unused, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cgebrd(      m,  n, NULL,  m, NULL, NULL, NULL, NULL, dummy,  ineg_one, &ierr );
+            magma_cgebrd(      m,  n, unused,  m, runused, runused, unused, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cgebrd_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cgebrd( &m, &m, NULL, &m, NULL, NULL, NULL, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cgebrd( &m, &m, unused, &m, runused, runused, unused, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cgebrd(      m,  m, NULL,  m, NULL, NULL, NULL, NULL, dummy,  ineg_one, &ierr );
+            magma_cgebrd(      m,  m, unused,  m, runused, runused, unused, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cgebrd_mm = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cgelqf( &m, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cgelqf( &m, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cgelqf(      m,  n, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cgelqf(      m,  n, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cgelqf_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cungbr( "P", &m, &n, &m, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungbr( "P", &m, &n, &m, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cungbr( MagmaP,   m,  n,  m, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cungbr( MagmaP,   m,  n,  m, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cungbr_p_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cungbr( "P", &n, &n, &m, NULL, &n, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungbr( "P", &n, &n, &m, unused, &n, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cungbr( MagmaP,   n,  n,  m, NULL,  n, NULL, dummy,  ineg_one, &ierr );
+            magma_cungbr( MagmaP,   n,  n,  m, unused,  n, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cungbr_p_nn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cungbr( "Q", &m, &m, &n, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cungbr( "Q", &m, &m, &n, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cungbr( MagmaQ,   m,  m,  n, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cungbr( MagmaQ,   m,  m,  n, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cungbr_q_mm = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunglq( &m, &n, &m, NULL, &m, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cunglq( &m, &n, &m, unused, &m, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cunglq(      m,  n,  m, NULL,  m, NULL, dummy,  ineg_one, &ierr );
+            magma_cunglq(      m,  n,  m, unused,  m, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunglq_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunglq( &n, &n, &m, NULL, &n, NULL, dummy, &ineg_one, &ierr );
+            lapackf77_cunglq( &n, &n, &m, unused, &n, unused, dummy, &ineg_one, &ierr );
             #else
-            magma_cunglq(      n,  n,  m, NULL,  n, NULL, dummy,  ineg_one, &ierr );
+            magma_cunglq(      n,  n,  m, unused,  n, unused, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunglq_nn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "P", "R", "C",                  &m, &m, &m, NULL, &m, NULL, NULL, &m, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "P", "R", "C",                  &m, &m, &m, unused, &m, unused, unused, &m, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  m,  m,  m, NULL,  m, NULL, NULL,  m, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  m,  m,  m, unused,  m, unused, unused,  m, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_prc_mm = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "P", "R", "C",                  &m, &n, &m, NULL, &m, NULL, NULL, &m, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "P", "R", "C",                  &m, &n, &m, unused, &m, unused, unused, &m, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  m,  n,  m, NULL,  m, NULL, NULL,  m, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  m,  n,  m, unused,  m, unused, unused,  m, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_prc_mn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "P", "R", "C",                  &n, &n, &m, NULL, &n, NULL, NULL, &n, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "P", "R", "C",                  &n, &n, &m, unused, &n, unused, unused, &n, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  n,  n,  m, NULL,  n, NULL, NULL,  n, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaP, MagmaRight, MagmaConjTrans,  n,  n,  m, unused,  n, unused, unused,  n, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_prc_nn = magma_int_t( real( dummy[0] ));
             
             #if VERSION == 1
-            lapackf77_cunmbr( "Q", "L", "N",               &m, &m, &m, NULL, &m, NULL, NULL, &m, dummy, &ineg_one, &ierr );
+            lapackf77_cunmbr( "Q", "L", "N",               &m, &m, &m, unused, &m, unused, unused, &m, dummy, &ineg_one, &ierr );
             #else
-            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  m,  m,  m, NULL,  m, NULL, NULL,  m, dummy,  ineg_one, &ierr );
+            magma_cunmbr( MagmaQ, MagmaLeft, MagmaNoTrans,  m,  m,  m, unused,  m, unused, unused,  m, dummy,  ineg_one, &ierr );
             #endif
             magma_int_t lwork_cunmbr_qln_mm = magma_int_t( real( dummy[0] ));
             

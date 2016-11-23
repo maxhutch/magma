@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -139,9 +139,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga3221fa1f3d171ee19daf64a8b3346812"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga3221fa1f3d171ee19daf64a8b3346812">magma_didr_strms</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga3221fa1f3d171ee19daf64a8b3346812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general real N-by-N matrix A.  <a href="#ga3221fa1f3d171ee19daf64a8b3346812">More...</a><br /></td></tr>
 <tr class="separator:ga3221fa1f3d171ee19daf64a8b3346812"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6682994ecc0c4ddcd899868890afef4c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga6682994ecc0c4ddcd899868890afef4c">magma_dpcg</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga6682994ecc0c4ddcd899868890afef4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga6682994ecc0c4ddcd899868890afef4c">More...</a><br /></td></tr>
-<tr class="separator:ga6682994ecc0c4ddcd899868890afef4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga410fbfe8e318ee1993aa46516ef0471c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dposv.html#ga410fbfe8e318ee1993aa46516ef0471c">magma_dpcg_merge</a> (magma_d_matrix A, magma_d_matrix b, magma_d_matrix *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:ga410fbfe8e318ee1993aa46516ef0471c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real matrix A.  <a href="#ga410fbfe8e318ee1993aa46516ef0471c">More...</a><br /></td></tr>
 <tr class="separator:ga410fbfe8e318ee1993aa46516ef0471c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -619,70 +616,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix RHS b</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_d_matrix* solution approximation</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga6682994ecc0c4ddcd899868890afef4c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dpcg </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_matrix&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_matrix *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_solver_par *&#160;</td>
-          <td class="paramname"><em>solver_par</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond_par</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structmagma__queue.html">magma_queue_t</a>&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A. </p>
-<p>This is a GPU implementation of the preconditioned Conjugate Gradient method.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_d_matrix input matrix A</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix RHS b</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_d_matrix* solution approximation</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">precond_par</td><td>magma_d_preconditioner* preconditioner </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>

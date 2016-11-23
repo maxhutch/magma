@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlarfbx.cu, normal z -> c, Tue Aug 30 09:38:30 2016
+       @generated from magmablas/zlarfbx.cu, normal z -> c, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -112,7 +112,7 @@ magma_cgemv_kernel2(int m, int n, const magmaFloatComplex * __restrict__ V, int 
     k elementary reflectors. 
 */
 extern "C" void
-magma_clarfbx_gpu_q(
+magma_clarfbx_gpu(
     magma_int_t m, magma_int_t k,
     magmaFloatComplex_ptr V,  magma_int_t ldv,
     magmaFloatComplex_ptr dT, magma_int_t ldt,

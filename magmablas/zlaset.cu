@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @author Azzam Haidar
@@ -212,6 +212,51 @@ void zlaset_upper_kernel_batched(
     int batchid = blockIdx.z;
     zlaset_upper_device(m, n, offdiag, diag, dAarray[batchid], ldda);
 }
+/******************************************************************************/
+/*
+    kernel wrappers to call the device functions for the vbatched routine.
+*/
+__global__
+void zlaset_full_kernel_vbatched(
+    magma_int_t* m, magma_int_t* n,
+    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
+    magmaDoubleComplex **dAarray, magma_int_t* ldda )
+{
+    const int batchid = blockIdx.z;
+    const int my_m = (int)m[batchid];
+    const int my_n = (int)n[batchid];
+    if( blockIdx.x >= (my_m+BLK_X-1)/BLK_X ) return;
+    if( blockIdx.y >= (my_n+BLK_Y-1)/BLK_Y ) return;
+    zlaset_full_device(my_m, my_n, offdiag, diag, dAarray[batchid], (int)ldda[batchid]);
+}
+
+__global__
+void zlaset_lower_kernel_vbatched(
+    magma_int_t* m, magma_int_t* n,
+    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
+    magmaDoubleComplex **dAarray, magma_int_t* ldda )
+{
+    const int batchid = blockIdx.z;
+    const int my_m = (int)m[batchid];
+    const int my_n = (int)n[batchid];
+    if( blockIdx.x >= (my_m+BLK_X-1)/BLK_X ) return;
+    if( blockIdx.y >= (my_n+BLK_Y-1)/BLK_Y ) return;
+    zlaset_lower_device(my_m, my_n, offdiag, diag, dAarray[batchid], (int)ldda[batchid]);
+}
+
+__global__
+void zlaset_upper_kernel_vbatched(
+    magma_int_t* m, magma_int_t* n,
+    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
+    magmaDoubleComplex **dAarray, magma_int_t* ldda )
+{
+    const int batchid = blockIdx.z;
+    const int my_m = (int)m[batchid];
+    const int my_n = (int)n[batchid];
+    if( blockIdx.x >= (my_m+BLK_X-1)/BLK_X ) return;
+    if( blockIdx.y >= (my_n+BLK_Y-1)/BLK_Y ) return;
+    zlaset_upper_device(my_m, my_n, offdiag, diag, dAarray[batchid], (int)ldda[batchid]);
+}
 
 
 /***************************************************************************//**
@@ -264,7 +309,7 @@ void zlaset_upper_kernel_batched(
     @ingroup magma_laset
 *******************************************************************************/
 extern "C"
-void magmablas_zlaset_q(
+void magmablas_zlaset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaDoubleComplex offdiag, magmaDoubleComplex diag,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
@@ -345,6 +390,7 @@ void magmablas_zlaset_q(
             size_t size = m*n;
             cudaError_t err = cudaMemsetAsync( dA, 0, size*sizeof(magmaDoubleComplex), queue->cuda_stream() );
             assert( err == cudaSuccess );
+            MAGMA_UNUSED( err );
         }
         else {
             for( unsigned int i=0; i < super_grid.x; ++i ) {
@@ -406,5 +452,46 @@ void magmablas_zlaset_batched(
     }
     else {
         zlaset_full_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+}
+/******************************************************************************/
+extern "C"
+void magmablas_zlaset_vbatched(
+    magma_uplo_t uplo, magma_int_t max_m, magma_int_t max_n, 
+    magma_int_t* m, magma_int_t* n,
+    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
+    magmaDoubleComplex_ptr dAarray[], magma_int_t* ldda,
+    magma_int_t batchCount, magma_queue_t queue)
+{
+    magma_int_t info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
+        info = -1;
+    else if ( max_m < 0 )
+        info = -2;
+    else if ( max_n < 0 )
+        info = -3;
+    //else if ( ldda < max(1,m) )
+    //    info = -7;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    if ( max_m == 0 || max_n == 0 ) {
+        return;
+    }
+    
+    dim3 threads( BLK_X, 1, 1 );
+    dim3 grid( magma_ceildiv( max_m, BLK_X ), magma_ceildiv( max_n, BLK_Y ), batchCount );
+    
+    if (uplo == MagmaLower) {
+        zlaset_lower_kernel_vbatched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+    else if (uplo == MagmaUpper) {
+        zlaset_upper_kernel_vbatched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+    else {
+        zlaset_full_kernel_vbatched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
     }
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -112,7 +112,7 @@ magma_zgemv_kernel2(int m, int n, const magmaDoubleComplex * __restrict__ V, int
     k elementary reflectors. 
 */
 extern "C" void
-magma_zlarfbx_gpu_q(
+magma_zlarfbx_gpu(
     magma_int_t m, magma_int_t k,
     magmaDoubleComplex_ptr V,  magma_int_t ldv,
     magmaDoubleComplex_ptr dT, magma_int_t ldt,

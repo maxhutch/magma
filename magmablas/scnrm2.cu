@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/dznrm2.cu, normal z -> c, Tue Aug 30 09:38:33 2016
+       @generated from magmablas/dznrm2.cu, normal z -> c, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -90,7 +90,7 @@ magmablas_scnrm2_check_kernel(
 
 /******************************************************************************/
 extern "C" void
-magmablas_scnrm2_check_q(
+magmablas_scnrm2_check(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda, 
     magmaFloat_ptr dxnorm,
@@ -148,7 +148,7 @@ magmablas_scnrm2_smkernel(
     This routine uses only one SM (block).
 */
 extern "C" void
-magmablas_scnrm2_sm_q(
+magmablas_scnrm2_sm(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dxnorm,
@@ -187,7 +187,7 @@ magma_scnrm2_adjust_kernel(float *xnorm, magmaFloatComplex *c)
     c was changed with orthogonal transformations.
 */
 extern "C" void
-magmablas_scnrm2_adjust_q(
+magmablas_scnrm2_adjust(
     magma_int_t k,
     magmaFloat_ptr dxnorm,
     magmaFloatComplex_ptr dc,
@@ -239,7 +239,7 @@ magma_scnrm2_row_check_adjust_kernel(
     It also do checks for QP3
 */
 extern "C" void
-magmablas_scnrm2_row_check_adjust_q(
+magmablas_scnrm2_row_check_adjust(
     magma_int_t k, float tol,
     magmaFloat_ptr dxnorm,
     magmaFloat_ptr dxnorm2, 
@@ -262,7 +262,7 @@ magmablas_scnrm2_row_check_adjust_q(
     The computation can be done using n blocks (default) or on one SM (commented).
 */
 extern "C" void
-magmablas_scnrm2_cols_q(
+magmablas_scnrm2_cols(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda, 
     magmaFloat_ptr dxnorm,
@@ -275,5 +275,5 @@ magmablas_scnrm2_cols_q(
         ( m, dA, ldda, dxnorm );
 
     // The following would do the computation on one SM
-    // magmablas_scnrm2_sm_q( m, n, dA, ldda, dxnorm, queue );
+    // magmablas_scnrm2_sm( m, n, dA, ldda, dxnorm, queue );
 }

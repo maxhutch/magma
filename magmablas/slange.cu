@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlange.cu, normal z -> s, Tue Aug 30 09:38:30 2016
+       @generated from magmablas/zlange.cu, normal z -> s, Sun Nov 20 20:20:29 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -238,7 +238,7 @@ slange_one_kernel(
     @ingroup magma_lange
 *******************************************************************************/
 extern "C" float
-magmablas_slange_q(
+magmablas_slange(
     magma_norm_t norm, magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dwork, magma_int_t lwork,

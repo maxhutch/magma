@@ -368,8 +368,8 @@ endif()
 # compile MAGMA sparse library
 
 # sparse doesn't have Fortran at the moment, so no need for above shenanigans
-include_directories( sparse-iter/include )
-include_directories( sparse-iter/control )
+include_directories( sparse/include )
+include_directories( sparse/control )
 include_directories( testing )
 cuda_add_library( magma_sparse ${libsparse_all} )
 target_link_libraries( magma_sparse
@@ -408,10 +408,10 @@ endforeach()
 
 # ----------------------------------------
 # compile each sparse tester
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY sparse-iter/testing )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY sparse/testing )
 foreach( TEST ${sparse_testing_all} )
 	string( REGEX REPLACE "\\.(cpp|f90|F90)"     "" EXE ${TEST} )
-	string( REGEX REPLACE "sparse-iter/testing/" "" EXE ${EXE} )
+	string( REGEX REPLACE "sparse/testing/" "" EXE ${EXE} )
 	#message( "${TEST} --> ${EXE}" )
 	add_executable( ${EXE} ${TEST} )
 	target_link_libraries( ${EXE} ${LIBS_SPARSE} )
@@ -424,7 +424,7 @@ install( TARGETS magma magma_sparse ${blas_fix}
          RUNTIME DESTINATION bin
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib )
-file( GLOB headers include/*.h sparse-iter/include/*.h )
+file( GLOB headers include/*.h sparse/include/*.h )
 install( FILES ${headers}
          DESTINATION include )
 

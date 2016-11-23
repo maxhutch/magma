@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zgemm_fermi.cu, normal z -> s, Tue Aug 30 09:38:28 2016
+       @generated from magmablas/zgemm_fermi.cu, normal z -> s, Sun Nov 20 20:20:28 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -139,7 +139,7 @@
     @ingroup magma_gemm
 *******************************************************************************/
 extern "C" void
-magmablas_sgemm_q(
+magmablas_sgemm(
     magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,

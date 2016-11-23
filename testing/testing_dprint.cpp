@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
   
-       @generated from testing/testing_zprint.cpp, normal z -> d, Tue Aug 30 09:39:05 2016
+       @generated from testing/testing_zprint.cpp, normal z -> d, Sun Nov 20 20:20:34 2016
        @author Mark Gates
 */
 // includes, system
@@ -77,7 +77,7 @@ int main( int argc, char** argv)
             magma_dprint( M, N, hA, lda );
             
             printf( "dA=" );
-            magma_dprint_gpu( M, N, dA, ldda );
+            magma_dprint_gpu( M, N, dA, ldda, opts.queue );
             
             magma_free_cpu( hA );
             magma_free( dA );

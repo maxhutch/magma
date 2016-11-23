@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/ztrsm.cu, normal z -> d, Tue Aug 30 09:38:34 2016
+       @generated from magmablas/ztrsm.cu, normal z -> d, Sun Nov 20 20:20:31 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -143,7 +143,7 @@
     @ingroup magma_trsm
 *******************************************************************************/
 extern "C"
-void magmablas_dtrsm_outofplace_q(
+void magmablas_dtrsm_outofplace(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -389,7 +389,7 @@ void magmablas_dtrsm_outofplace_q(
     @ingroup magma_trsm
 *******************************************************************************/
 extern "C"
-void magmablas_dtrsm_work_q(
+void magmablas_dtrsm_work(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -400,7 +400,7 @@ void magmablas_dtrsm_work_q(
     magmaDouble_ptr d_dinvA, magma_int_t dinvA_length,
     magma_queue_t queue )
 {
-    magmablas_dtrsm_outofplace_q( side, uplo, transA, diag, m, n, alpha,
+    magmablas_dtrsm_outofplace( side, uplo, transA, diag, m, n, alpha,
                                   dA, ldda, dB, lddb, dX, lddx, flag,
                                   d_dinvA, dinvA_length, queue );
     // copy X to B
@@ -417,7 +417,7 @@ void magmablas_dtrsm_work_q(
     @ingroup magma_trsm
 *******************************************************************************/
 extern "C"
-void magmablas_dtrsm_q(
+void magmablas_dtrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
@@ -477,7 +477,7 @@ void magmablas_dtrsm_q(
     else {
         magmablas_dlaset( MagmaFull, dinvA_length, 1, MAGMA_D_ZERO, MAGMA_D_ZERO, d_dinvA, dinvA_length, queue );
         magmablas_dlaset( MagmaFull, m, n, MAGMA_D_ZERO, MAGMA_D_ZERO, dX, lddx, queue );
-        magmablas_dtrsm_work_q( side, uplo, transA, diag, m, n, alpha,
+        magmablas_dtrsm_work( side, uplo, transA, diag, m, n, alpha,
                                 dA, ldda, dB, lddb, dX, lddx, 1, d_dinvA, dinvA_length, queue );
     }
 

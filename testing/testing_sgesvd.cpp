@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zgesvd.cpp, normal z -> s, Tue Aug 30 09:39:15 2016
+       @generated from testing/testing_zgesvd.cpp, normal z -> s, Sun Nov 20 20:20:39 2016
        @author Mark Gates
 
 */
@@ -383,8 +383,8 @@ int main( int argc, char** argv)
     // Local variables
     real_Double_t   gpu_time=0, cpu_time=0;
     float *hA, *hR, *U, *Umalloc, *VT, *VTmalloc, *hwork;
-    float dummy[1];
-    float *S, *Sref, work[1];
+    float dummy[1], unused[1];
+    float *S, *Sref, work[1], runused[1];
     #ifdef COMPLEX
     lwork_formula_t lrwork;
     float *rwork;
@@ -480,9 +480,12 @@ int main( int argc, char** argv)
             query_magma = (magma_int_t) MAGMA_S_REAL( dummy[0] );
             
             lapackf77_sgesvd( lapack_vec_const(*jobu), lapack_vec_const(*jobv), &M, &N,
-                              NULL, &lda, NULL, NULL, &ldu, NULL, &ldv, dummy, &ineg_one,
+                              unused, &lda, runused,
+                              unused, &ldu,
+                              unused, &ldv,
+                              dummy, &ineg_one,
                               #ifdef COMPLEX
-                              NULL,
+                              runused,
                               #endif
                               &info );
             assert( info == 0 );

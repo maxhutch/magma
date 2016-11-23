@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zgeadd2.cu, normal z -> s, Tue Aug 30 09:38:27 2016
+       @generated from magmablas/zgeadd2.cu, normal z -> s, Sun Nov 20 20:20:27 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -102,7 +102,7 @@ void sgeadd2_full(
     @ingroup magma_geadd
 *******************************************************************************/
 extern "C" void
-magmablas_sgeadd2_q(
+magmablas_sgeadd2(
     magma_int_t m, magma_int_t n,
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,

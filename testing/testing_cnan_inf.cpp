@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
   
-       @generated from testing/testing_znan_inf.cpp, normal z -> c, Tue Aug 30 09:39:05 2016
+       @generated from testing/testing_znan_inf.cpp, normal z -> c, Sun Nov 20 20:20:34 2016
        @author Mark Gates
 */
 // includes, system
@@ -207,10 +207,10 @@ int main( int argc, char** argv)
             magma_int_t c_gpu_nan=-1, c_gpu_inf=-1;
             
             magma_int_t c_cpu = magma_cnan_inf    ( uplo[iuplo], M, N, hA, lda,  &c_cpu_nan, &c_cpu_inf );
-            magma_int_t c_gpu = magma_cnan_inf_gpu( uplo[iuplo], M, N, dA, ldda, &c_gpu_nan, &c_gpu_inf );
+            magma_int_t c_gpu = magma_cnan_inf_gpu( uplo[iuplo], M, N, dA, ldda, &c_gpu_nan, &c_gpu_inf, opts.queue );
             
             magma_int_t c_cpu2 = magma_cnan_inf    ( uplo[iuplo], M, N, hA, lda,  NULL, NULL );
-            magma_int_t c_gpu2 = magma_cnan_inf_gpu( uplo[iuplo], M, N, dA, ldda, NULL, NULL );
+            magma_int_t c_gpu2 = magma_cnan_inf_gpu( uplo[iuplo], M, N, dA, ldda, NULL, NULL, opts.queue );
             
             /* =====================================================================
                Check the result

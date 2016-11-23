@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -11,7 +11,7 @@
 #include "magma_internal.h"
 
 
-/*********************************************************/
+/******************************************************************************/
 /*
  *  Swap diagonal blocks of two matrices.
  *  Each thread block swaps one diagonal block.
@@ -55,7 +55,7 @@ zswapdblk_batched_kernel( int nb, int n_mod_nb,
 }
 
 
-/**
+/***************************************************************************//**
     Purpose
     -------
     zswapdblk swaps diagonal blocks of size nb x nb between matrices
@@ -113,8 +113,8 @@ zswapdblk_batched_kernel( int nb, int n_mod_nb,
     queue   magma_queue_t
             Queue to execute in.
 
-    @ingroup magma_zaux2
-    ********************************************************************/
+    @ingroup magma_swapdblk
+*******************************************************************************/
 extern "C" void 
 magmablas_zswapdblk_batched(
     magma_int_t n, magma_int_t nb,

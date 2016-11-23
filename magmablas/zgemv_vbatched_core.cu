@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Tingxing Dong
        @author Azzam Haidar
@@ -149,6 +149,6 @@ magmablas_zgemv_vbatched_max_nocheck(
                         ( trans, m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, max_m, max_n, batchCount, queue );
                 }
             }
-        }        
-     }                   
+        }
+    }
 }

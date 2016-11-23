@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zhemv_mgpu.cpp, normal z -> d, Tue Aug 30 09:39:03 2016
+       @generated from testing/testing_zhemv_mgpu.cpp, normal z -> d, Sun Nov 20 20:20:33 2016
        
        @author Mark Gates
 */
@@ -20,9 +20,8 @@
 #include "flops.h"
 #include "magma_v2.h"
 #include "magma_lapack.h"
-#include "testings.h"
-
 #include "magma_operators.h"
+#include "testings.h"
 
 
 // --------------------
@@ -41,7 +40,7 @@ int main(int argc, char **argv)
     TESTING_CHECK( magma_init() );
     magma_print_environment();
 
-    real_Double_t gflops, cpu_time=0, cpu_perf=0, gpu_time, gpu_perf, mgpu_time, mgpu_perf, cuda_time, cuda_perf;
+    real_Double_t gflops, cpu_time=0, cpu_perf=0, gpu_time, gpu_perf, mgpu_time, mgpu_perf, dev_time, dev_perf;
     double      Ynorm, error=0, error2=0, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -148,13 +147,13 @@ int main(int argc, char **argv)
             magma_dsetvector( Noffset, X, incx, dX, incx, opts.queue );
             magma_dsetvector( Noffset, Y, incx, dY, incx, opts.queue );
             
-            cuda_time = magma_sync_wtime(0);
+            dev_time = magma_sync_wtime(0);
             magma_dsymv( opts.uplo, N,
                          alpha, dA(offset, offset), ldda,
                                 dX(offset), incx,
                          beta,  dY(offset), incx, opts.queue );
-            cuda_time = magma_sync_wtime(0) - cuda_time;
-            cuda_perf = gflops / cuda_time;
+            dev_time = magma_sync_wtime(0) - dev_time;
+            dev_perf = gflops / dev_time;
             
             magma_dgetvector( Noffset, dY, incx, Ydev, incx, opts.queue );
             
@@ -259,17 +258,17 @@ int main(int argc, char **argv)
             if ( opts.lapack ) {
                 printf( "%5lld  %5lld   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %s\n",
                         (long long) N, (long long) offset,
-                         cpu_perf,  cpu_time*1000.,
-                        cuda_perf, cuda_time*1000.,
-                         gpu_perf,  gpu_time*1000.,
+                        cpu_perf, cpu_time*1000.,
+                        dev_perf, dev_time*1000.,
+                        gpu_perf, gpu_time*1000.,
                         mgpu_perf, mgpu_time*1000.,
                         error, error2, (okay ? "ok" : "failed") );
             }
             else {
                 printf( "%5lld  %5lld     ---   (  ---  )   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e     ---      %s\n",
                         (long long) N, (long long) offset,
-                        cuda_perf, cuda_time*1000.,
-                         gpu_perf,  gpu_time*1000.,
+                        dev_perf, dev_time*1000.,
+                        gpu_perf, gpu_time*1000.,
                         mgpu_perf, mgpu_time*1000.,
                         error, (okay ? "ok" : "failed") );
             }

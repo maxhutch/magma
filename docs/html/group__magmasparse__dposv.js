@@ -8,7 +8,6 @@ var group__magmasparse__dposv =
     [ "magma_didr", "group__magmasparse__dposv.html#ga2c5b11b95c23ed4b81565e7c2e7d287d", null ],
     [ "magma_didr_merge", "group__magmasparse__dposv.html#gafcb119d0539ec86d27105e44be8dab5b", null ],
     [ "magma_didr_strms", "group__magmasparse__dposv.html#ga3221fa1f3d171ee19daf64a8b3346812", null ],
-    [ "magma_dpcg", "group__magmasparse__dposv.html#ga6682994ecc0c4ddcd899868890afef4c", null ],
     [ "magma_dpcg_merge", "group__magmasparse__dposv.html#ga410fbfe8e318ee1993aa46516ef0471c", null ],
     [ "magma_dpidr", "group__magmasparse__dposv.html#ga1d0fcafb465d4878df688ff0e449a55b", null ],
     [ "magma_dpidr_merge", "group__magmasparse__dposv.html#gad1bece0825584a7d81f8f8b3480c945a", null ],

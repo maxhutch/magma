@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 */
@@ -105,7 +105,7 @@ zlascl_diag_upper(
     @ingroup magma_lascl_diag
 *******************************************************************************/
 extern "C" void
-magmablas_zlascl_diag_q(
+magmablas_zlascl_diag(
     magma_type_t type, magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr dD, magma_int_t lddd,
     magmaDoubleComplex_ptr       dA, magma_int_t ldda,

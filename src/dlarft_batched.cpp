@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Azzam Haidar
        @author Ahmad Abdelfattah
        
-       @generated from src/zlarft_batched.cpp, normal z -> d, Tue Aug 30 09:38:26 2016
+       @generated from src/zlarft_batched.cpp, normal z -> d, Sun Nov 20 20:20:27 2016
 */
 #include "magma_internal.h"
 
@@ -66,11 +66,11 @@ magma_dlarft_sm32x32_batched(magma_int_t n, magma_int_t k,
         dlarft_gemv_loop_inside_kernel_batched(n, k, tau_array, v_array, ldv, T_array, ldt, batchCount, queue); 
     #endif
     #endif
-     //==================================
-     //          TRMV
-     //==================================
-     //T(1:i-1,i) := T(1:i-1,1:i-1) * W(1:i-1) i=[1:k]
-     magmablas_dlarft_dtrmv_sm32x32_batched(k, k, tau_array, T_array, ldt, T_array, ldt, batchCount, queue);
+    //==================================
+    //          TRMV
+    //==================================
+    //T(1:i-1,i) := T(1:i-1,1:i-1) * W(1:i-1) i=[1:k]
+    magmablas_dlarft_dtrmv_sm32x32_batched(k, k, tau_array, T_array, ldt, T_array, ldt, batchCount, queue);
 }
 
 

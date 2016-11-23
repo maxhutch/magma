@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from testing/testing_zlat2c.cpp, mixed zc -> ds, Tue Aug 30 09:39:05 2016
+       @generated from testing/testing_zlat2c.cpp, mixed zc -> ds, Sun Nov 20 20:20:32 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -107,8 +107,8 @@ int main( int argc, char** argv )
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_dprint( n, n, A,  lda );
                 printf( "SA= " );  magma_sprint( n, n, SA, lda );
-                printf( "dA= " );  magma_dprint_gpu( n, n, dA,  ldda );
-                printf( "dSA=" );  magma_sprint_gpu( n, n, dSA, ldda );
+                printf( "dA= " );  magma_dprint_gpu( n, n, dA,  ldda, opts.queue );
+                printf( "dSA=" );  magma_sprint_gpu( n, n, dSA, ldda, opts.queue );
             }
             
             /* =====================================================================
@@ -178,8 +178,8 @@ int main( int argc, char** argv )
             if ( opts.verbose ) {
                 printf( "A=  " );  magma_dprint( n, n, A,  lda );
                 printf( "SA= " );  magma_sprint( n, n, SA, lda );
-                printf( "dA= " );  magma_dprint_gpu( n, n, dA,  ldda );
-                printf( "dSA=" );  magma_sprint_gpu( n, n, dSA, ldda );
+                printf( "dA= " );  magma_dprint_gpu( n, n, dA,  ldda, opts.queue );
+                printf( "dSA=" );  magma_sprint_gpu( n, n, dSA, ldda, opts.queue );
             }
             
             /* =====================================================================

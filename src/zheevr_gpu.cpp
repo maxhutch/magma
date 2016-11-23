@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
  
        @author Raffaele Solca
        @author Azzam Haidar
@@ -387,7 +387,6 @@ magma_zheevr_gpu(
     }
 
     if (MAGMA_SUCCESS != magma_dmalloc( &dwork, n )) {
-        fprintf (stderr, "!!!! device memory allocation error (magma_zheevr_gpu)\n");
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -562,6 +561,7 @@ magma_zheevr_gpu(
     iwork[1] = liwmin;
     
     magma_queue_destroy( queue );
-    
+    magma_free( dwork );
+
     return *info;
 } /* magma_zheevr_gpu */

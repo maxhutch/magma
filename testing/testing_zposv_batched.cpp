@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Mark gates
    @author Azzam Haidar
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 
             for (int i=0; i < batchCount; i++)
             {
-               magma_zmake_hpd( N, h_A + i * lda * N, lda ); // need modification
+                magma_zmake_hpd( N, h_A + i * lda * N, lda ); // need modification
             }
 
             magma_zsetmatrix( N, N*batchCount,    h_A, lda, d_A, ldda, opts.queue );

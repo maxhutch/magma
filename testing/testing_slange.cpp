@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zlange.cpp, normal z -> s, Tue Aug 30 09:39:04 2016
+       @generated from testing/testing_zlange.cpp, normal z -> s, Sun Nov 20 20:20:34 2016
        @author Mark Gates
 */
 // includes, system
@@ -45,7 +45,7 @@ int main( int argc, char** argv)
     magma_int_t i, j, M, N, n2, lda, ldda, lwork;
     magma_int_t idist    = 3;  // normal distribution (otherwise max norm is always ~ 1)
     magma_int_t ISEED[4] = {0,0,0,1};
-    float      error, norm_magma, norm_lapack;
+    float      error, norm_magma, norm_lapack, normalize, tol;
     int status = 0;
     magma_int_t lapack_nan_fail = 0;
     magma_int_t lapack_inf_fail = 0;
@@ -53,8 +53,7 @@ int main( int argc, char** argv)
     magma_opts opts;
     opts.parse_opts( argc, argv );
     
-    float tol = opts.tolerance * lapackf77_slamch("E");
-    float tol2;
+    float eps = lapackf77_slamch("E");
     
     // Frobenius norm not currently supported, but leave this here for future support
     // of different norms. See similar code in testing_slansy.cpp.
@@ -118,20 +117,30 @@ int main( int argc, char** argv)
             
             /* =====================================================================
                Check the result compared to LAPACK
-               Max norm should be identical; others should be within tolerance.
+               One, Inf, Fro errors normalized by sqrt of # terms in summation.
                =================================================================== */
-            error = fabs( norm_magma - norm_lapack ) / norm_lapack;
-            tol2 = tol;
+            normalize = 1;
+            tol = 3*eps;
             if ( norm[inorm] == MagmaMaxNorm ) {
                 // max-norm depends on only one element, so for Real precisions,
-                // MAGMA and LAPACK should exactly agree (tol2 = 0),
+                // MAGMA and LAPACK should exactly agree (tol = 0),
                 // while Complex precisions incur roundoff in fabsf.
                 #ifdef REAL
-                tol2 = 0;
+                tol = 0;
                 #endif
             }
-            
-            bool okay; okay = (error <= tol2);
+            else if ( norm[inorm] == MagmaOneNorm ) {
+                normalize = sqrt( (float)M );
+            }
+            else if ( norm[inorm] == MagmaInfNorm ) {
+                normalize = sqrt( (float)N );
+            }
+            else if ( norm[inorm] == MagmaFrobeniusNorm ) {
+                normalize = sqrt( (float)M*N );
+            }
+            error = fabs( norm_magma - norm_lapack )
+                  / (norm_lapack * normalize);
+            bool okay; okay = (error <= tol);
             status += ! okay;
             
             /* ====================================================================

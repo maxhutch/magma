@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Azzam Haidar
 
-       @generated from src/core_zhbtype1cb.cpp, normal z -> s, Tue Aug 30 09:38:19 2016
+       @generated from src/core_zhbtype1cb.cpp, normal z -> s, Sun Nov 20 20:20:24 2016
 
 */
 #include "magma_internal.h"
@@ -115,13 +115,14 @@ magma_ssbtype1cb(magma_int_t n, magma_int_t nb,
      * note that in case no eigenvector required V and T are stored
      * on a vector of size n
      * */
-     if ( wantz == 0 ) {
-         vpos   = (sweep%2)*n + st;
-         taupos = (sweep%2)*n + st;
-     } else {
-         magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep, st, ldv, &vpos, &taupos);
-         //findVTpos(n, nb, Vblksiz, sweep, st, &vpos, &taupos, &tpos, &blkid);
-     }
+    if (wantz == 0) {
+        vpos   = (sweep%2)*n + st;
+        taupos = (sweep%2)*n + st;
+    }
+    else {
+        magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep, st, ldv, &vpos, &taupos);
+        //findVTpos(n, nb, Vblksiz, sweep, st, &vpos, &taupos, &tpos, &blkid);
+    }
 
     len = ed-st+1;
     *(V(vpos)) = c_one;

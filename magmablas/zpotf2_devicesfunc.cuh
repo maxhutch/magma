@@ -1,10 +1,10 @@
 
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Azzam Haidar
    @author Ahmad Ahmad
@@ -496,4 +496,4 @@ static inline __device__ void zpotf2_smlpout_anywidth_device(const int m, const 
     #endif        
 }
 
-#endif  /* MAGMABLAS_ZPOTF2_DEVICES_Z_H */
+#endif // MAGMABLAS_ZPOTF2_DEVICES_Z_H

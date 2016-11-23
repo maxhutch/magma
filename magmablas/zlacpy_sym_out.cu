@@ -1,12 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
        @author Azzam Haidar
+       @author Ichitaro Yamazaki
        
        @precisions normal z -> s d c
 
@@ -178,7 +179,7 @@ void zlacpy_sym_out_upper_kernel(
 /***************************************************************************//**
     Purpose
     -------
-    ZLACPY_Q copies all or part of a two-dimensional matrix dA to another
+    ZLACPY_SYM_OUT copies all or part of a two-dimensional matrix dA to another
     matrix dB.
     
     This is the same as ZLACPY, but adds queue argument.
@@ -238,7 +239,7 @@ void zlacpy_sym_out_upper_kernel(
     @ingroup magma_lacpy
 *******************************************************************************/
 extern "C" void
-magmablas_zlacpy_sym_out_q(
+magmablas_zlacpy_sym_out(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, 
     magma_int_t *rows, magma_int_t *perm,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,

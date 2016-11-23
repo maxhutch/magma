@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zheevd_gpu.cpp, normal z -> d, Tue Aug 30 09:39:13 2016
+       @generated from testing/testing_zheevd_gpu.cpp, normal z -> d, Sun Nov 20 20:20:37 2016
 
 */
 
@@ -43,13 +43,13 @@ int main( int argc, char** argv)
     
     /* Local variables */
     real_Double_t   gpu_time, cpu_time;
-    double *h_A, *h_R, *h_Z, *h_work, aux_work[1];
+    double *h_A, *h_R, *h_Z, *h_work, aux_work[1], unused[1];
     magmaDouble_ptr d_R, d_Z;
     #ifdef COMPLEX
     double *rwork, aux_rwork[1];
     magma_int_t lrwork;
     #endif
-    double *w1, *w2, result[4]={0, 0, 0, 0}, eps, abstol;
+    double *w1, *w2, result[4]={0, 0, 0, 0}, eps, abstol, runused[1];
     magma_int_t *iwork, *isuppz, *ifail, aux_iwork[1];
     magma_int_t N, n2, info, lwork, liwork, lda, ldda;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -65,20 +65,35 @@ int main( int argc, char** argv)
     magma_range_t range = MagmaRangeAll;
     if (opts.fraction != 1)
         range = MagmaRangeI;
-    
+
+    double tol    = opts.tolerance * lapackf77_dlamch("E");
+    double tolulp = opts.tolerance * lapackf77_dlamch("P");
+
     #ifdef REAL
     if (opts.version == 3 || opts.version == 4) {
         printf("%% magma_dsyevr and magma_dsyevx not available for real precisions (single, double).\n");
+        status = -1;
         return status;
     }
     #endif
-    
-    double tol    = opts.tolerance * lapackf77_dlamch("E");
-    double tolulp = opts.tolerance * lapackf77_dlamch("P");
-    
-    printf("%% jobz = %s, range = %s, uplo = %s, fraction = %6.4f\n",
+
+    if (opts.version > 4) {
+        fprintf( stderr, "%% error: no version %lld, only 1-4.\n", (long long) opts.version );
+        status = -1;
+        return status;
+    }
+
+    const char *versions[] = {
+        "dummy",
+        "dsyevd_gpu",
+        "dsyevdx_gpu",
+        "dsyevr_gpu (Complex only)",
+        "dsyevx_gpu (Complex only)"
+    };
+
+    printf("%% jobz = %s, range = %s, uplo = %s, fraction = %6.4f, version = %lld (%s)\n",
            lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
-           opts.fraction );
+           opts.fraction, (long long)opts.version, versions[opts.version] );
 
     printf("%%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU^H|   |I-U^H U|\n");
     printf("%%============================================================================\n");
@@ -284,13 +299,13 @@ int main( int argc, char** argv)
                 double *work;
                 TESTING_CHECK( magma_dmalloc_cpu( &work, 2*N*N ));
                 
-                // e=NULL is unused since kband=0; tau=NULL is unused since itype=1
+                // e is unused since kband=0; tau is unused since itype=1
                 lapackf77_dsyt21( &ione, lapack_uplo_const(opts.uplo), &N, &izero,
                                   h_A, &lda,
-                                  w1, NULL,
+                                  w1, runused,
                                   h_R, &lda,
                                   h_R, &lda,
-                                  NULL, work,
+                                  unused, work,
                                   #ifdef COMPLEX
                                   rwork,
                                   #endif

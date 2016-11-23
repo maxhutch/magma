@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Mark Gates
 
-       @generated from magmablas/zswap.cu, normal z -> c, Tue Aug 30 09:38:33 2016
+       @generated from magmablas/zswap.cu, normal z -> c, Sun Nov 20 20:20:29 2016
 
 */
 #include "magma_internal.h"
@@ -64,7 +64,7 @@ __global__ void cswap_kernel(
     @ingroup magma_swap
 *******************************************************************************/
 extern "C" void 
-magmablas_cswap_q(
+magmablas_cswap(
     magma_int_t n,
     magmaFloatComplex_ptr dx, magma_int_t incx, 
     magmaFloatComplex_ptr dy, magma_int_t incy,

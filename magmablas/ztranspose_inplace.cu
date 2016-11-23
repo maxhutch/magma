@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -168,7 +168,7 @@ __global__ void ztranspose_inplace_even(
     @ingroup magma_transpose
 *******************************************************************************/
 extern "C" void
-magmablas_ztranspose_inplace_q(
+magmablas_ztranspose_inplace(
     magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magma_queue_t queue )

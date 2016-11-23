@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -95,7 +95,7 @@ zswapdblk_kernel( int nb,
     @ingroup magma_swapdblk
 *******************************************************************************/
 extern "C" void 
-magmablas_zswapdblk_q(
+magmablas_zswapdblk(
     magma_int_t n, magma_int_t nb,
     magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t inca,
     magmaDoubleComplex_ptr dB, magma_int_t lddb, magma_int_t incb,

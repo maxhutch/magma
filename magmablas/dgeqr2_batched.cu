@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magmablas/zgeqr2_batched.cu, normal z -> d, Tue Aug 30 09:38:38 2016
+       @generated from magmablas/zgeqr2_batched.cu, normal z -> d, Sun Nov 20 20:20:31 2016
 */
 
 #include "magma_internal.h"

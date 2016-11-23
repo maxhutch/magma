@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
 
@@ -136,7 +136,7 @@ magma_zpotrf_mgpu(
                 magma_queue_create( d, &queues[d][j] );
             }
             for( j=0; j < 5; j++ ) {
-               magma_event_create( &event[d][j]  );
+                magma_event_create( &event[d][j]  );
             }
         }
         magma_setdevice(0);

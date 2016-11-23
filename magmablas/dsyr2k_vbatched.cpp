@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zher2k_vbatched.cpp, normal z -> d, Tue Aug 30 09:38:40 2016
+       @generated from magmablas/zher2k_vbatched.cpp, normal z -> d, Sun Nov 20 20:20:32 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -88,9 +88,10 @@ magmablas_dsyr2k_vbatched_nocheck(
     // compute the max. dimensions
     magma_imax_size_2(n, k, batchCount, queue);
     magma_int_t max_n, max_k; 
-    magma_getvector(1, sizeof(magma_int_t), &n[batchCount], 1, &max_n, 1, queue);
-    magma_getvector(1, sizeof(magma_int_t), &k[batchCount], 1, &max_k, 1, queue);
-        
+    magma_igetvector_async(1, &n[batchCount], 1, &max_n, 1, queue);
+    magma_igetvector_async(1, &k[batchCount], 1, &max_k, 1, queue);
+    magma_queue_sync( queue );
+
     magmablas_dsyr2k_vbatched_max_nocheck( 
             uplo, trans, 
             n, k, 
@@ -104,17 +105,17 @@ magmablas_dsyr2k_vbatched_nocheck(
 /***************************************************************************//**
     Purpose
     -------
-   DSYR2K  performs one of the symmetric rank 2k operations
+    DSYR2K  performs one of the symmetric rank 2k operations
    
-      C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
+        C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
    
-   or
+    or
    
-      C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
+        C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
    
-   where  alpha and beta  are scalars with  beta  real,  C is an  n by n
-   symmetric matrix and  A and B  are  n by k matrices in the first case
-   and  k by n  matrices in the second case.
+    where  alpha and beta  are scalars with  beta  real,  C is an  n by n
+    symmetric matrix and  A and B  are  n by k matrices in the first case
+    and  k by n  matrices in the second case.
     
     Parameters
     ----------
@@ -248,9 +249,10 @@ magmablas_dsyr2k_vbatched(
     // compute the max. dimensions
     magma_imax_size_2(n, k, batchCount, queue);
     magma_int_t max_n, max_k; 
-    magma_getvector(1, sizeof(magma_int_t), &n[batchCount], 1, &max_n, 1, queue);
-    magma_getvector(1, sizeof(magma_int_t), &k[batchCount], 1, &max_k, 1, queue);
-        
+    magma_igetvector_async(1, &n[batchCount], 1, &max_n, 1, queue);
+    magma_igetvector_async(1, &k[batchCount], 1, &max_k, 1, queue);
+    magma_queue_sync( queue );
+
     magmablas_dsyr2k_vbatched_max_nocheck( 
             uplo, trans, 
             n, k, 

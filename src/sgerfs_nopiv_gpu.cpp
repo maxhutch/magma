@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from src/zgerfs_nopiv_gpu.cpp, normal z -> s, Tue Aug 30 09:38:03 2016
+       @generated from src/zgerfs_nopiv_gpu.cpp, normal z -> s, Sun Nov 20 20:20:19 2016
 
 */
 #include "magma_internal.h"
@@ -130,7 +130,7 @@ magma_sgerfs_nopiv_gpu(
     /* Local variables */
     magmaFloat_ptr dR;
     float Xnrmv, Rnrmv;
-    float Anrm, Xnrm, Rnrm, cte, eps;
+    float Anrm, Xnrm, Rnrm, cte, eps, work[1];
     magma_int_t i, j, iiter, lddsa, lddr;
     
     /* Check arguments */
@@ -188,11 +188,11 @@ magma_sgerfs_nopiv_gpu(
     for( j=0; j < nrhs; j++ ) {
         i = magma_isamax( n, dX(0,j), 1, queue ) - 1;
         magma_sgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
-        Xnrm = lapackf77_slange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
+        Xnrm = lapackf77_slange( "F", &ione, &ione, &Xnrmv, &ione, work );
         
         i = magma_isamax( n, dR(0,j), 1, queue ) - 1;
         magma_sgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
-        Rnrm = lapackf77_slange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
+        Rnrm = lapackf77_slange( "F", &ione, &ione, &Rnrmv, &ione, work );
         //printf("Rnrm : %e, Xnrm*cte : %e\n", Rnrm, Xnrm*cte);
         if ( Rnrm >  Xnrm*cte ) {
             goto refinement;
@@ -241,11 +241,11 @@ refinement:
         for( j=0; j < nrhs; j++ ) {
             i = magma_isamax( n, dX(0,j), 1, queue ) - 1;
             magma_sgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
-            Xnrm = lapackf77_slange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
+            Xnrm = lapackf77_slange( "F", &ione, &ione, &Xnrmv, &ione, work );
             
             i = magma_isamax( n, dR(0,j), 1, queue ) - 1;
             magma_sgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
-            Rnrm = lapackf77_slange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
+            Rnrm = lapackf77_slange( "F", &ione, &ione, &Rnrmv, &ione, work );
             
             if ( Rnrm >  Xnrm*cte ) {
                 goto L20;

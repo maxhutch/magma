@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Mark Gates
-       @generated from control/zprint.cpp, normal z -> s, Tue Aug 30 09:38:00 2016
+       @generated from control/zprint.cpp, normal z -> s, Sun Nov 20 20:20:17 2016
 
 */
 #include "magma_internal.h"
@@ -120,12 +120,17 @@ void magma_sprint(
     ldda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,M).
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_print
 *******************************************************************************/
 extern "C"
 void magma_sprint_gpu(
     magma_int_t m, magma_int_t n,
-    const float *dA, magma_int_t ldda )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -144,14 +149,7 @@ void magma_sprint_gpu(
     float* A;
     magma_smalloc_cpu( &A, lda*n );
 
-    magma_queue_t queue;
-    magma_device_t cdev;
-    magma_getdevice( &cdev );
-    magma_queue_create( cdev, &queue );
-    
     magma_sgetmatrix( m, n, dA, ldda, A, lda, queue );
-    
-    magma_queue_destroy( queue );
     
     magma_sprint( m, n, A, lda );
     

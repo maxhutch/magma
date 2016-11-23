@@ -9,7 +9,6 @@ var group__magmasparse__sposv =
     [ "magma_sidr", "group__magmasparse__sposv.html#gac77df84e6bac027f24bea2265f4e8bba", null ],
     [ "magma_sidr_merge", "group__magmasparse__sposv.html#gac6e99599c3ad5487e75401da788ab1ee", null ],
     [ "magma_sidr_strms", "group__magmasparse__sposv.html#ga73dbe712e12005df7755f395f37a043b", null ],
-    [ "magma_spcg", "group__magmasparse__sposv.html#gaf1261f4a6992138d8d5f31eb0ee18b1b", null ],
     [ "magma_spcg_merge", "group__magmasparse__sposv.html#ga5b78087f42d0f1b245baeab59a358cc2", null ],
     [ "magma_spidr", "group__magmasparse__sposv.html#gaaed7202b55a30839fe54a75119dd2fb3", null ],
     [ "magma_spidr_merge", "group__magmasparse__sposv.html#ga49059d5c323556deef4135706b71aa47", null ],

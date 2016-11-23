@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from testing/testing_zsymmetrize_tiles.cpp, normal z -> c, Tue Aug 30 09:39:05 2016
+       @generated from testing/testing_zsymmetrize_tiles.cpp, normal z -> c, Sun Nov 20 20:20:34 2016
 
 */
 
@@ -103,6 +103,8 @@ int main( int argc, char** argv)
                             h_A[offset + j + i*lda] = MAGMA_C_CONJ( h_A[offset + i + j*lda] );
                         }
                     }
+                    // real diagonal
+                    h_A[offset + j + j*lda] = MAGMA_C_MAKE( MAGMA_C_REAL( h_A[offset + j + j*lda] ), 0 );
                 }
             }
             cpu_time = magma_wtime() - cpu_time;

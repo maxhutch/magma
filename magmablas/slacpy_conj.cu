@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zlacpy_conj.cu, normal z -> s, Tue Aug 30 09:38:29 2016
+       @generated from magmablas/zlacpy_conj.cu, normal z -> s, Sun Nov 20 20:20:28 2016
 
 */
 #include "magma_internal.h"
@@ -33,7 +33,7 @@ __global__ void slacpy_conj_kernel(
 
 /******************************************************************************/
 extern "C" void 
-magmablas_slacpy_conj_q(
+magmablas_slacpy_conj(
     magma_int_t n,
     magmaFloat_ptr dA1, magma_int_t lda1, 
     magmaFloat_ptr dA2, magma_int_t lda2,

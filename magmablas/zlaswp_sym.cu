@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @precisions normal z -> s d c
        
@@ -133,7 +133,7 @@ extern "C" void zlaswp_sym( zlaswp_sym_params_t &params, magma_queue_t queue )
     @ingroup magma_laswp_sym
 *******************************************************************************/
 extern "C" void
-magmablas_zlaswp_sym_q(
+magmablas_zlaswp_sym(
     magma_int_t n, magmaDoubleComplex *dA, magma_int_t lda,
     magma_int_t k1, magma_int_t k2,
     const magma_int_t *ipiv, magma_int_t inci,

@@ -1,12 +1,12 @@
 /**
 
 ********************************************************************************
-@page sparse-iter Sparse Overview
+@page MAGMA-sparse Overview
 
 
-The MAGMA Sparse-Iter Package
+The MAGMA-sparse Package
 =================================
-The sparse-iter package in the MAGMA software stack contains
+The MAGMA-sparse package in the MAGMA software stack contains
 sparse BLAS routines as well as functions to handle the complete iterative
 solution process of a sparse linear system of equations.
 A typical application includes:
@@ -217,7 +217,7 @@ can be used where old_format and new_format determine the specific conversion.
 
 Memory Handling {#memorhandling}
 =================================
-All iterative solvers and eigensolvers included in the sparse-iter package
+All iterative solvers and eigensolvers included in the MAGMA-sparse package
 work on the device. Hence, it is required to send the respective data structures
 to the device for solving, and back to access the solution. The functions
 
@@ -247,7 +247,7 @@ Linear algebra objects can be deallocated via
         
 Iterative Solvers {#sparsesolvers}
 =================================
-The sparse-iter package contains a variety of linear solvers, eigensolvers,
+The MAGMA-sparse package contains a variety of linear solvers, eigensolvers,
 and preconditioners. The standard procedure to call a solver is to
 pass the linear algebra objects (located on the device) and a structure called
 magma_z_solver_par (respectively and magma_z_precond_par)
@@ -397,11 +397,9 @@ All entities of this structure can be initialized from command line by calling
         magma_queue_t queue );
 
 
-
-
 Example {#sparseexample}
 =================================
-Especially when using sparse-iter for the first time, the easiest way to get
+Especially when using MAGMA-sparse for the first time, the easiest way to get
 familiar with the package is to use and modify one of the predefined testers.
 
 In the following example we assume to have an application coded in C and

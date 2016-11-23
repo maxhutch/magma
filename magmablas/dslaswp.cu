@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zclaswp.cu, mixed zc -> ds, Tue Aug 30 09:38:32 2016
+       @generated from magmablas/zclaswp.cu, mixed zc -> ds, Sun Nov 20 20:20:28 2016
 
 */
 #include "magma_internal.h"
@@ -114,7 +114,7 @@ dslaswp_inv_kernel(
     @ingroup magma_laswp
 *******************************************************************************/
 extern "C" void
-magmablas_dslaswp_q(
+magmablas_dslaswp(
     magma_int_t n,
     magmaDouble_ptr A, magma_int_t lda,
     magmaFloat_ptr SA, magma_int_t ldsa,

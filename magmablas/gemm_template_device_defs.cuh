@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -68,13 +68,13 @@ FloatingPoint_t tex_fetch(texture<float> tex_ref, int coord)
     #define add(A, B)        cuCadd(A, B)
     #define mul(A, B)        cuCmul(A, B)
     #define fma(A, B, C) C = cuCfma(A, B, C)
-    #define make_FloatingPoint(x, y) make_cuDoubleComplex(x, y);
+    #define make_FloatingPoint(x, y) make_cuDoubleComplex(x, y)
 #elif defined(PRECISION_c)
     #define conj(A)          cuConjf(A)
     #define add(A, B)        cuCaddf(A, B)
     #define mul(A, B)        cuCmulf(A, B)
     #define fma(A, B, C) C = cuCfmaf(A, B, C)
-    #define make_FloatingPoint(x, y) make_cuFloatComplex(x, y);
+    #define make_FloatingPoint(x, y) make_cuFloatComplex(x, y)
 #else
     #define conj(A)           (A)
     #define add(A, B)         (A+B)
@@ -83,6 +83,15 @@ FloatingPoint_t tex_fetch(texture<float> tex_ref, int coord)
     #define make_FloatingPoint(x, y) (x)
 #endif
 
+#if defined(PRECISION_z)
+    #define magmablas_atomic_add magmablas_zatomic_add
+#elif defined(PRECISION_c)
+    #define magmablas_atomic_add magmablas_catomic_add
+#elif defined(PRECISION_d)
+    #define magmablas_atomic_add magmablas_datomic_add
+#else
+    #define magmablas_atomic_add magmablas_satomic_add
+#endif
 
 // =============================================================================
 #ifdef TEXTURE_1D
@@ -103,4 +112,4 @@ FloatingPoint_t tex_fetch(texture<float> tex_ref, int coord)
     
 #endif
 
-#endif //GEMM_TEMPLATE_DEVICE_DEFS_H
+#endif // GEMM_TEMPLATE_DEVICE_DEFS_H

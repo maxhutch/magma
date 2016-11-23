@@ -39,7 +39,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">2.1.0</span>
+   &#160;<span id="projectnumber">2.2.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -127,15 +127,15 @@ Functions</h2></td></tr>
 <tr class="memitem:gab9f84b0243d2e8265b72a2e8ff530045"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#gab9f84b0243d2e8265b72a2e8ff530045">magma_dapplycumicc_r</a> (magma_d_matrix b, magma_d_matrix *x, magma_d_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
 <tr class="memdesc:gab9f84b0243d2e8265b72a2e8ff530045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the right triangular solves using the ICC preconditioner.  <a href="#gab9f84b0243d2e8265b72a2e8ff530045">More...</a><br /></td></tr>
 <tr class="separator:gab9f84b0243d2e8265b72a2e8ff530045"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga23345490a2a0ffc148a9f542a0399492"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#ga23345490a2a0ffc148a9f542a0399492">magma_diteriluupdate</a> (magma_d_matrix A, magma_d_preconditioner *precond, magma_int_t updates, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga23345490a2a0ffc148a9f542a0399492"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an existing preconditioner via additional iterative ILU sweeps for previous factorization initial guess (PFIG).  <a href="#ga23345490a2a0ffc148a9f542a0399492">More...</a><br /></td></tr>
-<tr class="separator:ga23345490a2a0ffc148a9f542a0399492"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0c6dccaaf0074391b21193ed4758871f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#ga0c6dccaaf0074391b21193ed4758871f">magma_ditericsetup</a> (magma_d_matrix A, magma_d_matrix b, magma_d_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga0c6dccaaf0074391b21193ed4758871f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the IC preconditioner via the iterative IC iteration.  <a href="#ga0c6dccaaf0074391b21193ed4758871f">More...</a><br /></td></tr>
-<tr class="separator:ga0c6dccaaf0074391b21193ed4758871f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga991c807b8f2c5eb36487bc15a6d35f02"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#ga991c807b8f2c5eb36487bc15a6d35f02">magma_ditericupdate</a> (magma_d_matrix A, magma_d_preconditioner *precond, magma_int_t updates, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
-<tr class="memdesc:ga991c807b8f2c5eb36487bc15a6d35f02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an existing preconditioner via additional iterative IC sweeps for previous factorization initial guess (PFIG).  <a href="#ga991c807b8f2c5eb36487bc15a6d35f02">More...</a><br /></td></tr>
-<tr class="separator:ga991c807b8f2c5eb36487bc15a6d35f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga13bb2d0bf7d4809054062084f7fcbc4c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#ga13bb2d0bf7d4809054062084f7fcbc4c">magma_dpariluupdate</a> (magma_d_matrix A, magma_d_preconditioner *precond, magma_int_t updates, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga13bb2d0bf7d4809054062084f7fcbc4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an existing preconditioner via additional iterative ILU sweeps for previous factorization initial guess (PFIG).  <a href="#ga13bb2d0bf7d4809054062084f7fcbc4c">More...</a><br /></td></tr>
+<tr class="separator:ga13bb2d0bf7d4809054062084f7fcbc4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadcb892deb51329882c0d38fea5fb53c8"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#gadcb892deb51329882c0d38fea5fb53c8">magma_dparicsetup</a> (magma_d_matrix A, magma_d_matrix b, magma_d_preconditioner *precond, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:gadcb892deb51329882c0d38fea5fb53c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the IC preconditioner via the iterative IC iteration.  <a href="#gadcb892deb51329882c0d38fea5fb53c8">More...</a><br /></td></tr>
+<tr class="separator:gadcb892deb51329882c0d38fea5fb53c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54270e013723ae9c1de136c4a1856bf1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dhepr.html#ga54270e013723ae9c1de136c4a1856bf1">magma_dparicupdate</a> (magma_d_matrix A, magma_d_preconditioner *precond, magma_int_t updates, <a class="el" href="structmagma__queue.html">magma_queue_t</a> queue)</td></tr>
+<tr class="memdesc:ga54270e013723ae9c1de136c4a1856bf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an existing preconditioner via additional iterative IC sweeps for previous factorization initial guess (PFIG).  <a href="#ga54270e013723ae9c1de136c4a1856bf1">More...</a><br /></td></tr>
+<tr class="separator:ga54270e013723ae9c1de136c4a1856bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -314,12 +314,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga23345490a2a0ffc148a9f542a0399492"></a>
+<a class="anchor" id="ga13bb2d0bf7d4809054062084f7fcbc4c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">magma_int_t magma_diteriluupdate </td>
+          <td class="memname">magma_int_t magma_dpariluupdate </td>
           <td>(</td>
           <td class="paramtype">magma_d_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>
@@ -364,12 +364,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga0c6dccaaf0074391b21193ed4758871f"></a>
+<a class="anchor" id="gadcb892deb51329882c0d38fea5fb53c8"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">magma_int_t magma_ditericsetup </td>
+          <td class="memname">magma_int_t magma_dparicsetup </td>
           <td>(</td>
           <td class="paramtype">magma_d_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>
@@ -413,12 +413,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga991c807b8f2c5eb36487bc15a6d35f02"></a>
+<a class="anchor" id="ga54270e013723ae9c1de136c4a1856bf1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">magma_int_t magma_ditericupdate </td>
+          <td class="memname">magma_int_t magma_dparicupdate </td>
           <td>(</td>
           <td class="paramtype">magma_d_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>

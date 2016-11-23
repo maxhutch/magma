@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from include/magma_zbatched.h, normal z -> d, Tue Aug 30 09:39:21 2016
+       @generated from include/magma_zbatched.h, normal z -> d, Sun Nov 20 20:20:47 2016
 */
 
 #ifndef MAGMA_DBATCHED_H
@@ -257,24 +257,73 @@ void magmablas_dtrsv_outofplace_batched(
     double **x_array, 
     magma_int_t batchCount, magma_queue_t queue, magma_int_t flag);
 
+void 
+magmablas_dtrmm_batched_core(
+        magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, 
+        magma_int_t m, magma_int_t n, 
+        double alpha, 
+        double **dA_array, magma_int_t ldda,
+        double **dB_array, magma_int_t lddb, 
+        magma_int_t roffA, magma_int_t coffA, magma_int_t roffB, magma_int_t coffB, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_dtrmm_batched(
+        magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, 
+        magma_int_t m, magma_int_t n, 
+        double alpha, 
+        double **dA_array, magma_int_t ldda,
+        double **dB_array, magma_int_t lddb, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_dsymm_batched_core(
+        magma_side_t side, magma_uplo_t uplo, 
+        magma_int_t m, magma_int_t n, 
+        double alpha, 
+        double **dA_array, magma_int_t ldda,
+        double **dB_array, magma_int_t lddb, 
+        double beta, 
+        double **dC_array, magma_int_t lddc, 
+        magma_int_t roffA, magma_int_t coffA, magma_int_t roffB, magma_int_t coffB, magma_int_t roffC, magma_int_t coffC, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_dsymm_batched(
+        magma_side_t side, magma_uplo_t uplo, 
+        magma_int_t m, magma_int_t n, 
+        double alpha, 
+        double **dA_array, magma_int_t ldda,
+        double **dB_array, magma_int_t lddb, 
+        double beta, 
+        double **dC_array, magma_int_t lddc, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_dsymv_batched_core(
+        magma_uplo_t uplo, magma_int_t n, 
+        double alpha, 
+        double **dA_array, magma_int_t ldda,
+        double **dX_array, magma_int_t incx,
+        double beta, 
+        double **dY_array, magma_int_t incy,
+        magma_int_t offA, magma_int_t offX, magma_int_t offY, 
+        magma_int_t batchCount, magma_queue_t queue );
+
+void 
+magmablas_dsymv_batched(
+        magma_uplo_t uplo, magma_int_t n, 
+        double alpha, 
+        double **dA_array, magma_int_t ldda,
+        double **dX_array, magma_int_t incx,
+        double beta, 
+        double **dY_array, magma_int_t incy,
+        magma_int_t batchCount, magma_queue_t queue );
+
 magma_int_t 
 magma_dpotrf_batched(
     magma_uplo_t uplo, magma_int_t n,
     double **dA_array, magma_int_t lda,
-    magma_int_t *info_array,
-    magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_dpotrf_lg_vbatched(
-    magma_uplo_t uplo, magma_int_t n,
-    double **dA_array, magma_int_t ldda,
-    magma_int_t *info_array,
-    magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_dpotrf_vbatched(
-    magma_uplo_t uplo, magma_int_t *n, magma_int_t nmax, 
-    double **dA_array, magma_int_t *ldda,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
 
@@ -893,13 +942,6 @@ magma_int_t
 magma_dpotrf_v33_batched(
     magma_uplo_t uplo, magma_int_t n, 
     double **dA_array, magma_int_t lda,
-    magma_int_t *info_array,
-    magma_int_t batchCount, magma_queue_t queue);
-
-magma_int_t
-magma_dpotrf_lpout_vbatched(
-    magma_uplo_t uplo, magma_int_t *n, magma_int_t nmax,  
-    double **dA_array, magma_int_t *lda, magma_int_t gbstep,
     magma_int_t *info_array,
     magma_int_t batchCount, magma_queue_t queue);
 

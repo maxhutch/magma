@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing/testing_zgeqr2x_gpu.cpp, normal z -> d, Tue Aug 30 09:39:10 2016
+       @generated from testing/testing_zgeqr2x_gpu.cpp, normal z -> d, Sun Nov 20 20:20:36 2016
 */
 
 // includes, system
@@ -42,7 +42,7 @@ int main( int argc, char** argv)
     /* Local variables */
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double           Anorm, error, error2, diff, terr, rwork[1];
-    double *h_A, *h_T, *h_R, *tau, *h_work, tmp[1];
+    double *h_A, *h_T, *h_R, *tau, *h_work, tmp[1], unused[1];
     magmaDouble_ptr d_A, d_T, ddA, dtau;
     magmaDouble_ptr dwork;
 
@@ -87,7 +87,7 @@ int main( int argc, char** argv)
             gflops = (FLOPS_DGEQRF( M, N ) + FLOPS_DGEQRT( M, N )) / 1e9;
 
             lwork = -1;
-            lapackf77_dgeqrf( &M, &N, NULL, &M, NULL, tmp, &lwork, &info );
+            lapackf77_dgeqrf( &M, &N, unused, &M, unused, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_D_REAL( tmp[0] );
             lwork = max( lwork, N*N );
         

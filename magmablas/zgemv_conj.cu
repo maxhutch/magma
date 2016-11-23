@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
        
        @author Stan Tomov
 
@@ -98,7 +98,7 @@ zgemv_conj_kernel(
     @ingroup magma_gemv
 *******************************************************************************/
 extern "C" void
-magmablas_zgemv_conj_q(
+magmablas_zgemv_conj(
     magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_const_ptr dx, magma_int_t incx,

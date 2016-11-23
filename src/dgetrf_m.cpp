@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from src/zgetrf_m.cpp, normal z -> d, Tue Aug 30 09:38:06 2016
+       @generated from src/zgetrf_m.cpp, normal z -> d, Sun Nov 20 20:20:21 2016
 
 */
 #include <cuda_runtime.h>
@@ -14,6 +14,50 @@
 
 #include "magma_timer.h"
 //#include "../testing/flops.h"
+
+
+/******************************************************************************/
+extern "C" magma_int_t
+magma_dgetrf_piv(
+    magma_int_t m, magma_int_t n, magma_int_t NB,
+    double *A, magma_int_t lda, magma_int_t *ipiv,
+    magma_int_t *info)
+{
+    #define A(i,j) (A + (j)*lda + (i))
+    
+    magma_int_t I, k1, k2, incx, minmn;
+    *info = 0;
+    if (m < 0)
+        *info = -1;
+    else if (n < 0)
+        *info = -2;
+    else if (lda < max(1,m))
+        *info = -4;
+
+    if (*info != 0) {
+        magma_xerbla( __func__, -(*info) );
+        return *info;
+    }
+
+    /* Quick return if possible */
+    if (m == 0 || n == 0)
+        return *info;
+
+    /* initialize nb */
+    minmn = min(m,n);
+
+    for( I=0; I < minmn-NB; I += NB ) {
+        k1 = 1+I+NB;
+        k2 = minmn;
+        incx = 1;
+        lapackf77_dlaswp(&NB, A(0,I), &lda, &k1, &k2, ipiv, &incx);
+    }
+
+    return *info;
+    
+    #undef A
+} /* magma_dgetrf_piv */
+
 
 /***************************************************************************//**
     Purpose
@@ -252,8 +296,8 @@ magma_dgetrf_m(
                 /* applying the pivot from the previous big-panel */
                 for( d=0; d < ngpu; d++ ) {
                     magma_setdevice(d);
-                    magmablas_dlaswp_q( ldn_local, dAT(d,0,0), ldn_local, offset+1, offset+NBk, ipiv, 1, 
-                                        queues[d][1] );
+                    magmablas_dlaswp( ldn_local, dAT(d,0,0), ldn_local, offset+1, offset+NBk, ipiv, 1, 
+                                      queues[d][1] );
                 }
                 
                 /* going through each block-column of previous big-panels */
@@ -357,85 +401,6 @@ magma_dgetrf_m(
         magma_dgetrf_piv(m, n, NB, A, lda, ipiv, info);
     return *info;
 } /* magma_dgetrf_m */
-
-
-/******************************************************************************/
-extern "C" magma_int_t
-magma_dgetrf_piv(
-    magma_int_t m, magma_int_t n, magma_int_t NB,
-    double *A, magma_int_t lda, magma_int_t *ipiv,
-    magma_int_t *info)
-{
-    magma_int_t I, k1, k2, incx, minmn;
-    *info = 0;
-    if (m < 0)
-        *info = -1;
-    else if (n < 0)
-        *info = -2;
-    else if (lda < max(1,m))
-        *info = -4;
-
-    if (*info != 0) {
-        magma_xerbla( __func__, -(*info) );
-        return *info;
-    }
-
-    /* Quick return if possible */
-    if (m == 0 || n == 0)
-        return *info;
-
-    /* initialize nb */
-    minmn = min(m,n);
-
-    for( I=0; I < minmn-NB; I += NB ) {
-        k1 = 1+I+NB;
-        k2 = minmn;
-        incx = 1;
-        lapackf77_dlaswp(&NB, A(0,I), &lda, &k1, &k2, ipiv, &incx);
-    }
-
-    return *info;
-} /* magma_dgetrf_piv */
-
-
-/******************************************************************************/
-extern "C" magma_int_t
-magma_dgetrf2_piv(
-    magma_int_t m, magma_int_t n, magma_int_t start, magma_int_t end,
-    double *A, magma_int_t lda, magma_int_t *ipiv,
-    magma_int_t *info)
-{
-    magma_int_t I, k1, k2, nb, incx, minmn;
-
-    *info = 0;
-
-    if (m < 0)
-        *info = -1;
-    else if (n < 0)
-        *info = -2;
-    else if (lda < max(1,m))
-        *info = -4;
-
-    if (*info != 0)
-        return *info;
-
-    /* Quick return if possible */
-    if (m == 0 || n == 0)
-        return *info;
-
-    /* initialize nb */
-    nb = magma_get_dgetrf_nb( m, n );
-    minmn = min( end, min(m,n) );
-
-    for( I=start; I < end-nb; I += nb ) {
-        incx = 1;
-        k1 = 1+I+nb;
-        k2 = minmn;
-        lapackf77_dlaswp(&nb, A(0,I), &lda, &k1, &k2, ipiv, &incx);
-    }
-
-    return *info;
-} /* magma_dgetrf_piv */
 
 
 #undef dAT

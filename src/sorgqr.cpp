@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from src/zungqr.cpp, normal z -> s, Tue Aug 30 09:38:10 2016
+       @generated from src/zungqr.cpp, normal z -> s, Sun Nov 20 20:20:22 2016
 
        @author Stan Tomov
        @author Mark Gates

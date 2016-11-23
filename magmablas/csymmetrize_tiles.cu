@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 2.1.0) --
+    -- MAGMA (version 2.2.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2016
+       @date November 2016
 
-       @generated from magmablas/zsymmetrize_tiles.cu, normal z -> c, Tue Aug 30 09:38:34 2016
+       @generated from magmablas/zsymmetrize_tiles.cu, normal z -> c, Sun Nov 20 20:20:29 2016
        @author Mark Gates
 */
 #include "magma_internal.h"
@@ -33,12 +33,13 @@ csymmetrize_tiles_lower( int m, magmaFloatComplex *dA, int ldda, int mstride, in
     if ( i < m ) {
         dA  += i;
         dAT += i*ldda;
-        magmaFloatComplex *dAend = dA + i*ldda;
+        magmaFloatComplex *dAend = dA + i*ldda;  // end at diagonal dA(i,i)
         while( dA < dAend ) {
             *dAT = MAGMA_C_CONJ(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
+        *dA = MAGMA_C_MAKE( MAGMA_C_REAL(*dA), 0 );  // make diagonal real
     }
 }
 
@@ -56,12 +57,13 @@ csymmetrize_tiles_upper( int m, magmaFloatComplex *dA, int ldda, int mstride, in
     if ( i < m ) {
         dA  += i;
         dAT += i*ldda;
-        magmaFloatComplex *dAend = dA + i*ldda;
+        magmaFloatComplex *dAend = dA + i*ldda;  // end at diagonal dA(i,i)
         while( dA < dAend ) {
             *dA  = MAGMA_C_CONJ(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
+        *dA = MAGMA_C_MAKE( MAGMA_C_REAL(*dA), 0 );  // make diagonal real
     }
 }
 
@@ -72,6 +74,8 @@ csymmetrize_tiles_upper( int m, magmaFloatComplex *dA, int ldda, int mstride, in
     
     CSYMMETRIZE_TILES copies lower triangle to upper triangle, or vice-versa,
     to make some blocks of dA into general representations of a symmetric block.
+    In Complex, it sets the diagonal to be Real.
+
     This processes NTILE blocks, typically the diagonal blocks.
     Each block is offset by mstride rows and nstride columns from the previous block.
     
@@ -117,7 +121,7 @@ csymmetrize_tiles_upper( int m, magmaFloatComplex *dA, int ldda, int mstride, in
     @ingroup magma_symmetrize_batched
 *******************************************************************************/
 extern "C" void
-magmablas_csymmetrize_tiles_q(
+magmablas_csymmetrize_tiles(
     magma_uplo_t uplo, magma_int_t m,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magma_int_t ntile, magma_int_t mstride, magma_int_t nstride,

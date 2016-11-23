@@ -1,15 +1,15 @@
 /*
-   -- MAGMA (version 2.1.0) --
+   -- MAGMA (version 2.2.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2016
+   @date November 2016
 
    @author Mark gates
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing/testing_zposv_batched.cpp, normal z -> s, Tue Aug 30 09:39:18 2016
+   @generated from testing/testing_zposv_batched.cpp, normal z -> s, Sun Nov 20 20:20:38 2016
  */
 // includes, system
 #include <stdio.h>
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 
             for (int i=0; i < batchCount; i++)
             {
-               magma_smake_hpd( N, h_A + i * lda * N, lda ); // need modification
+                magma_smake_hpd( N, h_A + i * lda * N, lda ); // need modification
             }
 
             magma_ssetmatrix( N, N*batchCount,    h_A, lda, d_A, ldda, opts.queue );
